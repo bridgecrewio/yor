@@ -1,8 +1,8 @@
 package git_service
 
 import (
-	"bridgecrew.io/yor/git_service"
-	"bridgecrew.io/yor/tests"
+	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/tests"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
