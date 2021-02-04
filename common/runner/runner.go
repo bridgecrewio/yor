@@ -18,7 +18,7 @@ func initTaggers(taggerTypes []tagging.TaggerType, extraTags []tagging.ITag) {
 	// TODO: create a new Tagger instance and send the extraTags as param
 }
 
-func (r *Runner) TagDirectory(dir string) interface{} {
+func (r *Runner) TagDirectory(dir string) *reports.Report {
 	//	TODO - return Report's result from this method
 	reportService := reports.ReportService{}
 

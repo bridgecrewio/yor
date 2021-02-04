@@ -1,7 +1,8 @@
 package main
 
 import (
-	"bridgecrewio/yor/tagging"
+	"bridgecrewio/yor/common/reports"
+	"bridgecrewio/yor/common/tagging"
 	"fmt"
 )
 
@@ -13,7 +14,7 @@ func parseArgs(args ...interface{}) {
 	// TODO
 }
 
-func printReport(report interface{}) {
+func printReport(report *reports.Report) {
 	// TODO
 }
 

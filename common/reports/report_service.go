@@ -29,7 +29,7 @@ func (r *Report) GetTotalNewlyTaggedResources() int {
 	return -1
 }
 
-func (r *ReportService) CreateReport() interface{} {
+func (r *ReportService) CreateReport() *Report {
 	//	TODO - determine structure later
 	return nil
 }
