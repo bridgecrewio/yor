@@ -19,6 +19,6 @@ type ITagger interface {
 	CreateTagsForBlock(block *structure.Block, gitBlame *git_service.GitBlame) // this method should call Block.AddNewTags
 }
 
-func (t *Tagger) InitTags(extraTags []*tagging.Tag) {
+func (t *Tagger) InitTags(extraTags []tagging.ITag) {
 	// TODO: initialize Tagger.tags with all the tags in `TagTypes` (use their Init method) and add the extra tags
 }
