@@ -8,6 +8,7 @@ type GitBlame struct {
 	BlamesByLine  map[int]*git.Line
 }
 
+// lines: []int{startLine, endLine}
 func NewGitBlame(lines []int, blameResult *git.BlameResult, gitOrg string, gitRepository string) *GitBlame {
 	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}}
 	for line := lines[0]; line <= lines[1]; line++ {
