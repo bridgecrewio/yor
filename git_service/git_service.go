@@ -10,11 +10,12 @@ import (
 )
 
 type GitService struct {
-	rootDir      string
-	repository   *git.Repository
-	remoteUrl    string
-	organization string
-	repoName     string
+	rootDir              string
+	repository           *git.Repository
+	remoteUrl            string
+	organization         string
+	repoName             string
+	blameByFileAndCommit map[string]map[string]*git.BlameResult
 }
 
 func NewGitService(rootDir string) (*GitService, error) {
@@ -24,8 +25,9 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	gitService := GitService{
-		rootDir:    rootDir,
-		repository: repository,
+		rootDir:              rootDir,
+		repository:           repository,
+		blameByFileAndCommit: make(map[string]map[string]*git.BlameResult),
 	}
 
 	err = gitService.setOrgAndName()
@@ -63,6 +65,11 @@ func (g *GitService) setOrgAndName() error {
 }
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
+	blame := g.findBlameInCache(filePath, commitHash)
+	if blame != nil {
+		return NewGitBlame(lines, blame, g.organization, g.repoName), nil
+	}
+
 	logOptions := git.LogOptions{
 		// order the commits from most to least recent
 		Order:    git.LogOrderCommitterTime,
@@ -93,13 +100,39 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 		}
 	}
 
-	blame, err := git.Blame(selectedCommit, filePath)
+	blame = g.findBlameInCache(filePath, []string{selectedCommit.Hash.String()})
+	if blame != nil {
+		return NewGitBlame(lines, blame, g.organization, g.repoName), nil
+	}
+
+	blame, err = git.Blame(selectedCommit, filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
+	g.addBlameToCache(filePath, selectedCommit.Hash.String(), blame)
 
 	return NewGitBlame(lines, blame, g.organization, g.repoName), nil
 
+}
+
+func (g *GitService) findBlameInCache(filePath string, commitHash []string) *git.BlameResult {
+	if len(commitHash) == 0 {
+		return nil
+	}
+	blame, ok := g.blameByFileAndCommit[filePath][commitHash[0]]
+	if !ok {
+		return nil
+	}
+
+	return blame
+}
+
+func (g *GitService) addBlameToCache(filePath string, commitHash string, blame *git.BlameResult) {
+	if g.blameByFileAndCommit[filePath] == nil {
+		g.blameByFileAndCommit[filePath] = make(map[string]*git.BlameResult)
+	}
+
+	g.blameByFileAndCommit[filePath][commitHash] = blame
 }
 
 func (g *GitService) GetOrganization() string {
