@@ -5,7 +5,7 @@ import (
 	"bridgecrewio/yor/common/tagging"
 )
 
-type ChangesAccumulator struct {
+type TagChangeAccumulator struct {
 	changesByFile map[string]*structure.Block
 	changesByTag  map[tagging.Tag]*structure.Block
 }
@@ -18,12 +18,12 @@ type ResourceRecord struct {
 	traceId       string
 }
 
-var accumulatorInstance *ChangesAccumulator
+var accumulatorInstance *TagChangeAccumulator
 
-func GetAccumulator() *ChangesAccumulator {
+func GetAccumulator() *TagChangeAccumulator {
 	// get instance of singleton accumulator
 	if accumulatorInstance == nil {
-		accumulatorInstance = &ChangesAccumulator{
+		accumulatorInstance = &TagChangeAccumulator{
 			changesByFile: make(map[string]*structure.Block),
 			changesByTag:  make(map[tagging.Tag]*structure.Block),
 		}
@@ -32,16 +32,16 @@ func GetAccumulator() *ChangesAccumulator {
 	return accumulatorInstance
 }
 
-func (a *ChangesAccumulator) AccumulateChanges(block *structure.Block) {
+func (a *TagChangeAccumulator) AccumulateChanges(block *structure.Block) {
 	// TODO
 }
 
-func (a *ChangesAccumulator) GetPreviouslyTaggedResources() []*ResourceRecord {
+func (a *TagChangeAccumulator) GetPreviouslyTaggedResources() []*ResourceRecord {
 	return nil
 }
-func (a *ChangesAccumulator) GetUntaggedResources() []*ResourceRecord {
+func (a *TagChangeAccumulator) GetUntaggedResources() []*ResourceRecord {
 	return nil
 }
-func (a *ChangesAccumulator) GetNewlyTaggedResources() []*ResourceRecord {
+func (a *TagChangeAccumulator) GetNewlyTaggedResources() []*ResourceRecord {
 	return nil
 }
