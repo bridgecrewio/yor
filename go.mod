@@ -1,4 +1,4 @@
-module bridgecrew.io/yor
+module bridgecrewio/yor
 
 go 1.13
 
