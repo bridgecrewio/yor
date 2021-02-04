@@ -1,6 +1,6 @@
 package structure
 
-import "bridgecrewio/yor/tagging"
+import "bridgecrewio/yor/common/tagging"
 
 type Block struct {
 	FilePath    string
@@ -9,7 +9,7 @@ type Block struct {
 	RawBlock    interface{}
 }
 
-type iBlock interface {
+type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	String() string
 	GetLines() []int

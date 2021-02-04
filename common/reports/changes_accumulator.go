@@ -1,21 +1,21 @@
 package reports
 
 import (
-	"bridgecrewio/yor/structure"
-	"bridgecrewio/yor/tagging"
+	"bridgecrewio/yor/common/structure"
+	"bridgecrewio/yor/common/tagging"
 )
 
-type Accumulator struct {
+type ChangesAccumulator struct {
 	changesByFile map[string]*structure.Block
 	changesByTag  map[tagging.Tag]*structure.Block
 }
 
-var accumulatorInstance *Accumulator
+var accumulatorInstance *ChangesAccumulator
 
-func GetAccumulator() *Accumulator {
+func GetAccumulator() *ChangesAccumulator {
 	// get instance of singleton accumulator
 	if accumulatorInstance == nil {
-		accumulatorInstance = &Accumulator{
+		accumulatorInstance = &ChangesAccumulator{
 			changesByFile: make(map[string]*structure.Block),
 			changesByTag:  make(map[tagging.Tag]*structure.Block),
 		}
@@ -24,11 +24,11 @@ func GetAccumulator() *Accumulator {
 	return accumulatorInstance
 }
 
-func (a *Accumulator) AccumulateChanges(block *structure.Block) {
+func (a *ChangesAccumulator) AccumulateChanges(block *structure.Block) {
 	// TODO
 }
 
-func (a *Accumulator) GetData() interface{} {
+func (a *ChangesAccumulator) GetData() interface{} {
 	// TODO - replace this method after the report structure is determined
 	return nil
 }

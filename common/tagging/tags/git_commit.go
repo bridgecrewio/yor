@@ -1,8 +1,8 @@
 package tags
 
 import (
-	"bridgecrewio/yor/git_service"
-	"bridgecrewio/yor/tagging"
+	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/tagging"
 	"fmt"
 	"reflect"
 )

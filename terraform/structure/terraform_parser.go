@@ -1,6 +1,6 @@
-package terraform
+package structure
 
-import "bridgecrewio/yor/structure"
+import "bridgecrewio/yor/common/structure"
 
 type TerrraformParser struct {
 }

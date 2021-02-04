@@ -1,13 +1,12 @@
 package runner
 
 import (
-	"bridgecrewio/yor/reports"
-	"bridgecrewio/yor/tagging"
-	"bridgecrewio/yor/tagging/taggers"
+	"bridgecrewio/yor/common/reports"
+	"bridgecrewio/yor/common/tagging"
 )
 
 type Runner struct {
-	taggers []taggers.ITagger
+	taggers []tagging.ITagger
 }
 
 func NewRunner(taggerTypes []tagging.TaggerType, extraTags []tagging.ITag) *Runner {

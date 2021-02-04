@@ -1,7 +1,7 @@
 package git_service
 
 import (
-	"bridgecrewio/yor/git_service"
+	"bridgecrewio/yor/common/git_service"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
