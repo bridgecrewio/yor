@@ -1,32 +1,32 @@
-47accf06 (barak 1585420966  1) # Terragoat
-^b2dc884 (Jon Jozwiak 1585328193  2) Bridgecrew solution to create vulnerable infrastructure
-47accf06 (barak 1585420966  3)
-47accf06 (barak 1585420966  4) ## Getting started
-47accf06 (barak 1585420966  5) ### Installation
-47accf06 (barak 1585420966  6) You can deploy multiple terragoat stacks in a single AWS account using the parameters `TF_VAR_environment` and `TF_VAR_environment`.
-47accf06 (barak 1585420966  7)
-47accf06 (barak 1585420966  8) #### Create S3 bucket backend to keep Terraform state
-47accf06 (barak 1585420966  9) ```bash
+47accf06 (barak 1585420966 1) # Terragoat
+^b2dc884 (Jon Jozwiak 1585328193 2) Bridgecrew solution to create vulnerable infrastructure
+47accf06 (barak 1585420966 3)
+47accf06 (barak 1585420966 4) ## Getting started
+47accf06 (barak 1585420966 5) ### Installation
+47accf06 (barak 1585420966 6) You can deploy multiple terragoat stacks in a single AWS account using the parameters `TF_VAR_environment` and `TF_VAR_environment`.
+47accf06 (barak 1585420966 7)
+47accf06 (barak 1585420966 8) #### Create S3 bucket backend to keep Terraform state
+47accf06 (barak 1585420966 9) ```bash
 47accf06 (barak 1585420966 10) export TERRAGOAT_STATE_BUCKET=PUT_BUCKET_NAME_HERE
 47accf06 (barak 1585420966 11) export TF_VAR_company_name="acme"
 47accf06 (barak 1585420966 12) export TF_VAR_environment="dev"
 47accf06 (barak 1585420966 13) export TF_VAR_region="us-west-2"
 47accf06 (barak 1585420966 14)
 47accf06 (barak 1585420966 15) aws s3api create-bucket --bucket $TERRAGOAT_STATE_BUCKET \
-47accf06 (barak 1585420966 16)     --region TF_VAR_region
+47accf06 (barak 1585420966 16)   --region TF_VAR_region
 47accf06 (barak 1585420966 17)
 47accf06 (barak 1585420966 18) # Enable versioning
 47accf06 (barak 1585420966 19) aws s3api put-bucket-versioning --bucket $TERRAGOAT_STATE_BUCKET --versioning-configuration Status=Enabled
 47accf06 (barak 1585420966 20)
 47accf06 (barak 1585420966 21) # Enable encryption
 47accf06 (barak 1585420966 22) aws s3api put-bucket-encryption --bucket $TERRAGOAT_STATE_BUCKET --server-side-encryption-configuration '{
-47accf06 (barak 1585420966 23)   "Rules": [
-47accf06 (barak 1585420966 24)     {
+47accf06 (barak 1585420966 23)  "Rules": [
+47accf06 (barak 1585420966 24)   {
 47accf06 (barak 1585420966 25) "ApplyServerSideEncryptionByDefault": {
-47accf06 (barak 1585420966 26)   "SSEAlgorithm": "aws:kms"
+47accf06 (barak 1585420966 26)  "SSEAlgorithm": "aws:kms"
 47accf06 (barak 1585420966 27) }
-47accf06 (barak 1585420966 28)     }
-47accf06 (barak 1585420966 29)   ]
+47accf06 (barak 1585420966 28)   }
+47accf06 (barak 1585420966 29)  ]
 47accf06 (barak 1585420966 30) }'
 47accf06 (barak 1585420966 31) ```
 47accf06 (barak 1585420966 32)
@@ -53,13 +53,13 @@
 47accf06 (barak 1585420966 53) export TERRAGOAT_ENV=$TF_VAR_environment
 47accf06 (barak 1585420966 54) for i in {1..5}
 47accf06 (barak 1585420966 55) do
-47accf06 (barak 1585420966 56)     export $TF_VAR_environment = $TERRAGOAT_ENV$i
-47accf06 (barak 1585420966 57)     terraform init \
-47accf06 (barak 1585420966 58)     -backend-config="bucket=$TERRAGOAT_STATE_BUCKET" \
-47accf06 (barak 1585420966 59)     -backend-config="key=$TF_VAR_company_name-$TF_VAR_environment.tfstate" \
-47accf06 (barak 1585420966 60)     -backend-config="region=$TF_VAR_region" \
+47accf06 (barak 1585420966 56)   export $TF_VAR_environment = $TERRAGOAT_ENV$i
+47accf06 (barak 1585420966 57)   terraform init \
+47accf06 (barak 1585420966 58)   -backend-config="bucket=$TERRAGOAT_STATE_BUCKET" \
+47accf06 (barak 1585420966 59)   -backend-config="key=$TF_VAR_company_name-$TF_VAR_environment.tfstate" \
+47accf06 (barak 1585420966 60)   -backend-config="region=$TF_VAR_region" \
 47accf06 (barak 1585420966 61)
-47accf06 (barak 1585420966 62)     terraform apply -auto-approve
+47accf06 (barak 1585420966 62)   terraform apply -auto-approve
 47accf06 (barak 1585420966 63) done
 47accf06 (barak 1585420966 64) ```
 47accf06 (barak 1585420966 65)
@@ -70,12 +70,12 @@
 47accf06 (barak 1585420966 70) export TF_VAR_environment = $TERRAGOAT_ENV
 47accf06 (barak 1585420966 71) for i in {1..5}
 47accf06 (barak 1585420966 72) do
-47accf06 (barak 1585420966 73)     export $TF_VAR_environment = $TERRAGOAT_ENV$i
-47accf06 (barak 1585420966 74)     terraform init \
-47accf06 (barak 1585420966 75)     -backend-config="bucket=$TERRAGOAT_STATE_BUCKET" \
-47accf06 (barak 1585420966 76)     -backend-config="key=$TF_VAR_company_name-$TF_VAR_environment.tfstate" \
-47accf06 (barak 1585420966 77)     -backend-config="region=$TF_VAR_region" \
+47accf06 (barak 1585420966 73)   export $TF_VAR_environment = $TERRAGOAT_ENV$i
+47accf06 (barak 1585420966 74)   terraform init \
+47accf06 (barak 1585420966 75)   -backend-config="bucket=$TERRAGOAT_STATE_BUCKET" \
+47accf06 (barak 1585420966 76)   -backend-config="key=$TF_VAR_company_name-$TF_VAR_environment.tfstate" \
+47accf06 (barak 1585420966 77)   -backend-config="region=$TF_VAR_region" \
 47accf06 (barak 1585420966 78)
-47accf06 (barak 1585420966 79)     terraform destroy -auto-approve
+47accf06 (barak 1585420966 79)   terraform destroy -auto-approve
 47accf06 (barak 1585420966 80) done
 47accf06 (barak 1585420966 81) ```

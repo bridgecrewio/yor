@@ -34,23 +34,29 @@ func NewGitService(rootDir string) (*GitService, error) {
 }
 
 func (g *GitService) setOrgAndName() error {
+	// get remotes to find the repository's url
 	remotes, err := g.repository.Remotes()
 	if err != nil {
 		return fmt.Errorf("failed to get remotes, err: %s", err)
 	}
 
-	if len(remotes) > 0 && len(remotes[0].Config().URLs) > 0 {
-		g.remoteUrl = remotes[0].Config().URLs[0]
-		endpoint, err := transport.NewEndpoint(g.remoteUrl)
-		if err != nil {
-			return err
+	for _, remote := range remotes {
+		if remote.Config().Name == "origin" {
+			g.remoteUrl = remote.Config().URLs[0]
+			// get endpoint structured like '/bridgecrewio/yor.git
+			endpoint, err := transport.NewEndpoint(g.remoteUrl)
+			if err != nil {
+				return err
+			}
+			// remove leading '/' from path and trailing '.git. suffix, then split by '/'
+			endpointPathParts := strings.Split(strings.TrimSuffix(strings.TrimLeft(endpoint.Path, "/"), ".git"), "/")
+			if len(endpointPathParts) != 2 {
+				return fmt.Errorf("invalid format of endpoint path: %s", endpoint.Path)
+			}
+			g.organization = endpointPathParts[0]
+			g.repoName = endpointPathParts[1]
+			break
 		}
-		endpointPathParts := strings.Split(strings.TrimSuffix(strings.TrimLeft(endpoint.Path, "/"), ".git"), "/")
-		if len(endpointPathParts) != 2 {
-			return fmt.Errorf("invalid format of endpoint path: %s", endpoint.Path)
-		}
-		g.organization = endpointPathParts[0]
-		g.repoName = endpointPathParts[1]
 	}
 
 	return nil
@@ -58,20 +64,24 @@ func (g *GitService) setOrgAndName() error {
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
 	logOptions := git.LogOptions{
+		// order the commits from most to least recent
 		Order:    git.LogOrderCommitterTime,
 		FileName: &filePath,
 	}
+	// fetch commit iterator
 	commitIter, err := g.repository.Log(&logOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get log for repository %s because of error %s", g.repository, err)
 	}
 	var selectedCommit *object.Commit
 	if len(commitHash) == 0 {
+		// if there no commit was specified, get the latest commit
 		selectedCommit, err = commitIter.Next()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest commit for file %s because of error %s", filePath, err)
 		}
 	} else {
+		// find the matching commit
 		_ = commitIter.ForEach(func(commit *object.Commit) error {
 			if commit.Hash == plumbing.NewHash(commitHash[0]) {
 				selectedCommit = commit
