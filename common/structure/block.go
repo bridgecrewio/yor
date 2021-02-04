@@ -14,6 +14,9 @@ type IBlock interface {
 	String() string
 	GetLines() []int
 	GetRawBlock() interface{}
+	GetNewOwner() string
+	GetPreviousOwner() string
+	GetTraceId() string
 }
 
 func (b *Block) AddNewTags(newTags []tagging.ITag) {

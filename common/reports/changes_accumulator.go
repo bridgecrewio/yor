@@ -10,6 +10,14 @@ type ChangesAccumulator struct {
 	changesByTag  map[tagging.Tag]*structure.Block
 }
 
+type ResourceRecord struct {
+	file          string
+	resource      string
+	previousOwner string
+	newOwner      string
+	traceId       string
+}
+
 var accumulatorInstance *ChangesAccumulator
 
 func GetAccumulator() *ChangesAccumulator {
@@ -28,7 +36,12 @@ func (a *ChangesAccumulator) AccumulateChanges(block *structure.Block) {
 	// TODO
 }
 
-func (a *ChangesAccumulator) GetData() interface{} {
-	// TODO - replace this method after the report structure is determined
+func (a *ChangesAccumulator) GetPreviouslyTaggedResources() []*ResourceRecord {
+	return nil
+}
+func (a *ChangesAccumulator) GetUntaggedResources() []*ResourceRecord {
+	return nil
+}
+func (a *ChangesAccumulator) GetNewlyTaggedResources() []*ResourceRecord {
 	return nil
 }
