@@ -4,6 +4,7 @@ import (
 	"bridgecrewio/yor/common/git_service"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -27,6 +28,8 @@ func (t *GitModifiersTag) CalculateValue(data interface{}) error {
 		userName := strings.Split(v.Author, "@")[0]
 		modifyingUsers = append(modifyingUsers, userName)
 	}
+
+	sort.Strings(modifyingUsers)
 
 	t.Value = strings.Join(modifyingUsers, "/")
 	return nil

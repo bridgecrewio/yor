@@ -71,7 +71,7 @@ func TestTagCreation(t *testing.T) {
 		tag := tags.GitModifiersTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_modifiers", tag.Key)
-		assert.Equal(t, "schosterbarak/jonjozwiak", tag.Value)
+		assert.Equal(t, "jonjozwiak/schosterbarak", tag.Value)
 	})
 
 }
