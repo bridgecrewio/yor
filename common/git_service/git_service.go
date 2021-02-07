@@ -67,7 +67,7 @@ func (g *GitService) setOrgAndName() error {
 func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
 	blame := g.findBlameInCache(filePath, commitHash)
 	if blame != nil {
-		return NewGitBlame(lines, blame, g.organization, g.repoName), nil
+		return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
 	}
 
 	logOptions := git.LogOptions{
@@ -102,7 +102,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 
 	blame = g.findBlameInCache(filePath, []string{selectedCommit.Hash.String()})
 	if blame != nil {
-		return NewGitBlame(lines, blame, g.organization, g.repoName), nil
+		return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
 	}
 
 	blame, err = git.Blame(selectedCommit, filePath)
@@ -111,7 +111,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 	}
 	g.addBlameToCache(filePath, selectedCommit.Hash.String(), blame)
 
-	return NewGitBlame(lines, blame, g.organization, g.repoName), nil
+	return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
 
 }
 
