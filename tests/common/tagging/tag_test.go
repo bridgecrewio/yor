@@ -19,9 +19,9 @@ const commitHash2 = "b2dc884b7439882c4dbe1e660cb1e02a3f84e45d"
 func TestTagCreation(t *testing.T) {
 	blame := SetupBlame(t)
 	t.Run("BcTraceTagCreation", func(t *testing.T) {
-		tag := tags.BcTraceTag{}
+		tag := tags.YorTraceTag{}
 		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "BC_TRACE", tag.Key)
+		assert.Equal(t, "yor_trace", tag.Key)
 		assert.Equal(t, 36, len(tag.Value))
 	})
 
