@@ -2,12 +2,12 @@ package reports
 
 import (
 	"bridgecrewio/yor/common/structure"
-	"bridgecrewio/yor/common/tagging"
+	"bridgecrewio/yor/common/tagging/tags"
 )
 
 type TagChangeAccumulator struct {
 	changesByFile map[string]*structure.Block
-	changesByTag  map[tagging.Tag]*structure.Block
+	changesByTag  map[tags.Tag]*structure.Block
 }
 
 type ResourceRecord struct {
@@ -25,7 +25,7 @@ func GetAccumulator() *TagChangeAccumulator {
 	if accumulatorInstance == nil {
 		accumulatorInstance = &TagChangeAccumulator{
 			changesByFile: make(map[string]*structure.Block),
-			changesByTag:  make(map[tagging.Tag]*structure.Block),
+			changesByTag:  make(map[tags.Tag]*structure.Block),
 		}
 	}
 

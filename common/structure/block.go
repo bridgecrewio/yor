@@ -1,11 +1,13 @@
 package structure
 
-import "bridgecrewio/yor/common/tagging"
+import (
+	"bridgecrewio/yor/common/tagging/tags"
+)
 
 type Block struct {
 	FilePath    string
-	ExitingTags []tagging.ITag
-	NewTags     []tagging.ITag
+	ExitingTags []tags.ITag
+	NewTags     []tags.ITag
 	RawBlock    interface{}
 }
 
@@ -19,16 +21,16 @@ type IBlock interface {
 	GetTraceId() string
 }
 
-func (b *Block) AddNewTags(newTags []tagging.ITag) {
+func (b *Block) AddNewTags(newTags []tags.ITag) {
 	// TODO
 }
 
-func (b *Block) MergeTags() []tagging.ITag {
+func (b *Block) MergeTags() []tags.ITag {
 	// TODO - return a map of the old and new tags
 	return nil
 }
 
-func (b *Block) CalculateTagsDiff() map[string][]tagging.ITag {
+func (b *Block) CalculateTagsDiff() map[string][]tags.ITag {
 	// TODO - return a map with keys such as "added", "deleted", modified" and the matching tags
 	return nil
 }

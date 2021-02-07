@@ -3,18 +3,19 @@ package runner
 import (
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/tagging"
+	"bridgecrewio/yor/common/tagging/tags"
 )
 
 type Runner struct {
 	taggers []tagging.ITagger
 }
 
-func NewRunner(taggerTypes []tagging.TaggerType, extraTags []tagging.ITag) *Runner {
+func NewRunner(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) *Runner {
 	// TODO
 	return nil
 }
 
-func initTaggers(taggerTypes []tagging.TaggerType, extraTags []tagging.ITag) {
+func initTaggers(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) {
 	// TODO: create a new Tagger instance and send the extraTags as param
 }
 
