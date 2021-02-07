@@ -2,7 +2,7 @@ package main
 
 import (
 	"bridgecrewio/yor/common/reports"
-	"bridgecrewio/yor/common/tagging"
+	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
 )
 
@@ -18,11 +18,11 @@ func printReport(report *reports.Report) {
 	// TODO
 }
 
-func createExtraTags(extraTagsFromArgs map[string]interface{}) []tagging.ITag {
-	extraTags := make([]tagging.ITag, len(extraTagsFromArgs))
+func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
+	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
 	index := 0
 	for key := range extraTagsFromArgs {
-		newTag := tagging.Init(key, extraTagsFromArgs[key])
+		newTag := tags.Init(key, extraTagsFromArgs[key])
 		extraTags[index] = newTag
 		index++
 	}
