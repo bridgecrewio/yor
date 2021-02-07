@@ -4,7 +4,6 @@ import (
 	"bridgecrewio/yor/common/git_service"
 	"fmt"
 	"reflect"
-	"time"
 )
 
 type GitLastModifiedByTag struct {
@@ -22,15 +21,7 @@ func (t *GitLastModifiedByTag) CalculateValue(data interface{}) error {
 	if !ok {
 		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
-	latestDate := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
-	modifyingUser := ""
-	for _, v := range gitBlame.BlamesByLine {
-		if latestDate.Before(v.Date) {
-			latestDate = v.Date
-			modifyingUser = v.Author
-		}
-	}
 
-	t.Value = modifyingUser
+	t.Value = GetLatestCommit(gitBlame).Author
 	return nil
 }

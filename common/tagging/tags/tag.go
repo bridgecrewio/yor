@@ -1,5 +1,11 @@
 package tags
 
+import (
+	"bridgecrewio/yor/common/git_service"
+	"github.com/go-git/go-git/v5"
+	"time"
+)
+
 type Tag struct {
 	Key   string
 	Value string
@@ -38,4 +44,15 @@ func (t *Tag) CalculateValue(_ interface{}) error {
 
 func (t *Tag) GetTag() map[string]string {
 	return map[string]string{t.Key: t.Value}
+}
+
+func GetLatestCommit(blame *git_service.GitBlame) (latestCommit *git.Line) {
+	latestDate := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+	for _, v := range blame.BlamesByLine {
+		if latestDate.Before(v.Date) {
+			latestDate = v.Date
+			latestCommit = v
+		}
+	}
+	return
 }
