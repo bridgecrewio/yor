@@ -24,7 +24,8 @@ var TagTypes = []ITag{
 type ITag interface {
 	Init() ITag
 	CalculateValue(data interface{}) error
-	GetTag() map[string]string
+	GetKey() string
+	GetValue() string
 }
 
 func Init(key string, value string) ITag {
@@ -42,8 +43,12 @@ func (t *Tag) CalculateValue(_ interface{}) error {
 	return nil
 }
 
-func (t *Tag) GetTag() map[string]string {
-	return map[string]string{t.Key: t.Value}
+func (t *Tag) GetKey() string {
+	return t.Key
+}
+
+func (t *Tag) GetValue() string {
+	return t.Value
 }
 
 func GetLatestCommit(blame *git_service.GitBlame) (latestCommit *git.Line) {
