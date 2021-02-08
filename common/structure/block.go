@@ -14,12 +14,15 @@ type Block struct {
 }
 
 type IBlock interface {
-	Init(filePath string, rawBlock interface{}) error
+	Init(filePath string, rawBlock interface{})
 	String() string
 	GetLines() []int
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
+	GetNewOwner() string
+	GetPreviousOwner() string
+	GetTraceId() string
 	AddNewTags(newTags []tags.ITag)
 	MergeTags() []tags.ITag
 	CalculateTagsDiff() map[string][]tags.ITag

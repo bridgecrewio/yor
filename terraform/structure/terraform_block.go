@@ -10,11 +10,9 @@ type TerraformBlock struct {
 	hclSyntaxBlock *hclsyntax.Block
 }
 
-func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) error {
+func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) {
 	b.RawBlock = rawBlock
 	b.FilePath = filePath
-
-	return nil
 }
 
 func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
