@@ -19,6 +19,7 @@ type IBlock interface {
 	GetNewOwner() string
 	GetPreviousOwner() string
 	GetTraceId() string
+	IsTaggable() bool
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
