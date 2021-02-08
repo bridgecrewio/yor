@@ -48,7 +48,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 			return nil, fmt.Errorf("failed to parse terraform block because %s", err)
 		}
 
-		err = terraformBlock.Init(filePath, block)
+		terraformBlock.Init(filePath, block)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize terraform block because %s", err)
 		}

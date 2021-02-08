@@ -8,6 +8,9 @@ import (
 type TerraformBlock struct {
 	structure.Block
 	hclSyntaxBlock *hclsyntax.Block
+	NewOwner       string
+	PreviousOwner  string
+	TraceId        string
 }
 
 func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) {
@@ -26,4 +29,16 @@ func (b *TerraformBlock) String() string {
 func (b *TerraformBlock) GetLines() []int {
 	r := b.hclSyntaxBlock.Body.Range()
 	return []int{r.Start.Line, r.End.Line}
+}
+
+func (b *TerraformBlock) GetNewOwner() string {
+	return b.NewOwner
+}
+
+func (b *TerraformBlock) GetPreviousOwner() string {
+	return b.PreviousOwner
+}
+
+func (b *TerraformBlock) GetTraceId() string {
+	return b.TraceId
 }
