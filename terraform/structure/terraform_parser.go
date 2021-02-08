@@ -28,13 +28,23 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		hclErrors := diagnostics.Errs()
 		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
-	if hclFile == nil {
+	hclSyntaxFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
+	if diagnostics != nil && diagnostics.HasErrors() {
+		hclErrors := diagnostics.Errs()
+		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+	}
+
+	if hclFile == nil || hclSyntaxFile == nil {
 		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
+	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
 	rawBlocks := hclFile.Body().Blocks()
-	for _, block := range rawBlocks {
-		terraformBlock, err := p.parseBlock(block)
+	print(syntaxBlocks)
+	for i, block := range rawBlocks {
+		iBlock, err := p.parseBlock(block)
+		terraformBlock := iBlock.(*TerraformBlock)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to pasrse terraform block because %s", err)
 		}
@@ -42,6 +52,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize terraform block because %s", err)
 		}
+		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 

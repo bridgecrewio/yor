@@ -2,10 +2,12 @@ package structure
 
 import (
 	"bridgecrewio/yor/common/structure"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
 type TerraformBlock struct {
 	structure.Block
+	hclSyntaxBlock *hclsyntax.Block
 }
 
 func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) error {
@@ -15,11 +17,15 @@ func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) error {
 	return nil
 }
 
+func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
+	b.hclSyntaxBlock = hclSyntaxBlock
+}
+
 func (b *TerraformBlock) String() string {
 	// TODO
 	return ""
 }
 func (b *TerraformBlock) GetLines() []int {
-	// TODO
-	return nil
+	r := b.hclSyntaxBlock.Body.Range()
+	return []int{r.Start.Line, r.End.Line}
 }
