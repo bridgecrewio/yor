@@ -23,7 +23,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
 
-	hclFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
+	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
 		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
@@ -32,8 +32,8 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
-	body := hclFile.Body.(*hclsyntax.Body)
-	for _, block := range body.Blocks {
+	rawBlocks := hclFile.Body().Blocks()
+	for _, block := range rawBlocks {
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
 			return nil, fmt.Errorf("failed to pasrse terraform block because %s", err)
@@ -53,13 +53,13 @@ func (p *TerrraformParser) WriteFile(filePath string, blocks []*structure.IBlock
 	return nil
 }
 
-func (p *TerrraformParser) parseBlock(hclBlock *hclsyntax.Block) (structure.IBlock, error) {
+func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (structure.IBlock, error) {
 	var existingTags []tags.ITag
 	var tagsAttributeName string
 	var err error
 	isTaggable := false
 
-	if hclBlock.Type == "resource" {
+	if hclBlock.Type() == "resource" {
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
@@ -89,8 +89,8 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclsyntax.Block) (structure.IBlo
 	return &terraformBlock, nil
 }
 
-func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclsyntax.Block) (string, error) {
-	resourceType := hclBlock.Labels[0]
+func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclwrite.Block) (string, error) {
+	resourceType := hclBlock.Labels()[0]
 	tagsAttributeName, err := getTagAttributeByResourceType(resourceType)
 	if err != nil {
 		return "", err
@@ -112,33 +112,25 @@ func getTagAttributeByResourceType(resourceType string) (string, error) {
 	return prefix, nil
 }
 
-func (p *TerrraformParser) getExistingTags(hclBlock *hclsyntax.Block, tagsAttributeName string) ([]tags.ITag, bool, error) {
+func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool, error) {
 	isTaggable := false
 	existingTags := make([]tags.ITag, 0)
 
-	tagsAttribute := hclBlock.Body.Attributes[tagsAttributeName]
+	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
 	if tagsAttribute != nil {
 		isTaggable = true
-		expression := tagsAttribute.Expr.(*hclsyntax.ObjectConsExpr)
-		for _, item := range expression.Items {
-			k := item.KeyExpr
-			v := item.ValueExpr
-			print(k)
-			print(v)
+		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		parsedTags := p.parseTagLines(tagsTokens)
+		for key := range parsedTags {
+			iTag := tags.Init(key, parsedTags[key])
+			existingTags = append(existingTags, iTag)
 		}
-		print(expression)
-		//tagsTokens := tagsAttribute.Expr.BuildTokens(hclwrite.Tokens{})
-		//parsedTags := p.parseTagLines(tagsTokens)
-		//for key := range parsedTags {
-		//	iTag := tags.Init(key, parsedTags[key])
-		//	existingTags = append(existingTags, iTag)
-		//}
 	}
 
 	return existingTags, isTaggable, nil
 }
 
-func (p *TerrraformParser) isBlockTaggable(hclBlock *hclsyntax.Block) (bool, error) {
+func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
 	return false, nil
 }
 
