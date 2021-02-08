@@ -17,12 +17,13 @@ type TerrraformParser struct {
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	parsedBlocks := make([]structure.IBlock, 0)
+	// read file bytes
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
 
+	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
@@ -40,14 +41,13 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
 	rawBlocks := hclFile.Body().Blocks()
-	print(syntaxBlocks)
+	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
-		iBlock, err := p.parseBlock(block)
-		terraformBlock := iBlock.(*TerraformBlock)
-
+		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
-			return nil, fmt.Errorf("failed to pasrse terraform block because %s", err)
+			return nil, fmt.Errorf("failed to parse terraform block because %s", err)
 		}
+
 		err = terraformBlock.Init(filePath, block)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize terraform block because %s", err)
@@ -64,7 +64,7 @@ func (p *TerrraformParser) WriteFile(filePath string, blocks []*structure.IBlock
 	return nil
 }
 
-func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (structure.IBlock, error) {
+func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
 	var tagsAttributeName string
 	var err error
@@ -75,17 +75,13 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (structure.IBloc
 		if err != nil {
 			return nil, err
 		}
-		existingTags, isTaggable, err = p.getExistingTags(hclBlock, tagsAttributeName)
-		if err != nil {
-			return nil, err
-		}
+		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
 
 		if !isTaggable {
 			isTaggable, err = p.isBlockTaggable(hclBlock)
 			if err != nil {
 				return nil, err
 			}
-
 		}
 	}
 
@@ -123,12 +119,13 @@ func getTagAttributeByResourceType(resourceType string) (string, error) {
 	return prefix, nil
 }
 
-func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool, error) {
+func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool) {
 	isTaggable := false
 	existingTags := make([]tags.ITag, 0)
 
 	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
 	if tagsAttribute != nil {
+		// if tags exists in resource
 		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		parsedTags := p.parseTagLines(tagsTokens)
@@ -138,10 +135,11 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 		}
 	}
 
-	return existingTags, isTaggable, nil
+	return existingTags, isTaggable
 }
 
 func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
+	// TODO - implement like IsTaggable in https://github.com/env0/terratag/blob/master/tfschema/tfschema.go
 	return false, nil
 }
 
