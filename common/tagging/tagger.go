@@ -13,7 +13,7 @@ type Tagger struct {
 
 type ITagger interface {
 	IsBlockTaggable(block interface{}) bool
-	CreateTagsForBlock(block interface{}, gitBlame *git_service.GitBlame) // this method should call Block.AddNewTags
+	CreateTagsForBlock(block interface{}, gitBlame *git_service.GitBlame) // this method should call IBlock.AddNewTags
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {

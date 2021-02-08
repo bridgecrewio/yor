@@ -5,20 +5,28 @@ import (
 )
 
 type Block struct {
-	FilePath    string
-	ExitingTags []tags.ITag
-	NewTags     []tags.ITag
-	RawBlock    interface{}
+	FilePath          string
+	ExitingTags       []tags.ITag
+	NewTags           []tags.ITag
+	RawBlock          interface{}
+	IsTaggable        bool
+	TagsAttributeName string
 }
 
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	String() string
 	GetLines() []int
+	GetExistingTags() []tags.ITag
+	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
 	GetNewOwner() string
 	GetPreviousOwner() string
 	GetTraceId() string
+	AddNewTags(newTags []tags.ITag)
+	MergeTags() []tags.ITag
+	CalculateTagsDiff() map[string][]tags.ITag
+	IsBlockTaggable() bool
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
@@ -36,6 +44,17 @@ func (b *Block) CalculateTagsDiff() map[string][]tags.ITag {
 }
 
 func (b *Block) GetRawBlock() interface{} {
-	// TODO
-	return nil
+	return b.RawBlock
+}
+
+func (b *Block) GetExistingTags() []tags.ITag {
+	return b.ExitingTags
+}
+
+func (b *Block) GetNewTags() []tags.ITag {
+	return b.NewTags
+}
+
+func (b *Block) IsBlockTaggable() bool {
+	return b.IsTaggable
 }
