@@ -46,7 +46,7 @@ func (t *Tag) GetTag() map[string]string {
 	return map[string]string{t.Key: t.Value}
 }
 
-func GetLatestCommit(blame *git_service.GitBlame) (latestCommit *git.Line) {
+func getLatestCommit(blame *git_service.GitBlame) (latestCommit *git.Line) {
 	latestDate := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 	for _, v := range blame.BlamesByLine {
 		if latestDate.Before(v.Date) {
