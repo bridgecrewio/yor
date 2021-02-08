@@ -59,8 +59,11 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	return parsedBlocks, nil
 }
 
-func (p *TerrraformParser) WriteFile(filePath string, blocks []*structure.IBlock) error {
-	// TODO
+func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock) error {
+	for _, block := range blocks {
+		tfBlock := block.(*TerraformBlock)
+		tfBlock.MergeTags()
+	}
 	return nil
 }
 
@@ -68,27 +71,18 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	var existingTags []tags.ITag
 	var tagsAttributeName string
 	var err error
-	isTaggable := false
 
 	if hclBlock.Type() == "resource" {
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
 		}
-		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
-
-		if !isTaggable {
-			isTaggable, err = p.isBlockTaggable(hclBlock)
-			if err != nil {
-				return nil, err
-			}
-		}
+		existingTags = p.getExistingTags(hclBlock, tagsAttributeName)
 	}
 
 	terraformBlock := TerraformBlock{
 		Block: structure.Block{
 			ExitingTags:       existingTags,
-			IsTaggable:        isTaggable,
 			TagsAttributeName: tagsAttributeName,
 		},
 	}
@@ -106,12 +100,13 @@ func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclwrite.Block) (strin
 	return tagsAttributeName, nil
 }
 
+func getProviderFromResourceType(resourceType string) string {
+	provider := strings.Split(resourceType, "_")[0]
+	return provider
+}
+
 func getTagAttributeByResourceType(resourceType string) (string, error) {
-	splitResourceType := strings.Split(resourceType, "_")
-	if len(splitResourceType) == 0 {
-		return "", fmt.Errorf("failed to split resource type %s", resourceType)
-	}
-	prefix := prefixToTagAttribute[splitResourceType[0]]
+	prefix := prefixToTagAttribute[getProviderFromResourceType(resourceType)]
 	if prefix == "" {
 		return "", fmt.Errorf("failed to find tags attribute name for resource type %s", resourceType)
 	}
@@ -119,14 +114,12 @@ func getTagAttributeByResourceType(resourceType string) (string, error) {
 	return prefix, nil
 }
 
-func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool) {
-	isTaggable := false
+func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) []tags.ITag {
 	existingTags := make([]tags.ITag, 0)
 
 	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
 	if tagsAttribute != nil {
 		// if tags exists in resource
-		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		parsedTags := p.parseTagLines(tagsTokens)
 		for key := range parsedTags {
@@ -135,12 +128,7 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 		}
 	}
 
-	return existingTags, isTaggable
-}
-
-func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
-	// TODO - implement like IsTaggable in https://github.com/env0/terratag/blob/master/tfschema/tfschema.go
-	return false, nil
+	return existingTags
 }
 
 func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {

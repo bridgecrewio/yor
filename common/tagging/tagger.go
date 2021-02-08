@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"log"
 )
@@ -12,8 +13,7 @@ type Tagger struct {
 }
 
 type ITagger interface {
-	IsBlockTaggable(block interface{}) bool
-	CreateTagsForBlock(block interface{}, gitBlame *git_service.GitBlame) // this method should call IBlock.AddNewTags
+	CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) // this method should call IBlock.AddNewTags
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
