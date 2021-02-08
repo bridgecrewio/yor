@@ -6,8 +6,8 @@ import (
 )
 
 type TagChangeAccumulator struct {
-	changesByFile map[string]*structure.Block
-	changesByTag  map[tags.Tag]*structure.Block
+	changesByFile map[string]*structure.IBlock
+	changesByTag  map[tags.Tag]*structure.IBlock
 }
 
 type ResourceRecord struct {
@@ -24,15 +24,15 @@ func GetAccumulator() *TagChangeAccumulator {
 	// get instance of singleton accumulator
 	if accumulatorInstance == nil {
 		accumulatorInstance = &TagChangeAccumulator{
-			changesByFile: make(map[string]*structure.Block),
-			changesByTag:  make(map[tags.Tag]*structure.Block),
+			changesByFile: make(map[string]*structure.IBlock),
+			changesByTag:  make(map[tags.Tag]*structure.IBlock),
 		}
 	}
 
 	return accumulatorInstance
 }
 
-func (a *TagChangeAccumulator) AccumulateChanges(block *structure.Block) {
+func (a *TagChangeAccumulator) AccumulateChanges(block *structure.IBlock) {
 	// TODO
 }
 
