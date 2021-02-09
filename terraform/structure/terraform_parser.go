@@ -4,17 +4,119 @@ import (
 	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/terraform/command"
+	"github.com/mitchellh/cli"
 	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
+	generatedPath string
+}
+
+func NewTerrraformParser() *TerrraformParser {
+	terraformParser := new(TerrraformParser)
+	_, currFile, _, _ := runtime.Caller(0)
+	currDir := path.Join(path.Dir(currFile))
+	terraformParser.generatedPath = path.Join(currDir, "./.generated")
+
+	return terraformParser
+}
+
+func (p *TerrraformParser) getGeneratedPathForDir(dir string) string {
+	dirName := path.Base(dir)
+	return path.Join(p.generatedPath, dirName)
+}
+
+func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
+	generatedPath := p.getGeneratedPathForDir(directory)
+	if _, err := os.Stat(generatedPath); !os.IsNotExist(err) {
+		fmt.Printf("directory already initialized\n")
+		return nil
+	}
+	initCommand := &command.InitCommand{
+		Meta: command.Meta{
+			Ui:              &cli.MockUi{},
+			OverrideDataDir: generatedPath,
+		},
+	}
+	args := []string{directory}
+	code := initCommand.Run(args)
+	if code != 0 {
+		return fmt.Errorf("failed to run terraform init on directory %s", directory)
+	}
+
+	return nil
+
+}
+
+func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
+	errMsg := "failed to get .tf files because %s"
+	err := p.TerraformInitDirectory(directory)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	modulesDirectories, err := p.getModulesDirectories(directory)
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, dir := range modulesDirectories {
+
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".tf") {
+				files = append(files, path)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf(errMsg, err)
+		}
+	}
+
+	return files, nil
+}
+
+func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
+	errMsg := "failed to get all modules directories because %s"
+	modulesJsonFile, err := os.Open(p.getGeneratedPathForDir(directory) + "/modules/modules.json")
+	var modulesFile ModulesFile
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	moduleFileData, _ := ioutil.ReadAll(modulesJsonFile)
+	err = json.Unmarshal(moduleFileData, &modulesFile)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	modulesDirectories := make([]string, 0)
+	for _, entry := range modulesFile.Modules {
+		moduleDir := path.Join(directory, entry.Source)
+		if _, err := os.Stat(moduleDir); !os.IsNotExist(err) && !common.InSlice(modulesDirectories, moduleDir) {
+			// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
+			modulesDirectories = append(modulesDirectories, moduleDir)
+		}
+	}
+
+	return modulesDirectories, nil
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -183,4 +285,14 @@ func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]stri
 	}
 
 	return parsedTags
+}
+
+type ModulesFile struct {
+	Modules []ModuleEntry `json:"Modules"`
+}
+
+type ModuleEntry struct {
+	Key    string `json:"Key"`
+	Source string `json:"Source"`
+	Dir    string `json:"Dir"`
 }

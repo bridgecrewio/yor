@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -64,5 +65,23 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		}
 
 		assert.Equal(t, 11, len(parsedBlocks))
+	})
+}
+
+func TestTerrraformParser_GetSourceFiles(t *testing.T) {
+	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
+		directory := "../resources/module1"
+		terraformParser := structure.NewTerrraformParser()
+		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf"}
+		actualFiles, err := terraformParser.GetSourceFiles(directory)
+		assert.Equal(t, len(expectedFiles), len(actualFiles))
+		for _, file := range actualFiles {
+			splitFile := strings.Split(file, "/")
+			lastTwoParts := splitFile[len(splitFile)-2:]
+			assert.True(t, common.InSlice(expectedFiles, strings.Join(lastTwoParts, "/")), fmt.Sprintf("expected file %s to be in directory\n", file))
+		}
+		if err != nil {
+			t.Error(err)
+		}
 	})
 }
