@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging"
 	tfStructure "bridgecrewio/yor/terraform/structure"
 )
@@ -21,7 +22,7 @@ func (t *TerraformTagger) IsBlockTaggable(block interface{}) bool {
 
 }
 
-func (t *TerraformTagger) CreateTagsForBlock(block interface{}, gitBlame *git_service.GitBlame) {
+func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) {
 	tfBlock, ok := block.(*tfStructure.TerraformBlock)
 	if !ok {
 		return
