@@ -13,7 +13,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
 		p := &structure.TerrraformParser{}
 		filePath := "../resources/eks.tf"
-		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}}
+		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{
 			"eks_vpc":     {"Name": "\"${local.resource_prefix.value}-eks-vpc\""},
 			"eks_subnet1": {"Name": "\"${local.resource_prefix.value}-eks-subnet\"", "\"kubernetes.io/cluster/${local.eks_name.value}\"": "\"shared\""},
@@ -51,6 +51,8 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 				} else {
 					assert.False(t, block.IsBlockTaggable(), fmt.Sprintf("expected block %s not to be taggable", hclBlock.Labels()))
 				}
+			} else {
+				assert.False(t, block.IsBlockTaggable())
 			}
 
 			if hclBlock.Type() == "resource" || hclBlock.Type() == "data" {
