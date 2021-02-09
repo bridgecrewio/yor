@@ -13,8 +13,9 @@ import (
 )
 
 type Runner struct {
-	taggers []tagging.ITagger
-	parsers []structure.IParser
+	taggers    []tagging.ITagger
+	parsers    []structure.IParser
+	gitService *git_service.GitService
 }
 
 func NewRunner(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) *Runner {
@@ -26,18 +27,21 @@ func initTaggers(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) {
 	// TODO: create a new Tagger instance and send the extraTags as param
 }
 
-func (r *Runner) Init() {
+func (r *Runner) Init(dir string) error {
+	gitService, err := git_service.NewGitService(dir)
+	if err != nil {
+		return err
+	}
+	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+
+	return nil
 }
 
 func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
-	gitService, err := git_service.NewGitService(dir)
-	if err != nil {
-		return nil, err
-	}
 	var files []string
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -51,7 +55,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	}
 
 	for _, file := range files {
-		err = r.TagFile(file, gitService)
+		err = r.TagFile(file)
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +66,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	return reportService.CreateReport(), nil
 }
 
-func (r *Runner) TagFile(file string, gitService *git_service.GitService) error {
+func (r *Runner) TagFile(file string) error {
 	for _, parser := range r.parsers {
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
@@ -71,7 +75,7 @@ func (r *Runner) TagFile(file string, gitService *git_service.GitService) error 
 		for _, block := range blocks {
 			for _, tagger := range r.taggers {
 				if block.IsBlockTaggable() {
-					blame, err := gitService.GetBlameForFileLines(file, block.GetLines())
+					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
 					if err != nil {
 						return err
 					}

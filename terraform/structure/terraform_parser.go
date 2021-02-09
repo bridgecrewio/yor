@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
@@ -49,9 +50,6 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		}
 
 		terraformBlock.Init(filePath, block)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize terraform block because %s", err)
-		}
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
@@ -71,18 +69,27 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	var existingTags []tags.ITag
 	var tagsAttributeName string
 	var err error
+	isTaggable := false
 
 	if hclBlock.Type() == "resource" {
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
 		}
-		existingTags = p.getExistingTags(hclBlock, tagsAttributeName)
+		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
+
+		if !isTaggable {
+			isTaggable, err = p.isBlockTaggable(hclBlock)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	terraformBlock := TerraformBlock{
 		Block: structure.Block{
 			ExitingTags:       existingTags,
+			IsTaggable:        isTaggable,
 			TagsAttributeName: tagsAttributeName,
 		},
 	}
@@ -114,12 +121,14 @@ func getTagAttributeByResourceType(resourceType string) (string, error) {
 	return prefix, nil
 }
 
-func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) []tags.ITag {
+func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool) {
+	isTaggable := false
 	existingTags := make([]tags.ITag, 0)
 
 	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
 	if tagsAttribute != nil {
 		// if tags exists in resource
+		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		parsedTags := p.parseTagLines(tagsTokens)
 		for key := range parsedTags {
@@ -128,7 +137,14 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 		}
 	}
 
-	return existingTags
+	return existingTags, isTaggable
+}
+
+func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
+	// TODO - implement like IsTaggable in https://github.com/env0/terratag/blob/master/tfschema/tfschema.go
+
+	resourceType := hclBlock.Labels()[0]
+	return common.InSlice(TaggableResourceTypes, resourceType), nil
 }
 
 func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {
