@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
@@ -49,9 +50,6 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		}
 
 		terraformBlock.Init(filePath, block)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize terraform block because %s", err)
-		}
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
@@ -59,8 +57,11 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	return parsedBlocks, nil
 }
 
-func (p *TerrraformParser) WriteFile(filePath string, blocks []*structure.IBlock) error {
-	// TODO
+func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock) error {
+	for _, block := range blocks {
+		tfBlock := block.(*TerraformBlock)
+		tfBlock.MergeTags()
+	}
 	return nil
 }
 
@@ -106,12 +107,13 @@ func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclwrite.Block) (strin
 	return tagsAttributeName, nil
 }
 
+func getProviderFromResourceType(resourceType string) string {
+	provider := strings.Split(resourceType, "_")[0]
+	return provider
+}
+
 func getTagAttributeByResourceType(resourceType string) (string, error) {
-	splitResourceType := strings.Split(resourceType, "_")
-	if len(splitResourceType) == 0 {
-		return "", fmt.Errorf("failed to split resource type %s", resourceType)
-	}
-	prefix := prefixToTagAttribute[splitResourceType[0]]
+	prefix := prefixToTagAttribute[getProviderFromResourceType(resourceType)]
 	if prefix == "" {
 		return "", fmt.Errorf("failed to find tags attribute name for resource type %s", resourceType)
 	}
@@ -140,7 +142,9 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 
 func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
 	// TODO - implement like IsTaggable in https://github.com/env0/terratag/blob/master/tfschema/tfschema.go
-	return false, nil
+
+	resourceType := hclBlock.Labels()[0]
+	return common.InSlice(TaggableResourceTypes, resourceType), nil
 }
 
 func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {
