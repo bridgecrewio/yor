@@ -75,9 +75,9 @@ func (b *Block) CalculateTagsDiff() map[string][]tags.ITag {
 		found := false
 		for _, existingTag := range b.GetExistingTags() {
 			if newTag.GetKey() == existingTag.GetKey() {
+				found = true
 				if newTag.GetValue() != existingTag.GetValue() {
 					diff["updated"] = append(diff["updated"], newTag)
-					found = true
 					break
 				}
 			}
