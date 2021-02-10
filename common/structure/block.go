@@ -30,6 +30,23 @@ type IBlock interface {
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
+	isTraced := false
+	for _, tag := range b.ExitingTags {
+		if _, ok := tag.(*tags.YorTraceTag); ok {
+			isTraced = true
+			break
+		}
+	}
+	if isTraced {
+		var yorTraceIndex int
+		for index, tag := range newTags {
+			if _, ok := tag.(*tags.YorTraceTag); ok {
+				yorTraceIndex = index
+			}
+		}
+
+		b.NewTags = append(b.NewTags[:yorTraceIndex], b.NewTags[yorTraceIndex+1:]...)
+	}
 	b.NewTags = append(b.NewTags, newTags...)
 }
 
@@ -43,7 +60,9 @@ func (b *Block) MergeTags() []tags.ITag {
 		found := false
 		for _, newTag := range b.GetNewTags() {
 			if newTag.GetKey() == existingTag.GetKey() {
-				mergedTags = append(mergedTags, newTag)
+				if _, ok := newTag.(*tags.YorTraceTag); !ok {
+					mergedTags = append(mergedTags, newTag)
+				}
 				found = true
 				break
 			}
