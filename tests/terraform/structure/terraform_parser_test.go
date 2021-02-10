@@ -71,7 +71,8 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
 		directory := "../resources/module1"
-		terraformParser := structure.NewTerrraformParser()
+		terraformParser := structure.TerrraformParser{}
+		terraformParser.Init(nil)
 		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf"}
 		actualFiles, err := terraformParser.GetSourceFiles(directory)
 		assert.Equal(t, len(expectedFiles), len(actualFiles))

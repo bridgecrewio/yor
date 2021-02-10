@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -23,15 +24,18 @@ var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gc
 
 type TerrraformParser struct {
 	generatedPath string
+	tagModules    bool
 }
 
-func NewTerrraformParser() *TerrraformParser {
-	terraformParser := new(TerrraformParser)
+func (p *TerrraformParser) Init(args map[string]string) {
 	_, currFile, _, _ := runtime.Caller(0)
 	currDir := path.Join(path.Dir(currFile))
-	terraformParser.generatedPath = path.Join(currDir, "./.generated")
-
-	return terraformParser
+	p.generatedPath = path.Join(currDir, "./.generated")
+	p.tagModules = true
+	argTagModule := args["tag-modules"]
+	if argTagModule != "" {
+		p.tagModules, _ = strconv.ParseBool(argTagModule)
+	}
 }
 
 func (p *TerrraformParser) getGeneratedPathForDir(dir string) string {
@@ -63,14 +67,20 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	errMsg := "failed to get .tf files because %s"
+	var modulesDirectories []string
+
 	err := p.TerraformInitDirectory(directory)
 	if err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	modulesDirectories, err := p.getModulesDirectories(directory)
-	if err != nil {
-		return nil, err
+	if p.tagModules {
+		modulesDirectories, err = p.getModulesDirectories(directory)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		modulesDirectories = []string{directory}
 	}
 
 	var files []string
