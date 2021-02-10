@@ -21,14 +21,16 @@ import (
 	"strings"
 )
 
+const TerraformOutputDir = "/.terraform"
+
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
-	rootDir             string
-	providerToClientMap map[string]tfschema.Client
+	rootDir                string
+	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
-	currFileDir         string
-	tagModules          bool
+	currFileDir            string
+	tagModules             bool
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -36,14 +38,13 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.providerToClientMap = make(map[string]tfschema.Client)
 	p.taggableResourcesCache = make(map[string]bool)
 	p.tagModules = true
-	argTagModule := args["tag-modules"]
-	if argTagModule != "" {
+	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
 }
 
 func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
-	terraformOutputPath := directory + "/.terraform"
+	terraformOutputPath := directory + TerraformOutputDir
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
 		fmt.Printf("directory already initialized\n")
 		return nil
@@ -64,7 +65,7 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 		return nil
 	}
 
-	return fmt.Errorf("failed to initialize directory %s, the folder '.terraform' was not created", directory)
+	return fmt.Errorf("failed to initialize directory %s, the folder '%s' was not created", directory, TerraformOutputDir)
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
@@ -107,7 +108,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
 	errMsg := "failed to get all modules directories because %s"
-	modulesJsonFile, err := os.Open(directory + "/.terraform/modules/modules.json")
+	modulesJsonFile, err := os.Open(directory + TerraformOutputDir + "/modules/modules.json")
 	var modulesFile ModulesFile
 	if err != nil {
 		return nil, fmt.Errorf(errMsg, err)
