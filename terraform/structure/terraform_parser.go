@@ -17,7 +17,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -25,18 +24,15 @@ import (
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
-	generatedPath       string
-	tagModules          bool
 	rootDir             string
 	providerToClientMap map[string]tfschema.Client
+	currFileDir         string
+	tagModules          bool
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.rootDir = rootDir
 	p.providerToClientMap = make(map[string]tfschema.Client)
-	_, currFile, _, _ := runtime.Caller(0)
-	currDir := path.Join(path.Dir(currFile))
-	p.generatedPath = path.Join(currDir, "./.generated")
 	p.tagModules = true
 	argTagModule := args["tag-modules"]
 	if argTagModule != "" {
@@ -44,21 +40,16 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	}
 }
 
-func (p *TerrraformParser) getGeneratedPathForDir(dir string) string {
-	dirName := path.Base(dir)
-	return path.Join(p.generatedPath, dirName)
-}
-
 func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
-	generatedPath := p.getGeneratedPathForDir(directory)
-	if _, err := os.Stat(generatedPath); !os.IsNotExist(err) {
+	terraformOutputPath := directory + "/.terraform"
+	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
 		fmt.Printf("directory already initialized\n")
 		return nil
 	}
 	initCommand := &command.InitCommand{
 		Meta: command.Meta{
 			Ui:              &cli.MockUi{},
-			OverrideDataDir: generatedPath,
+			OverrideDataDir: terraformOutputPath,
 		},
 	}
 	args := []string{directory}
@@ -66,9 +57,12 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 	if code != 0 {
 		return fmt.Errorf("failed to run terraform init on directory %s", directory)
 	}
+	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
+		fmt.Printf("directory initialized successfully\n")
+		return nil
+	}
 
-	return nil
-
+	return fmt.Errorf("failed to initialize directory %s, the folder '.terraform' was not created", directory)
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
@@ -111,7 +105,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
 	errMsg := "failed to get all modules directories because %s"
-	modulesJsonFile, err := os.Open(p.getGeneratedPathForDir(directory) + "/modules/modules.json")
+	modulesJsonFile, err := os.Open(directory + "/.terraform/modules/modules.json")
 	var modulesFile ModulesFile
 	if err != nil {
 		return nil, fmt.Errorf(errMsg, err)
