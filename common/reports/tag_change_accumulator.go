@@ -10,15 +10,6 @@ type TagChangeAccumulator struct {
 	UpdatedBlockTraces []structure.IBlock
 }
 
-type ResourceRecord struct {
-	file          string
-	resource      string
-	tagKey        string
-	previousValue string
-	newValue      string
-	traceId       string
-}
-
 var TagChangeAccumulatorInstance *TagChangeAccumulator
 
 func init() {
