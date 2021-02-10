@@ -54,17 +54,14 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
 
 		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
-		assert.Equal(t, newTags[0].GetValue(), diff["updated"][0].GetValue())
-		assert.Equal(t, newTags[1].GetValue(), diff["added"][0].GetValue())
+		assert.Equal(t, newTags[0].GetValue(), diff.Updated[0].NewValue)
+		assert.Equal(t, newTags[1].GetValue(), diff.Added[0].GetValue())
 	})
 	t.Run("Test no reported diff for non-yor tags diff", func(t *testing.T) {
 		existingTags := []tags.ITag{
@@ -121,17 +118,14 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
 
 		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
-		assert.Equal(t, 0, len(diff["updated"]))
-		assert.Equal(t, 0, len(diff["added"]))
+		assert.Equal(t, 0, len(diff.Updated))
+		assert.Equal(t, 0, len(diff.Added))
 	})
 
 }

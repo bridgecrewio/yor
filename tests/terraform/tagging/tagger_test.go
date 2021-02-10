@@ -34,9 +34,6 @@ func TestTerraformTagger(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 		err := tagger.CreateTagsForBlock(block, &blame)
 		if err != nil {
