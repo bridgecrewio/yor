@@ -38,6 +38,12 @@ func TestTerrraformBlock(t *testing.T) {
 					Value: "terragoat",
 				},
 			},
+			&tags.GitOrgTag{
+				Tag: tags.Tag{
+					Key:   "git_org",
+					Value: "bridgecrewio",
+				},
+			},
 		}
 		block := structure.TerraformBlock{
 			Block: structure2.Block{
@@ -60,4 +66,72 @@ func TestTerrraformBlock(t *testing.T) {
 		assert.Equal(t, newTags[0].GetValue(), diff["updated"][0].GetValue())
 		assert.Equal(t, newTags[1].GetValue(), diff["added"][0].GetValue())
 	})
+	t.Run("Test no reported diff for non-yor tags diff", func(t *testing.T) {
+		existingTags := []tags.ITag{
+			&tags.GitModifiersTag{
+				Tag: tags.Tag{
+					Key:   "git_modifiers",
+					Value: "gandalf",
+				},
+			},
+			&tags.GitOrgTag{
+				Tag: tags.Tag{
+					Key:   "git_org",
+					Value: "bridgecrewio",
+				},
+			},
+			&tags.Tag{
+				Key:   "env",
+				Value: "dev",
+			},
+			&tags.GitRepoTag{
+				Tag: tags.Tag{
+					Key:   "git_repository",
+					Value: "terragoat",
+				},
+			},
+		}
+
+		newTags := []tags.ITag{
+			&tags.GitModifiersTag{
+				Tag: tags.Tag{
+					Key:   "git_modifiers",
+					Value: "gandalf",
+				},
+			},
+			&tags.GitRepoTag{
+				Tag: tags.Tag{
+					Key:   "git_repository",
+					Value: "terragoat",
+				},
+			},
+			&tags.GitOrgTag{
+				Tag: tags.Tag{
+					Key:   "git_org",
+					Value: "bridgecrewio",
+				},
+			},
+		}
+		block := structure.TerraformBlock{
+			Block: structure2.Block{
+				FilePath:          "",
+				ExitingTags:       existingTags,
+				NewTags:           newTags,
+				RawBlock:          nil,
+				IsTaggable:        true,
+				TagsAttributeName: "",
+			},
+			NewOwner:      "",
+			PreviousOwner: "",
+			TraceId:       "",
+		}
+
+		diff := block.CalculateTagsDiff()
+		merged := block.MergeTags()
+
+		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
+		assert.Equal(t, 0, len(diff["updated"]))
+		assert.Equal(t, 0, len(diff["added"]))
+	})
+
 }
