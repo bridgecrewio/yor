@@ -38,6 +38,12 @@ func TestTerrraformBlock(t *testing.T) {
 					Value: "terragoat",
 				},
 			},
+			&tags.GitOrgTag{
+				Tag: tags.Tag{
+					Key:   "git_org",
+					Value: "bridgecrewio",
+				},
+			},
 		}
 		block := structure.TerraformBlock{
 			Block: structure2.Block{
@@ -123,7 +129,7 @@ func TestTerrraformBlock(t *testing.T) {
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
 
-		assert.Equal(t, 4, len(merged), "Merging failed, expected to see 3 tags")
+		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
 		assert.Equal(t, 0, len(diff["updated"]))
 		assert.Equal(t, 0, len(diff["added"]))
 	})
