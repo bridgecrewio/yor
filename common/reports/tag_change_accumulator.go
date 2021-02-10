@@ -5,11 +5,9 @@ import (
 )
 
 type TagChangeAccumulator struct {
-	scannedBlocks      []structure.IBlock
-	newTagTraces       []*ResourceRecord
-	updatedTagTraces   []*ResourceRecord
-	newBlockTraces     []structure.IBlock
-	updatedBlockTraces []structure.IBlock
+	ScannedBlocks      []structure.IBlock
+	NewBlockTraces     []structure.IBlock
+	UpdatedBlockTraces []structure.IBlock
 }
 
 type ResourceRecord struct {
@@ -24,53 +22,30 @@ type ResourceRecord struct {
 var TagChangeAccumulatorInstance *TagChangeAccumulator
 
 func init() {
-	TagChangeAccumulatorInstance = &TagChangeAccumulator{
-		newTagTraces:     []*ResourceRecord{},
-		updatedTagTraces: []*ResourceRecord{},
-	}
+	TagChangeAccumulatorInstance = &TagChangeAccumulator{}
 }
 
+//AccumulateChanges saves the results of the scan of each block.
+//If a block has no changes, it will be saved only to ScannedBlocks
+//Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
 func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
-	a.scannedBlocks = append(a.scannedBlocks, block)
+	a.ScannedBlocks = append(a.ScannedBlocks, block)
 	diff := block.CalculateTagsDiff()
 	// If only tags are new, add to newly traced. If some updates - add to updated. Otherwise will be added to
-	// scannedBlocks.
+	// ScannedBlocks.
 	if len(diff.Updated) == 0 && len(diff.Added) > 0 {
-		a.newBlockTraces = append(a.newBlockTraces, block)
+		a.NewBlockTraces = append(a.NewBlockTraces, block)
 	} else {
 		if len(diff.Updated) > 0 {
-			a.updatedBlockTraces = append(a.updatedBlockTraces, block)
+			a.UpdatedBlockTraces = append(a.UpdatedBlockTraces, block)
 		}
 	}
-	for _, tagDiff := range diff.Added {
-		a.newTagTraces = append(a.newTagTraces, &ResourceRecord{
-			file:          block.GetFilePath(),
-			resource:      block.GetResourceId(),
-			tagKey:        tagDiff.GetKey(),
-			previousValue: "",
-			newValue:      tagDiff.GetValue(),
-			traceId:       block.GetTraceId(),
-		})
-	}
-
-	for _, tagDiff := range diff.Updated {
-		a.updatedTagTraces = append(a.updatedTagTraces, &ResourceRecord{
-			file:          block.GetFilePath(),
-			resource:      block.GetResourceId(),
-			tagKey:        tagDiff.Key,
-			previousValue: tagDiff.PrevValue,
-			newValue:      tagDiff.NewValue,
-			traceId:       block.GetTraceId(),
-		})
-	}
 }
 
-func (a *TagChangeAccumulator) GetTagChanges() ([]*ResourceRecord, []*ResourceRecord) {
-	return a.newTagTraces, a.updatedTagTraces
-}
+// GetBlockChanges returns both the NewBlockTraces and the UpdatedBlockTraces that were found by the parsers
 func (a *TagChangeAccumulator) GetBlockChanges() ([]structure.IBlock, []structure.IBlock) {
-	return a.newBlockTraces, a.updatedBlockTraces
+	return a.NewBlockTraces, a.UpdatedBlockTraces
 }
 func (a *TagChangeAccumulator) GetScannedBlocks() []structure.IBlock {
-	return a.scannedBlocks
+	return a.ScannedBlocks
 }

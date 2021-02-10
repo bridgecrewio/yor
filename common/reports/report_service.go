@@ -39,9 +39,9 @@ func (r *ReportService) GetReport() *Report {
 
 func (r *ReportService) CreateReport() *Report {
 	changesAccumulator := TagChangeAccumulatorInstance
-	r.report.ScannedResources = len(changesAccumulator.scannedBlocks)
-	r.report.NewResources = changesAccumulator.newBlockTraces
-	r.report.UpdatedResources = changesAccumulator.updatedBlockTraces
+	r.report.ScannedResources = len(changesAccumulator.ScannedBlocks)
+	r.report.NewResources = changesAccumulator.NewBlockTraces
+	r.report.UpdatedResources = changesAccumulator.UpdatedBlockTraces
 	return &r.report
 }
 
