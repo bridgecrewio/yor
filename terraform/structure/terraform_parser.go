@@ -16,14 +16,16 @@ import (
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
+	rootDir             string
 	providerToClientMap map[string]tfschema.Client
 }
 
-func (p *TerrraformParser) Init() {
+func (p *TerrraformParser) Init(rootDir string) {
+	p.rootDir = rootDir
 	p.providerToClientMap = make(map[string]tfschema.Client)
 }
 
-func (p *TerrraformParser) ParseFile(filePath string, rootDir string) ([]structure.IBlock, error) {
+func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// read file bytes
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -50,7 +52,7 @@ func (p *TerrraformParser) ParseFile(filePath string, rootDir string) ([]structu
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
-		terraformBlock, err := p.parseBlock(block, rootDir)
+		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse terraform block because %s", err)
 		}
@@ -73,7 +75,7 @@ func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock)
 	return nil
 }
 
-func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, rootDir string) (*TerraformBlock, error) {
+func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
 	var tagsAttributeName string
 	var err error
@@ -87,7 +89,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, rootDir string) 
 		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
 
 		if !isTaggable {
-			isTaggable, err = p.isBlockTaggable(hclBlock, rootDir)
+			isTaggable, err = p.isBlockTaggable(hclBlock)
 			if err != nil {
 				return nil, err
 			}
@@ -148,7 +150,7 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 	return existingTags, isTaggable
 }
 
-func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block, rootDir string) (bool, error) {
+func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
 	resourceType := hclBlock.Labels()[0]
 	tagAtt, err := getTagAttributeByResourceType(resourceType)
 	if err != nil {
@@ -157,7 +159,7 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block, rootDir str
 
 	providerName := getProviderFromResourceType(resourceType)
 
-	client := p.getClient(providerName, rootDir)
+	client := p.getClient(providerName)
 	if client != nil {
 		typeSchema, err := client.GetResourceTypeSchema(resourceType)
 		if err != nil {
@@ -214,7 +216,7 @@ func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]stri
 	return parsedTags
 }
 
-func (p *TerrraformParser) getClient(providerName string, dir string) tfschema.Client {
+func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
 		Level:  hclog.Trace,
@@ -225,7 +227,7 @@ func (p *TerrraformParser) getClient(providerName string, dir string) tfschema.C
 		return client
 	} else {
 		newClient, err := tfschema.NewClient(providerName, tfschema.Option{
-			RootDir: dir,
+			RootDir: p.rootDir,
 			Logger:  logger,
 		})
 

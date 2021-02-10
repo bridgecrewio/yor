@@ -12,7 +12,7 @@ import (
 func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
 		p := &structure.TerrraformParser{}
-		p.Init()
+		p.Init("../resources/")
 		filePath := "../resources/eks.tf"
 		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{
@@ -31,7 +31,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {55, 63},
 			"eks_cluster": {65, 78},
 		}
-		parsedBlocks, err := p.ParseFile(filePath, "../resources/")
+		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
