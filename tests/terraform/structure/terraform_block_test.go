@@ -90,12 +90,6 @@ func TestTerrraformBlock(t *testing.T) {
 					Value: "terragoat",
 				},
 			},
-			&tags.YorTraceTag{
-				Tag: tags.Tag{
-					Key:   "yor_trace",
-					Value: "my-old-trace",
-				},
-			},
 		}
 
 		newTags := []tags.ITag{
@@ -115,12 +109,6 @@ func TestTerrraformBlock(t *testing.T) {
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
-				},
-			},
-			&tags.YorTraceTag{
-				Tag: tags.Tag{
-					Key:   "yor_trace",
-					Value: "my-new-trace",
 				},
 			},
 		}
