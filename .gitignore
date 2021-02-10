@@ -1,6 +1,2 @@
 .idea
 .terraform
-
-*/.terraform/
-*/.generated/
-
