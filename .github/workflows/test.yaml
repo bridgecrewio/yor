@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.15.x]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
@@ -22,5 +22,11 @@ jobs:
           go-version: 1.15
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: "Terraform Init"
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 0.14.5
+          tf_actions_subcommand: "init"
+          tf_actions_working_dir: "tests/terraform/resources"
       - name: Test
         run: go build -v && go test ./...
