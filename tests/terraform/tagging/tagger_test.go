@@ -1,8 +1,8 @@
 package tagging
 
 import (
-	structure2 "bridgecrewio/yor/common/structure"
-	tagging2 "bridgecrewio/yor/common/tagging"
+	commonStructure "bridgecrewio/yor/common/structure"
+	commonTagging "bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/terraform/tagging"
@@ -14,26 +14,8 @@ import (
 func TestTerraformTagger(t *testing.T) {
 	blame := utils.SetupBlame(t)
 
-	t.Run("test terraform tagger IsBlockTaggable", func(t *testing.T) {
-		tagger := tagging.TerraformTagger{}
-		block := structure.TerraformBlock{
-			Block: structure2.Block{
-				FilePath:          "",
-				ExitingTags:       []tags.ITag{},
-				NewTags:           []tags.ITag{},
-				RawBlock:          nil,
-				IsTaggable:        true,
-				TagsAttributeName: "",
-			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
-		}
-		assert.True(t, tagger.IsBlockTaggable(&block))
-	})
-
 	t.Run("test terraform tagger CreateTagsForBlock", func(t *testing.T) {
-		tagger := tagging.TerraformTagger{Tagger: tagging2.Tagger{
+		tagger := tagging.TerraformTagger{Tagger: commonTagging.Tagger{
 			Tags: []tags.ITag{},
 		}}
 		extraTags := []tags.ITag{
@@ -44,7 +26,7 @@ func TestTerraformTagger(t *testing.T) {
 		}
 		tagger.InitTags(extraTags)
 		block := &structure.TerraformBlock{
-			Block: structure2.Block{
+			Block: commonStructure.Block{
 				FilePath:          "",
 				ExitingTags:       []tags.ITag{},
 				NewTags:           []tags.ITag{},
