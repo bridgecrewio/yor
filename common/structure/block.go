@@ -60,9 +60,7 @@ func (b *Block) MergeTags() []tags.ITag {
 		found := false
 		for _, newTag := range b.GetNewTags() {
 			if newTag.GetKey() == existingTag.GetKey() {
-				if _, ok := newTag.(*tags.YorTraceTag); !ok {
-					mergedTags = append(mergedTags, newTag)
-				}
+				mergedTags = append(mergedTags, newTag)
 				found = true
 				break
 			}
