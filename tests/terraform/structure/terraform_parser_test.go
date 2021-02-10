@@ -12,6 +12,7 @@ import (
 func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
 		p := &structure.TerrraformParser{}
+		p.Init("../resources/")
 		filePath := "../resources/eks.tf"
 		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{

@@ -1,13 +1,14 @@
 package structure
 
 import (
-	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/minamijoyo/tfschema/tfschema"
 	"io/ioutil"
 	"strings"
 )
@@ -15,6 +16,13 @@ import (
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
+	rootDir             string
+	providerToClientMap map[string]tfschema.Client
+}
+
+func (p *TerrraformParser) Init(rootDir string) {
+	p.rootDir = rootDir
+	p.providerToClientMap = make(map[string]tfschema.Client)
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -62,6 +70,8 @@ func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock)
 		tfBlock := block.(*TerraformBlock)
 		tfBlock.MergeTags()
 	}
+	// TODO: print to file
+	_ = filePath
 	return nil
 }
 
@@ -141,10 +151,31 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 }
 
 func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
-	// TODO - implement like IsTaggable in https://github.com/env0/terratag/blob/master/tfschema/tfschema.go
-
 	resourceType := hclBlock.Labels()[0]
-	return common.InSlice(TaggableResourceTypes, resourceType), nil
+	tagAtt, err := getTagAttributeByResourceType(resourceType)
+	if err != nil {
+		return false, err
+	}
+
+	providerName := getProviderFromResourceType(resourceType)
+
+	client := p.getClient(providerName)
+	if client != nil {
+		typeSchema, err := client.GetResourceTypeSchema(resourceType)
+		if err != nil {
+			if strings.Contains(err.Error(), "Failed to find resource type") {
+				// Resource Type doesn't have schema yet in the provider
+				return false, nil
+			} else {
+				return false, err
+			}
+		}
+
+		if _, ok := typeSchema.Attributes[tagAtt]; ok {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {
@@ -183,4 +214,31 @@ func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]stri
 	}
 
 	return parsedTags
+}
+
+func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
+	logger := hclog.New(&hclog.LoggerOptions{
+		Name:   "plugin",
+		Level:  hclog.Trace,
+		Output: hclog.DefaultOutput,
+	})
+	client, exists := p.providerToClientMap[providerName]
+	if exists {
+		return client
+	} else {
+		newClient, err := tfschema.NewClient(providerName, tfschema.Option{
+			RootDir: p.rootDir,
+			Logger:  logger,
+		})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "Failed to find plugin") {
+
+			}
+			return nil
+		}
+
+		p.providerToClientMap[providerName] = newClient
+		return newClient
+	}
 }

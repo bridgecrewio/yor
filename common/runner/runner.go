@@ -35,6 +35,9 @@ func (r *Runner) Init(dir string) error {
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+	for _, parser := range r.parsers {
+		parser.Init(dir)
+	}
 
 	return nil
 }
