@@ -16,7 +16,6 @@ type ITagger interface {
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
-	// TODO: initialize Tagger.tags with all the tags in `TagTypes` (use their Init method) and add the extra tags
 	for _, tagType := range tags.TagTypes {
 		t.Tags = append(t.Tags, tagType.Init())
 	}
