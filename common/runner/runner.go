@@ -35,6 +35,9 @@ func (r *Runner) Init(dir string) error {
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+	for _, parser := range r.parsers {
+		parser.Init()
+	}
 
 	return nil
 }
@@ -55,7 +58,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	}
 
 	for _, file := range files {
-		err = r.TagFile(file)
+		err = r.TagFile(file, dir)
 		if err != nil {
 			return nil, err
 		}
@@ -66,9 +69,9 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	return reportService.CreateReport(), nil
 }
 
-func (r *Runner) TagFile(file string) error {
+func (r *Runner) TagFile(file string, rootDir string) error {
 	for _, parser := range r.parsers {
-		blocks, err := parser.ParseFile(file)
+		blocks, err := parser.ParseFile(file, rootDir)
 		if err != nil {
 			return err
 		}

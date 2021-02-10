@@ -1,6 +1,7 @@
 package structure
 
 type IParser interface {
-	ParseFile(filePath string) ([]IBlock, error)
+	Init()
+	ParseFile(filePath string, rootDir string) ([]IBlock, error)
 	WriteFile(filePath string, blocks []IBlock) error
 }
