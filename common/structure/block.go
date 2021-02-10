@@ -30,40 +30,38 @@ type IBlock interface {
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
+	isTraced := false
+	for _, tag := range b.ExitingTags {
+		if _, ok := tag.(*tags.YorTraceTag); ok {
+			isTraced = true
+			break
+		}
+	}
+	if isTraced {
+		var yorTraceIndex int
+		for index, tag := range newTags {
+			if _, ok := tag.(*tags.YorTraceTag); ok {
+				yorTraceIndex = index
+			}
+		}
+
+		b.NewTags = append(b.NewTags[:yorTraceIndex], b.NewTags[yorTraceIndex+1:]...)
+	}
 	b.NewTags = append(b.NewTags, newTags...)
 }
 
-// MergeTags merges the tags while trying to preserve the existing order of the tags.
-// It does this by first iterating through the existing tags and updating the values if there's anything to update.
-// Then it adds all the new tags that didn't exist beforehand.
+// MergeTags merges the tags and returns only the relevant Yor tags.
 func (b *Block) MergeTags() []tags.ITag {
 	var mergedTags []tags.ITag
 
-	for _, existingTag := range b.GetExistingTags() {
-		found := false
-		for _, newTag := range b.GetNewTags() {
-			if newTag.GetKey() == existingTag.GetKey() {
-				mergedTags = append(mergedTags, newTag)
-				found = true
-				break
-			}
-		}
-		if !found {
-			mergedTags = append(mergedTags, existingTag)
+	for _, tag := range b.ExitingTags {
+		if val, ok := tag.(*tags.YorTraceTag); ok {
+			mergedTags = append(mergedTags, val)
 		}
 	}
-	for _, newTag := range b.GetNewTags() {
-		var found bool
-		for _, updateTag := range mergedTags {
-			if updateTag.GetKey() == newTag.GetKey() {
-				found = true
-				break
-			}
-		}
-		if !found {
-			mergedTags = append(mergedTags, newTag)
-		}
-	}
+
+	mergedTags = append(mergedTags, b.NewTags...)
+
 	return mergedTags
 }
 
@@ -75,9 +73,9 @@ func (b *Block) CalculateTagsDiff() map[string][]tags.ITag {
 		found := false
 		for _, existingTag := range b.GetExistingTags() {
 			if newTag.GetKey() == existingTag.GetKey() {
+				found = true
 				if newTag.GetValue() != existingTag.GetValue() {
 					diff["updated"] = append(diff["updated"], newTag)
-					found = true
 					break
 				}
 			}
