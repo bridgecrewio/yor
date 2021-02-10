@@ -58,7 +58,7 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 	args := []string{directory}
 	code := initCommand.Run(args)
 	if code != 0 {
-		return fmt.Errorf("failed to run terraform init on directory %s", directory)
+		return fmt.Errorf("failed to run terraform init on directory %s, please run it manually", directory)
 	}
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
 		fmt.Printf("directory initialized successfully\n")
