@@ -11,8 +11,8 @@ type Tagger struct {
 }
 
 type ITagger interface {
-	CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) error // this method should call IBlock.AddNewTags
 	InitTags(extraTags []tags.ITag)
+	CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) error
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
