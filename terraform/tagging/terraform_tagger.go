@@ -33,6 +33,5 @@ func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *g
 		}
 	}
 	tfBlock.AddNewTags(t.Tags)
-	//TODO - implement + delete print
 	return nil
 }

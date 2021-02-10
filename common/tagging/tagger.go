@@ -7,12 +7,12 @@ import (
 )
 
 type Tagger struct {
-	Tags             []tags.ITag
-	TagAttributeName string
+	Tags []tags.ITag
 }
 
 type ITagger interface {
 	CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) error // this method should call IBlock.AddNewTags
+	InitTags(extraTags []tags.ITag)
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
@@ -22,6 +22,6 @@ func (t *Tagger) InitTags(extraTags []tags.ITag) {
 	}
 
 	for _, extraTag := range extraTags {
-		t.Tags = append(t.Tags, extraTag.Init())
+		t.Tags = append(t.Tags, extraTag)
 	}
 }
