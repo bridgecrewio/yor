@@ -16,13 +16,15 @@ import (
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
-	rootDir             string
-	providerToClientMap map[string]tfschema.Client
+	rootDir                string
+	providerToClientMap    map[string]tfschema.Client
+	taggableResourcesCache map[string]bool
 }
 
 func (p *TerrraformParser) Init(rootDir string) {
 	p.rootDir = rootDir
 	p.providerToClientMap = make(map[string]tfschema.Client)
+	p.taggableResourcesCache = make(map[string]bool)
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -152,6 +154,9 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 
 func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
 	resourceType := hclBlock.Labels()[0]
+	if val, ok := p.taggableResourcesCache[resourceType]; ok {
+		return val, nil
+	}
 	tagAtt, err := getTagAttributeByResourceType(resourceType)
 	if err != nil {
 		return false, err
@@ -160,6 +165,7 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	providerName := getProviderFromResourceType(resourceType)
 
 	client := p.getClient(providerName)
+	taggable := false
 	if client != nil {
 		typeSchema, err := client.GetResourceTypeSchema(resourceType)
 		if err != nil {
@@ -172,10 +178,11 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 		}
 
 		if _, ok := typeSchema.Attributes[tagAtt]; ok {
-			return true, nil
+			taggable = true
 		}
 	}
-	return false, nil
+	p.taggableResourcesCache[resourceType] = taggable
+	return taggable, nil
 }
 
 func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {
