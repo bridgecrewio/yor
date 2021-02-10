@@ -82,7 +82,10 @@ func (r *Runner) TagFile(file string) error {
 					if err != nil {
 						return err
 					}
-					tagger.CreateTagsForBlock(block, blame)
+					err = tagger.CreateTagsForBlock(block, blame)
+					if err != nil {
+						return err
+					}
 				}
 			}
 			//	TODO: if block is a local module, run TagDir on it as well
