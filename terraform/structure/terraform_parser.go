@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"encoding/json"
@@ -10,8 +11,8 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/hashicorp/terraform/command"
-	"github.com/mitchellh/cli"
 	"github.com/minamijoyo/tfschema/tfschema"
+	"github.com/mitchellh/cli"
 	"io/ioutil"
 	"os"
 	"path"
@@ -24,8 +25,8 @@ import (
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
-	generatedPath string
-	tagModules    bool
+	generatedPath       string
+	tagModules          bool
 	rootDir             string
 	providerToClientMap map[string]tfschema.Client
 }
