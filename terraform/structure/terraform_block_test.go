@@ -3,7 +3,6 @@ package structure
 import (
 	structure2 "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/terraform/structure"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -45,7 +44,7 @@ func TestTerrraformBlock(t *testing.T) {
 				},
 			},
 		}
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
@@ -109,7 +108,7 @@ func TestTerrraformBlock(t *testing.T) {
 				},
 			},
 		}
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
@@ -176,7 +175,7 @@ func TestTerrraformBlock(t *testing.T) {
 			},
 		}
 
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,

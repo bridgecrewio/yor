@@ -1,7 +1,6 @@
 package reports
 
 import (
-	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
@@ -13,7 +12,7 @@ import (
 
 func TestTagChangeAccumulator(t *testing.T) {
 	t.Run("Test changes accumulator", func(t *testing.T) {
-		accumulator := reports.TagChangeAccumulatorInstance
+		accumulator := TagChangeAccumulatorInstance
 		accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
 			Block: structure.Block{
 				FilePath:    "/module/regional/mock.tf",
@@ -378,8 +377,8 @@ func TestTagChangeAccumulator(t *testing.T) {
 
 		assert.Equal(t, 5, len(accumulator.GetScannedBlocks()))
 
-		reports.ReportServiceInst.CreateReport()
-		reports.ReportServiceInst.PrintToStdout()
+		ReportServiceInst.CreateReport()
+		ReportServiceInst.PrintToStdout()
 		newBlocks, updatedBlocks := accumulator.GetBlockChanges()
 		assert.Equal(t, 2, len(newBlocks))
 		assert.Equal(t, 2, len(updatedBlocks))
