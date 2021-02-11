@@ -55,6 +55,7 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 			OverrideDataDir: terraformOutputPath,
 		},
 	}
+	fmt.Printf("Could not locate %s directury under %s, running terraform init\n", TerraformOutputDir, directory)
 	args := []string{directory}
 	code := initCommand.Run(args)
 	if code != 0 {
