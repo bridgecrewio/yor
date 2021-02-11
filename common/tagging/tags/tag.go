@@ -28,6 +28,12 @@ type ITag interface {
 	GetValue() string
 }
 
+type TagDiff struct {
+	Key       string
+	PrevValue string
+	NewValue  string
+}
+
 func Init(key string, value string) ITag {
 	return &Tag{
 		Key:   key,

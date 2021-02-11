@@ -13,32 +13,30 @@ import (
 )
 
 type Runner struct {
-	taggers    []tagging.ITagger
-	parsers    []structure.IParser
-	gitService *git_service.GitService
+	taggers           []tagging.ITagger
+	parsers           []structure.IParser
+	gitService        *git_service.GitService
+	changeAccumulator *reports.TagChangeAccumulator
+	reportingService  *reports.ReportService
 }
 
-func NewRunner(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) *Runner {
-	// TODO
-	return nil
-}
-
-func initTaggers(taggerTypes []tagging.TaggerType, extraTags []tags.ITag) {
-	// TODO: create a new Tagger instance and send the extraTags as param
-}
-
-func (r *Runner) Init(dir string) error {
+func (r *Runner) Init(dir string, extraTags []tags.ITag) error {
 	gitService, err := git_service.NewGitService(dir)
 	if err != nil {
 		return err
 	}
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
+	for _, tagger := range r.taggers {
+		tagger.InitTags(extraTags)
+	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 	for _, parser := range r.parsers {
 		parser.Init(dir, nil)
 	}
 
+	r.changeAccumulator = reports.TagChangeAccumulatorInstance
+	r.reportingService = reports.ReportServiceInst
 	return nil
 }
 
@@ -86,11 +84,17 @@ func (r *Runner) TagFile(file string) error {
 					if err != nil {
 						return err
 					}
+					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
 			//	TODO: if block is a local module, run TagDir on it as well
 			//  Need to avoid cycles here!!
 		}
 	}
+	r.reportingService.CreateReport()
+
+	// TODO: support multiple output formats according to args
+	r.reportingService.PrintToStdout()
+
 	return nil
 }

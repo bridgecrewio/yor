@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/terraform/structure"
 	"fmt"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
@@ -12,9 +11,9 @@ import (
 
 func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
-		p := &structure.TerrraformParser{}
-		p.Init("../resources/", nil)
-		filePath := "../resources/eks.tf"
+		p := &TerrraformParser{}
+		p.Init("../../tests/terraform/resources/", nil)
+		filePath := "../../tests/terraform/resources/eks.tf"
 		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{
 			"eks_vpc":     {"Name": "\"${local.resource_prefix.value}-eks-vpc\""},
@@ -102,8 +101,8 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 
 func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
-		directory := "../resources/module1"
-		terraformParser := structure.TerrraformParser{}
+		directory := "../../tests/terraform/resources/module1"
+		terraformParser := TerrraformParser{}
 		terraformParser.Init(directory, nil)
 		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf"}
 		actualFiles, err := terraformParser.GetSourceFiles(directory)

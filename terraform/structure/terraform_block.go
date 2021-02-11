@@ -2,15 +2,18 @@ package structure
 
 import (
 	"bridgecrewio/yor/common/structure"
+	"bridgecrewio/yor/common/tagging/tags"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"strings"
 )
 
 type TerraformBlock struct {
 	structure.Block
-	hclSyntaxBlock *hclsyntax.Block
-	NewOwner       string
-	PreviousOwner  string
-	TraceId        string
+	HclSyntaxBlock *hclsyntax.Block
+}
+
+func (b *TerraformBlock) GetResourceId() string {
+	return strings.Join(b.HclSyntaxBlock.Labels, ".")
 }
 
 func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) {
@@ -19,7 +22,7 @@ func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) {
 }
 
 func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
-	b.hclSyntaxBlock = hclSyntaxBlock
+	b.HclSyntaxBlock = hclSyntaxBlock
 }
 
 func (b *TerraformBlock) String() string {
@@ -27,18 +30,38 @@ func (b *TerraformBlock) String() string {
 	return ""
 }
 func (b *TerraformBlock) GetLines() []int {
-	r := b.hclSyntaxBlock.Body.Range()
+	r := b.HclSyntaxBlock.Body.Range()
 	return []int{r.Start.Line, r.End.Line}
 }
 
 func (b *TerraformBlock) GetNewOwner() string {
-	return b.NewOwner
+	for _, tag := range b.GetNewTags() {
+		if val, ok := tag.(*tags.GitModifiersTag); ok {
+			return val.GetValue()
+		}
+	}
+	return ""
 }
 
 func (b *TerraformBlock) GetPreviousOwner() string {
-	return b.PreviousOwner
+	for _, tag := range b.GetExistingTags() {
+		if val, ok := tag.(*tags.GitModifiersTag); ok {
+			return val.GetValue()
+		}
+	}
+	return ""
 }
 
 func (b *TerraformBlock) GetTraceId() string {
-	return b.TraceId
+	for _, tag := range b.GetExistingTags() {
+		if val, ok := tag.(*tags.YorTraceTag); ok {
+			return val.GetValue()
+		}
+	}
+	for _, tag := range b.GetNewTags() {
+		if val, ok := tag.(*tags.YorTraceTag); ok {
+			return val.GetValue()
+		}
+	}
+	return ""
 }
