@@ -36,7 +36,7 @@ func (r *Runner) Init(dir string) error {
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 	for _, parser := range r.parsers {
-		parser.Init(dir)
+		parser.Init(dir, nil)
 	}
 
 	return nil
