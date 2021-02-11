@@ -13,9 +13,15 @@ type Block struct {
 	TagsAttributeName string
 }
 
+type TagDiff struct {
+	Added   []tags.ITag
+	Updated []*tags.TagDiff
+}
+
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	String() string
+	GetFilePath() string
 	GetLines() []int
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
@@ -25,8 +31,9 @@ type IBlock interface {
 	GetTraceId() string
 	AddNewTags(newTags []tags.ITag)
 	MergeTags() []tags.ITag
-	CalculateTagsDiff() map[string][]tags.ITag
+	CalculateTagsDiff() *TagDiff
 	IsBlockTaggable() bool
+	GetResourceId() string
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
@@ -48,6 +55,10 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 		newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
 	}
 	b.NewTags = append(b.NewTags, newTags...)
+	for _, tag := range newTags {
+		switch tag.GetKey() {
+		}
+	}
 }
 
 // MergeTags merges the tags and returns only the relevant Yor tags.
@@ -66,25 +77,29 @@ func (b *Block) MergeTags() []tags.ITag {
 }
 
 // CalculateTagsDiff returns a map which explains the changes in tags for this block
-// added is the new tags, updated is the tags which were modified
-func (b *Block) CalculateTagsDiff() map[string][]tags.ITag {
-	var diff = make(map[string][]tags.ITag)
+// Added is the new tags, Updated is the tags which were modified
+func (b *Block) CalculateTagsDiff() *TagDiff {
+	var diff = TagDiff{}
 	for _, newTag := range b.GetNewTags() {
 		found := false
 		for _, existingTag := range b.GetExistingTags() {
 			if newTag.GetKey() == existingTag.GetKey() {
 				found = true
 				if newTag.GetValue() != existingTag.GetValue() {
-					diff["updated"] = append(diff["updated"], newTag)
+					diff.Updated = append(diff.Updated, &tags.TagDiff{
+						Key:       newTag.GetKey(),
+						PrevValue: existingTag.GetValue(),
+						NewValue:  newTag.GetValue(),
+					})
 					break
 				}
 			}
 		}
 		if !found {
-			diff["added"] = append(diff["added"], newTag)
+			diff.Added = append(diff.Added, newTag)
 		}
 	}
-	return diff
+	return &diff
 }
 
 func (b *Block) GetRawBlock() interface{} {
@@ -101,4 +116,8 @@ func (b *Block) GetNewTags() []tags.ITag {
 
 func (b *Block) IsBlockTaggable() bool {
 	return b.IsTaggable
+}
+
+func (b *Block) GetFilePath() string {
+	return b.FilePath
 }

@@ -2,46 +2,41 @@ package reports
 
 import (
 	"bridgecrewio/yor/common/structure"
-	"bridgecrewio/yor/common/tagging/tags"
 )
 
 type TagChangeAccumulator struct {
-	changesByFile map[string]*structure.IBlock
-	changesByTag  map[tags.Tag]*structure.IBlock
+	ScannedBlocks      []structure.IBlock
+	NewBlockTraces     []structure.IBlock
+	UpdatedBlockTraces []structure.IBlock
 }
 
-type ResourceRecord struct {
-	file          string
-	resource      string
-	previousOwner string
-	newOwner      string
-	traceId       string
+var TagChangeAccumulatorInstance *TagChangeAccumulator
+
+func init() {
+	TagChangeAccumulatorInstance = &TagChangeAccumulator{}
 }
 
-var accumulatorInstance *TagChangeAccumulator
-
-func GetAccumulator() *TagChangeAccumulator {
-	// get instance of singleton accumulator
-	if accumulatorInstance == nil {
-		accumulatorInstance = &TagChangeAccumulator{
-			changesByFile: make(map[string]*structure.IBlock),
-			changesByTag:  make(map[tags.Tag]*structure.IBlock),
+//AccumulateChanges saves the results of the scan of each block.
+//If a block has no changes, it will be saved only to ScannedBlocks
+//Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
+func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
+	a.ScannedBlocks = append(a.ScannedBlocks, block)
+	diff := block.CalculateTagsDiff()
+	// If only tags are new, add to newly traced. If some updates - add to updated. Otherwise will be added to
+	// ScannedBlocks.
+	if len(diff.Updated) == 0 && len(diff.Added) > 0 {
+		a.NewBlockTraces = append(a.NewBlockTraces, block)
+	} else {
+		if len(diff.Updated) > 0 {
+			a.UpdatedBlockTraces = append(a.UpdatedBlockTraces, block)
 		}
 	}
-
-	return accumulatorInstance
 }
 
-func (a *TagChangeAccumulator) AccumulateChanges(block *structure.IBlock) {
-	// TODO
+// GetBlockChanges returns both the NewBlockTraces and the UpdatedBlockTraces that were found by the parsers
+func (a *TagChangeAccumulator) GetBlockChanges() ([]structure.IBlock, []structure.IBlock) {
+	return a.NewBlockTraces, a.UpdatedBlockTraces
 }
-
-func (a *TagChangeAccumulator) GetPreviouslyTaggedResources() []*ResourceRecord {
-	return nil
-}
-func (a *TagChangeAccumulator) GetUntaggedResources() []*ResourceRecord {
-	return nil
-}
-func (a *TagChangeAccumulator) GetNewlyTaggedResources() []*ResourceRecord {
-	return nil
+func (a *TagChangeAccumulator) GetScannedBlocks() []structure.IBlock {
+	return a.ScannedBlocks
 }
