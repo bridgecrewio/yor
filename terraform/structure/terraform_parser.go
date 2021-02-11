@@ -291,7 +291,9 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	return taggable, nil
 }
 
-func (p *TerrraformParser) extractMaps(tokens hclwrite.Tokens) []hclwrite.Tokens {
+func (p *TerrraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite.Tokens {
+	// The function gets tokens and returns an array of tokens that are found between curly brackets '{...}'
+	// example: tokens: "merge({a=1, b=2}, {c=3})", return: ["a=1, b=2", "c=3"]
 	hclMaps := make([]hclwrite.Tokens, 0)
 	bracketOpenIndex := -1
 
@@ -308,6 +310,8 @@ func (p *TerrraformParser) extractMaps(tokens hclwrite.Tokens) []hclwrite.Tokens
 }
 
 func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tokens {
+	// The function gets tokens and returns an array of tokens that represent key and value
+	// example: tokens: "a=1\n b=2, c=3", returns: ["a=1", "b=2", "c=3"]
 	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline}
 	tagPairs := make([]hclwrite.Tokens, 0)
 	startIndex := 0
@@ -332,12 +336,13 @@ func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.To
 }
 
 func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
-	hclMaps := p.extractMaps(tokens)
+	hclMaps := p.getHclMapsContents(tokens)
 	tagPairs := make([]hclwrite.Tokens, 0)
 	for _, hclMap := range hclMaps {
 		tagPairs = append(tagPairs, p.extractTagPairs(hclMap)...)
 	}
 
+	// for each tag pair, find the key and value
 	parsedTags := make(map[string]string)
 	for _, entry := range tagPairs {
 		eqIndex := -1
