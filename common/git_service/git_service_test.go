@@ -1,7 +1,6 @@
 package git_service
 
 import (
-	"bridgecrewio/yor/common/git_service"
 	"bridgecrewio/yor/tests"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -27,7 +26,7 @@ func TestNewGitService(t *testing.T) {
 		terragoatPath := tests.CloneRepo(TerragoatUrl)
 		defer os.RemoveAll(terragoatPath)
 
-		gitService, err := git_service.NewGitService(terragoatPath)
+		gitService, err := NewGitService(terragoatPath)
 		if err != nil {
 			t.Errorf("could not initialize git service becauses %s", err)
 		}
@@ -45,7 +44,7 @@ func TestGetBlameForFileLines(t *testing.T) {
 		terragoatPath := tests.CloneRepo(TerragoatUrl)
 		defer os.RemoveAll(terragoatPath)
 
-		gitService, err := git_service.NewGitService(terragoatPath)
+		gitService, err := NewGitService(terragoatPath)
 		if err != nil {
 			t.Errorf("could not initialize repository becauses %s", err)
 		}

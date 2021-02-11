@@ -3,7 +3,6 @@ package structure
 import (
 	structure2 "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/terraform/structure"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -45,7 +44,7 @@ func TestTerrraformBlock(t *testing.T) {
 				},
 			},
 		}
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
@@ -54,17 +53,14 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
 
 		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
-		assert.Equal(t, newTags[0].GetValue(), diff["updated"][0].GetValue())
-		assert.Equal(t, newTags[1].GetValue(), diff["added"][0].GetValue())
+		assert.Equal(t, newTags[0].GetValue(), diff.Updated[0].NewValue)
+		assert.Equal(t, newTags[1].GetValue(), diff.Added[0].GetValue())
 	})
 	t.Run("Test no reported diff for non-yor tags diff", func(t *testing.T) {
 		existingTags := []tags.ITag{
@@ -112,7 +108,7 @@ func TestTerrraformBlock(t *testing.T) {
 				},
 			},
 		}
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
@@ -121,17 +117,14 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
 
 		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
-		assert.Equal(t, 0, len(diff["updated"]))
-		assert.Equal(t, 0, len(diff["added"]))
+		assert.Equal(t, 0, len(diff.Updated))
+		assert.Equal(t, 0, len(diff.Added))
 	})
 
 	t.Run("Ensure old trace tag is not overridden by a new trace tag", func(t *testing.T) {
@@ -182,7 +175,7 @@ func TestTerrraformBlock(t *testing.T) {
 			},
 		}
 
-		block := structure.TerraformBlock{
+		block := TerraformBlock{
 			Block: structure2.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
@@ -191,15 +184,12 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		block.AddNewTags(newTags)
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
-		assert.Equal(t, 1, len(diff["updated"]))
+		assert.Equal(t, 1, len(diff.Updated))
 		for _, tag := range merged {
 			if traceTag, ok := tag.(*tags.YorTraceTag); ok {
 				assert.Equal(t, traceTag.Value, "my-old-trace")
