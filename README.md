@@ -62,23 +62,23 @@ Using command line flags you can specify to run only named tags (allow list) or 
 those listed (deny list).
 
 ```sh
-yor -d. --tag yor_trace
+yor -d . --tag yor_trace
 ## Run only yor_trace
 
-yor -d. --skip-tag yor_trace
+yor -d . --skip-tag yor_trace
 ## Run all but yor_trace
 
-yor -d. --skip-tag git*
+yor -d . --skip-tag git*
 ## Run all tags except tags with specified patterns
 
-yor -d. --skip-tag
+yor -d . --skip-tag
 ```
 
 ## Contributing
 
 Contribution is welcomed! 
 
-We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more runners (to tag using other contextual data).
+We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
 
 ## Disclaimer
 
