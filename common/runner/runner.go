@@ -32,7 +32,7 @@ func (r *Runner) Init(dir string, extraTags []tags.ITag) error {
 	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 	for _, parser := range r.parsers {
-		parser.Init(dir)
+		parser.Init(dir, nil)
 	}
 
 	r.changeAccumulator = reports.TagChangeAccumulatorInstance

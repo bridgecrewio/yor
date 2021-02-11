@@ -52,7 +52,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 			}
 		}
 
-		b.NewTags = append(b.NewTags[:yorTraceIndex], b.NewTags[yorTraceIndex+1:]...)
+		newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
 	}
 	b.NewTags = append(b.NewTags, newTags...)
 	for _, tag := range newTags {
