@@ -1,17 +1,27 @@
 package structure
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
+	"github.com/mitchellh/cli"
 	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+const TerraformOutputDir = "/.terraform"
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
@@ -19,12 +29,108 @@ type TerrraformParser struct {
 	rootDir                string
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
+	currFileDir            string
+	tagModules             bool
 }
 
-func (p *TerrraformParser) Init(rootDir string) {
+func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.rootDir = rootDir
 	p.providerToClientMap = make(map[string]tfschema.Client)
 	p.taggableResourcesCache = make(map[string]bool)
+	p.tagModules = true
+	if argTagModule, ok := args["tag-modules"]; ok {
+		p.tagModules, _ = strconv.ParseBool(argTagModule)
+	}
+}
+
+func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
+	terraformOutputPath := directory + TerraformOutputDir
+	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
+		fmt.Printf("directory already initialized\n")
+		return nil
+	}
+	initCommand := &command.InitCommand{
+		Meta: command.Meta{
+			Ui:              &cli.MockUi{},
+			OverrideDataDir: terraformOutputPath,
+		},
+	}
+	fmt.Printf("Could not locate %s directury under %s, running terraform init\n", TerraformOutputDir, directory)
+	args := []string{directory}
+	code := initCommand.Run(args)
+	if code != 0 {
+		return fmt.Errorf("failed to run terraform init on directory %s, please run it manually", directory)
+	}
+	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
+		fmt.Printf("directory initialized successfully\n")
+		return nil
+	}
+
+	return fmt.Errorf("failed to initialize directory %s, the folder '%s' was not created", directory, TerraformOutputDir)
+}
+
+func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
+	errMsg := "failed to get .tf files because %s"
+	var modulesDirectories []string
+
+	err := p.TerraformInitDirectory(directory)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	if p.tagModules {
+		modulesDirectories, err = p.getModulesDirectories(directory)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		modulesDirectories = []string{directory}
+	}
+
+	var files []string
+	for _, dir := range modulesDirectories {
+
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".tf") {
+				files = append(files, path)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf(errMsg, err)
+		}
+	}
+
+	return files, nil
+}
+
+func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
+	errMsg := "failed to get all modules directories because %s"
+	modulesJsonFile, err := os.Open(directory + TerraformOutputDir + "/modules/modules.json")
+	var modulesFile ModulesFile
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	moduleFileData, _ := ioutil.ReadAll(modulesJsonFile)
+	err = json.Unmarshal(moduleFileData, &modulesFile)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	modulesDirectories := make([]string, 0)
+	for _, entry := range modulesFile.Modules {
+		moduleDir := path.Join(directory, entry.Source)
+		if _, err := os.Stat(moduleDir); !os.IsNotExist(err) && !common.InSlice(modulesDirectories, moduleDir) {
+			// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
+			modulesDirectories = append(modulesDirectories, moduleDir)
+		}
+	}
+
+	return modulesDirectories, nil
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -248,4 +354,14 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		p.providerToClientMap[providerName] = newClient
 		return newClient
 	}
+}
+
+type ModulesFile struct {
+	Modules []ModuleEntry `json:"Modules"`
+}
+
+type ModuleEntry struct {
+	Key    string `json:"Key"`
+	Source string `json:"Source"`
+	Dir    string `json:"Dir"`
 }
