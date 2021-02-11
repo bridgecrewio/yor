@@ -26,7 +26,9 @@ jobs:
           tf_actions_subcommand: "init"
           tf_actions_working_dir: "tests/terraform/resources"
       - name: Test
-        run: gopherbadger -md="README.md"
+        run: |
+          go get github.com/jpoles1/gopherbadger
+          gopherbadger -md="README.md"
       - name: Update coverage
         run: |
           git commit --reuse-message=HEAD@{1} README.md || echo "No changes to commit"
