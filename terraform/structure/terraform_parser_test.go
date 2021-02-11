@@ -68,7 +68,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("parse complex tags", func(t *testing.T) {
-		p := &structure.TerrraformParser{}
+		p := &TerrraformParser{}
 		p.Init("../resources/", nil)
 		filePath := "../resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
