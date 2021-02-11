@@ -16,7 +16,7 @@ func TestTagChangeAccumulator(t *testing.T) {
 		accumulator := reports.TagChangeAccumulatorInstance
 		accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
 			Block: structure.Block{
-				FilePath:    "/mock.tf",
+				FilePath:    "/module/regional/mock.tf",
 				ExitingTags: nil,
 				NewTags: []tags.ITag{
 					&tags.YorTraceTag{
@@ -51,6 +51,99 @@ func TestTagChangeAccumulator(t *testing.T) {
 			HclSyntaxBlock: &hclsyntax.Block{
 				Type:            "",
 				Labels:          []string{"aws_s3_bucket", "my_bucket"},
+				Body:            nil,
+				TypeRange:       hcl.Range{},
+				LabelRanges:     nil,
+				OpenBraceRange:  hcl.Range{},
+				CloseBraceRange: hcl.Range{},
+			},
+		})
+		accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
+			Block: structure.Block{
+				FilePath: "/module/regional/mock.tf",
+				ExitingTags: []tags.ITag{
+					&tags.YorTraceTag{
+						Tag: tags.Tag{
+							Key:   "yor_trace",
+							Value: "mock-uuid",
+						},
+					},
+					&tags.GitOrgTag{
+						Tag: tags.Tag{
+							Key:   "git_org",
+							Value: "bridgecrewio",
+						},
+					},
+					&tags.GitRepoTag{
+						Tag: tags.Tag{
+							Key:   "git_repository",
+							Value: "terragoat",
+						},
+					},
+					&tags.GitModifiersTag{
+						Tag: tags.Tag{
+							Key:   "git_modifiers",
+							Value: "shati",
+						},
+					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T09:00:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "shati",
+						},
+					},
+				},
+				NewTags: []tags.ITag{
+					&tags.YorTraceTag{
+						Tag: tags.Tag{
+							Key:   "yor_trace",
+							Value: "mock-uuid",
+						},
+					},
+					&tags.GitOrgTag{
+						Tag: tags.Tag{
+							Key:   "git_org",
+							Value: "bridgecrewio",
+						},
+					},
+					&tags.GitRepoTag{
+						Tag: tags.Tag{
+							Key:   "git_repository",
+							Value: "terragoat",
+						},
+					},
+					&tags.GitModifiersTag{
+						Tag: tags.Tag{
+							Key:   "git_modifiers",
+							Value: "shati",
+						},
+					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T10:00:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "shati",
+						},
+					},
+				},
+				RawBlock:          nil,
+				IsTaggable:        true,
+				TagsAttributeName: "tag",
+			},
+			HclSyntaxBlock: &hclsyntax.Block{
+				Type:            "",
+				Labels:          []string{"aws_s3_bucket", "data_bucket"},
 				Body:            nil,
 				TypeRange:       hcl.Range{},
 				LabelRanges:     nil,
@@ -130,6 +223,18 @@ func TestTagChangeAccumulator(t *testing.T) {
 							Value: "shati",
 						},
 					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T09:00:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "shati",
+						},
+					},
 				},
 				NewTags: []tags.ITag{
 					&tags.GitOrgTag{
@@ -150,6 +255,18 @@ func TestTagChangeAccumulator(t *testing.T) {
 							Value: "gandalf/shati",
 						},
 					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T09:15:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "gandalf",
+						},
+					},
 				},
 				RawBlock:          nil,
 				IsTaggable:        true,
@@ -165,13 +282,106 @@ func TestTagChangeAccumulator(t *testing.T) {
 				CloseBraceRange: hcl.Range{},
 			},
 		})
+		accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
+			Block: structure.Block{
+				FilePath: "/iam.tf",
+				ExitingTags: []tags.ITag{
+					&tags.YorTraceTag{
+						Tag: tags.Tag{
+							Key:   "yor_trace",
+							Value: "yet-another-uuid-2",
+						},
+					},
+					&tags.GitOrgTag{
+						Tag: tags.Tag{
+							Key:   "git_org",
+							Value: "bridgecrewio",
+						},
+					},
+					&tags.GitRepoTag{
+						Tag: tags.Tag{
+							Key:   "git_repository",
+							Value: "terragoat",
+						},
+					},
+					&tags.GitModifiersTag{
+						Tag: tags.Tag{
+							Key:   "git_modifiers",
+							Value: "shati",
+						},
+					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T09:00:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "shati",
+						},
+					},
+				},
+				NewTags: []tags.ITag{
+					&tags.YorTraceTag{
+						Tag: tags.Tag{
+							Key:   "yor_trace",
+							Value: "yet-another-uuid-2",
+						},
+					},
+					&tags.GitOrgTag{
+						Tag: tags.Tag{
+							Key:   "git_org",
+							Value: "bridgecrewio",
+						},
+					},
+					&tags.GitRepoTag{
+						Tag: tags.Tag{
+							Key:   "git_repository",
+							Value: "terragoat",
+						},
+					},
+					&tags.GitModifiersTag{
+						Tag: tags.Tag{
+							Key:   "git_modifiers",
+							Value: "shati",
+						},
+					},
+					&tags.GitLastModifiedAtTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_at",
+							Value: "2021-02-11T09:00:00.000Z",
+						},
+					},
+					&tags.GitLastModifiedByTag{
+						Tag: tags.Tag{
+							Key:   "git_last_modified_by",
+							Value: "shati",
+						},
+					},
+				},
+				RawBlock:          nil,
+				IsTaggable:        true,
+				TagsAttributeName: "tag",
+			},
+			HclSyntaxBlock: &hclsyntax.Block{
+				Type:            "",
+				Labels:          []string{"aws_iam_role", "eks_master_role"},
+				Body:            nil,
+				TypeRange:       hcl.Range{},
+				LabelRanges:     nil,
+				OpenBraceRange:  hcl.Range{},
+				CloseBraceRange: hcl.Range{},
+			},
+		})
 
-		assert.Equal(t, 3, len(accumulator.GetScannedBlocks()))
+		assert.Equal(t, 5, len(accumulator.GetScannedBlocks()))
 
 		reports.ReportServiceInst.CreateReport()
-		//reports.ReportServiceInst.PrintToStdout()
+		reports.ReportServiceInst.PrintToStdout()
 		newBlocks, updatedBlocks := accumulator.GetBlockChanges()
 		assert.Equal(t, 2, len(newBlocks))
-		assert.Equal(t, 1, len(updatedBlocks))
+		assert.Equal(t, 2, len(updatedBlocks))
 	})
 }
