@@ -31,5 +31,6 @@ jobs:
           gopherbadger -md="README.md"
       - name: Update coverage
         run: |
+          git pull
           git commit --reuse-message=HEAD@{1} README.md || echo "No changes to commit"
           git push origin
