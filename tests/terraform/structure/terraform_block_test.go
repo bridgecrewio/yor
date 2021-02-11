@@ -185,15 +185,12 @@ func TestTerrraformBlock(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "",
 			},
-			NewOwner:      "",
-			PreviousOwner: "",
-			TraceId:       "",
 		}
 
 		block.AddNewTags(newTags)
 		diff := block.CalculateTagsDiff()
 		merged := block.MergeTags()
-		assert.Equal(t, 1, len(diff["updated"]))
+		assert.Equal(t, 1, len(diff.Updated))
 		for _, tag := range merged {
 			if traceTag, ok := tag.(*tags.YorTraceTag); ok {
 				assert.Equal(t, traceTag.Value, "my-old-trace")
