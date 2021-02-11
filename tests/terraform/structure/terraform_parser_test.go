@@ -67,6 +67,37 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 
 		assert.Equal(t, 11, len(parsedBlocks))
 	})
+
+	t.Run("parse complex tags", func(t *testing.T) {
+		p := &structure.TerrraformParser{}
+		p.Init("../resources/", nil)
+		filePath := "../resources/complex_tags.tf"
+		expectedTags := map[string]map[string]string{
+			"vpc_tags_one_line":    {"\"Name\"": "\"tag-for-s3\"", "\"Environment\"": "\"prod\""},
+			"bucket_var_tags":      {},
+			"alb_with_merged_tags": {"\"Name\"": "\"tag-for-alb\"", "\"Environment\"": "\"prod\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+			"many_instance_tags":   {"\"Name\"": "\"tag-for-instance\"", "\"Environment\"": "\"prod\"", "\"Owner\"": "\"bridgecrew\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+			"instance_merged_var":  {"\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+		}
+
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+		for _, block := range parsedBlocks {
+			hclBlock := block.GetRawBlock().(*hclwrite.Block)
+			if hclBlock.Type() == "resource" {
+				resourceName := hclBlock.Labels()[1]
+				expectedTagsForResource := expectedTags[resourceName]
+				actualTags := block.GetExistingTags()
+				assert.Equal(t, len(expectedTagsForResource), len(actualTags), fmt.Sprintf("failed to extract tags for resource %s\n", hclBlock.Labels()))
+				for _, iTag := range actualTags {
+					key := iTag.GetKey()
+					assert.Equal(t, expectedTagsForResource[key], iTag.GetValue(), fmt.Sprintf("failed to extract tag value for resource %s\n", hclBlock.Labels()))
+				}
+			}
+		}
+	})
 }
 
 func TestTerrraformParser_GetSourceFiles(t *testing.T) {

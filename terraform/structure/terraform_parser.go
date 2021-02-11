@@ -248,7 +248,7 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 		// if tags exists in resource
 		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		parsedTags := p.parseTagLines(tagsTokens)
+		parsedTags := p.parseTagAttribute(tagsTokens)
 		for key := range parsedTags {
 			iTag := tags.Init(key, parsedTags[key])
 			existingTags = append(existingTags, iTag)
@@ -291,15 +291,31 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	return taggable, nil
 }
 
-func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]string {
-	parsedTags := make(map[string]string)
-	entries := make([]hclwrite.Tokens, 0)
+func (p *TerrraformParser) extractMaps(tokens hclwrite.Tokens) []hclwrite.Tokens {
+	hclMaps := make([]hclwrite.Tokens, 0)
+	bracketOpenIndex := -1
+
+	for i, token := range tokens {
+		if token.Type == hclsyntax.TokenOBrace {
+			bracketOpenIndex = i
+		}
+		if token.Type == hclsyntax.TokenCBrace {
+			hclMaps = append(hclMaps, tokens[bracketOpenIndex+1:i])
+		}
+	}
+
+	return hclMaps
+}
+
+func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tokens {
+	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline}
+	tagPairs := make([]hclwrite.Tokens, 0)
 	startIndex := 0
 	hasEq := false
 	for i, token := range tokens {
-		if token.Type == hclsyntax.TokenNewline {
+		if common.InSlice(separatorTokens, token.Type) {
 			if hasEq {
-				entries = append(entries, tokens[startIndex:i])
+				tagPairs = append(tagPairs, tokens[startIndex:i])
 			}
 			startIndex = i + 1
 			hasEq = false
@@ -309,10 +325,21 @@ func (p *TerrraformParser) parseTagLines(tokens hclwrite.Tokens) map[string]stri
 		}
 	}
 	if hasEq {
-		entries = append(entries, tokens[startIndex:])
+		tagPairs = append(tagPairs, tokens[startIndex:])
 	}
 
-	for _, entry := range entries {
+	return tagPairs
+}
+
+func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
+	hclMaps := p.extractMaps(tokens)
+	tagPairs := make([]hclwrite.Tokens, 0)
+	for _, hclMap := range hclMaps {
+		tagPairs = append(tagPairs, p.extractTagPairs(hclMap)...)
+	}
+
+	parsedTags := make(map[string]string)
+	for _, entry := range tagPairs {
 		eqIndex := -1
 		var key string
 		for j, token := range entry {
