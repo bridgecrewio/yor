@@ -16,7 +16,7 @@ func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *g
 	for _, tag := range t.Tags {
 		err := tag.CalculateValue(gitBlame)
 		if err != nil {
-			logger.Logger.Warning(fmt.Sprintf("failed to calculate tag value of tag %v, err: %s", tag, err))
+			logger.Warning(fmt.Sprintf("failed to calculate tag value of tag %v, err: %s", tag, err))
 			continue
 		}
 	}

@@ -47,7 +47,7 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 	terraformOutputPath := directory + TerraformOutputDir
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
-		logger.Logger.Info("directory already initialized\n")
+		logger.Info("directory already initialized\n")
 		return nil
 	}
 	initCommand := &command.InitCommand{
@@ -63,7 +63,7 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 		return fmt.Errorf("failed to run terraform init on directory %s, please run it manually", directory)
 	}
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
-		logger.Logger.Info("directory initialized successfully")
+		logger.Info("directory initialized successfully")
 		return nil
 	}
 
@@ -378,7 +378,7 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
-			hclLogger.Warn(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
+			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
 		}
 		return nil
 	}

@@ -25,7 +25,7 @@ type Runner struct {
 func (r *Runner) Init(dir string, extraTags []tags.ITag) error {
 	gitService, err := gitservice.NewGitService(dir)
 	if err != nil {
-		logger.Logger.Error("Failed to initialize git service")
+		logger.Error("Failed to initialize git service")
 	}
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
@@ -46,7 +46,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	var files []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			logger.Logger.Error("Failed to scan dir", path)
+			logger.Error("Failed to scan dir", path)
 		}
 		if !info.IsDir() {
 			files = append(files, path)
@@ -54,7 +54,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 		return nil
 	})
 	if err != nil {
-		logger.Logger.Error("Failed to run Walk() on root dir", dir)
+		logger.Error("Failed to run Walk() on root dir", dir)
 	}
 
 	for _, file := range files {
@@ -70,7 +70,7 @@ func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
-			logger.Logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
 			continue
 		}
 		for _, block := range blocks {
@@ -78,7 +78,7 @@ func (r *Runner) TagFile(file string) {
 				if block.IsBlockTaggable() {
 					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
 					if err != nil {
-						logger.Logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
+						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
 						continue
 					}
 					tagger.CreateTagsForBlock(block, blame)
