@@ -74,6 +74,19 @@ yor -d . --skip-tag git*
 yor -d . --skip-tag
 ```
 
+### Output formats
+
+```sh
+yor -d . -o cli
+# default cli output
+
+yor -d . -o json
+# json output
+
+your -d . --output cli --output-json-file result.json
+# will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
+```
+
 ## Contributing
 
 Contribution is welcomed! 
