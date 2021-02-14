@@ -47,4 +47,14 @@ func TestLogger(t *testing.T) {
 			Error("Test error")
 		})
 	})
+
+	t.Run("Test logger not logging due to logLevel - DEBUG", func(t *testing.T) {
+		logs := utils.CaptureOutput(func() { Debug("Test debug 2") })
+		assert.Equal(t, "", logs)
+	})
+
+	t.Run("Test logger not logging due to logLevel - INFO", func(t *testing.T) {
+		logs := utils.CaptureOutput(func() { Info("Test info 2") })
+		assert.Equal(t, "", logs)
+	})
 }
