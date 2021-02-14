@@ -27,3 +27,14 @@ jobs:
           tf_actions_working_dir: "tests/terraform/resources"
       - name: Test
         run: go build -v && go test ./...
+  linter:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tool_name: golangci-lint
