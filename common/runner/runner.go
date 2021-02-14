@@ -87,6 +87,7 @@ func (r *Runner) TagFile(file string) error {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
+			parser.WriteFile(file, blocks)
 			//	TODO: if block is a local module, run TagDir on it as well
 			//  Need to avoid cycles here!!
 		}
