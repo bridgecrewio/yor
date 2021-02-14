@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bridgecrewio/yor/common/structure"
-	"bridgecrewio/yor/common/tagging/tags"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -33,36 +32,4 @@ func (b *TerraformBlock) String() string {
 func (b *TerraformBlock) GetLines() []int {
 	r := b.HclSyntaxBlock.Body.Range()
 	return []int{r.Start.Line, r.End.Line}
-}
-
-func (b *TerraformBlock) GetNewOwner() string {
-	for _, tag := range b.GetNewTags() {
-		if val, ok := tag.(*tags.GitModifiersTag); ok {
-			return val.GetValue()
-		}
-	}
-	return ""
-}
-
-func (b *TerraformBlock) GetPreviousOwner() string {
-	for _, tag := range b.GetExistingTags() {
-		if val, ok := tag.(*tags.GitModifiersTag); ok {
-			return val.GetValue()
-		}
-	}
-	return ""
-}
-
-func (b *TerraformBlock) GetTraceID() string {
-	for _, tag := range b.GetExistingTags() {
-		if val, ok := tag.(*tags.YorTraceTag); ok {
-			return val.GetValue()
-		}
-	}
-	for _, tag := range b.GetNewTags() {
-		if val, ok := tag.(*tags.YorTraceTag); ok {
-			return val.GetValue()
-		}
-	}
-	return ""
 }
