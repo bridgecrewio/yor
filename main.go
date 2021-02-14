@@ -12,7 +12,6 @@ import (
 
 func main() {
 	fmt.Println("Welcome to Yor!")
-	loadExternalTags("main")
 }
 
 func parseArgs(args ...interface{}) {
@@ -35,69 +34,53 @@ func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
 	return extraTags
 }
 
-func loadExternalTags(tagsPath string) {
-	plugins := []string{}
+func loadExternalTags(tagsPath string) ([]tags.ITag, error) {
+	var extraTags []tags.ITag
+	var plugins []string
+
+	// find all .so files under the given tagsPath
 	err := filepath.Walk(tagsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && strings.HasSuffix(info.Name(), ".so") {
+		if strings.HasSuffix(info.Name(), ".so") {
 			plugins = append(plugins, path)
 		}
 		return nil
 	})
-	//goPath, err := exec.LookPath("go")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	//cmd := exec.Command(goPath, "build", "main/yor_tags.go")
-	////cmd := exec.Command(goPath, "build", "buildmode", "plugin", "o", "/Users/rotemavni/BridgeCrew/yor_tags/yor_tags.so", "/Users/rotemavni/BridgeCrew/yor_tags/yor_tags.go")
-	////cmd := exec.Command(goPath, "build", "-gcflags", "\"all=-N -l\"", " -buildmode", "plugin", "-o", "/Users/rotemavni/BridgeCrew/yor_tags/yor_tags.so", "/Users/rotemavni/BridgeCrew/yor_tags/yor_tags.go")
-	//msg, err := cmd.Output()
-	//if err != nil {
-	//	panic(string(msg))
-	//}
-	//
 
 	for _, pluginPath := range plugins {
 		plug, err := plugin.Open(pluginPath)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			return nil, err
 		}
 
-		//f, err := plug.Lookup("GetTag")
-		//if err != nil {
-		//	fmt.Println(err)
-		//	os.Exit(1)
-		//}
-		//var symGreeter plugin.Symbol
-		//symGreeter = f.(func() interface{})()
-
-		// 2. look up a symbol (an exported function or variable)
-		// in this case, variable Greeter
-		symGreeter, err := plug.Lookup("ITag")
+		// extract the symbol "ExtraTags" from the plugin file
+		symExtraTags, err := plug.Lookup("ExtraTags")
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			continue
 		}
 
-		// 3. Assert that loaded symbol is of a desired type
-		// in this case interface type Greeter (defined above)
-		var iTag tags.ITag
-		iTag, ok := symGreeter.(tags.ITag)
+		// convert ExtraTags to its actual type, *[]interface{}
+		var iTagsPtr *[]interface{}
+		iTagsPtr, ok := symExtraTags.(*[]interface{})
 		if !ok {
-			fmt.Println("unexpected type from module symbol")
-			os.Exit(1)
+			return nil, fmt.Errorf("unexpected type from module symbol")
 		}
 
-		iTag.Init()
-		iTag.CalculateValue(nil)
-
-		key := iTag.GetKey()
-		value := iTag.GetValue()
-		// 4. use the module
-		fmt.Printf("key: %s, value: %s\n", key, value)
+		iTags := *iTagsPtr
+		for _, iTag := range iTags {
+			tag, ok := iTag.(tags.ITag)
+			if !ok {
+				return nil, fmt.Errorf("unexpected type from module symbol")
+			}
+			extraTags = append(extraTags, tag)
+		}
 	}
 
+	return extraTags, nil
 }

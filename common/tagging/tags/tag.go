@@ -26,6 +26,7 @@ type ITag interface {
 	CalculateValue(data interface{}) error
 	GetKey() string
 	GetValue() string
+	GetPriority() int
 }
 
 type TagDiff struct {
@@ -42,6 +43,10 @@ func Init(key string, value string) ITag {
 }
 
 func (t *Tag) Init() {
+}
+
+func (t *Tag) GetPriority() int {
+	return 0
 }
 
 func (t *Tag) CalculateValue(_ interface{}) error {
