@@ -4,9 +4,10 @@ import (
 	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"os"
 	"sort"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 type ReportService struct {
@@ -94,13 +95,13 @@ func (r *ReportService) printUpdatedResourcesToStdout() {
 			return diff.Added[i].GetKey() < diff.Added[j].GetKey()
 		})
 		for _, val := range diff.Added {
-			table.Append([]string{block.GetFilePath(), block.GetResourceId(), val.GetKey(), "", val.GetValue(), block.GetTraceId()})
+			table.Append([]string{block.GetFilePath(), block.GetResourceID(), val.GetKey(), "", val.GetValue(), block.GetTraceID()})
 		}
 		sort.SliceStable(diff.Updated, func(i, j int) bool {
 			return diff.Updated[i].Key < diff.Updated[j].Key
 		})
 		for _, val := range diff.Updated {
-			table.Append([]string{block.GetFilePath(), block.GetResourceId(), val.Key, val.PrevValue, val.NewValue, block.GetTraceId()})
+			table.Append([]string{block.GetFilePath(), block.GetResourceID(), val.Key, val.PrevValue, val.NewValue, block.GetTraceID()})
 		}
 	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0, 1, 5})
@@ -122,7 +123,7 @@ func (r *ReportService) printNewResourcesToStdout() {
 	)
 	for _, block := range r.report.NewResources {
 		for _, tag := range block.MergeTags() {
-			table.Append([]string{block.GetFilePath(), block.GetResourceId(), tag.GetKey(), tag.GetValue(), block.GetTraceId()})
+			table.Append([]string{block.GetFilePath(), block.GetResourceID(), tag.GetKey(), tag.GetValue(), block.GetTraceID()})
 		}
 	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0, 1, 4})

@@ -1,17 +1,18 @@
 package utils
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
 	"bytes"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/stretchr/testify/assert"
 )
 
 const Org = "bridgecrewio"
@@ -20,7 +21,7 @@ const FilePath = "README.md"
 const CommitHash1 = "47accf06f13b503f3bab06fed7860e72f7523cac"
 const CommitHash2 = "b2dc884b7439882c4dbe1e660cb1e02a3f84e45d"
 
-func SetupBlame(t *testing.T) git_service.GitBlame {
+func SetupBlame(t *testing.T) gitservice.GitBlame {
 	dateStr0 := "2020-03-28T21:42:46.000Z"
 	dateStr1 := "2020-03-27T11:56:33.000Z"
 	firstCommitDate, err1 := ExtractDate(dateStr0)
@@ -28,7 +29,7 @@ func SetupBlame(t *testing.T) git_service.GitBlame {
 	if err1 != nil || err2 != nil {
 		assert.Fail(t, "Failed to parse static date")
 	}
-	return git_service.GitBlame{
+	return gitservice.GitBlame{
 		GitOrg:        Org,
 		GitRepository: Repository,
 		FilePath:      FilePath,
@@ -76,7 +77,7 @@ func CaptureOutput(f func()) string {
 	go func() {
 		var buf bytes.Buffer
 		wg.Done()
-		io.Copy(&buf, reader)
+		_, _ = io.Copy(&buf, reader)
 		out <- buf.String()
 	}()
 	wg.Wait()
