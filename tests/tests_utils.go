@@ -2,10 +2,11 @@ package tests
 
 import (
 	"bufio"
-	"github.com/go-git/go-git/v5"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/go-git/go-git/v5"
 )
 
 func CloneRepo(repoPath string) string {

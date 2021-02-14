@@ -6,6 +6,13 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -13,12 +20,6 @@ import (
 	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
 	"github.com/mitchellh/cli"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 const TerraformOutputDir = "/.terraform"
@@ -29,7 +30,6 @@ type TerrraformParser struct {
 	rootDir                string
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
-	currFileDir            string
 	tagModules             bool
 }
 
@@ -109,13 +109,13 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
 	errMsg := "failed to get all modules directories because %s"
-	modulesJsonFile, err := os.Open(directory + TerraformOutputDir + "/modules/modules.json")
+	modulesJSONFile, err := os.Open(directory + TerraformOutputDir + "/modules/modules.json")
 	var modulesFile ModulesFile
 	if err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	moduleFileData, _ := ioutil.ReadAll(modulesJsonFile)
+	moduleFileData, _ := ioutil.ReadAll(modulesJSONFile)
 	err = json.Unmarshal(moduleFileData, &modulesFile)
 	if err != nil {
 		return nil, fmt.Errorf(errMsg, err)
@@ -278,9 +278,8 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 			if strings.Contains(err.Error(), "Failed to find resource type") {
 				// Resource Type doesn't have schema yet in the provider
 				return false, nil
-			} else {
-				return false, err
 			}
+			return false, err
 		}
 
 		if _, ok := typeSchema.Attributes[tagAtt]; ok {
@@ -370,22 +369,21 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	client, exists := p.providerToClientMap[providerName]
 	if exists {
 		return client
-	} else {
-		newClient, err := tfschema.NewClient(providerName, tfschema.Option{
-			RootDir: p.rootDir,
-			Logger:  logger,
-		})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "Failed to find plugin") {
-
-			}
-			return nil
-		}
-
-		p.providerToClientMap[providerName] = newClient
-		return newClient
 	}
+	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
+		RootDir: p.rootDir,
+		Logger:  logger,
+	})
+
+	if err != nil {
+		if strings.Contains(err.Error(), "Failed to find plugin") {
+			logger.Warn(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
+		}
+		return nil
+	}
+
+	p.providerToClientMap[providerName] = newClient
+	return newClient
 }
 
 type ModulesFile struct {

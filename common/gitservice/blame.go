@@ -1,4 +1,4 @@
-package git_service
+package gitservice
 
 import "github.com/go-git/go-git/v5"
 

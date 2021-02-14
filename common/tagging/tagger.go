@@ -1,7 +1,7 @@
 package tagging
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 )
@@ -12,15 +12,12 @@ type Tagger struct {
 
 type ITagger interface {
 	InitTags(extraTags []tags.ITag)
-	CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) error
+	CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame) error
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
 	for _, tagType := range tags.TagTypes {
 		t.Tags = append(t.Tags, tagType.Init())
 	}
-
-	for _, extraTag := range extraTags {
-		t.Tags = append(t.Tags, extraTag)
-	}
+	t.Tags = append(t.Tags, extraTags...)
 }
