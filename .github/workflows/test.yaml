@@ -39,3 +39,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tool_name: golangci-lint
           fail_on_error: true
+          golangci_lint_flags: "--skip-dirs yor_plugins"
