@@ -19,8 +19,5 @@ func (t *Tagger) InitTags(extraTags []tags.ITag) {
 	for _, tagType := range tags.TagTypes {
 		t.Tags = append(t.Tags, tagType.Init())
 	}
-
-	for _, extraTag := range extraTags {
-		t.Tags = append(t.Tags, extraTag)
-	}
+	t.Tags = append(t.Tags, extraTags...)
 }

@@ -49,7 +49,9 @@ func TestGetBlameForFileLines(t *testing.T) {
 			t.Errorf("could not initialize repository becauses %s", err)
 		}
 		generatedGitBlame, err := gitService.GetBlameForFileLines("README.md", []int{startLine, endLine}, secondCommitHash)
-
+		if err != nil {
+			t.Errorf("failed to read expected file because %s", err)
+		}
 		expectedFileLines, err := tests.ReadFileLines("./resources/terragoat_blame_second_commit.txt")
 		if err != nil {
 			t.Errorf("failed to read expected file because %s", err)
