@@ -178,6 +178,8 @@ func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock)
 		tfBlock := block.(*TerraformBlock)
 		tfBlock.MergeTags()
 	}
+	//parsedBlocks, err := p.ParseFile(filePath)
+
 	// TODO: print to file
 	_ = filePath
 	return nil
