@@ -69,12 +69,14 @@ func (r *ReportService) printUpdatedResources() {
 	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", len(r.report.UpdatedResources)))
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Old Value", "Updated Value", "Yor ID"})
-	table.SetColumnColor(tablewriter.Colors{},
+	table.SetColumnColor(
+		tablewriter.Colors{},
 		tablewriter.Colors{},
 		tablewriter.Colors{tablewriter.Bold},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgRedColor},
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
-		tablewriter.Colors{})
+		tablewriter.Colors{},
+	)
 
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
@@ -101,12 +103,21 @@ func (r *ReportService) printUpdatedResources() {
 func (r *ReportService) printNewResources() {
 	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", len(r.report.NewResources)))
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"File", "Resource", "Owner", "Yor ID"})
+	table.SetHeader([]string{"File", "Resource", "Tag Key", "Tag Value", "Yor ID"})
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
+	table.SetColumnColor(
+		tablewriter.Colors{},
+		tablewriter.Colors{},
+		tablewriter.Colors{tablewriter.Bold},
+		tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+		tablewriter.Colors{},
+	)
 	for _, block := range r.report.NewResources {
-		table.Append([]string{block.GetFilePath(), block.GetResourceId(), block.GetNewOwner(), block.GetTraceId()})
+		for _, tag := range block.MergeTags() {
+			table.Append([]string{block.GetFilePath(), block.GetResourceId(), tag.GetKey(), tag.GetValue(), block.GetTraceId()})
+		}
 	}
-
+	table.SetAutoMergeCellsByColumnIndex([]int{0, 1, 4})
 	table.Render()
 }
