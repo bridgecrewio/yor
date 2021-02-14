@@ -43,8 +43,7 @@ func Init(key string, value string) ITag {
 	}
 }
 
-func (t *Tag) Init() {
-}
+func (t *Tag) Init() {}
 
 func (t *Tag) GetPriority() int {
 	return 0

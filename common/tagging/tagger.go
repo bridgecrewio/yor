@@ -18,7 +18,7 @@ type ITagger interface {
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
 	for _, tagType := range tags.TagTypes {
 		tagType.Init()
-		t.Tags = append(t.Tags, tagType)
 	}
+	t.Tags = append(t.Tags, tags.TagTypes...)
 	t.Tags = append(t.Tags, extraTags...)
 }

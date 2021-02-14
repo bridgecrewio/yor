@@ -26,7 +26,7 @@ jobs:
           tf_actions_subcommand: "init"
           tf_actions_working_dir: "tests/terraform/resources"
       - name: Test
-        run: go build -v && go test ./...
+        run: go build -gcflags="all=-N -l" -v && go test ./...
   linter:
     name: golangci-lint
     runs-on: ubuntu-latest

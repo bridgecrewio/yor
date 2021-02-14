@@ -18,6 +18,3 @@ require (
 )
 
 replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.29
-replace (
-	runtime/internal/sys => ../sys
-)
