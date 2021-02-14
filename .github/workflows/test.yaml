@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  test:
+  unit-test:
     strategy:
       matrix:
         go-version: [1.15.x]
