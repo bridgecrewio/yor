@@ -1,5 +1,5 @@
 # Yor
-![golangci-lint](https://github.com/bridgecrewio/yor/workflows/test/badge.svg)
+![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 <a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-80%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 Automated IaC tagging using external sources of data.
