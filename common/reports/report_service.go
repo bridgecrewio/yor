@@ -53,11 +53,11 @@ func (r *ReportService) PrintToStdout() {
 	fmt.Println(colorReset, "Updated Resources:\t\t", colorGreen, len(r.report.UpdatedResources))
 	fmt.Println()
 	if len(r.report.NewResources) > 0 {
-		r.printNewResources()
+		r.printNewResourcesToStdout()
 	}
 	fmt.Println()
 	if len(r.report.UpdatedResources) > 0 {
-		r.printUpdatedResources()
+		r.printUpdatedResourcesToStdout()
 	}
 }
 
@@ -65,7 +65,7 @@ func PrintBanner() {
 	fmt.Printf("%v%vv%v\n", common.YorLogo, colorPurple, common.Version)
 }
 
-func (r *ReportService) printUpdatedResources() {
+func (r *ReportService) printUpdatedResourcesToStdout() {
 	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", len(r.report.UpdatedResources)))
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Old Value", "Updated Value", "Yor ID"})
@@ -100,7 +100,7 @@ func (r *ReportService) printUpdatedResources() {
 	table.Render()
 }
 
-func (r *ReportService) printNewResources() {
+func (r *ReportService) printNewResourcesToStdout() {
 	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", len(r.report.NewResources)))
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Tag Value", "Yor ID"})
