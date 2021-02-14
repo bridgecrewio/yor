@@ -12,7 +12,7 @@ type Tagger struct {
 
 type ITagger interface {
 	InitTags(extraTags []tags.ITag)
-	CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame) error
+	CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame)
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
