@@ -10,8 +10,6 @@ type loggingService struct {
 	logLevel int
 }
 
-type LogLevel int
-
 const (
 	DEBUG = iota
 	INFO
