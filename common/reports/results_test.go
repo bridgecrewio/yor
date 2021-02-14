@@ -1,12 +1,17 @@
 package reports
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
+	"bridgecrewio/yor/tests/utils"
+	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/stretchr/testify/assert"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -21,7 +26,6 @@ func TestResultsGeneration(t *testing.T) {
 
 	t.Run("Test report structure", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
-		ReportServiceInst.PrintToStdout()
 		report := ReportServiceInst.report
 		assert.Equal(t, len(accumulator.GetScannedBlocks()), report.ScannedResources)
 		assert.Equal(t, 2, len(report.NewResources))
@@ -44,6 +48,47 @@ func TestResultsGeneration(t *testing.T) {
 				assert.NotNil(t, diff.GetValue())
 			}
 		}
+	})
+
+	t.Run("Test CLI output structure", func(t *testing.T) {
+		ReportServiceInst.CreateReport()
+
+		output := utils.CaptureOutput(ReportServiceInst.PrintToStdout)
+		lines := strings.Split(output, "\n")
+		// Verify banner
+		assert.Equal(t, fmt.Sprintf("%v%vv%v", common.YorLogo, colorPurple, common.Version), strings.Join(lines[0:6], "\n"))
+
+		// Verify counts
+		lines = lines[7:]
+		matched, _ := regexp.Match(".*?Scanned Resources:.*?\\b\\d\\b", []byte(lines[0]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match(".*?New Resources Traced:.*?\\b\\d\\b", []byte(lines[1]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match(".*?Updated Resources:.*?\\b\\d\\b", []byte(lines[2]))
+		assert.True(t, matched)
+		assert.Equal(t, "", lines[3])
+
+		// Verify New Resources Table
+		lines = lines[4:]
+		matched, _ = regexp.Match(".*?New Resources Traced \\(\\d\\):", []byte(lines[0]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("[|\\s]+FILE[|\\s]+RESOURCE[|\\s]+TAG KEY[|\\s]+TAG VALUE[|\\s]+YOR ID[|\\s]+", []byte(lines[2]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("[|\\s]+[a-z./]+[|\\s]+[a-z\\d._]+", []byte(lines[4]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("(|[\\s]+){3}[a-z._]+[\\s]+|[\\s]+[a-z]+", []byte(lines[6]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("(|[\\s]+){3}[a-z._]+[\\s]+|[\\s]+[a-z]+", []byte(lines[8]))
+		assert.True(t, matched)
+
+		// Verify Updated Resources Table
+		lines = lines[21:]
+		matched, _ = regexp.Match(".*?Updated Resource Traces \\(\\d\\):", []byte(lines[0]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("[|\\s]+FILE[|\\s]+RESOURCE[|\\s]+TAG KEY[|\\s]+OLD VALUE[|\\s]+UPDATED VALUE[|\\s]+YOR ID[|\\s]+", []byte(lines[2]))
+		assert.True(t, matched)
+		matched, _ = regexp.Match("[|\\s]+[a-z./]+[|\\s]+[a-z\\d._]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+[a-z\\d-]+[|\\s]+", []byte(lines[4]))
+		assert.True(t, matched)
 	})
 }
 
