@@ -32,5 +32,8 @@ func TestLogger(t *testing.T) {
 	t.Run("Test logger ERROR logLevel setting", func(t *testing.T) {
 		Logger.SetLogLevel("ERROR")
 		assert.Equal(t, ERROR, Logger.logLevel)
+		assert.Panics(t, func() {
+			Logger.Error("Test error")
+		})
 	})
 }

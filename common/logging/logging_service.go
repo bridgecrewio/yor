@@ -38,7 +38,7 @@ func (e *loggingService) log(logLevel int, args ...string) {
 			log.Print("Warning: ")
 			log.Println(args)
 		case ERROR:
-			log.Fatal(args)
+			log.Panic(args)
 		}
 	}
 }
