@@ -29,7 +29,6 @@ type TerrraformParser struct {
 	rootDir                string
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
-	currFileDir            string
 	tagModules             bool
 }
 
@@ -346,7 +345,7 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 
 		if err != nil {
 			if strings.Contains(err.Error(), "Failed to find plugin") {
-
+				logger.Warn(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
 			}
 			return nil
 		}
