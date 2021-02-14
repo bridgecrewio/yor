@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
 	"os"
@@ -14,25 +13,25 @@ func main() {
 	fmt.Println("Welcome to Yor!")
 }
 
-func parseArgs(args ...interface{}) {
-	// TODO
-}
+// TODO
+// func parseArgs(args ...interface{}) {
+// }
 
-func printReport(report *reports.Report) {
-	// TODO
-}
+// TODO
+// func printReport(report *reports.Report) {
+// }
 
-func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
-	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
-	index := 0
-	for key := range extraTagsFromArgs {
-		newTag := tags.Init(key, extraTagsFromArgs[key])
-		extraTags[index] = newTag
-		index++
-	}
-
-	return extraTags
-}
+// func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
+//	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
+//	index := 0
+//	for key := range extraTagsFromArgs {
+//		newTag := tags.Init(key, extraTagsFromArgs[key])
+//		extraTags[index] = newTag
+//		index++
+//	}
+//
+//	return extraTags
+//}
 
 func loadExternalTags(tagsPath string) ([]tags.ITag, error) {
 	var extraTags []tags.ITag

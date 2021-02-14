@@ -6,8 +6,9 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformTagger(t *testing.T) {
@@ -34,11 +35,7 @@ func TestTerraformTagger(t *testing.T) {
 				TagsAttributeName: "",
 			},
 		}
-		err := tagger.CreateTagsForBlock(block, &blame)
-		if err != nil {
-			assert.Fail(t, "Failed to create tags for block", err)
-		}
+		tagger.CreateTagsForBlock(block, &blame)
 		assert.Equal(t, len(block.NewTags), len(tags.TagTypes)+len(extraTags))
-
 	})
 }
