@@ -6,8 +6,9 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformTagger(t *testing.T) {

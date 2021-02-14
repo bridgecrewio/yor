@@ -3,10 +3,11 @@ package structure
 import (
 	"bridgecrewio/yor/common"
 	"fmt"
-	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerrraformParser_ParseFile(t *testing.T) {

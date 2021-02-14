@@ -3,8 +3,9 @@ package structure
 import (
 	structure2 "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerrraformBlock(t *testing.T) {

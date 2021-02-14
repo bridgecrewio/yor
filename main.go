@@ -8,15 +8,15 @@ func main() {
 	fmt.Println("Welcome to Yor!")
 }
 
-//func parseArgs(args ...interface{}) {
 // TODO
-//}
+// func parseArgs(args ...interface{}) {
+// }
 
-//func printReport(report *reports.Report) {
 // TODO
-//}
+// func printReport(report *reports.Report) {
+// }
 
-//func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
+// func createExtraTags(extraTagsFromArgs map[string]string) []tags.ITag {
 //	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
 //	index := 0
 //	for key := range extraTagsFromArgs {

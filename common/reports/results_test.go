@@ -7,12 +7,13 @@ import (
 	tfStructure "bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
 	"fmt"
-	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/stretchr/testify/assert"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestResultsGeneration(t *testing.T) {
@@ -30,7 +31,7 @@ func TestResultsGeneration(t *testing.T) {
 		assert.Equal(t, len(accumulator.GetScannedBlocks()), report.ScannedResources)
 		assert.Equal(t, 2, len(report.NewResources))
 		for _, newRes := range report.NewResources {
-			assert.NotNil(t, newRes.GetTraceId())
+			assert.NotNil(t, newRes.GetTraceID())
 			assert.NotNil(t, newRes.MergeTags())
 		}
 

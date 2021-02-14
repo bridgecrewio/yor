@@ -1,16 +1,17 @@
-package git_service
+package gitservice
 
 import (
 	"bridgecrewio/yor/tests"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-const TerragoatUrl = "https://github.com/bridgecrewio/terragoat.git"
+const TerragoatURL = "https://github.com/bridgecrewio/terragoat.git"
 
 func extractUnixDateFromLine(line string) time.Time {
 	userDateNum := line[strings.Index(line, "(")+1 : strings.Index(line, ")")]
@@ -23,7 +24,7 @@ func extractUnixDateFromLine(line string) time.Time {
 
 func TestNewGitService(t *testing.T) {
 	t.Run("Get correct organization and repo name", func(t *testing.T) {
-		terragoatPath := tests.CloneRepo(TerragoatUrl)
+		terragoatPath := tests.CloneRepo(TerragoatURL)
 		defer os.RemoveAll(terragoatPath)
 
 		gitService, err := NewGitService(terragoatPath)
@@ -41,7 +42,7 @@ func TestGetBlameForFileLines(t *testing.T) {
 		endLine := 1
 		secondCommitHash := "47accf06f13b503f3bab06fed7860e72f7523cac"
 
-		terragoatPath := tests.CloneRepo(TerragoatUrl)
+		terragoatPath := tests.CloneRepo(TerragoatURL)
 		defer os.RemoveAll(terragoatPath)
 
 		gitService, err := NewGitService(terragoatPath)

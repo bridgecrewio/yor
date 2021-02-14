@@ -1,18 +1,19 @@
-package git_service
+package gitservice
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
-	"strings"
 )
 
 type GitService struct {
 	rootDir              string
 	repository           *git.Repository
-	remoteUrl            string
+	remoteURL            string
 	organization         string
 	repoName             string
 	blameByFileAndCommit map[string]map[string]*git.BlameResult
@@ -44,9 +45,9 @@ func (g *GitService) setOrgAndName() error {
 
 	for _, remote := range remotes {
 		if remote.Config().Name == "origin" {
-			g.remoteUrl = remote.Config().URLs[0]
+			g.remoteURL = remote.Config().URLs[0]
 			// get endpoint structured like '/bridgecrewio/yor.git
-			endpoint, err := transport.NewEndpoint(g.remoteUrl)
+			endpoint, err := transport.NewEndpoint(g.remoteURL)
 			if err != nil {
 				return err
 			}
