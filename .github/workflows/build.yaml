@@ -35,3 +35,14 @@ jobs:
           git config --local user.name "GitHub Action"
           git commit -m "Update coverage" README.md || echo "No changes to commit"
           git push origin
+  linter:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: reviewdog/action-golangci-lint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tool_name: golangci-lint
