@@ -7,11 +7,13 @@ import (
 )
 
 type loggingService struct {
-	logLevel int
+	logLevel LogLevel
 }
 
+type LogLevel int
+
 const (
-	DEBUG = iota
+	DEBUG LogLevel = iota
 	INFO
 	WARNING
 	ERROR
@@ -29,7 +31,7 @@ func init() {
 	}
 }
 
-func (e *loggingService) log(logLevel int, args ...string) {
+func (e *loggingService) log(logLevel LogLevel, args ...string) {
 	if logLevel >= e.logLevel {
 		switch logLevel {
 		case DEBUG, INFO:

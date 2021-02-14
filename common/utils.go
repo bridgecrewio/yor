@@ -13,10 +13,8 @@ func InSlice(slice interface{}, elem interface{}) bool {
 					return true
 				}
 			}
-		} else {
-			if e == elem {
-				return true
-			}
+		} else if e == elem {
+			return true
 		}
 	}
 

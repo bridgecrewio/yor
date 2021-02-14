@@ -16,9 +16,9 @@ func init() {
 	TagChangeAccumulatorInstance = &TagChangeAccumulator{}
 }
 
-//AccumulateChanges saves the results of the scan of each block.
-//If a block has no changes, it will be saved only to ScannedBlocks
-//Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
+// AccumulateChanges saves the results of the scan of each block.
+// If a block has no changes, it will be saved only to ScannedBlocks
+// Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
 func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
 	a.ScannedBlocks = append(a.ScannedBlocks, block)
 	diff := block.CalculateTagsDiff()
@@ -26,10 +26,8 @@ func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
 	// ScannedBlocks.
 	if len(diff.Updated) == 0 && len(diff.Added) > 0 {
 		a.NewBlockTraces = append(a.NewBlockTraces, block)
-	} else {
-		if len(diff.Updated) > 0 {
-			a.UpdatedBlockTraces = append(a.UpdatedBlockTraces, block)
-		}
+	} else if len(diff.Updated) > 0 {
+		a.UpdatedBlockTraces = append(a.UpdatedBlockTraces, block)
 	}
 }
 

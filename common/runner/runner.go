@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging"
@@ -15,13 +15,13 @@ import (
 type Runner struct {
 	taggers           []tagging.ITagger
 	parsers           []structure.IParser
-	gitService        *git_service.GitService
+	gitService        *gitservice.GitService
 	changeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
 }
 
 func (r *Runner) Init(dir string, extraTags []tags.ITag) error {
-	gitService, err := git_service.NewGitService(dir)
+	gitService, err := gitservice.NewGitService(dir)
 	if err != nil {
 		return err
 	}

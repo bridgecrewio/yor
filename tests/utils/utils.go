@@ -1,12 +1,18 @@
 package utils
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
+	"bytes"
+	"io"
+	"log"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 const Org = "bridgecrewio"
@@ -15,7 +21,7 @@ const FilePath = "README.md"
 const CommitHash1 = "47accf06f13b503f3bab06fed7860e72f7523cac"
 const CommitHash2 = "b2dc884b7439882c4dbe1e660cb1e02a3f84e45d"
 
-func SetupBlame(t *testing.T) git_service.GitBlame {
+func SetupBlame(t *testing.T) gitservice.GitBlame {
 	dateStr0 := "2020-03-28T21:42:46.000Z"
 	dateStr1 := "2020-03-27T11:56:33.000Z"
 	firstCommitDate, err1 := ExtractDate(dateStr0)
@@ -23,7 +29,7 @@ func SetupBlame(t *testing.T) git_service.GitBlame {
 	if err1 != nil || err2 != nil {
 		assert.Fail(t, "Failed to parse static date")
 	}
-	return git_service.GitBlame{
+	return gitservice.GitBlame{
 		GitOrg:        Org,
 		GitRepository: Repository,
 		FilePath:      FilePath,
@@ -48,4 +54,34 @@ func ExtractDate(dateStr string) (time.Time, error) {
 	layout := "2006-01-02T15:04:05.000Z"
 	parsedDate, err := time.Parse(layout, dateStr)
 	return parsedDate, err
+}
+
+func CaptureOutput(f func()) string {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+	stdout := os.Stdout
+	stderr := os.Stderr
+	defer func() {
+		os.Stdout = stdout
+		os.Stderr = stderr
+		log.SetOutput(os.Stderr)
+	}()
+	os.Stdout = writer
+	os.Stderr = writer
+	log.SetOutput(writer)
+	out := make(chan string)
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		var buf bytes.Buffer
+		wg.Done()
+		_, _ = io.Copy(&buf, reader)
+		out <- buf.String()
+	}()
+	wg.Wait()
+	f()
+	writer.Close()
+	return <-out
 }
