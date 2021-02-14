@@ -37,3 +37,15 @@ resource "aws_instance" "instance_merged_var" {
   {"yor_trace" = "4329587194",
     "git_org" = "bana"})
 }
+
+variable "new_env_tag" {
+  default = {
+    "Environment" = "old_env"
+  }
+}
+
+resource "aws_instance" "instance_merged_override" {
+  ami = ""
+  instance_type = ""
+  tags = merge(var.new_env_tag, {"Environment" = "new_env"})
+}
