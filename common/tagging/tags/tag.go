@@ -22,7 +22,7 @@ var TagTypes = []ITag{
 }
 
 type ITag interface {
-	Init() ITag
+	Init()
 	CalculateValue(data interface{}) error
 	GetKey() string
 	GetValue() string
@@ -41,8 +41,7 @@ func Init(key string, value string) ITag {
 	}
 }
 
-func (t *Tag) Init() ITag {
-	return t
+func (t *Tag) Init() {
 }
 
 func (t *Tag) CalculateValue(_ interface{}) error {

@@ -9,9 +9,8 @@ type YorTraceTag struct {
 	Tag
 }
 
-func (t *YorTraceTag) Init() ITag {
+func (t *YorTraceTag) Init() {
 	t.Key = "yor_trace"
-	return t
 }
 
 func (t *YorTraceTag) CalculateValue(_ interface{}) error {

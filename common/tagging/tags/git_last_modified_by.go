@@ -10,10 +10,8 @@ type GitLastModifiedByTag struct {
 	Tag
 }
 
-func (t *GitLastModifiedByTag) Init() ITag {
+func (t *GitLastModifiedByTag) Init() {
 	t.Key = "git_last_modified_by"
-
-	return t
 }
 
 func (t *GitLastModifiedByTag) CalculateValue(data interface{}) error {

@@ -10,10 +10,8 @@ type GitFileTag struct {
 	Tag
 }
 
-func (t *GitFileTag) Init() ITag {
+func (t *GitFileTag) Init() {
 	t.Key = "git_file"
-
-	return t
 }
 
 func (t *GitFileTag) CalculateValue(data interface{}) error {
