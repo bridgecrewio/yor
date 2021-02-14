@@ -379,8 +379,27 @@ func TestTagChangeAccumulator(t *testing.T) {
 
 		ReportServiceInst.CreateReport()
 		ReportServiceInst.PrintToStdout()
-		newBlocks, updatedBlocks := accumulator.GetBlockChanges()
-		assert.Equal(t, 2, len(newBlocks))
-		assert.Equal(t, 2, len(updatedBlocks))
+		report := ReportServiceInst.report
+		assert.Equal(t, 3, report.ScannedResources)
+		assert.Equal(t, 2, len(report.NewResources))
+		for _, newRes := range report.NewResources {
+			assert.NotNil(t, newRes.GetTraceId())
+			assert.NotNil(t, newRes.MergeTags())
+		}
+
+		assert.Equal(t, 2, len(report.UpdatedResources))
+		for _, updatedRes := range report.UpdatedResources {
+			tagDiff := updatedRes.CalculateTagsDiff()
+			for _, diff := range tagDiff.Updated {
+				assert.NotNil(t, diff.Key)
+				assert.NotNil(t, diff.PrevValue)
+				assert.NotNil(t, diff.NewValue)
+			}
+
+			for _, diff := range tagDiff.Added {
+				assert.NotNil(t, diff.GetKey())
+				assert.NotNil(t, diff.GetValue())
+			}
+		}
 	})
 }
