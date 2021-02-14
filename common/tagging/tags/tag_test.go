@@ -1,10 +1,11 @@
 package tags
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/tests/utils"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTagCreation(t *testing.T) {
@@ -67,7 +68,7 @@ func TestTagCreation(t *testing.T) {
 
 }
 
-func EvaluateTag(t *testing.T, tag ITag, blame git_service.GitBlame) {
+func EvaluateTag(t *testing.T, tag ITag, blame gitservice.GitBlame) {
 	tag.Init()
 	err := tag.CalculateValue(&blame)
 	if err != nil {

@@ -3,8 +3,9 @@ package structure
 import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"strings"
+
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
 type TerraformBlock struct {
@@ -12,7 +13,7 @@ type TerraformBlock struct {
 	HclSyntaxBlock *hclsyntax.Block
 }
 
-func (b *TerraformBlock) GetResourceId() string {
+func (b *TerraformBlock) GetResourceID() string {
 	return strings.Join(b.HclSyntaxBlock.Labels, ".")
 }
 
@@ -52,7 +53,7 @@ func (b *TerraformBlock) GetPreviousOwner() string {
 	return ""
 }
 
-func (b *TerraformBlock) GetTraceId() string {
+func (b *TerraformBlock) GetTraceID() string {
 	for _, tag := range b.GetExistingTags() {
 		if val, ok := tag.(*tags.YorTraceTag); ok {
 			return val.GetValue()

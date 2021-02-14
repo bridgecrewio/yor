@@ -1,7 +1,7 @@
 package tagging
 
 import (
-	"bridgecrewio/yor/common/git_service"
+	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging"
 	"fmt"
@@ -11,7 +11,7 @@ type TerraformTagger struct {
 	tagging.Tagger
 }
 
-func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *git_service.GitBlame) error {
+func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame) error {
 	for _, tag := range t.Tags {
 		err := tag.CalculateValue(gitBlame)
 		if err != nil {

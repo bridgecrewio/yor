@@ -28,12 +28,12 @@ type IBlock interface {
 	GetRawBlock() interface{}
 	GetNewOwner() string
 	GetPreviousOwner() string
-	GetTraceId() string
+	GetTraceID() string
 	AddNewTags(newTags []tags.ITag)
 	MergeTags() []tags.ITag
 	CalculateTagsDiff() *TagDiff
 	IsBlockTaggable() bool
-	GetResourceId() string
+	GetResourceID() string
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
