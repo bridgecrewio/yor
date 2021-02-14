@@ -92,7 +92,7 @@ yor -d . --output cli --output-json-file result.json
 
 #### Prerequisites
 
-An example can be found in `yor_plugins/example`
+An example can be found in `tests/yor_plugins/example`
 
 1. Create tags implementing the `ITag` interface.
 2. If you wish to override an existing tag, make the tag's method `GetPriority()` return a positive number. Otherwise, return `0` or a negative number.
@@ -108,8 +108,8 @@ var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
 #### Running yor
 
 ```sh
-yor --custom-tagger yor_plugins/example
-# run yor with custom tags located in yor_plugins/example
+yor --custom-tagger tests/yor_plugins/example
+# run yor with custom tags located in tests/yor_plugins/example
 ```
 
 
