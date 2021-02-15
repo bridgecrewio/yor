@@ -3,10 +3,11 @@ package runner
 import (
 	"bridgecrewio/yor/common/gitservice"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"testing"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/stretchr/testify/assert"
 )

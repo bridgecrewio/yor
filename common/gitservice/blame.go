@@ -1,8 +1,9 @@
 package gitservice
 
 import (
-	"github.com/go-git/go-git/v5"
 	"time"
+
+	"github.com/go-git/go-git/v5"
 )
 
 type GitBlame struct {
