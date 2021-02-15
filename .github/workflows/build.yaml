@@ -94,6 +94,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
   releases-matrix:
+    needs:
+      - create-release
     name: Release Go Binary
     runs-on: ubuntu-latest
     strategy:
