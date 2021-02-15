@@ -26,8 +26,6 @@ type IBlock interface {
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
-	GetNewOwner() string
-	GetPreviousOwner() string
 	GetTraceID() string
 	AddNewTags(newTags []tags.ITag)
 	MergeTags() []tags.ITag
@@ -120,4 +118,18 @@ func (b *Block) IsBlockTaggable() bool {
 
 func (b *Block) GetFilePath() string {
 	return b.FilePath
+}
+
+func (b *Block) GetTraceID() string {
+	for _, tag := range b.GetExistingTags() {
+		if val, ok := tag.(*tags.YorTraceTag); ok {
+			return val.GetValue()
+		}
+	}
+	for _, tag := range b.GetNewTags() {
+		if val, ok := tag.(*tags.YorTraceTag); ok {
+			return val.GetValue()
+		}
+	}
+	return ""
 }
