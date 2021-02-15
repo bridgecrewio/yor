@@ -5,8 +5,10 @@ import (
 	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-config-inspect/tfconfig"
+	"github.com/hashicorp/terraform/addrs"
+	"github.com/hashicorp/terraform/plugin/discovery"
 	"io/ioutil"
 	"os"
 	"path"
@@ -19,6 +21,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/hashicorp/terraform/command"
+	"github.com/hashicorp/terraform/internal/initwd"
 	"github.com/minamijoyo/tfschema/tfschema"
 	"github.com/mitchellh/cli"
 )
@@ -80,10 +83,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	}
 
 	if p.tagModules {
-		modulesDirectories, err = p.getModulesDirectories(directory)
-		if err != nil {
-			return nil, err
-		}
+		modulesDirectories = p.getModulesDirectories(directory)
 	} else {
 		modulesDirectories = []string{directory}
 	}
@@ -108,30 +108,65 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
-func (p *TerrraformParser) getModulesDirectories(directory string) ([]string, error) {
-	errMsg := "failed to get all modules directories because %s"
-	modulesJSONFile, err := os.Open(directory + TerraformOutputDir + "/modules/modules.json")
-	var modulesFile ModulesFile
-	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-
-	moduleFileData, _ := ioutil.ReadAll(modulesJSONFile)
-	err = json.Unmarshal(moduleFileData, &modulesFile)
-	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-
+func (p *TerrraformParser) getModulesDirectories(directory string) []string {
 	modulesDirectories := make([]string, 0)
-	for _, entry := range modulesFile.Modules {
-		moduleDir := path.Join(directory, entry.Source)
+	mod, diagnostics := tfconfig.LoadModule(directory)
+	if diagnostics != nil && diagnostics.HasErrors() {
+		hclErrors := diagnostics.Error()
+		logger.Warning(fmt.Sprintf("failed to parse hcl module in directory %s because of errors %s", directory, hclErrors))
+		return modulesDirectories
+	}
+
+	if mod == nil {
+		return modulesDirectories
+	}
+
+	for _, moduleCall := range mod.ModuleCalls {
+		moduleDir := path.Join(directory, moduleCall.Source)
 		if _, err := os.Stat(moduleDir); !os.IsNotExist(err) && !common.InSlice(modulesDirectories, moduleDir) {
 			// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
 			modulesDirectories = append(modulesDirectories, moduleDir)
 		}
 	}
 
-	return modulesDirectories, nil
+	return modulesDirectories
+}
+
+func (p *TerrraformParser) installProvider(directory string) {
+	config, diagnostics := initwd.LoadConfig(directory, TerraformOutputDir+"/modules")
+	if diagnostics != nil && diagnostics.HasErrors() {
+		logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", directory, diagnostics.Err()))
+	}
+	configDeps, diagnostics := config.ProviderDependencies()
+	if diagnostics != nil && diagnostics.HasErrors() {
+		logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", directory, diagnostics.Err()))
+	}
+	providers := configDeps.AllPluginRequirements()
+
+	initCommand := &command.InitCommand{
+		Meta: command.Meta{
+			Ui:              &cli.MockUi{},
+			OverrideDataDir: TerraformOutputDir,
+		},
+	}
+
+	providerInstaller := &discovery.ProviderInstaller{
+		Dir:                   TerraformOutputDir + "/plugins",
+		PluginProtocolVersion: discovery.PluginInstallProtocolVersion,
+		SkipVerify:            true,
+		Ui:                    &cli.MockUi{},
+		Services:              initCommand.Services,
+	}
+	for provider, reqd := range providers {
+		pty := addrs.NewLegacyProvider(provider)
+		_, diagnostics, err := providerInstaller.Get(pty, reqd.Versions)
+		if diagnostics != nil && diagnostics.HasErrors() {
+			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", directory, diagnostics.Err()))
+		}
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", directory, err))
+		}
+	}
 }
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
