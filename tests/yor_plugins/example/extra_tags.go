@@ -1,3 +1,3 @@
 package main
 
-var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
+var ExtraTags = []interface{}{&GitOwnerTag{}, &CheckovTag{}}

@@ -1,8 +1,12 @@
 package runner
 
 import (
+	"bridgecrewio/yor/common/gitservice"
 	"fmt"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -17,10 +21,24 @@ func Test_loadExternalTags(t *testing.T) {
 			t.Errorf("loadExternalTags() error = %v", err)
 			return
 		}
-		expectedTags := map[string]string{"yor_checkov": "checkov", "yor_terragoat": "terragoat"}
+		expectedTags := map[string]string{"yor_checkov": "checkov", "git_owner": "bana"}
 		assert.Equal(t, len(expectedTags), len(gotTags))
-
+		now := time.Now()
+		yesterday := now.AddDate(0, 0, -1)
+		gitBlame := gitservice.GitBlame{
+			GitOrg:        "bridgecrewio",
+			GitRepository: "yor",
+			BlamesByLine: map[int]*git.Line{0: {
+				Author: "bana",
+				Date:   now,
+				Hash:   plumbing.NewHash("0"),
+			}, 1: {Author: "shati",
+				Date: yesterday,
+				Hash: plumbing.NewHash("1")}}}
 		for _, tag := range gotTags {
+			tag.Init()
+			err := tag.CalculateValue(&gitBlame)
+			print(err)
 			key := tag.GetKey()
 			value := tag.GetValue()
 			assert.Equal(t, expectedTags[key], value)
