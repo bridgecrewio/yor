@@ -45,20 +45,20 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 	}
 }
 
-func (e *loggingService) Debug(args ...string) {
-	e.log(DEBUG, args...)
+func Debug(args ...string) {
+	Logger.log(DEBUG, args...)
 }
 
-func (e *loggingService) Info(args ...string) {
-	e.log(INFO, args...)
+func Info(args ...string) {
+	Logger.log(INFO, args...)
 }
 
-func (e *loggingService) Warning(args ...string) {
-	e.log(WARNING, args...)
+func Warning(args ...string) {
+	Logger.log(WARNING, args...)
 }
 
-func (e *loggingService) Error(args ...string) {
-	e.log(ERROR, args...)
+func Error(args ...string) {
+	Logger.log(ERROR, args...)
 }
 
 func (e *loggingService) SetLogLevel(inputLogLevel string) {
