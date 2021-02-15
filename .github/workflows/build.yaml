@@ -7,11 +7,7 @@ on:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        go-version: [ 1.15.x ]
-        platform: [ ubuntu-latest ]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -49,3 +45,51 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tool_name: golangci-lint
           fail_on_error: true
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: build
+        run: go build
+  create-release:
+    runs-on: ubuntu-latest
+    needs:
+      - test-build
+      - test
+      - linter
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          echo "new tag: $new_tag"
+          echo "package common\n\nconst Version = \"$new_tag\"" > common/version.go
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Tag new version" common/version.go
+          git push origin
+          git push origin --tags
+          echo $new_tag
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
