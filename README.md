@@ -88,7 +88,7 @@ yor -d . --output cli --output-json-file result.json
 # will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
 ```
 
-### Loading External Checks Using Plugins
+### Loading External Tags Using Plugins
 
 #### Prerequisites
 
