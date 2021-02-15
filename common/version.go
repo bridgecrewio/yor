@@ -1,1 +1,3 @@
-package common\n\nconst Version = "0.0.2"
+package common
+
+const Version = "0.0.2"
