@@ -30,7 +30,10 @@ func NewTerraformModule(rootDir string) *TerraformModule {
 		logger.Error(diagnostics.Error())
 		return nil
 	}
-	return &TerraformModule{tfModule: tfModule, rootDir: rootDir}
+	terraformModule := &TerraformModule{tfModule: tfModule, rootDir: rootDir}
+	terraformModule.InitProvider()
+
+	return terraformModule
 }
 
 func (t *TerraformModule) InitProvider() {

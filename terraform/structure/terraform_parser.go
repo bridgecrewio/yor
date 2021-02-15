@@ -43,7 +43,6 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	var modulesDirectories []string
 
 	terraformModule := NewTerraformModule(directory)
-	terraformModule.InitProvider()
 
 	if p.tagModules {
 		modulesDirectories = terraformModule.GetModulesDirectories()
