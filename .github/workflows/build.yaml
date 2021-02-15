@@ -121,7 +121,7 @@ jobs:
   darwin-release:
     needs:
       - create-release
-    name: Release Go Binary
+    name: Release Go Mac Binary
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
