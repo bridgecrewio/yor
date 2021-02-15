@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
 	"os"
@@ -60,7 +61,7 @@ func loadExternalTags(tagsPath string) ([]tags.ITag, error) {
 		// extract the symbol "ExtraTags" from the plugin file
 		symExtraTags, err := plug.Lookup("ExtraTags")
 		if err != nil {
-			fmt.Println(err)
+			logger.Warning(err.Error())
 			continue
 		}
 
