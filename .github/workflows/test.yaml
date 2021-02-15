@@ -38,3 +38,15 @@ jobs:
           tool_name: golangci-lint
           fail_on_error: true
           golangci_lint_flags: "--skip-dirs tests/yor_plugins"
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: build
+        run: go build
+      # TODO: Run yor on a repo to see it works
