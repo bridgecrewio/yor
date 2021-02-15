@@ -2,6 +2,8 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/terraform/tagging"
+	"bridgecrewio/yor/tests/utils"
 	"fmt"
 	"strings"
 	"testing"
@@ -114,6 +116,37 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 			lastTwoParts := splitFile[len(splitFile)-2:]
 			assert.True(t, common.InSlice(expectedFiles, strings.Join(lastTwoParts, "/")), fmt.Sprintf("expected file %s to be in directory\n", file))
 		}
+		if err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func TestTerrraformParser_WriteFile(t *testing.T) {
+	blame := utils.SetupBlame(t)
+	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
+		p := &TerrraformParser{}
+		tagger := &tagging.TerraformTagger{}
+		tagger.InitTags(nil)
+		p.Init("../resources/", nil)
+		filePath := "../../tests/terraform/resources/complex_tags.tf"
+
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+
+		for _, block := range parsedBlocks {
+			if block.IsBlockTaggable() {
+				err = tagger.CreateTagsForBlock(block, &blame)
+				if err != nil {
+					t.Error(err)
+				}
+			}
+
+		}
+
+		err = p.WriteFile(filePath, parsedBlocks)
 		if err != nil {
 			t.Error(err)
 		}
