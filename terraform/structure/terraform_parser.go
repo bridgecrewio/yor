@@ -2,6 +2,7 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"encoding/json"
@@ -47,7 +48,7 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 	terraformOutputPath := directory + TerraformOutputDir
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
-		fmt.Printf("directory already initialized\n")
+		logger.Info("directory already initialized\n")
 		return nil
 	}
 	initCommand := &command.InitCommand{
@@ -63,7 +64,7 @@ func (p *TerrraformParser) TerraformInitDirectory(directory string) error {
 		return fmt.Errorf("failed to run terraform init on directory %s, please run it manually", directory)
 	}
 	if _, err := os.Stat(terraformOutputPath); !os.IsNotExist(err) {
-		fmt.Printf("directory initialized successfully\n")
+		logger.Info("directory initialized successfully")
 		return nil
 	}
 
@@ -456,7 +457,7 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 }
 
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
-	logger := hclog.New(&hclog.LoggerOptions{
+	hclLogger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
 		Level:  hclog.Trace,
 		Output: hclog.DefaultOutput,
@@ -467,12 +468,12 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	}
 	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
 		RootDir: p.rootDir,
-		Logger:  logger,
+		Logger:  hclLogger,
 	})
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
-			logger.Warn(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
+			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
 		}
 		return nil
 	}

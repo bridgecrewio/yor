@@ -2,12 +2,14 @@ package runner
 
 import (
 	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
 	tfTagging "bridgecrewio/yor/terraform/tagging"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -23,7 +25,7 @@ type Runner struct {
 func (r *Runner) Init(dir string, extraTags []tags.ITag) error {
 	gitService, err := gitservice.NewGitService(dir)
 	if err != nil {
-		return err
+		logger.Error("Failed to initialize git service")
 	}
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
@@ -44,7 +46,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	var files []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			logger.Error("Failed to scan dir", path)
 		}
 		if !info.IsDir() {
 			files = append(files, path)
@@ -52,14 +54,11 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		logger.Error("Failed to run Walk() on root dir", dir)
 	}
 
 	for _, file := range files {
-		err = r.TagFile(file)
-		if err != nil {
-			return nil, err
-		}
+		r.TagFile(file)
 	}
 	//	TODO - return Report's result from this method
 	reportService := reports.ReportService{}
@@ -67,23 +66,22 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	return reportService.CreateReport(), nil
 }
 
-func (r *Runner) TagFile(file string) error {
+func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
-			return err
+			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+			continue
 		}
 		for _, block := range blocks {
 			for _, tagger := range r.taggers {
 				if block.IsBlockTaggable() {
 					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
 					if err != nil {
-						return err
+						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
+						continue
 					}
-					err = tagger.CreateTagsForBlock(block, blame)
-					if err != nil {
-						return err
-					}
+					tagger.CreateTagsForBlock(block, blame)
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
@@ -96,6 +94,4 @@ func (r *Runner) TagFile(file string) error {
 
 	// TODO: support multiple output formats according to args
 	r.reportingService.PrintToStdout()
-
-	return nil
 }

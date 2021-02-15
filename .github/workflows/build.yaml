@@ -7,16 +7,12 @@ on:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        go-version: [ 1.15.x ]
-        platform: [ ubuntu-latest ]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
+          go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v2
       - name: "Terraform Init"
@@ -47,3 +43,81 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tool_name: golangci-lint
           fail_on_error: true
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: build
+        run: go build
+        # TODO: Run yor on a repo to see it works
+  create-release:
+    runs-on: ubuntu-latest
+    needs:
+      - integration-tests
+      - test
+      - linter
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          echo "new tag: $new_tag"
+          echo "package common" > common/version.go
+          echo "" >> common/version.go
+          echo "const Version = \"$new_tag\"" >> common/version.go
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Tag new version" common/version.go
+          git push origin
+          git tag $new_tag
+          git push origin --tags
+          echo "::set-output name=version::$new_tag"
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+  linux-windows-matrix:
+    needs:
+      - create-release
+    name: Release Go Binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64
+        goos: [linux, windows, darwin]
+        goarch: ["386", amd64]
+        exclude:
+          - goarch: 386
+            goos: darwin
+    steps:
+      - uses: actions/checkout@v2
+      - uses: wangyoucao577/go-release-action@v1.14
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          goversion: "https://dl.google.com/go/go1.13.15.linux-amd64.tar.gz"
+          binary_name: "yor"
+          extra_files: LICENSE README.md
+          release_tag: ${{ needs.create-release.outputs.version }}
