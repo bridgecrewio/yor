@@ -82,7 +82,7 @@ jobs:
           git commit -m "Tag new version" common/version.go
           git push origin
           git push origin --tags
-          echo $new_tag
+          echo "::set-output name=version::$new_tag"
         id: version
       - name: release
         uses: actions/create-release@v1
