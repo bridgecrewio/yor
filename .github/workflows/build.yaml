@@ -60,6 +60,8 @@ jobs:
       - test-build
       - test
       - linter
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -113,4 +115,4 @@ jobs:
           goversion: "https://dl.google.com/go/go1.15.5.linux-amd64.tar.gz"
           binary_name: "yor"
           extra_files: LICENSE README.md
-          release_tag: ${{ steps.version.outputs.version }}
+          release_tag: ${{ needs.create-release.outputs.version }}
