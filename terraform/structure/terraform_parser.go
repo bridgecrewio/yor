@@ -6,13 +6,6 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -20,6 +13,14 @@ import (
 	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
 	"github.com/mitchellh/cli"
+	"github.com/zclconf/go-cty/cty"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 const TerraformOutputDir = "/.terraform"
@@ -174,15 +175,107 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 }
 
 func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock) error {
-	for _, block := range blocks {
-		tfBlock := block.(*TerraformBlock)
-		tfBlock.MergeTags()
+	// read file bytes
+	src, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
-	//parsedBlocks, err := p.ParseFile(filePath)
 
-	// TODO: print to file
-	_ = filePath
+	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
+	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
+	if diagnostics != nil && diagnostics.HasErrors() {
+		hclErrors := diagnostics.Errs()
+		return fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+	}
+
+	if hclFile == nil {
+		return fmt.Errorf("failed to parse hcl file %s", filePath)
+	}
+
+	rawBlocks := hclFile.Body().Blocks()
+	for _, rawBlock := range rawBlocks {
+		rawBlockLabels := rawBlock.Labels()
+		for _, parsedBlock := range blocks {
+			if parsedBlock.IsBlockTaggable() {
+				parsedBlockLabels := parsedBlock.(*TerraformBlock).HclSyntaxBlock.Labels
+				if reflect.DeepEqual(parsedBlockLabels, rawBlockLabels) {
+					p.modifyBlockTags(rawBlock, parsedBlock)
+				}
+				print(parsedBlock)
+			}
+		}
+	}
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_TRUNC, os.ModeAppend)
+	if err != nil {
+		return err
+	}
+	_, err = hclFile.WriteTo(f)
+	if err != nil {
+		return fmt.Errorf("failed to write HCL file %s, %s", filePath, err.Error())
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock structure.IBlock) {
+	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
+	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
+	mergedTags := parsedBlock.MergeTags()
+	rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+	isMergeOpExists := false
+
+	for _, rawTagsToken := range rawTagsTokens {
+		if string(rawTagsToken.Bytes) == "merge" {
+			isMergeOpExists = true
+		}
+	}
+	if !isMergeOpExists {
+		//Insert the merge token, opening and closing parenthesis tokens
+		rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
+			Type:  hclsyntax.TokenIdent,
+			Bytes: []byte("merge"),
+		})
+		rawTagsTokens = InsertToken(rawTagsTokens, 1, &hclwrite.Token{
+			Type:  hclsyntax.TokenOParen,
+			Bytes: []byte("("),
+		})
+		rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
+			Type:  hclsyntax.TokenCParen,
+			Bytes: []byte(")"),
+		})
+	}
+	//Insert a comma token before the merge closing parenthesis
+	rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
+		Type:  hclsyntax.TokenComma,
+		Bytes: []byte(","),
+	})
+	mergedTagsTokens := buildTagsTokens(mergedTags)
+	for _, tagToken := range mergedTagsTokens {
+		rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
+	}
+	//Set the body's tags to the new built tokens
+	rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
+	print(rawTagsTokens, mergedTags, isMergeOpExists, mergedTagsTokens)
+}
+
+func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
+	tagsMap := make(map[string]cty.Value, len(tags))
+	for _, tag := range tags {
+		tagsMap[tag.GetKey()] = cty.StringVal(tag.GetValue())
+	}
+	return hclwrite.TokensForValue(cty.MapVal(tagsMap))
+}
+
+// Insert inserts a value at a specific index in a slice
+func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwrite.Tokens {
+	if len(tokens) == index {
+		return append(tokens, value)
+	}
+	tokens = append(tokens[:index+1], tokens[index:]...)
+	tokens[index] = value
+	return tokens
 }
 
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
