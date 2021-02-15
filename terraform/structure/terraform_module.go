@@ -4,17 +4,20 @@ import (
 	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/logger"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"
 	"github.com/hashicorp/terraform/addrs"
 	"github.com/hashicorp/terraform/moduledeps"
 	"github.com/hashicorp/terraform/plugin/discovery"
 	"github.com/mitchellh/cli"
-	"io/ioutil"
-	"os"
-	"path"
-	"strings"
 )
+
+const PluginsOutputDir = ".plugins"
 
 type TerraformModule struct {
 	tfModule *tfconfig.Module
@@ -31,8 +34,9 @@ func NewTerraformModule(rootDir string) *TerraformModule {
 }
 
 func (t *TerraformModule) InitProvider() {
+	// download terraform plugin into local folder if it doesn't exist
 	pwd, _ := os.Getwd()
-	providersInstallDir := path.Join(pwd, ".plugins")
+	providersInstallDir := path.Join(pwd, PluginsOutputDir)
 
 	moduleDependencies := getProviderDependencies(t.tfModule)
 	providers := moduleDependencies.AllPluginRequirements()

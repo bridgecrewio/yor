@@ -19,8 +19,6 @@ import (
 	"github.com/minamijoyo/tfschema/tfschema"
 )
 
-const TerraformOutputDir = "/.terraform"
-
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
 
 type TerrraformParser struct {
