@@ -108,7 +108,7 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 		directory := "../../tests/terraform/resources/module1"
 		terraformParser := TerrraformParser{}
 		terraformParser.Init(directory, nil)
-		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf"}
+		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf", "module3/main.tf", "module3/outputs.tf"}
 		actualFiles, err := terraformParser.GetSourceFiles(directory)
 		assert.Equal(t, len(expectedFiles), len(actualFiles))
 		for _, file := range actualFiles {

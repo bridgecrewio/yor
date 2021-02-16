@@ -10,10 +10,8 @@ type GitCommitTag struct {
 	Tag
 }
 
-func (t *GitCommitTag) Init() ITag {
+func (t *GitCommitTag) Init() {
 	t.Key = "git_commit"
-
-	return t
 }
 
 func (t *GitCommitTag) CalculateValue(data interface{}) error {
@@ -22,6 +20,6 @@ func (t *GitCommitTag) CalculateValue(data interface{}) error {
 		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
 
-	t.Value = getLatestCommit(gitBlame).Hash.String()
+	t.Value = gitBlame.GetLatestCommit().Hash.String()
 	return nil
 }

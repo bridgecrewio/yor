@@ -21,6 +21,8 @@ jobs:
           tf_actions_version: 0.14.5
           tf_actions_subcommand: "init"
           tf_actions_working_dir: "tests/terraform/resources"
+      - name: Prepare external plugin test
+        run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
       - name: Test
         run: go build -v && go test ./...
   linter:
@@ -35,6 +37,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tool_name: golangci-lint
           fail_on_error: true
+          golangci_lint_flags: "--skip-dirs tests/yor_plugins"
   integration-tests:
     runs-on: ubuntu-latest
     steps:

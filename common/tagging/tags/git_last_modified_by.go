@@ -10,10 +10,8 @@ type GitLastModifiedByTag struct {
 	Tag
 }
 
-func (t *GitLastModifiedByTag) Init() ITag {
+func (t *GitLastModifiedByTag) Init() {
 	t.Key = "git_last_modified_by"
-
-	return t
 }
 
 func (t *GitLastModifiedByTag) CalculateValue(data interface{}) error {
@@ -22,6 +20,6 @@ func (t *GitLastModifiedByTag) CalculateValue(data interface{}) error {
 		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
 
-	t.Value = getLatestCommit(gitBlame).Author
+	t.Value = gitBlame.GetLatestCommit().Author
 	return nil
 }

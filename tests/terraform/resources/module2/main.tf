@@ -9,3 +9,7 @@ resource "aws_s3_bucket" "bucket_module2" {
     "Name" = "bucket2"
   }
 }
+
+module "moduleRef2" {
+  source = "../module3"
+}
