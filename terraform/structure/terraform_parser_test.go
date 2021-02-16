@@ -138,10 +138,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedBlocks {
 			if block.IsBlockTaggable() {
-				err = tagger.CreateTagsForBlock(block, &blame)
-				if err != nil {
-					t.Error(err)
-				}
+				tagger.CreateTagsForBlock(block, &blame)
 			}
 
 		}
