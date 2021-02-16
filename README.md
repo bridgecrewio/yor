@@ -1,6 +1,6 @@
 # Yor
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-83%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-73%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 Automated IaC tagging using external sources of data.
 
@@ -87,6 +87,38 @@ yor -d . -o json
 yor -d . --output cli --output-json-file result.json
 # will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
 ```
+
+### Loading External Tags Using Plugins
+
+#### Prerequisites
+
+An example can be found in `tests/yor_plugins/example`
+
+1. Create tags implementing the `ITag` interface.
+2. If you wish to override an existing tag, make the tag's method `GetPriority()` return a positive number. Otherwise, return `0` or a negative number.
+3. Create a file located in package `main` that exposes a variable `ExtraTags` - array containing pointers to all tags implemented.
+4. Run command `go build -gcflags="all=-N -l" -buildmode=plugin -o <plugin-dir>/extra_tags.so <plugin-dir>/*.go`
+
+```go
+package main
+
+var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
+```
+
+#### Running yor
+
+```sh
+yor --custom-tagger tests/yor_plugins/example
+# run yor with custom tags located in tests/yor_plugins/example
+```
+
+
+#### Troubleshooting
+If you encounter the following error: 
+`plugin was built with a different version of package ...`
+
+Build yor with `go build -gcflags="all=-N -l"`
+
 
 ## Contributing
 

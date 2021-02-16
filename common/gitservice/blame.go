@@ -1,6 +1,10 @@
 package gitservice
 
-import "github.com/go-git/go-git/v5"
+import (
+	"time"
+
+	"github.com/go-git/go-git/v5"
+)
 
 type GitBlame struct {
 	GitOrg        string
@@ -17,4 +21,15 @@ func NewGitBlame(filePath string, lines []int, blameResult *git.BlameResult, git
 	}
 
 	return &gitBlame
+}
+
+func (g *GitBlame) GetLatestCommit() (latestCommit *git.Line) {
+	latestDate := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+	for _, v := range g.BlamesByLine {
+		if latestDate.Before(v.Date) {
+			latestDate = v.Date
+			latestCommit = v
+		}
+	}
+	return
 }
