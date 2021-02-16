@@ -2,6 +2,8 @@ package structure
 
 import (
 	"bridgecrewio/yor/common/tagging/tags"
+	"fmt"
+	"regexp"
 )
 
 type Block struct {
@@ -36,8 +38,12 @@ type IBlock interface {
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
 	isTraced := false
+	var yorTag tags.YorTraceTag
+	yorTag.Init()
+	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		if _, ok := tag.(*tags.YorTraceTag); ok {
+		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+		if _, ok := tag.(*tags.YorTraceTag); ok || match {
 			isTraced = true
 			break
 		}
@@ -45,7 +51,8 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if isTraced {
 		var yorTraceIndex int
 		for index, tag := range newTags {
-			if _, ok := tag.(*tags.YorTraceTag); ok {
+			match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+			if _, ok := tag.(*tags.YorTraceTag); ok || match {
 				yorTraceIndex = index
 			}
 		}
@@ -62,10 +69,17 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 // MergeTags merges the tags and returns only the relevant Yor tags.
 func (b *Block) MergeTags() []tags.ITag {
 	var mergedTags []tags.ITag
-
+	var yorTag tags.YorTraceTag
+	yorTag.Init()
+	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		if val, ok := tag.(*tags.YorTraceTag); ok {
-			mergedTags = append(mergedTags, val)
+		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+		if val, ok := tag.(*tags.YorTraceTag); ok || match {
+			if val != nil {
+				mergedTags = append(mergedTags, val)
+			} else {
+				mergedTags = append(mergedTags, tag)
+			}
 		}
 	}
 

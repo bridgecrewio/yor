@@ -6,18 +6,18 @@ import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
-	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
+	"github.com/zclconf/go-cty/cty"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
@@ -164,13 +164,37 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	isMergeOpExists := false
 
 	for _, rawTagsToken := range rawTagsTokens {
-		fmt.Println(string(rawTagsToken.Type), string(rawTagsToken.Bytes))
 		if string(rawTagsToken.Bytes) == "merge" {
 			isMergeOpExists = true
 			break
 		}
 	}
-	var tagTypes = tags.TagTypes
+	var yorTagTypes = tags.TagTypes
+	var yorTagTypesKeys []string
+	for _, tagType := range yorTagTypes {
+		tagType.Init()
+		yorTagTypesKeys = append(yorTagTypesKeys, tagType.GetKey())
+	}
+	var replacedTags []tags.ITag
+	k := 0
+	for _, tag := range mergedTags {
+		tagReplaced := false
+		strippedTagKey := strings.Replace(tag.GetKey(),`"`,"",-1)
+		if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
+			for _, rawTagsToken := range rawTagsTokens {
+				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+					replacedTags = append(replacedTags, tag)
+					tagReplaced = true
+				}
+			}
+		}
+		if !tagReplaced {
+			//Keep only new tags (non-appearing) in mergedTags
+			mergedTags[k] = tag
+			k++
+		}
+	}
+	mergedTags = mergedTags[:k]
 	if !isMergeOpExists {
 		//Insert the merge token, opening and closing parenthesis tokens
 		rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
@@ -186,7 +210,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			Bytes: []byte(")"),
 		})
 	}
-	for _, tagType := range tagTypes {
+	for _, tagType := range yorTagTypes {
 		fmt.Println(tagType)
 	}
 	//Insert a comma token before the merge closing parenthesis
