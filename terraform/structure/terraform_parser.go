@@ -228,10 +228,13 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	isMergeOpExists := false
 
 	for _, rawTagsToken := range rawTagsTokens {
+		fmt.Println(string(rawTagsToken.Type), string(rawTagsToken.Bytes))
 		if string(rawTagsToken.Bytes) == "merge" {
 			isMergeOpExists = true
+			break
 		}
 	}
+	var tagTypes = tags.TagTypes
 	if !isMergeOpExists {
 		//Insert the merge token, opening and closing parenthesis tokens
 		rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
@@ -246,6 +249,9 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			Type:  hclsyntax.TokenCParen,
 			Bytes: []byte(")"),
 		})
+	}
+	for _, tagType := range tagTypes {
+		fmt.Println(tagType)
 	}
 	//Insert a comma token before the merge closing parenthesis
 	rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
