@@ -27,6 +27,7 @@ type TerrraformParser struct {
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
 	tagModules             bool
+	terraformModule        *TerraformModule
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -34,6 +35,7 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.providerToClientMap = make(map[string]tfschema.Client)
 	p.taggableResourcesCache = make(map[string]bool)
 	p.tagModules = true
+	p.terraformModule = NewTerraformModule(rootDir)
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
@@ -43,10 +45,8 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	errMsg := "failed to get .tf files because %s"
 	var modulesDirectories []string
 
-	terraformModule := NewTerraformModule(directory)
-
 	if p.tagModules {
-		modulesDirectories = terraformModule.GetModulesDirectories()
+		modulesDirectories = p.terraformModule.GetModulesDirectories()
 	} else {
 		modulesDirectories = []string{directory}
 	}
@@ -156,90 +156,97 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 }
 
 func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock structure.IBlock) {
+	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
-	mergedTags := parsedBlock.MergeTags()
-	rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-	isMergeOpExists := false
-	existingParsedTags := p.parseTagAttribute(rawTagsTokens)
-	for _, rawTagsToken := range rawTagsTokens {
-		if string(rawTagsToken.Bytes) == "merge" {
-			isMergeOpExists = true
-			break
+	if tagsAttribute != nil {
+		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		isMergeOpExists := false
+		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
+		for _, rawTagsToken := range rawTagsTokens {
+			if string(rawTagsToken.Bytes) == "merge" {
+				isMergeOpExists = true
+				break
+			}
 		}
-	}
-	var yorTagTypes = tags.TagTypes
-	var yorTagTypesKeys []string
-	for _, tagType := range yorTagTypes {
-		tagType.Init()
-		yorTagTypesKeys = append(yorTagTypesKeys, tagType.GetKey())
-	}
-	var replacedTags []tags.ITag
-	k := 0
-	for _, tag := range mergedTags {
-		tagReplaced := false
-		strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
-		if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
-			for _, rawTagsToken := range rawTagsTokens {
-				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
-					replacedTags = append(replacedTags, tag)
-					tagReplaced = true
+		var yorTagTypes = tags.TagTypes
+		var yorTagTypesKeys []string
+		for _, tagType := range yorTagTypes {
+			tagType.Init()
+			yorTagTypesKeys = append(yorTagTypesKeys, tagType.GetKey())
+		}
+		var replacedTags []tags.ITag
+		k := 0
+		for _, tag := range mergedTags {
+			tagReplaced := false
+			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
+			if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
+				for _, rawTagsToken := range rawTagsTokens {
+					if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+						replacedTags = append(replacedTags, tag)
+						tagReplaced = true
+					}
+				}
+			}
+			if !tagReplaced {
+				// Keep only new tags (non-appearing) in mergedTags
+				mergedTags[k] = tag
+				k++
+			}
+		}
+		mergedTags = mergedTags[:k]
+		mergedTagsTokens := buildTagsTokens(mergedTags)
+		if !isMergeOpExists && mergedTagsTokens != nil {
+			// Insert the merge token, opening and closing parenthesis tokens
+			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
+				Type:  hclsyntax.TokenIdent,
+				Bytes: []byte("merge"),
+			})
+			rawTagsTokens = InsertToken(rawTagsTokens, 1, &hclwrite.Token{
+				Type:  hclsyntax.TokenOParen,
+				Bytes: []byte("("),
+			})
+			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
+				Type:  hclsyntax.TokenCParen,
+				Bytes: []byte(")"),
+			})
+		}
+		for _, replacedTag := range replacedTags {
+			tagKey := replacedTag.GetKey()
+			var existingTagValue string
+			if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
+				quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
+				existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
+			}
+			replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
+			foundKey := false
+			for _, rawToken := range rawTagsTokens {
+				if string(rawToken.Bytes) == tagKey {
+					foundKey = true
+				}
+				if string(rawToken.Bytes) == existingTagValue && foundKey {
+					rawToken.Bytes = []byte(replacedValue)
 				}
 			}
 		}
-		if !tagReplaced {
-			// Keep only new tags (non-appearing) in mergedTags
-			mergedTags[k] = tag
-			k++
-		}
-	}
-	mergedTags = mergedTags[:k]
-	mergedTagsTokens := buildTagsTokens(mergedTags)
-	if !isMergeOpExists && mergedTagsTokens != nil {
-		// Insert the merge token, opening and closing parenthesis tokens
-		rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
-			Type:  hclsyntax.TokenIdent,
-			Bytes: []byte("merge"),
-		})
-		rawTagsTokens = InsertToken(rawTagsTokens, 1, &hclwrite.Token{
-			Type:  hclsyntax.TokenOParen,
-			Bytes: []byte("("),
-		})
-		rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
-			Type:  hclsyntax.TokenCParen,
-			Bytes: []byte(")"),
-		})
-	}
-	for _, replacedTag := range replacedTags {
-		tagKey := replacedTag.GetKey()
-		var existingTagValue string
-		if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
-			quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
-			existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
-		}
-		replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
-		foundKey := false
-		for _, rawToken := range rawTagsTokens {
-			if string(rawToken.Bytes) == tagKey {
-				foundKey = true
-			}
-			if string(rawToken.Bytes) == existingTagValue && foundKey {
-				rawToken.Bytes = []byte(replacedValue)
+		// Insert a comma token before the merge closing parenthesis
+		if mergedTagsTokens != nil {
+			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
+				Type:  hclsyntax.TokenComma,
+				Bytes: []byte(","),
+			})
+			for _, tagToken := range mergedTagsTokens {
+				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
 			}
 		}
-	}
-	// Insert a comma token before the merge closing parenthesis
-	if mergedTagsTokens != nil {
-		rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
-			Type:  hclsyntax.TokenComma,
-			Bytes: []byte(","),
-		})
-		for _, tagToken := range mergedTagsTokens {
-			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
+		// Set the body's tags to the new built tokens
+		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
+	} else {
+		mergedTagsTokens := buildTagsTokens(mergedTags)
+		if mergedTagsTokens != nil {
+			rawBlock.Body().SetAttributeRaw(tagsAttributeName, mergedTagsTokens)
 		}
 	}
-	// Set the body's tags to the new built tokens
-	rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 }
 
 func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {

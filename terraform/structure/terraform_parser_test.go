@@ -130,7 +130,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		p := &TerrraformParser{}
 		tagger := &tagging.TerraformTagger{}
 		tagger.InitTags(nil)
-		p.Init("../resources/", nil)
+		p.Init("../../tests/terraform/resources", nil)
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		parsedBlocks, err := p.ParseFile(filePath)

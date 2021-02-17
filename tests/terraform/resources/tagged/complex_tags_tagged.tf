@@ -38,7 +38,7 @@ resource "aws_vpc" "vpc_tags_one_line" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
+    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
   })
 }
 
@@ -51,7 +51,7 @@ resource "aws_s3_bucket" "bucket_var_tags" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
+    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
   })
 }
 
@@ -94,6 +94,36 @@ resource "aws_instance" "instance_merged_override" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
+    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
   })
+}
+
+resource "aws_instance" "instance_empty_tag" {
+  ami           = ""
+  instance_type = ""
+  tags = merge({}, {
+    git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
+    git_file             = "README.md"
+    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_by = "schosterbarak@gmail.com"
+    git_modifiers        = "jonjozwiak/schosterbarak"
+    git_org              = "bridgecrewio"
+    git_repo             = "terragoat"
+    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+  })
+}
+
+resource "aws_instance" "instance_no_tags" {
+  ami           = ""
+  instance_type = ""
+  tags = {
+    git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
+    git_file             = "README.md"
+    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_by = "schosterbarak@gmail.com"
+    git_modifiers        = "jonjozwiak/schosterbarak"
+    git_org              = "bridgecrewio"
+    git_repo             = "terragoat"
+    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+  }
 }
