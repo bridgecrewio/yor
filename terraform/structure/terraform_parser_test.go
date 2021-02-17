@@ -73,7 +73,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 
 	t.Run("parse complex tags", func(t *testing.T) {
 		p := &TerrraformParser{}
-		p.Init("../resources/", nil)
+		p.Init("../../tests/terraform/resources", nil)
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
 			"vpc_tags_one_line":        {"\"Name\"": "\"tag-for-s3\"", "\"Environment\"": "\"prod\""},
