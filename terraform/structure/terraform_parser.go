@@ -138,7 +138,6 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 				if reflect.DeepEqual(parsedBlockLabels, rawBlockLabels) {
 					p.modifyBlockTags(rawBlock, parsedBlock)
 				}
-				print(parsedBlock)
 			}
 		}
 	}
