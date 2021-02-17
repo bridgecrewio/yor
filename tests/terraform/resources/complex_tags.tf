@@ -49,3 +49,14 @@ resource "aws_instance" "instance_merged_override" {
   instance_type = ""
   tags = merge(var.new_env_tag, {"Environment" = "new_env"})
 }
+
+resource "aws_instance" "instance_empty_tag" {
+  ami = ""
+  instance_type = ""
+  tags = {}
+}
+
+resource "aws_instance" "instance_no_tags" {
+  ami = ""
+  instance_type = ""
+}

@@ -92,6 +92,10 @@ func (r *Runner) TagFile(file string) {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
+			err = parser.WriteFile(file, blocks, file)
+			if err != nil {
+				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
+			}
 			//	TODO: if block is a local module, run TagDir on it as well
 			//  Need to avoid cycles here!!
 		}

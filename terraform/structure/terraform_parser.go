@@ -6,17 +6,18 @@ import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/minamijoyo/tfschema/tfschema"
+	"github.com/zclconf/go-cty/cty"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strconv"
+	"strings"
 )
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
@@ -26,6 +27,7 @@ type TerrraformParser struct {
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
 	tagModules             bool
+	terraformModule        *TerraformModule
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -33,6 +35,7 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.providerToClientMap = make(map[string]tfschema.Client)
 	p.taggableResourcesCache = make(map[string]bool)
 	p.tagModules = true
+	p.terraformModule = NewTerraformModule(rootDir)
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
@@ -42,10 +45,8 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	errMsg := "failed to get .tf files because %s"
 	var modulesDirectories []string
 
-	terraformModule := NewTerraformModule(directory)
-
 	if p.tagModules {
-		modulesDirectories = terraformModule.GetModulesDirectories()
+		modulesDirectories = p.terraformModule.GetModulesDirectories()
 	} else {
 		modulesDirectories = []string{directory}
 	}
@@ -110,14 +111,163 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	return parsedBlocks, nil
 }
 
-func (p *TerrraformParser) WriteFile(filePath string, blocks []structure.IBlock) error {
-	for _, block := range blocks {
-		tfBlock := block.(*TerraformBlock)
-		tfBlock.MergeTags()
+func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
+	// read file bytes
+	src, err := ioutil.ReadFile(readFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
-	// TODO: print to file
-	_ = filePath
+
+	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
+	hclFile, diagnostics := hclwrite.ParseConfig(src, readFilePath, hcl.InitialPos)
+	if diagnostics != nil && diagnostics.HasErrors() {
+		hclErrors := diagnostics.Errs()
+		return fmt.Errorf("failed to parse hcl file %s because of errors %s", readFilePath, hclErrors)
+	}
+
+	if hclFile == nil {
+		return fmt.Errorf("failed to parse hcl file %s", readFilePath)
+	}
+
+	rawBlocks := hclFile.Body().Blocks()
+	for _, rawBlock := range rawBlocks {
+		rawBlockLabels := rawBlock.Labels()
+		for _, parsedBlock := range blocks {
+			if parsedBlock.IsBlockTaggable() {
+				parsedBlockLabels := parsedBlock.(*TerraformBlock).HclSyntaxBlock.Labels
+				if reflect.DeepEqual(parsedBlockLabels, rawBlockLabels) {
+					p.modifyBlockTags(rawBlock, parsedBlock)
+				}
+			}
+		}
+	}
+	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = hclFile.WriteTo(f)
+	if err != nil {
+		return fmt.Errorf("failed to write HCL file %s, %s", readFilePath, err.Error())
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
 	return nil
+}
+
+func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock structure.IBlock) {
+	mergedTags := parsedBlock.MergeTags()
+	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
+	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
+	if tagsAttribute != nil {
+		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		isMergeOpExists := false
+		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
+		for _, rawTagsToken := range rawTagsTokens {
+			if string(rawTagsToken.Bytes) == "merge" {
+				isMergeOpExists = true
+				break
+			}
+		}
+		var yorTagTypes = tags.TagTypes
+		var yorTagTypesKeys []string
+		for _, tagType := range yorTagTypes {
+			tagType.Init()
+			yorTagTypesKeys = append(yorTagTypesKeys, tagType.GetKey())
+		}
+		var replacedTags []tags.ITag
+		k := 0
+		for _, tag := range mergedTags {
+			tagReplaced := false
+			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
+			if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
+				for _, rawTagsToken := range rawTagsTokens {
+					if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+						replacedTags = append(replacedTags, tag)
+						tagReplaced = true
+					}
+				}
+			}
+			if !tagReplaced {
+				// Keep only new tags (non-appearing) in mergedTags
+				mergedTags[k] = tag
+				k++
+			}
+		}
+		mergedTags = mergedTags[:k]
+		mergedTagsTokens := buildTagsTokens(mergedTags)
+		if !isMergeOpExists && mergedTagsTokens != nil {
+			// Insert the merge token, opening and closing parenthesis tokens
+			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
+				Type:  hclsyntax.TokenIdent,
+				Bytes: []byte("merge"),
+			})
+			rawTagsTokens = InsertToken(rawTagsTokens, 1, &hclwrite.Token{
+				Type:  hclsyntax.TokenOParen,
+				Bytes: []byte("("),
+			})
+			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
+				Type:  hclsyntax.TokenCParen,
+				Bytes: []byte(")"),
+			})
+		}
+		for _, replacedTag := range replacedTags {
+			tagKey := replacedTag.GetKey()
+			var existingTagValue string
+			if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
+				quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
+				existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
+			}
+			replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
+			foundKey := false
+			for _, rawToken := range rawTagsTokens {
+				if string(rawToken.Bytes) == tagKey {
+					foundKey = true
+				}
+				if string(rawToken.Bytes) == existingTagValue && foundKey {
+					rawToken.Bytes = []byte(replacedValue)
+				}
+			}
+		}
+		// Insert a comma token before the merge closing parenthesis
+		if mergedTagsTokens != nil {
+			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
+				Type:  hclsyntax.TokenComma,
+				Bytes: []byte(","),
+			})
+			for _, tagToken := range mergedTagsTokens {
+				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
+			}
+		}
+		// Set the body's tags to the new built tokens
+		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
+	} else {
+		mergedTagsTokens := buildTagsTokens(mergedTags)
+		if mergedTagsTokens != nil {
+			rawBlock.Body().SetAttributeRaw(tagsAttributeName, mergedTagsTokens)
+		}
+	}
+}
+
+func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
+	tagsMap := make(map[string]cty.Value, len(tags))
+	for _, tag := range tags {
+		tagsMap[tag.GetKey()] = cty.StringVal(tag.GetValue())
+	}
+	if len(tagsMap) > 0 {
+		return hclwrite.TokensForValue(cty.MapVal(tagsMap))
+	}
+	return nil
+}
+
+// Insert inserts a value at a specific index in a slice
+func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwrite.Tokens {
+	if len(tokens) == index {
+		return append(tokens, value)
+	}
+	tokens = append(tokens[:index+1], tokens[index:]...)
+	tokens[index] = value
+	return tokens
 }
 
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
