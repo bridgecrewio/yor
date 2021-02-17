@@ -66,6 +66,8 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Wait for coverage to update
+        run: sleep 10s
       - name: Install Go
         uses: actions/setup-go@v2
         with:
