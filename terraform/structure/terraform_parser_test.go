@@ -132,7 +132,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		tagger.InitTags(nil)
 		p.Init("../resources/", nil)
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
-		writeFilePath := "../../tests/terraform/resources/complex_tags_tagged.tf"
+		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
