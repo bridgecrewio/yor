@@ -160,7 +160,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 					isYorTagExists := false
 					yorTagKey := tagType.GetKey()
 					for _, tag := range block.GetExistingTags() {
-						if tag.GetKey() == yorTagKey || strings.Replace(tag.GetKey(), `"`, "", -1) == yorTagKey {
+						if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
 							isYorTagExists = true
 						}
 					}

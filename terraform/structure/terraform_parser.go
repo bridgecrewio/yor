@@ -178,7 +178,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	k := 0
 	for _, tag := range mergedTags {
 		tagReplaced := false
-		strippedTagKey := strings.Replace(tag.GetKey(), `"`, "", -1)
+		strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
 		if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
 			for _, rawTagsToken := range rawTagsTokens {
 				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
@@ -188,7 +188,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			}
 		}
 		if !tagReplaced {
-			//Keep only new tags (non-appearing) in mergedTags
+			// Keep only new tags (non-appearing) in mergedTags
 			mergedTags[k] = tag
 			k++
 		}
@@ -196,7 +196,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	mergedTags = mergedTags[:k]
 	mergedTagsTokens := buildTagsTokens(mergedTags)
 	if !isMergeOpExists && mergedTagsTokens != nil {
-		//Insert the merge token, opening and closing parenthesis tokens
+		// Insert the merge token, opening and closing parenthesis tokens
 		rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
 			Type:  hclsyntax.TokenIdent,
 			Bytes: []byte("merge"),
@@ -213,11 +213,11 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	for _, replacedTag := range replacedTags {
 		tagKey := replacedTag.GetKey()
 		var existingTagValue string
-		if existingTagValue = strings.Replace(existingParsedTags[tagKey], `"`, "", -1); existingTagValue == "" {
+		if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
 			quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
-			existingTagValue = strings.Replace(existingParsedTags[quotedTagKey], `"`, "", -1)
+			existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
 		}
-		replacedValue := strings.Replace(replacedTag.GetValue(), `"`, "", -1)
+		replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
 		foundKey := false
 		for _, rawToken := range rawTagsTokens {
 			if string(rawToken.Bytes) == tagKey {
@@ -228,7 +228,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			}
 		}
 	}
-	//Insert a comma token before the merge closing parenthesis
+	// Insert a comma token before the merge closing parenthesis
 	if mergedTagsTokens != nil {
 		rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
 			Type:  hclsyntax.TokenComma,
@@ -238,7 +238,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
 		}
 	}
-	//Set the body's tags to the new built tokens
+	// Set the body's tags to the new built tokens
 	rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 }
 
