@@ -13,6 +13,7 @@ var TagTypes = []ITag{
 	&GitModifiersTag{},
 	&GitLastModifiedAtTag{},
 	&GitLastModifiedByTag{},
+	&YorTraceTag{},
 }
 
 type ITag interface {
