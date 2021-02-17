@@ -92,7 +92,7 @@ func (r *Runner) TagFile(file string) {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
-			err = parser.WriteFile(file, blocks)
+			err = parser.WriteFile(file, blocks, file)
 			if err != nil {
 				logger.Error(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
 			}
