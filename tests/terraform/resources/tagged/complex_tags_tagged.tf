@@ -38,7 +38,7 @@ resource "aws_vpc" "vpc_tags_one_line" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "17dc538c-bbed-488e-b5cf-b8eb1e433dc7"
+    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
   })
 }
 
@@ -51,7 +51,7 @@ resource "aws_s3_bucket" "bucket_var_tags" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "17dc538c-bbed-488e-b5cf-b8eb1e433dc7"
+    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
   })
 }
 
@@ -94,6 +94,6 @@ resource "aws_instance" "instance_merged_override" {
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "17dc538c-bbed-488e-b5cf-b8eb1e433dc7"
+    yor_trace            = "64f1a787-4368-4587-8555-92a6df59adf9"
   })
 }
