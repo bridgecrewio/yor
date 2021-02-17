@@ -2,6 +2,9 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/common/tagging/tags"
+	"bridgecrewio/yor/terraform/tagging"
+	"bridgecrewio/yor/tests/utils"
 	"fmt"
 	"strings"
 	"testing"
@@ -70,7 +73,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 
 	t.Run("parse complex tags", func(t *testing.T) {
 		p := &TerrraformParser{}
-		p.Init("../resources/", nil)
+		p.Init("../../tests/terraform/resources", nil)
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
 			"vpc_tags_one_line":        {"\"Name\"": "\"tag-for-s3\"", "\"Environment\"": "\"prod\""},
@@ -116,6 +119,56 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 		}
 		if err != nil {
 			t.Error(err)
+		}
+	})
+}
+
+func TestTerrraformParser_WriteFile(t *testing.T) {
+	blame := utils.SetupBlame(t)
+	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
+		var yorTagTypes = tags.TagTypes
+		p := &TerrraformParser{}
+		tagger := &tagging.TerraformTagger{}
+		tagger.InitTags(nil)
+		p.Init("../../tests/terraform/resources", nil)
+		filePath := "../../tests/terraform/resources/complex_tags.tf"
+		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+
+		for _, block := range parsedBlocks {
+			if block.IsBlockTaggable() {
+				tagger.CreateTagsForBlock(block, &blame)
+			}
+
+		}
+
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		for _, block := range parsedTaggedFileTags {
+			if block.IsBlockTaggable() {
+				for _, tagType := range yorTagTypes {
+					isYorTagExists := false
+					yorTagKey := tagType.GetKey()
+					for _, tag := range block.GetExistingTags() {
+						if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
+							isYorTagExists = true
+						}
+					}
+					if !isYorTagExists {
+						t.Error(fmt.Sprintf("tag not found on merged block %v", tagType))
+					}
+				}
+			}
 		}
 	})
 }
