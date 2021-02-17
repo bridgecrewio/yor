@@ -42,7 +42,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	yorTag.Init()
 	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
 		if _, ok := tag.(*tags.YorTraceTag); ok || match {
 			isTraced = true
 			break
@@ -51,7 +51,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if isTraced {
 		var yorTraceIndex int
 		for index, tag := range newTags {
-			match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+			match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
 			if _, ok := tag.(*tags.YorTraceTag); ok || match {
 				yorTraceIndex = index
 			}
@@ -73,7 +73,7 @@ func (b *Block) MergeTags() []tags.ITag {
 	yorTag.Init()
 	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`,regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
+		match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(yorTagKeyName)), []byte(tag.GetKey()))
 		if val, ok := tag.(*tags.YorTraceTag); ok || match {
 			if val != nil {
 				mergedTags = append(mergedTags, val)
