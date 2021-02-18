@@ -21,6 +21,8 @@ jobs:
 #          tf_actions_version: 0.14.5
 #          tf_actions_subcommand: "init"
 #          tf_actions_working_dir: "tests/terraform/resources"
+      - name: Install terraform
+        uses: hashicorp/setup-terraform@v1
       - name: Prepare external plugin test
         run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
       - name: Test
