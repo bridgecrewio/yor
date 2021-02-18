@@ -83,9 +83,11 @@ func (r *Runner) TagFile(file string) {
 			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
 			continue
 		}
+		isFileTaggable := false
 		for _, block := range blocks {
 			for _, tagger := range r.taggers {
 				if block.IsBlockTaggable() {
+					isFileTaggable = true
 					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
 					if err != nil {
 						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
@@ -95,6 +97,8 @@ func (r *Runner) TagFile(file string) {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
+		}
+		if isFileTaggable {
 			err = parser.WriteFile(file, blocks, file)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
