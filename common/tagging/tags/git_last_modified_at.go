@@ -20,6 +20,6 @@ func (t *GitLastModifiedAtTag) CalculateValue(data interface{}) error {
 		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
 
-	t.Value = gitBlame.GetLatestCommit().Date.String()
+	t.Value = gitBlame.GetLatestCommit().Date.Format("2006-01-02 15:04:05")
 	return nil
 }
