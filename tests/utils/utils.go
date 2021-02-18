@@ -46,6 +46,12 @@ func SetupBlame(t *testing.T) gitservice.GitBlame {
 				Date:   secondCommitDate,
 				Hash:   plumbing.NewHash(CommitHash2),
 			},
+			2: {
+				Author: "jonjozwiak@users.noreply.github.com",
+				Text:   "Bridgecrew solution to create vulnerable infrastructure",
+				Date:   secondCommitDate,
+				Hash:   plumbing.NewHash(CommitHash2),
+			},
 		},
 	}
 }
