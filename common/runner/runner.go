@@ -94,6 +94,9 @@ func (r *Runner) TagFile(file string) {
 						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
 						continue
 					}
+					if blame == nil {
+						logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", file))
+					}
 					tagger.CreateTagsForBlock(block, blame)
 					r.changeAccumulator.AccumulateChanges(block)
 				}

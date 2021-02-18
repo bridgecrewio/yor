@@ -49,7 +49,7 @@ func TestTagCreation(t *testing.T) {
 		tag := GitLastModifiedAtTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_last_modified_at", tag.Key)
-		assert.Equal(t, "2020-03-28 21:42:46 +0000 UTC", tag.Value)
+		assert.Equal(t, "2020-03-28 21:42:46", tag.Value)
 	})
 
 	t.Run("GitLastModifiedByCreation", func(t *testing.T) {
