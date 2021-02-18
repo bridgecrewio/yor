@@ -1,4 +1,4 @@
-package blameUtils
+package blameutils
 
 import (
 	"bridgecrewio/yor/common/gitservice"
