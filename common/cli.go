@@ -11,7 +11,7 @@ import (
 var allowedOutputTypes = []string{"cli", "json"}
 
 type Options struct {
-	Directory              string `validate:"nonzero"`
+	Directory              string
 	Tag                    string
 	SkipTag                string
 	CustomTaggers          []string

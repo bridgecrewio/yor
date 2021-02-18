@@ -10,9 +10,12 @@ type Tagger struct {
 	Tags []tags.ITag
 }
 
+var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
+
 type ITagger interface {
 	InitTags(extraTags []tags.ITag)
 	CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame)
+	IsFileSkipped(file string) bool
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {
@@ -21,4 +24,8 @@ func (t *Tagger) InitTags(extraTags []tags.ITag) {
 	}
 	t.Tags = append(t.Tags, tags.TagTypes...)
 	t.Tags = append(t.Tags, extraTags...)
+}
+
+func (t *Tagger) GetSkippedDirs() []string {
+	return IgnoredDirs
 }

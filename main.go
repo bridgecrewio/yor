@@ -22,19 +22,9 @@ func main() {
 			return run(options)
 		},
 	}
-	var runVersion bool
-
 	parseCommands(cmd.PersistentFlags(), options)
-	cmd.PersistentFlags().Visit(func(flag *pflag.Flag) {
-		runVersion = flag.Name == "version" || flag.Shorthand == "-v"
-	})
-	if runVersion {
-		fmt.Printf("Yor version: %s\n", common.Version)
-		return
-	}
-
 	options.Validate()
-
+	cmd.SetVersionTemplate(fmt.Sprintf("Yor version %s", cmd.Version))
 	if err := cmd.Execute(); err != nil {
 		logger.Error(err.Error())
 	}

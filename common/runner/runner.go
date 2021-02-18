@@ -70,22 +70,23 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 	for _, file := range files {
 		r.TagFile(file)
 	}
-	//	TODO - return Report's result from this method
-	reportService := reports.ReportService{}
 
-	return &reportService, nil
+	return r.reportingService, nil
 }
 
 func (r *Runner) TagFile(file string) {
-	for _, parser := range r.parsers {
-		blocks, err := parser.ParseFile(file)
-		if err != nil {
-			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+	for _, tagger := range r.taggers {
+		if tagger.IsFileSkipped(file) {
 			continue
 		}
-		isFileTaggable := false
-		for _, block := range blocks {
-			for _, tagger := range r.taggers {
+		for _, parser := range r.parsers {
+			blocks, err := parser.ParseFile(file)
+			if err != nil {
+				logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+				continue
+			}
+			isFileTaggable := false
+			for _, block := range blocks {
 				if block.IsBlockTaggable() {
 					isFileTaggable = true
 					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
@@ -97,20 +98,17 @@ func (r *Runner) TagFile(file string) {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
-		}
-		if isFileTaggable {
-			err = parser.WriteFile(file, blocks, file)
-			if err != nil {
-				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
+			if isFileTaggable {
+				err = parser.WriteFile(file, blocks, file)
+				if err != nil {
+					logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
+				}
+				//	TODO: if block is a local module, run TagDir on it as well
+				//  Need to avoid cycles here!!
 			}
-			//	TODO: if block is a local module, run TagDir on it as well
-			//  Need to avoid cycles here!!
 		}
 	}
-	r.reportingService.CreateReport()
 
-	// TODO: support multiple output formats according to args
-	r.reportingService.PrintToStdout()
 }
 
 func createCmdTags(extraTagsStr string) []tags.ITag {
