@@ -6,9 +6,10 @@ import (
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/runner"
 	"fmt"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"strings"
 )
 
 func main() {
@@ -60,7 +61,7 @@ func parseCommands(flag *pflag.FlagSet, commands *common.Options) {
 	flag.StringVarP(&commands.Tag, "tag", "t", "", "run yor only with the specified tag")
 	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "run yor without ths specified tag")
 	flag.StringVarP(&commands.Output, "output", "o", "cli", "set output format")
-	flag.StringVar(&commands.OutputJsonFile, "output-json-file", "", "json file path for output")
+	flag.StringVar(&commands.OutputJSONFile, "output-json-file", "", "json file path for output")
 	flag.StringSliceVarP(&commands.CustomTaggers, "custom-taggers", "c", []string{}, "paths to custom taggers plugins")
 	flag.StringVarP(&commands.ExtraTags, "extra-tags", "e", "{}", "json dictionary format of extra tags to add to all taggable resources")
 	flag.StringSliceVar(&commands.SkipConfigurationPaths, "skip-configuration-paths", []string{}, "configuration paths to skip")

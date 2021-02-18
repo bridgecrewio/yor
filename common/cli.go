@@ -4,8 +4,9 @@ import (
 	"bridgecrewio/yor/common/logger"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/validator.v2"
 	"strings"
+
+	"gopkg.in/validator.v2"
 )
 
 var allowedOutputTypes = []string{"cli", "json"}
@@ -17,7 +18,7 @@ type Options struct {
 	CustomTaggers          []string
 	SkipConfigurationPaths []string
 	Output                 string `validate:"output"`
-	OutputJsonFile         string
+	OutputJSONFile         string
 	ExtraTags              string `validate:"extraTags"`
 }
 
