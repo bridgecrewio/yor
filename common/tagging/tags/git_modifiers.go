@@ -21,10 +21,14 @@ func (t *GitModifiersTag) CalculateValue(data interface{}) error {
 	if !ok {
 		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
+	foundModifyingUsers := make(map[string]bool)
 	var modifyingUsers []string
 	for _, v := range gitBlame.BlamesByLine {
 		userName := strings.Split(v.Author, "@")[0]
-		modifyingUsers = append(modifyingUsers, userName)
+		if foundModifyingUsers[userName] == false {
+			modifyingUsers = append(modifyingUsers, userName)
+			foundModifyingUsers[userName] = true
+		}
 	}
 
 	sort.Strings(modifyingUsers)
