@@ -35,7 +35,6 @@ func NewGitService(rootDir string) (*GitService, error) {
 		}
 		rootDir = newRootDir
 	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -79,17 +78,21 @@ func (g *GitService) setOrgAndName() error {
 
 	return nil
 }
+func (g *GitService) ComputeRelativeFilePath(filepath string) string {
+	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.rootDir), "")
+}
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
-	blame := g.findBlameInCache(filePath, commitHash)
+	relativeFilePath := g.ComputeRelativeFilePath(filePath)
+	blame := g.findBlameInCache(relativeFilePath, commitHash)
 	if blame != nil {
-		return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
+		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 	}
 
 	logOptions := git.LogOptions{
 		// order the commits from most to least recent
 		Order:    git.LogOrderCommitterTime,
-		FileName: &filePath,
+		FileName: &relativeFilePath,
 	}
 	// fetch commit iterator
 	commitIter, err := g.repository.Log(&logOptions)
@@ -116,18 +119,18 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 		}
 	}
 
-	blame = g.findBlameInCache(filePath, []string{selectedCommit.Hash.String()})
+	blame = g.findBlameInCache(relativeFilePath, []string{selectedCommit.Hash.String()})
 	if blame != nil {
-		return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
+		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 	}
 
-	blame, err = git.Blame(selectedCommit, filePath)
+	blame, err = git.Blame(selectedCommit, relativeFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
-	g.addBlameToCache(filePath, selectedCommit.Hash.String(), blame)
+	g.addBlameToCache(relativeFilePath, selectedCommit.Hash.String(), blame)
 
-	return NewGitBlame(filePath, lines, blame, g.organization, g.repoName), nil
+	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 
 }
 
