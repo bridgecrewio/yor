@@ -6,14 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 )
-
-func ExtractDate(dateStr string) (time.Time, error) {
-	layout := "2006-01-02T15:04:05.000Z"
-	parsedDate, err := time.Parse(layout, dateStr)
-	return parsedDate, err
-}
 
 func CaptureOutput(f func()) string {
 	reader, writer, err := os.Pipe()
