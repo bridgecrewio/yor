@@ -2,6 +2,7 @@ package gitservice
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -20,7 +21,21 @@ type GitService struct {
 }
 
 func NewGitService(rootDir string) (*GitService, error) {
-	repository, err := git.PlainOpen(rootDir)
+	var repository *git.Repository
+	var err error
+	for {
+		repository, err = git.PlainOpen(rootDir)
+		if err == nil {
+			break
+		}
+
+		newRootDir := filepath.Dir(rootDir)
+		if rootDir == newRootDir {
+			break
+		}
+		rootDir = newRootDir
+	}
+
 	if err != nil {
 		return nil, err
 	}
