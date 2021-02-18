@@ -4,7 +4,7 @@ import (
 	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/tagging"
-	"bridgecrewio/yor/tests/utils"
+	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"strings"
 	"testing"
@@ -124,7 +124,7 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 }
 
 func TestTerrraformParser_WriteFile(t *testing.T) {
-	blame := utils.SetupBlame(t)
+	blame := blameutils.SetupBlame(t)
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}

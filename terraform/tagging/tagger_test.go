@@ -5,14 +5,14 @@ import (
 	commonTagging "bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/structure"
-	"bridgecrewio/yor/tests/utils"
+	"bridgecrewio/yor/tests/utils/blameutils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformTagger(t *testing.T) {
-	blame := utils.SetupBlame(t)
+	blame := blameutils.SetupBlame(t)
 
 	t.Run("test terraform tagger CreateTagsForBlock", func(t *testing.T) {
 		tagger := TerraformTagger{Tagger: commonTagging.Tagger{
