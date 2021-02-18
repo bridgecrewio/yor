@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/reports"
@@ -9,6 +10,7 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
 	tfTagging "bridgecrewio/yor/terraform/tagging"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,18 +26,19 @@ type Runner struct {
 	reportingService  *reports.ReportService
 }
 
-func (r *Runner) Init(dir string, extraTagsFromArgs map[string]string, externalTagsPath string) error {
+func (r *Runner) Init(commands *common.Options) error {
+	dir := commands.Directory
 	gitService, err := gitservice.NewGitService(dir)
 	if err != nil {
 		logger.Error("Failed to initialize git service")
 	}
 	r.gitService = gitService
 	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
-	extraTags, err := loadExternalTags(externalTagsPath)
+	extraTags, err := loadExternalTags(commands.CustomTaggers)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 	}
-	extraTags = append(extraTags, createCmdTags(extraTagsFromArgs)...)
+	extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
 	for _, tagger := range r.taggers {
 		tagger.InitTags(extraTags)
 	}
@@ -49,7 +52,7 @@ func (r *Runner) Init(dir string, extraTagsFromArgs map[string]string, externalT
 	return nil
 }
 
-func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
+func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 	var files []string
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -67,22 +70,25 @@ func (r *Runner) TagDirectory(dir string) (*reports.Report, error) {
 	for _, file := range files {
 		r.TagFile(file)
 	}
-	//	TODO - return Report's result from this method
-	reportService := reports.ReportService{}
 
-	return reportService.CreateReport(), nil
+	return r.reportingService, nil
 }
 
 func (r *Runner) TagFile(file string) {
-	for _, parser := range r.parsers {
-		blocks, err := parser.ParseFile(file)
-		if err != nil {
-			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+	for _, tagger := range r.taggers {
+		if tagger.IsFileSkipped(file) {
 			continue
 		}
-		for _, block := range blocks {
-			for _, tagger := range r.taggers {
+		for _, parser := range r.parsers {
+			blocks, err := parser.ParseFile(file)
+			if err != nil {
+				logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+				continue
+			}
+			isFileTaggable := false
+			for _, block := range blocks {
 				if block.IsBlockTaggable() {
+					isFileTaggable = true
 					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
 					if err != nil {
 						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
@@ -92,21 +98,24 @@ func (r *Runner) TagFile(file string) {
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
-			err = parser.WriteFile(file, blocks, file)
-			if err != nil {
-				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
+			if isFileTaggable {
+				err = parser.WriteFile(file, blocks, file)
+				if err != nil {
+					logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
+				}
+				//	TODO: if block is a local module, run TagDir on it as well
+				//  Need to avoid cycles here!!
 			}
-			//	TODO: if block is a local module, run TagDir on it as well
-			//  Need to avoid cycles here!!
 		}
 	}
-	r.reportingService.CreateReport()
 
-	// TODO: support multiple output formats according to args
-	r.reportingService.PrintToStdout()
 }
 
-func createCmdTags(extraTagsFromArgs map[string]string) []tags.ITag {
+func createCmdTags(extraTagsStr string) []tags.ITag {
+	var extraTagsFromArgs map[string]string
+	if err := json.Unmarshal([]byte(extraTagsStr), &extraTagsFromArgs); err != nil {
+		logger.Error(fmt.Sprintf("failed to parse extra tags: %s", err))
+	}
 	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
 	index := 0
 	for key := range extraTagsFromArgs {
@@ -118,51 +127,54 @@ func createCmdTags(extraTagsFromArgs map[string]string) []tags.ITag {
 	return extraTags
 }
 
-func loadExternalTags(tagsPath string) ([]tags.ITag, error) {
+func loadExternalTags(customTags []string) ([]tags.ITag, error) {
 	var extraTags []tags.ITag
 	var plugins []string
 
-	// find all .so files under the given tagsPath
-	err := filepath.Walk(tagsPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(info.Name(), ".so") {
-			plugins = append(plugins, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
+	for _, customTagsPath := range customTags {
 
-	for _, pluginPath := range plugins {
-		plug, err := plugin.Open(pluginPath)
+		// find all .so files under the given customTags
+		err := filepath.Walk(customTagsPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if strings.HasSuffix(info.Name(), ".so") {
+				plugins = append(plugins, path)
+			}
+			return nil
+		})
 		if err != nil {
 			return nil, err
 		}
 
-		// extract the symbol "ExtraTags" from the plugin file
-		symExtraTags, err := plug.Lookup("ExtraTags")
-		if err != nil {
-			logger.Warning(err.Error())
-			continue
-		}
+		for _, pluginPath := range plugins {
+			plug, err := plugin.Open(pluginPath)
+			if err != nil {
+				return nil, err
+			}
 
-		// convert ExtraTags to its actual type, *[]interface{}
-		var iTagsPtr *[]interface{}
-		iTagsPtr, ok := symExtraTags.(*[]interface{})
-		if !ok {
-			return nil, fmt.Errorf("unexpected type from module symbol")
-		}
+			// extract the symbol "ExtraTags" from the plugin file
+			symExtraTags, err := plug.Lookup("ExtraTags")
+			if err != nil {
+				logger.Warning(err.Error())
+				continue
+			}
 
-		iTags := *iTagsPtr
-		for _, iTag := range iTags {
-			tag, ok := iTag.(tags.ITag)
+			// convert ExtraTags to its actual type, *[]interface{}
+			var iTagsPtr *[]interface{}
+			iTagsPtr, ok := symExtraTags.(*[]interface{})
 			if !ok {
 				return nil, fmt.Errorf("unexpected type from module symbol")
 			}
-			extraTags = append(extraTags, tag)
+
+			iTags := *iTagsPtr
+			for _, iTag := range iTags {
+				tag, ok := iTag.(tags.ITag)
+				if !ok {
+					return nil, fmt.Errorf("unexpected type from module symbol")
+				}
+				extraTags = append(extraTags, tag)
+			}
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging"
 	"fmt"
+	"strings"
 )
 
 type TerraformTagger struct {
@@ -21,4 +22,16 @@ func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *g
 		}
 	}
 	block.AddNewTags(t.Tags)
+}
+
+func (t *TerraformTagger) IsFileSkipped(file string) bool {
+	ignoredPatterns := []string{".terraform"}
+	ignoredDirs := t.GetSkippedDirs()
+	ignoredPatterns = append(ignoredPatterns, ignoredDirs...)
+	for _, pattern := range ignoredPatterns {
+		if strings.Contains(file, pattern) {
+			return true
+		}
+	}
+	return false
 }
