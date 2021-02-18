@@ -25,7 +25,7 @@ func (t *GitModifiersTag) CalculateValue(data interface{}) error {
 	var modifyingUsers []string
 	for _, v := range gitBlame.BlamesByLine {
 		userName := strings.Split(v.Author, "@")[0]
-		if foundModifyingUsers[userName] == false {
+		if !foundModifyingUsers[userName] {
 			modifyingUsers = append(modifyingUsers, userName)
 			foundModifyingUsers[userName] = true
 		}
