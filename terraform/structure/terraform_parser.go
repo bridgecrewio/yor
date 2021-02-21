@@ -465,8 +465,8 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
-			logger.Error(err.Error())
 			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
+			logger.Warning(fmt.Sprintf("Try to run `terraform init` in the given root dir: [%s] and try again.", p.rootDir))
 		}
 		return nil
 	}
