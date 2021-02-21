@@ -43,7 +43,7 @@ func TestCliArgParsing(t *testing.T) {
 			SkipConfigurationPaths: nil,
 			Output:                 "junitxml",
 			OutputJSONFile:         "",
-			ExtraTags:              "",
+			ExtraTags:              "{}",
 		}
 		assert.Panics(t, options.Validate)
 	})
