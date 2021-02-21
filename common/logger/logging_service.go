@@ -7,7 +7,10 @@ import (
 )
 
 type loggingService struct {
-	logLevel LogLevel
+	logLevel   LogLevel
+	stdout     *os.File
+	stderr     *os.File
+	tempWriter *os.File
 }
 
 type LogLevel int
@@ -23,7 +26,7 @@ var Logger loggingService
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
-	Logger = loggingService{logLevel: WARNING}
+	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr}
 
 	val, ok := os.LookupEnv("LOG_LEVEL")
 	if ok {
@@ -77,4 +80,22 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 	}
 
 	e.logLevel = logLevel
+}
+
+func MuteLogging() {
+	Debug("Mute logging")
+	_, Logger.tempWriter, _ = os.Pipe()
+	os.Stdout = Logger.tempWriter
+	os.Stderr = Logger.tempWriter
+	log.SetOutput(Logger.tempWriter)
+}
+
+func UnmuteLogging() {
+	if Logger.tempWriter != nil {
+		Logger.tempWriter.Close()
+	}
+	os.Stdout = Logger.stdout
+	os.Stderr = Logger.stderr
+	log.SetOutput(os.Stderr)
+	Debug("Unmute logging")
 }

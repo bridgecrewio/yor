@@ -54,7 +54,9 @@ func (t *TerraformModule) InitProvider() {
 			return
 		}
 		pty := addrs.NewLegacyProvider(provider)
+		logger.MuteLogging()
 		_, diagnostics, err := providerInstaller.Get(pty, constraints.Versions)
+		logger.UnmuteLogging()
 		if diagnostics != nil && diagnostics.HasErrors() {
 			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", t.rootDir, diagnostics.Err()))
 		}
