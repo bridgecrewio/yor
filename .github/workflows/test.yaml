@@ -15,8 +15,6 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Install terraform
-        uses: hashicorp/setup-terraform@v1
       - name: Prepare external plugin test
         run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
       - name: Test
