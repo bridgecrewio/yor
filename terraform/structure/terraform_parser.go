@@ -459,7 +459,7 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		return client
 	}
 	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
-		RootDir: p.rootDir,
+		RootDir: p.terraformModule.ProvidersInstallDir,
 		Logger:  hclLogger,
 	})
 
