@@ -15,12 +15,6 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v2
-#      - name: "Terraform Init"
-#        uses: hashicorp/terraform-github-actions@master
-#        with:
-#          tf_actions_version: 0.14.5
-#          tf_actions_subcommand: "init"
-#          tf_actions_working_dir: "tests/terraform/resources"
       - name: Install terraform
         uses: hashicorp/setup-terraform@v1
       - name: Prepare external plugin test

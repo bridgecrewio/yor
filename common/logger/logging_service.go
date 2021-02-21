@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -22,6 +23,13 @@ const (
 	ERROR
 )
 
+var strLogLevels = map[LogLevel]string{
+	DEBUG:   "DEBUG",
+	INFO:    "INFO",
+	WARNING: "WARNING",
+	ERROR:   "ERROR",
+}
+
 var Logger loggingService
 
 func init() {
@@ -36,14 +44,16 @@ func init() {
 
 func (e *loggingService) log(logLevel LogLevel, args ...string) {
 	if logLevel >= e.logLevel {
+		strArgs := strings.Join(args, " ")
+		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
 		case DEBUG, INFO:
-			log.Println(args)
+			log.Println(strArgs)
 		case WARNING:
 			log.Print("Warning: ")
-			log.Println(args)
+			log.Println(strArgs)
 		case ERROR:
-			log.Panic(args)
+			log.Panic(strArgs)
 		}
 	}
 }
