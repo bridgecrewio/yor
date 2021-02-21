@@ -74,8 +74,11 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: main
       - name: version
         run: |
+          git pull
           git fetch --tags
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           echo "latest tag: $latest_tag"
