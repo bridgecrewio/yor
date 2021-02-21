@@ -1,6 +1,8 @@
 package gitservice
 
 import (
+	"bridgecrewio/yor/common/logger"
+	"fmt"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -18,6 +20,10 @@ func NewGitBlame(filePath string, lines []int, blameResult *git.BlameResult, git
 	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath}
 	i := 0
 	for line := lines[0]; line <= lines[1]; line++ {
+		if i < 0 || i >= len(blameResult.Lines) {
+			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))
+			return nil
+		}
 		gitBlame.BlamesByLine[line] = blameResult.Lines[i]
 		i++
 	}

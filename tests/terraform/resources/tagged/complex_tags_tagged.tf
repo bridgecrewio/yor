@@ -8,7 +8,7 @@ resource "aws_instance" "many_instance_tags" {
       "git_org"            = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
-      git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+      git_last_modified_at = "2020-03-28 21:42:46"
       git_last_modified_by = "schosterbarak@gmail.com"
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
@@ -21,7 +21,7 @@ resource "aws_alb" "alb_with_merged_tags" {
       "git_org"            = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
-      git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+      git_last_modified_at = "2020-03-28 21:42:46"
       git_last_modified_by = "schosterbarak@gmail.com"
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
@@ -33,12 +33,12 @@ resource "aws_vpc" "vpc_tags_one_line" {
   tags = merge({ "Name" = "tag-for-s3", "Environment" = "prod" }, {
     git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
     git_file             = "README.md"
-    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_at = "2020-03-28 21:42:46"
     git_last_modified_by = "schosterbarak@gmail.com"
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+    yor_trace            = "2d202081-d683-4762-a5bc-7b5a13c29610"
   })
 }
 
@@ -46,12 +46,12 @@ resource "aws_s3_bucket" "bucket_var_tags" {
   tags = merge(var.tags, {
     git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
     git_file             = "README.md"
-    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_at = "2020-03-28 21:42:46"
     git_last_modified_by = "schosterbarak@gmail.com"
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+    yor_trace            = "2d202081-d683-4762-a5bc-7b5a13c29610"
   })
 }
 
@@ -70,7 +70,7 @@ resource "aws_instance" "instance_merged_var" {
       "git_org"            = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
-      git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+      git_last_modified_at = "2020-03-28 21:42:46"
       git_last_modified_by = "schosterbarak@gmail.com"
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
@@ -89,12 +89,12 @@ resource "aws_instance" "instance_merged_override" {
   tags = merge(var.new_env_tag, { "Environment" = "new_env" }, {
     git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
     git_file             = "README.md"
-    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_at = "2020-03-28 21:42:46"
     git_last_modified_by = "schosterbarak@gmail.com"
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+    yor_trace            = "2d202081-d683-4762-a5bc-7b5a13c29610"
   })
 }
 
@@ -104,12 +104,12 @@ resource "aws_instance" "instance_empty_tag" {
   tags = merge({}, {
     git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
     git_file             = "README.md"
-    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_at = "2020-03-28 21:42:46"
     git_last_modified_by = "schosterbarak@gmail.com"
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+    yor_trace            = "2d202081-d683-4762-a5bc-7b5a13c29610"
   })
 }
 
@@ -119,11 +119,11 @@ resource "aws_instance" "instance_no_tags" {
   tags = {
     git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
     git_file             = "README.md"
-    git_last_modified_at = "2020-03-28 21:42:46 +0000 UTC"
+    git_last_modified_at = "2020-03-28 21:42:46"
     git_last_modified_by = "schosterbarak@gmail.com"
     git_modifiers        = "jonjozwiak/schosterbarak"
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
-    yor_trace            = "0d7efccf-aa23-43cd-ba42-59a606c75dd3"
+    yor_trace            = "2d202081-d683-4762-a5bc-7b5a13c29610"
   }
 }

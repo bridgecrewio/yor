@@ -2,14 +2,14 @@ package tags
 
 import (
 	"bridgecrewio/yor/common/gitservice"
-	"bridgecrewio/yor/tests/utils"
+	"bridgecrewio/yor/tests/utils/blameutils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTagCreation(t *testing.T) {
-	blame := utils.SetupBlame(t)
+	blame := blameutils.SetupBlame(t)
 	t.Run("BcTraceTagCreation", func(t *testing.T) {
 		tag := YorTraceTag{}
 		EvaluateTag(t, &tag, blame)
@@ -21,35 +21,35 @@ func TestTagCreation(t *testing.T) {
 		tag := GitOrgTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_org", tag.Key)
-		assert.Equal(t, utils.Org, tag.Value)
+		assert.Equal(t, blameutils.Org, tag.Value)
 	})
 
 	t.Run("GitRepoTagCreation", func(t *testing.T) {
 		tag := GitRepoTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_repo", tag.Key)
-		assert.Equal(t, utils.Repository, tag.Value)
+		assert.Equal(t, blameutils.Repository, tag.Value)
 	})
 
 	t.Run("GitFileTagCreation", func(t *testing.T) {
 		tag := GitFileTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_file", tag.Key)
-		assert.Equal(t, utils.FilePath, tag.Value)
+		assert.Equal(t, blameutils.FilePath, tag.Value)
 	})
 
 	t.Run("GitCommitTagCreation", func(t *testing.T) {
 		tag := GitCommitTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_commit", tag.Key)
-		assert.Equal(t, utils.CommitHash1, tag.Value)
+		assert.Equal(t, blameutils.CommitHash1, tag.Value)
 	})
 
 	t.Run("GitLastModifiedAtCreation", func(t *testing.T) {
 		tag := GitLastModifiedAtTag{}
 		EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_last_modified_at", tag.Key)
-		assert.Equal(t, "2020-03-28 21:42:46 +0000 UTC", tag.Value)
+		assert.Equal(t, "2020-03-28 21:42:46", tag.Value)
 	})
 
 	t.Run("GitLastModifiedByCreation", func(t *testing.T) {

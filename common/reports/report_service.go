@@ -56,9 +56,9 @@ func (r *ReportService) CreateReport() *Report {
 func (r *ReportService) PrintToStdout() {
 	PrintBanner()
 	fmt.Println(colorReset, "Yor Findings Summary")
-	fmt.Println(colorReset, "Scanned Resources:\t\t", colorBlue, r.report.ScannedResources)
+	fmt.Println(colorReset, "Scanned Resources:\t", colorBlue, r.report.ScannedResources)
 	fmt.Println(colorReset, "New Resources Traced: \t", colorYellow, len(r.report.NewResources))
-	fmt.Println(colorReset, "Updated Resources:\t\t", colorGreen, len(r.report.UpdatedResources))
+	fmt.Println(colorReset, "Updated Resources:\t", colorGreen, len(r.report.UpdatedResources))
 	fmt.Println()
 	if len(r.report.NewResources) > 0 {
 		r.printNewResourcesToStdout()
