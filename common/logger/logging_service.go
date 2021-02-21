@@ -50,7 +50,6 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 		case DEBUG, INFO:
 			log.Println(strArgs)
 		case WARNING:
-			log.Print("Warning: ")
 			log.Println(strArgs)
 		case ERROR:
 			log.Panic(strArgs)
