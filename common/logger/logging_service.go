@@ -1,13 +1,17 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
 )
 
 type loggingService struct {
-	logLevel LogLevel
+	logLevel   LogLevel
+	stdout     *os.File
+	stderr     *os.File
+	tempWriter *os.File
 }
 
 type LogLevel int
@@ -19,11 +23,18 @@ const (
 	ERROR
 )
 
+var strLogLevels = map[LogLevel]string{
+	DEBUG:   "DEBUG",
+	INFO:    "INFO",
+	WARNING: "WARNING",
+	ERROR:   "ERROR",
+}
+
 var Logger loggingService
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
-	Logger = loggingService{logLevel: WARNING}
+	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr}
 
 	val, ok := os.LookupEnv("LOG_LEVEL")
 	if ok {
@@ -33,14 +44,15 @@ func init() {
 
 func (e *loggingService) log(logLevel LogLevel, args ...string) {
 	if logLevel >= e.logLevel {
+		strArgs := strings.Join(args, " ")
+		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
 		case DEBUG, INFO:
-			log.Println(args)
+			log.Println(strArgs)
 		case WARNING:
-			log.Print("Warning: ")
-			log.Println(args)
+			log.Println(strArgs)
 		case ERROR:
-			log.Panic(args)
+			log.Panic(strArgs)
 		}
 	}
 }
@@ -77,4 +89,22 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 	}
 
 	e.logLevel = logLevel
+}
+
+func MuteLogging() {
+	Debug("Mute logging")
+	_, Logger.tempWriter, _ = os.Pipe()
+	os.Stdout = Logger.tempWriter
+	os.Stderr = Logger.tempWriter
+	log.SetOutput(Logger.tempWriter)
+}
+
+func UnmuteLogging() {
+	if Logger.tempWriter != nil {
+		Logger.tempWriter.Close()
+	}
+	os.Stdout = Logger.stdout
+	os.Stderr = Logger.stderr
+	log.SetOutput(os.Stderr)
+	Debug("Unmute logging")
 }

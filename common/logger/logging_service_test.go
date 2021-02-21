@@ -12,7 +12,7 @@ func TestLogger(t *testing.T) {
 	t.Run("Test logger setup", func(t *testing.T) {
 		assert.Equal(t, WARNING, Logger.logLevel)
 		logs := utils.CaptureOutput(func() { Warning("Test warning") })
-		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} Warning: \n\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[Test warning]", []byte(logs))
+		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[WARNING] Test warning", []byte(logs))
 		assert.True(t, match)
 	})
 
@@ -20,7 +20,7 @@ func TestLogger(t *testing.T) {
 		Logger.SetLogLevel("DEBUG")
 		assert.Equal(t, DEBUG, Logger.logLevel)
 		logs := utils.CaptureOutput(func() { Debug("Test debug") })
-		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[Test debug]", []byte(logs))
+		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[DEBUG] Test debug", []byte(logs))
 		assert.True(t, match)
 	})
 
@@ -28,7 +28,7 @@ func TestLogger(t *testing.T) {
 		Logger.SetLogLevel("INFO")
 		assert.Equal(t, INFO, Logger.logLevel)
 		logs := utils.CaptureOutput(func() { Info("Test info") })
-		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[Test info]", []byte(logs))
+		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[INFO] Test info", []byte(logs))
 		assert.True(t, match)
 	})
 
@@ -36,7 +36,7 @@ func TestLogger(t *testing.T) {
 		Logger.SetLogLevel("WARNING")
 		assert.Equal(t, WARNING, Logger.logLevel)
 		logs := utils.CaptureOutput(func() { Warning("Test warning") })
-		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} Warning: \n\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[Test warning]", []byte(logs))
+		match, _ := regexp.Match("\\d{4}/\\d{2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2} \\[WARNING] Test warning", []byte(logs))
 		assert.True(t, match)
 	})
 
