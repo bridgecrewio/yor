@@ -20,8 +20,9 @@ import (
 const PluginsOutputDir = ".plugins"
 
 type TerraformModule struct {
-	tfModule *tfconfig.Module
-	rootDir  string
+	tfModule            *tfconfig.Module
+	rootDir             string
+	ProvidersInstallDir string
 }
 
 func NewTerraformModule(rootDir string) *TerraformModule {
@@ -31,30 +32,31 @@ func NewTerraformModule(rootDir string) *TerraformModule {
 		return nil
 	}
 	terraformModule := &TerraformModule{tfModule: tfModule, rootDir: rootDir}
+	// download terraform plugin into local folder if it doesn't exist
+	pwd, _ := os.Getwd()
+	terraformModule.ProvidersInstallDir = path.Join(pwd, PluginsOutputDir)
 	terraformModule.InitProvider()
 
 	return terraformModule
 }
 
 func (t *TerraformModule) InitProvider() {
-	// download terraform plugin into local folder if it doesn't exist
-	pwd, _ := os.Getwd()
-	providersInstallDir := path.Join(pwd, PluginsOutputDir)
-
 	moduleDependencies := getProviderDependencies(t.tfModule)
 	providers := moduleDependencies.AllPluginRequirements()
 	providerInstaller := &discovery.ProviderInstaller{
-		Dir:                   providersInstallDir,
+		Dir:                   t.ProvidersInstallDir,
 		PluginProtocolVersion: discovery.PluginInstallProtocolVersion,
 		SkipVerify:            false,
 		Ui:                    &cli.MockUi{},
 	}
 	for provider, constraints := range providers {
-		if providerExists(providersInstallDir, provider) {
+		if providerExists(t.ProvidersInstallDir, provider) {
 			return
 		}
 		pty := addrs.NewLegacyProvider(provider)
+		logger.MuteLogging()
 		_, diagnostics, err := providerInstaller.Get(pty, constraints.Versions)
+		logger.UnmuteLogging()
 		if diagnostics != nil && diagnostics.HasErrors() {
 			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", t.rootDir, diagnostics.Err()))
 		}
