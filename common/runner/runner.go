@@ -2,7 +2,6 @@ package runner
 
 import (
 	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/structure"
@@ -20,7 +19,6 @@ import (
 type Runner struct {
 	taggers           []tagging.ITagger
 	parsers           []structure.IParser
-	gitService        *gitservice.GitService
 	changeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
 }
