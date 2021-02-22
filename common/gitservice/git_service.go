@@ -18,7 +18,7 @@ type GitService struct {
 	remoteURL    string
 	organization string
 	repoName     string
-	blameByFile  map[string]*git.BlameResult
+	BlameByFile  map[string]*git.BlameResult
 }
 
 func NewGitService(rootDir string) (*GitService, error) {
@@ -43,7 +43,7 @@ func NewGitService(rootDir string) (*GitService, error) {
 	gitService := GitService{
 		rootDir:     rootDir,
 		repository:  repository,
-		blameByFile: make(map[string]*git.BlameResult),
+		BlameByFile: make(map[string]*git.BlameResult),
 	}
 
 	err = gitService.setOrgAndName()
@@ -86,7 +86,7 @@ func (g *GitService) ComputeRelativeFilePath(filepath string) string {
 func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
 	logger.Info(fmt.Sprintf("Getting git blame for %v (%v:%v)", filePath, lines[0], lines[1]))
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
-	blame, ok := g.blameByFile[filePath]
+	blame, ok := g.BlameByFile[filePath]
 	if ok {
 		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 	}
@@ -125,7 +125,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
-	g.blameByFile[filePath] = blame
+	g.BlameByFile[filePath] = blame
 
 	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 }

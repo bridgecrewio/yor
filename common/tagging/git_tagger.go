@@ -10,7 +10,7 @@ import (
 
 type GitTagger struct {
 	Tagger
-	gitService *gitservice.GitService
+	GitService *gitservice.GitService
 }
 
 func (t *GitTagger) InitTagger(path string) {
@@ -18,11 +18,11 @@ func (t *GitTagger) InitTagger(path string) {
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s", path))
 	}
-	t.gitService = gitService
+	t.GitService = gitService
 }
 
 func (t *GitTagger) CreateTagsForBlock(block structure.IBlock) {
-	blame, err := t.gitService.GetBlameForFileLines(block.GetFilePath(), block.GetLines())
+	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), block.GetLines())
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
 		return

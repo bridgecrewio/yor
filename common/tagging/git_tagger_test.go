@@ -1,22 +1,31 @@
 package tagging
 
 import (
+	"bridgecrewio/yor/common/gitservice"
 	commonStructure "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/terraform/structure"
+	"bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
+	"github.com/go-git/go-git/v5"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGitTagger(t *testing.T) {
-	blame := blameutils.SetupBlame(t)
+	path := "test_file"
+	blame := blameutils.SetupBlameResults(t, path)
 
-	t.Run("test terraform tagger CreateTagsForBlock", func(t *testing.T) {
+	t.Run("test git tagger CreateTagsForBlock", func(t *testing.T) {
+		gitService := &gitservice.GitService{
+			BlameByFile: map[string]*git.BlameResult{path: blame},
+		}
 		tagger := GitTagger{Tagger: Tagger{
 			Tags: []tags.ITag{},
-		}}
+		},
+			GitService: gitService,
+		}
+
 		extraTags := []tags.ITag{
 			&tags.Tag{
 				Key:   "new_tag",
@@ -24,17 +33,14 @@ func TestGitTagger(t *testing.T) {
 			},
 		}
 		tagger.InitTags(extraTags)
-		block := &structure.TerraformBlock{
+		block := &utils.MockTestBlock{
 			Block: commonStructure.Block{
-				FilePath:          "",
-				ExitingTags:       []tags.ITag{},
-				NewTags:           []tags.ITag{},
-				RawBlock:          nil,
-				IsTaggable:        true,
-				TagsAttributeName: "",
+				FilePath:   path,
+				IsTaggable: true,
 			},
 		}
-		tagger.CreateTagsForBlock(block, &blame)
+
+		tagger.CreateTagsForBlock(block)
 		assert.Equal(t, len(block.NewTags), len(tags.TagTypes)+len(extraTags))
 	})
 }
