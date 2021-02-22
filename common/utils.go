@@ -56,3 +56,21 @@ func IsTagKeyMatch(tag tags.ITag, keyName string) bool {
 	match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
 	return match
 }
+
+func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {
+	sValue := reflect.ValueOf(s)
+
+	// Check if the passed interface is a pointer
+	if sValue.Type().Kind() != reflect.Ptr {
+		// Create a new type of Iface's Type, so we have a pointer to work with
+		sValue = reflect.New(reflect.TypeOf(s))
+	}
+
+	// 'dereference' with Elem() and get the field by name
+	field := sValue.Elem().FieldByName(property)
+	if !field.IsValid() {
+		return false, field
+	}
+
+	return true, field
+}
