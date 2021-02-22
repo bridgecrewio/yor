@@ -2,12 +2,15 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/terraform/tagging"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/go-git/go-git/v5"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
@@ -124,14 +127,18 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 }
 
 func TestTerrraformParser_WriteFile(t *testing.T) {
-	blame := blameutils.SetupBlame(t)
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
+		rootDir := "../../tests/terraform/resources"
+		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		tagger := &tagging.TerraformTagger{}
+		blame := blameutils.SetupBlameResults(t, filePath)
+		gitService := &gitservice.GitService{
+			BlameByFile: map[string]*git.BlameResult{filePath: blame},
+		}
+		tagger := &tagging.GitTagger{GitService: gitService}
 		tagger.InitTags(nil)
-		p.Init("../../tests/terraform/resources", nil)
-		filePath := "../../tests/terraform/resources/complex_tags.tf"
+		p.Init(rootDir, nil)
 		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
@@ -140,7 +147,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedBlocks {
 			if block.IsBlockTaggable() {
-				tagger.CreateTagsForBlock(block, &blame)
+				tagger.CreateTagsForBlock(block)
 			}
 
 		}

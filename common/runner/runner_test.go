@@ -14,10 +14,10 @@ import (
 
 func Test_loadExternalTags(t *testing.T) {
 	t.Run("load local plugins", func(t *testing.T) {
-		pluginDir := []string{"../../tests/yor_plugins/example"}
+		pluginDir := "../../tests/yor_plugins/example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
 		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
-		gotTags, err := loadExternalTags(pluginDir)
+		gotTags, err := loadExternalTags([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalTags() error = %v", err)
 			return
