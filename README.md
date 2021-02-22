@@ -1,6 +1,6 @@
 # Yor
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-73%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-74%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 Automated IaC tagging using external sources of data.
 
@@ -110,6 +110,13 @@ var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
 ```sh
 yor --custom-tagger tests/yor_plugins/example
 # run yor with custom tags located in tests/yor_plugins/example
+```
+
+Using docker:
+```sh
+docker pull bridgecrew/yor
+
+docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor --directory /tf
 ```
 
 

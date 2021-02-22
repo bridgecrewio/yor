@@ -6,6 +6,7 @@ import (
 	"bridgecrewio/yor/common/reports"
 	"bridgecrewio/yor/common/runner"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,13 +14,21 @@ import (
 )
 
 func main() {
-	fmt.Println("Welcome to Yor!")
 	options := &common.Options{}
 	cmd := &cobra.Command{
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Version:       common.Version,
+		Short:         fmt.Sprintf("\nYor, the IaC auto-tagger (v%v)", common.Version),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if options.Directory == "" {
+				// If no flags supplied display the help menu and quit cleanly
+				err := cmd.Help()
+				if err == nil {
+					os.Exit(0)
+				}
+				logger.Error(err.Error())
+			}
 			return run(options)
 		},
 	}

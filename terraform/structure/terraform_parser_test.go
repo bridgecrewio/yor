@@ -171,4 +171,15 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../tests/terraform/mixed", nil)
+		blocks, err := p.ParseFile("../../tests/terraform/mixed/mixed.tf")
+		if err != nil {
+			t.Fail()
+		}
+		assert.Equal(t, 1, len(blocks))
+		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
+	})
 }
