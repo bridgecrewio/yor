@@ -17,12 +17,12 @@ type TerraformTagger struct {
 func (t *TerraformTagger) CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame) {
 	var newTags []tags.ITag
 	for _, tag := range t.Tags {
-		err := tag.CalculateValue(gitBlame)
+		tag, err := tag.CalculateValue(gitBlame)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to calculate tag value of tag %v, err: %s", tag, err))
 			continue
 		}
-		newTags = append(newTags, &tags.Tag{Key: tag.GetKey(), Value: tag.GetValue()})
+		newTags = append(newTags, tag)
 	}
 	block.AddNewTags(newTags)
 }
