@@ -7,9 +7,10 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
-	"github.com/go-git/go-git/v5"
 	"strings"
 	"testing"
+
+	"github.com/go-git/go-git/v5"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
