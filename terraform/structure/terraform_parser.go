@@ -6,7 +6,6 @@ import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
-	"github.com/hashicorp/go-hclog"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"

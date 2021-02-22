@@ -2,7 +2,6 @@ package gitservice
 
 import (
 	"bufio"
-	"github.com/go-git/go-git/v5"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 )
 
