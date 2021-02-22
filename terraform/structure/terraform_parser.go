@@ -101,7 +101,8 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	for i, block := range rawBlocks {
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse terraform block because %s", err)
+			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
+			continue
 		}
 
 		terraformBlock.Init(filePath, block)

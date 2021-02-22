@@ -112,6 +112,13 @@ yor --custom-tagger tests/yor_plugins/example
 # run yor with custom tags located in tests/yor_plugins/example
 ```
 
+Using docker:
+```sh
+docker pull bridgecrew/yor
+
+docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor --directory /tf
+```
+
 
 #### Troubleshooting
 If you encounter the following error: 
