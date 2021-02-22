@@ -14,11 +14,10 @@ func (t *YorTraceTag) Init() {
 	t.Key = "yor_trace"
 }
 
-func (t *YorTraceTag) CalculateValue(_ interface{}) error {
+func (t *YorTraceTag) CalculateValue(_ interface{}) (ITag, error) {
 	uuidv4, err := uuid.NewRandom()
 	if err != nil {
-		return fmt.Errorf("failed to create a new uuidv4")
+		return nil, fmt.Errorf("failed to create a new uuidv4")
 	}
-	t.Value = uuidv4.String()
-	return nil
+	return &Tag{Key: t.Key, Value: uuidv4.String()}, nil
 }
