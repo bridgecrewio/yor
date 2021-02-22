@@ -129,17 +129,16 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 func TestTerrraformParser_WriteFile(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../tests/terraform/resources"
+		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		blame := blameutils.SetupBlameResults(t, rootDir)
+		blame := blameutils.SetupBlameResults(t, filePath)
 		gitService := &gitservice.GitService{
-			BlameByFile: map[string]*git.BlameResult{rootDir: blame},
+			BlameByFile: map[string]*git.BlameResult{filePath: blame},
 		}
 		tagger := &tagging.GitTagger{GitService: gitService}
-		tagger.InitTagger(rootDir)
 		tagger.InitTags(nil)
 		p.Init(rootDir, nil)
-		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
