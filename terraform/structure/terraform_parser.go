@@ -22,8 +22,10 @@ import (
 )
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
+var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 
 type TerrraformParser struct {
+	structure.Parser
 	rootDir                string
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
@@ -40,6 +42,10 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
+}
+
+func (p *TerrraformParser) GetSkippedDirs() []string {
+	return ignoredDirs
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {

@@ -2,7 +2,6 @@ package tagging
 
 import (
 	commonStructure "bridgecrewio/yor/common/structure"
-	commonTagging "bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils/blameutils"
@@ -11,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerraformTagger(t *testing.T) {
+func TestGitTagger(t *testing.T) {
 	blame := blameutils.SetupBlame(t)
 
 	t.Run("test terraform tagger CreateTagsForBlock", func(t *testing.T) {
-		tagger := TerraformTagger{Tagger: commonTagging.Tagger{
+		tagger := GitTagger{Tagger: Tagger{
 			Tags: []tags.ITag{},
 		}}
 		extraTags := []tags.ITag{

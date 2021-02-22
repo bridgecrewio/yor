@@ -9,7 +9,6 @@ import (
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
-	tfTagging "bridgecrewio/yor/terraform/tagging"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -28,12 +27,10 @@ type Runner struct {
 
 func (r *Runner) Init(commands *common.Options) error {
 	dir := commands.Directory
-	gitService, err := gitservice.NewGitService(dir)
-	if err != nil {
-		logger.Error("Failed to initialize git service")
+	r.taggers = append(r.taggers, &tagging.GitTagger{})
+	for _, tagger := range r.taggers {
+		tagger.InitTagger(dir)
 	}
-	r.gitService = gitService
-	r.taggers = append(r.taggers, &tfTagging.TerraformTagger{})
 	extraTags, err := loadExternalTags(commands.CustomTaggers)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
@@ -75,39 +72,29 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 }
 
 func (r *Runner) TagFile(file string) {
-	for _, tagger := range r.taggers {
-		if tagger.IsFileSkipped(file) {
+	for _, parser := range r.parsers {
+		if parser.IsFileSkipped(file) {
 			continue
 		}
-		for _, parser := range r.parsers {
-			blocks, err := parser.ParseFile(file)
-			if err != nil {
-				logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
-				continue
-			}
-			isFileTaggable := false
+		blocks, err := parser.ParseFile(file)
+		if err != nil {
+			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+			continue
+		}
+		isFileTaggable := false
+		for _, tagger := range r.taggers {
 			for _, block := range blocks {
 				if block.IsBlockTaggable() {
 					isFileTaggable = true
-					blame, err := r.gitService.GetBlameForFileLines(file, block.GetLines())
-					if err != nil {
-						logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
-						continue
-					}
-					if blame == nil {
-						logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", file))
-					}
-					tagger.CreateTagsForBlock(block, blame)
+					tagger.CreateTagsForBlock(block)
 					r.changeAccumulator.AccumulateChanges(block)
 				}
 			}
-			if isFileTaggable {
-				err = parser.WriteFile(file, blocks, file)
-				if err != nil {
-					logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
-				}
-				//	TODO: if block is a local module, run TagDir on it as well
-				//  Need to avoid cycles here!!
+		}
+		if isFileTaggable {
+			err = parser.WriteFile(file, blocks, file)
+			if err != nil {
+				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
 			}
 		}
 	}
