@@ -21,7 +21,7 @@ func main() {
 		Version:       common.Version,
 		Short:         fmt.Sprintf("\nYor, the IaC auto-tagger (v%v)", common.Version),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
+			if options.Directory == "" {
 				// If no flags supplied display the help menu and quit cleanly
 				err := cmd.Help()
 				if err == nil {
