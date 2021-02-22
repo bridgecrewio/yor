@@ -124,6 +124,10 @@ func getProviderDependencies(tfModule *tfconfig.Module) *moduledeps.Module {
 	moduleDependencies.Providers = providers
 
 	for _, moduleCall := range tfModule.ModuleCalls {
+		if strings.HasPrefix(moduleCall.Source, "git::") {
+			logger.Info("Skipping remote module", moduleCall.Source)
+			continue
+		}
 		childModulePath := path.Join(tfModule.Path, moduleCall.Source)
 		tfChildModule, diagnostics := tfconfig.LoadModule(childModulePath)
 		if diagnostics != nil && diagnostics.HasErrors() {

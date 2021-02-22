@@ -6,6 +6,7 @@ import (
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
+	"github.com/hashicorp/go-hclog"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -101,7 +101,8 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	for i, block := range rawBlocks {
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse terraform block because %s", err)
+			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
+			continue
 		}
 
 		terraformBlock.Init(filePath, block)
