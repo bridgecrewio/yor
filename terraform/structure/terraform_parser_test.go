@@ -2,9 +2,12 @@ package structure
 
 import (
 	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
+	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
+	"github.com/go-git/go-git/v5"
 	"strings"
 	"testing"
 
@@ -127,7 +130,11 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		rootDir := "../../tests/terraform/resources"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		tagger := &tagging.GitTagger{}
+		blame := blameutils.SetupBlameResults(t, rootDir)
+		gitService := &gitservice.GitService{
+			BlameByFile: map[string]*git.BlameResult{rootDir: blame},
+		}
+		tagger := &tagging.GitTagger{GitService: gitService}
 		tagger.InitTagger(rootDir)
 		tagger.InitTags(nil)
 		p.Init(rootDir, nil)

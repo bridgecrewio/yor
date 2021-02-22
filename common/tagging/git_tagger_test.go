@@ -6,8 +6,9 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"bridgecrewio/yor/tests/utils/structureutils"
-	"github.com/go-git/go-git/v5"
 	"testing"
+
+	"github.com/go-git/go-git/v5"
 
 	"github.com/stretchr/testify/assert"
 )
