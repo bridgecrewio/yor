@@ -4,8 +4,8 @@ import (
 	"bridgecrewio/yor/common/gitservice"
 	commonStructure "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
+	"bridgecrewio/yor/tests/utils/structureutils"
 	"github.com/go-git/go-git/v5"
 	"testing"
 
@@ -33,7 +33,7 @@ func TestGitTagger(t *testing.T) {
 			},
 		}
 		tagger.InitTags(extraTags)
-		block := &utils.MockTestBlock{
+		block := &structureutils.MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
 				IsTaggable: true,

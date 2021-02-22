@@ -1,4 +1,4 @@
-package utils
+package structureutils
 
 import commonStructure "bridgecrewio/yor/common/structure"
 
