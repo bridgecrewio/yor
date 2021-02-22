@@ -22,7 +22,7 @@ func NewGitBlame(filePath string, lines []int, blameResult *git.BlameResult, git
 	for line := lines[0]; line <= lines[1]; line++ {
 		if i < 0 || i >= len(blameResult.Lines) {
 			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))
-			return nil
+			return &gitBlame
 		}
 		gitBlame.BlamesByLine[line] = blameResult.Lines[i]
 		i++
