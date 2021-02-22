@@ -38,7 +38,7 @@ func Test_loadExternalTags(t *testing.T) {
 				Hash: plumbing.NewHash("1")}}}
 		for _, tag := range gotTags {
 			tag.Init()
-			err := tag.CalculateValue(&gitBlame)
+			tag, err := tag.CalculateValue(&gitBlame)
 			print(err)
 			key := tag.GetKey()
 			value := tag.GetValue()

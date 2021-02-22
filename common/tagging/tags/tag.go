@@ -18,7 +18,7 @@ var TagTypes = []ITag{
 
 type ITag interface {
 	Init()
-	CalculateValue(data interface{}) error
+	CalculateValue(data interface{}) (ITag, error)
 	GetKey() string
 	GetValue() string
 	GetPriority() int
@@ -43,8 +43,8 @@ func (t *Tag) GetPriority() int {
 	return 0
 }
 
-func (t *Tag) CalculateValue(_ interface{}) error {
-	return nil
+func (t *Tag) CalculateValue(_ interface{}) (ITag, error) {
+	return t, nil
 }
 
 func (t *Tag) GetKey() string {
