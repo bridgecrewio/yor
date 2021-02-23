@@ -133,6 +133,11 @@ Contribution is welcomed!
 
 We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
 
+To maintain our conventions, please run lint on your branch before opening a PR. To run lint:
+```sh
+golangci-lint run --fix
+```
+
 ## Disclaimer
 
 `yor` does not save, publish or share with anyone any identifiable customer information.  
