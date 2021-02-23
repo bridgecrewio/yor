@@ -10,7 +10,8 @@ environment, or other criteria.
 
 Tags can be used for security, cost allocation, automation, console organization, access control, and operations. 
 
-Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code as part of CI/CD pipeline.
+Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code frameworks (Terraform, Cloudformation, Kubernetes, and Serverless Framework) .
+By auto-tagging in IaC you will be able to trace any cloud resource from code to cloud. 
 Yor enables version-controlled owner assignment and resource tracing based git history. It also can extend tag enforcement logic by loading external tagging logic into the CI/CD pipeline. 
 
 
