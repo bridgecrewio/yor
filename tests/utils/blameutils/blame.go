@@ -34,13 +34,6 @@ func GetGitLines(t *testing.T, numOfLines int) []*git.Line {
 				Date:   firstCommitDate,
 				Hash:   plumbing.NewHash(CommitHash1),
 			})
-		} else if i%3 == 1 {
-			results = append(results, &git.Line{
-				Author: "jonjozwiak@users.noreply.github.com",
-				Text:   "Bridgecrew solution to create vulnerable infrastructure",
-				Date:   secondCommitDate,
-				Hash:   plumbing.NewHash(CommitHash2),
-			})
 		} else {
 			results = append(results, &git.Line{
 				Author: "jonjozwiak@users.noreply.github.com",

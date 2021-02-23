@@ -141,7 +141,7 @@ func (g *GitService) GetRepoName() string {
 func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	blame, ok := g.BlameByFile[filePath]
 	if ok {
-		return g.BlameByFile[filePath], nil
+		return blame, nil
 	}
 
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
