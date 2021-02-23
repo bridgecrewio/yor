@@ -91,24 +91,24 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 	}
 
-	logOptions := git.LogOptions{
-		// order the commits from most to least recent
-		Order:    git.LogOrderCommitterTime,
-		FileName: &relativeFilePath,
-	}
-	// fetch commit iterator
-	commitIter, err := g.repository.Log(&logOptions)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get log for repository %s because of error %s", g.repository, err)
-	}
-	var selectedCommit *object.Commit
 	if len(commitHash) == 0 {
-		// if there no commit was specified, get the latest commit
-		selectedCommit, err = commitIter.Next()
+		var err error
+		blame, err = g.GetFileBlame(filePath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get latest commit for file %s because of error %s", filePath, err)
+			return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 		}
 	} else {
+		var selectedCommit *object.Commit
+		logOptions := git.LogOptions{
+			// order the commits from most to least recent
+			Order:    git.LogOrderCommitterTime,
+			FileName: &relativeFilePath,
+		}
+		// fetch commit iterator
+		commitIter, err := g.repository.Log(&logOptions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get log for repository %s because of error %s", g.repository, err)
+		}
 		// find the matching commit
 		_ = commitIter.ForEach(func(commit *object.Commit) error {
 			if commit.Hash == plumbing.NewHash(commitHash[0]) {
@@ -119,12 +119,12 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 		if selectedCommit == nil {
 			return nil, fmt.Errorf("failed to find commits hash %s in commit logs", commitHash[0])
 		}
+		blame, err = git.Blame(selectedCommit, relativeFilePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
+		}
 	}
 
-	blame, err = git.Blame(selectedCommit, relativeFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
-	}
 	g.BlameByFile[filePath] = blame
 
 	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
@@ -136,4 +136,31 @@ func (g *GitService) GetOrganization() string {
 
 func (g *GitService) GetRepoName() string {
 	return g.repoName
+}
+
+func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
+	blame, ok := g.BlameByFile[filePath]
+	if ok {
+		return g.BlameByFile[filePath], nil
+	}
+
+	relativeFilePath := g.ComputeRelativeFilePath(filePath)
+	var selectedCommit *object.Commit
+
+	head, err := g.repository.Head()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repository HEAD for file %s because of error %s", filePath, err)
+	}
+	selectedCommit, err = g.repository.CommitObject(head.Hash())
+	if err != nil {
+		return nil, fmt.Errorf("failed to find commit %s ", head.Hash().String())
+	}
+
+	blame, err = git.Blame(selectedCommit, relativeFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
+	}
+	g.BlameByFile[filePath] = blame
+
+	return blame, nil
 }

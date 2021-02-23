@@ -71,16 +71,19 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
-		if parser.IsFileSkipped(file) {
+		if structure.IsFileSkipped(parser, file) {
 			continue
 		}
-		blocks, err := parser.ParseFile(file)
+		blocks, fileLength, err := parser.ParseFile(file)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
 			continue
 		}
 		isFileTaggable := false
 		for _, tagger := range r.taggers {
+			if !tagger.TagFile(file, fileLength) {
+				continue
+			}
 			for _, block := range blocks {
 				if block.IsBlockTaggable() {
 					isFileTaggable = true

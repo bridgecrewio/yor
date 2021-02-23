@@ -38,7 +38,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {55, 63},
 			"eks_cluster": {65, 78},
 		}
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -87,7 +87,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"instance_merged_override": {"\"Environment\"": "\"new_env\""},
 		}
 
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -132,7 +132,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		blame := blameutils.SetupBlameResults(t, filePath)
+		blame := blameutils.SetupBlameResults(t, filePath, 62)
 		gitService := &gitservice.GitService{
 			BlameByFile: map[string]*git.BlameResult{filePath: blame},
 		}
@@ -140,7 +140,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		tagger.InitTags(nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -156,7 +156,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -182,7 +182,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../tests/terraform/mixed", nil)
-		blocks, err := p.ParseFile("../../tests/terraform/mixed/mixed.tf")
+		blocks, _, err := p.ParseFile("../../tests/terraform/mixed/mixed.tf")
 		if err != nil {
 			t.Fail()
 		}

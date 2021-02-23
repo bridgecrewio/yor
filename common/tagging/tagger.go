@@ -15,6 +15,7 @@ type ITagger interface {
 	InitTagger(path string)
 	InitTags(extraTags []tags.ITag)
 	CreateTagsForBlock(block structure.IBlock)
+	TagFile(path string, fileLength int) bool
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {

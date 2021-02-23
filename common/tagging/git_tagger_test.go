@@ -15,7 +15,7 @@ import (
 
 func TestGitTagger(t *testing.T) {
 	path := "test_file"
-	blame := blameutils.SetupBlameResults(t, path)
+	blame := blameutils.SetupBlameResults(t, path, 3)
 
 	t.Run("test git tagger CreateTagsForBlock", func(t *testing.T) {
 		gitService := &gitservice.GitService{

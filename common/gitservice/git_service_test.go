@@ -64,8 +64,8 @@ func TestNewGitService(t *testing.T) {
 func TestGetBlameForFileLines(t *testing.T) {
 	t.Run("compare terragoat's README second commit", func(t *testing.T) {
 		var err error
-		startLine := 0
-		endLine := 1
+		startLine := 1
+		endLine := 2
 		secondCommitHash := "47accf06f13b503f3bab06fed7860e72f7523cac"
 
 		terragoatPath := CloneRepo(TerragoatURL)
@@ -84,7 +84,7 @@ func TestGetBlameForFileLines(t *testing.T) {
 			t.Errorf("failed to read expected file because %s", err)
 		}
 
-		for lineNum := startLine; lineNum <= endLine; lineNum++ {
+		for lineNum := startLine - 1; lineNum <= endLine-1; lineNum++ {
 			expectedTime := extractUnixDateFromLine(expectedFileLines[lineNum])
 			actualTime := generatedGitBlame.BlamesByLine[lineNum].Date
 			assert.Equal(t, expectedTime.Unix(), actualTime.Unix())

@@ -25,7 +25,6 @@ var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gc
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 
 type TerrraformParser struct {
-	structure.Parser
 	rootDir                string
 	providerToClientMap    map[string]tfschema.Client
 	taggableResourcesCache map[string]bool
@@ -46,6 +45,10 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 
 func (p *TerrraformParser) GetSkippedDirs() []string {
 	return ignoredDirs
+}
+
+func (p *TerrraformParser) GetAllowedFileTypes() []string {
+	return []string{".tf"}
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
@@ -78,27 +81,28 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
-func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, int, error) {
+	var fileLength int
 	// read file bytes
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
+		return nil, fileLength, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
 
 	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 	hclSyntaxFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 
 	if hclFile == nil || hclSyntaxFile == nil {
-		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
+		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
@@ -115,8 +119,9 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
+	fileLength = syntaxBlocks[len(syntaxBlocks)-1].Body.Range().End.Line
 
-	return parsedBlocks, nil
+	return parsedBlocks, fileLength, nil
 }
 
 func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -458,18 +463,19 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	hclLogger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
-		Level:  hclog.Trace,
+		Level:  hclog.Error,
 		Output: hclog.DefaultOutput,
 	})
 	client, exists := p.providerToClientMap[providerName]
 	if exists {
 		return client
 	}
+	logger.MuteLogging()
 	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
 		RootDir: p.terraformModule.ProvidersInstallDir,
 		Logger:  hclLogger,
 	})
-
+	logger.UnmuteLogging()
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
 			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))
