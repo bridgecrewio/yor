@@ -30,8 +30,8 @@ func TestResultsGeneration(t *testing.T) {
 
 	t.Run("Test report JSON stdout", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
-		_, _ = ReportServiceInst.report.AsJsonBytes()
-		output := utils.CaptureOutput(ReportServiceInst.PrintJsonToStdout)
+		_, _ = ReportServiceInst.report.AsJSONBytes()
+		output := utils.CaptureOutput(ReportServiceInst.PrintJSONToStdout)
 		lines := strings.Split(output, "\n")
 		assert.NotNil(t, output)
 		assert.LessOrEqual(t, 100, len(lines))
@@ -47,8 +47,8 @@ func TestResultsGeneration(t *testing.T) {
 			}
 		}()
 
-		_, _ = ReportServiceInst.report.AsJsonBytes()
-		ReportServiceInst.PrintJsonToFile(reportFileName)
+		_, _ = ReportServiceInst.report.AsJSONBytes()
+		ReportServiceInst.PrintJSONToFile(reportFileName)
 		content, _ := ioutil.ReadFile(reportFileName)
 		result := Report{}
 		_ = json.Unmarshal(content, &result)

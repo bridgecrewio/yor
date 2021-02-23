@@ -45,7 +45,7 @@ type Report struct {
 	UpdatedResourceTags []TagRecord
 }
 
-func (r *Report) AsJsonBytes() ([]byte, error) {
+func (r *Report) AsJSONBytes() ([]byte, error) {
 	jr, err := json.MarshalIndent(r, "", "    ")
 	if err != nil {
 		return nil, err
@@ -188,8 +188,8 @@ func (r *ReportService) printNewResourcesToStdout() {
 	table.Render()
 }
 
-func (r *ReportService) PrintJsonToFile(file string) {
-	jr, err := r.report.AsJsonBytes()
+func (r *ReportService) PrintJSONToFile(file string) {
+	jr, err := r.report.AsJSONBytes()
 	if err != nil {
 		logger.Warning("Failed to create report as JSON")
 	}
@@ -200,8 +200,8 @@ func (r *ReportService) PrintJsonToFile(file string) {
 	}
 }
 
-func (r *ReportService) PrintJsonToStdout() {
-	jr, err := r.report.AsJsonBytes()
+func (r *ReportService) PrintJSONToStdout() {
+	jr, err := r.report.AsJSONBytes()
 	if err != nil {
 		logger.Error("couldn't parse report to JSON")
 	}
