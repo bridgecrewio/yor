@@ -2,8 +2,10 @@ package reports
 
 import (
 	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/structure"
+	"bridgecrewio/yor/common/logger"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sort"
 
@@ -22,10 +24,33 @@ const (
 	colorPurple = "\033[35m"
 )
 
+type ReportSummary struct {
+	Scanned          int
+	NewResources     int
+	UpdatedResources int
+}
+
+type TagRecord struct {
+	File         string
+	ResourceID   string
+	TagKey       string
+	OldValue     string
+	UpdatedValue string
+	YorTraceID   string
+}
+
 type Report struct {
-	ScannedResources int
-	NewResources     []structure.IBlock
-	UpdatedResources []structure.IBlock
+	Summary             ReportSummary
+	NewResourceTags     []TagRecord
+	UpdatedResourceTags []TagRecord
+}
+
+func (r *Report) AsJsonBytes() ([]byte, error) {
+	jr, err := json.MarshalIndent(r, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+	return jr, nil
 }
 
 var ReportServiceInst *ReportService
@@ -40,9 +65,56 @@ func (r *ReportService) GetReport() *Report {
 
 func (r *ReportService) CreateReport() *Report {
 	changesAccumulator := TagChangeAccumulatorInstance
-	r.report.ScannedResources = len(changesAccumulator.ScannedBlocks)
-	r.report.NewResources = changesAccumulator.NewBlockTraces
-	r.report.UpdatedResources = changesAccumulator.UpdatedBlockTraces
+	r.report.Summary = ReportSummary{
+		Scanned:          len(changesAccumulator.ScannedBlocks),
+		NewResources:     len(changesAccumulator.NewBlockTraces),
+		UpdatedResources: len(changesAccumulator.UpdatedBlockTraces),
+	}
+	r.report.NewResourceTags = []TagRecord{}
+	for _, block := range changesAccumulator.NewBlockTraces {
+		for _, tag := range block.MergeTags() {
+			r.report.NewResourceTags = append(r.report.NewResourceTags, TagRecord{
+				File:         block.GetFilePath(),
+				ResourceID:   block.GetResourceID(),
+				TagKey:       tag.GetKey(),
+				OldValue:     "",
+				UpdatedValue: tag.GetValue(),
+				YorTraceID:   block.GetTraceID(),
+			})
+		}
+	}
+	r.report.UpdatedResourceTags = []TagRecord{}
+	for _, block := range changesAccumulator.UpdatedBlockTraces {
+		diff := block.CalculateTagsDiff()
+
+		sort.SliceStable(diff.Added, func(i, j int) bool {
+			return diff.Added[i].GetKey() < diff.Added[j].GetKey()
+		})
+		for _, val := range diff.Added {
+			r.report.UpdatedResourceTags = append(r.report.UpdatedResourceTags, TagRecord{
+				File:         block.GetFilePath(),
+				ResourceID:   block.GetResourceID(),
+				TagKey:       val.GetKey(),
+				OldValue:     "",
+				UpdatedValue: val.GetValue(),
+				YorTraceID:   block.GetTraceID(),
+			})
+		}
+
+		sort.SliceStable(diff.Updated, func(i, j int) bool {
+			return diff.Updated[i].Key < diff.Updated[j].Key
+		})
+		for _, val := range diff.Updated {
+			r.report.UpdatedResourceTags = append(r.report.UpdatedResourceTags, TagRecord{
+				File:         block.GetFilePath(),
+				ResourceID:   block.GetResourceID(),
+				TagKey:       val.Key,
+				OldValue:     val.PrevValue,
+				UpdatedValue: val.NewValue,
+				YorTraceID:   block.GetTraceID(),
+			})
+		}
+	}
 	return &r.report
 }
 
@@ -56,15 +128,15 @@ func (r *ReportService) CreateReport() *Report {
 func (r *ReportService) PrintToStdout() {
 	PrintBanner()
 	fmt.Println(colorReset, "Yor Findings Summary")
-	fmt.Println(colorReset, "Scanned Resources:\t", colorBlue, r.report.ScannedResources)
-	fmt.Println(colorReset, "New Resources Traced: \t", colorYellow, len(r.report.NewResources))
-	fmt.Println(colorReset, "Updated Resources:\t", colorGreen, len(r.report.UpdatedResources))
+	fmt.Println(colorReset, "Scanned Resources:\t", colorBlue, r.report.Summary.Scanned)
+	fmt.Println(colorReset, "New Resources Traced: \t", colorYellow, r.report.Summary.NewResources)
+	fmt.Println(colorReset, "Updated Resources:\t", colorGreen, r.report.Summary.UpdatedResources)
 	fmt.Println()
-	if len(r.report.NewResources) > 0 {
+	if r.report.Summary.NewResources > 0 {
 		r.printNewResourcesToStdout()
 	}
 	fmt.Println()
-	if len(r.report.UpdatedResources) > 0 {
+	if r.report.Summary.NewResources > 0 {
 		r.printUpdatedResourcesToStdout()
 	}
 }
@@ -74,7 +146,7 @@ func PrintBanner() {
 }
 
 func (r *ReportService) printUpdatedResourcesToStdout() {
-	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", len(r.report.UpdatedResources)))
+	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", r.report.Summary.UpdatedResources))
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Old Value", "Updated Value", "Yor ID"})
 	table.SetColumnColor(
@@ -89,27 +161,15 @@ func (r *ReportService) printUpdatedResourcesToStdout() {
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
 
-	for _, block := range r.report.UpdatedResources {
-		diff := block.CalculateTagsDiff()
-		sort.SliceStable(diff.Added, func(i, j int) bool {
-			return diff.Added[i].GetKey() < diff.Added[j].GetKey()
-		})
-		for _, val := range diff.Added {
-			table.Append([]string{block.GetFilePath(), block.GetResourceID(), val.GetKey(), "", val.GetValue(), block.GetTraceID()})
-		}
-		sort.SliceStable(diff.Updated, func(i, j int) bool {
-			return diff.Updated[i].Key < diff.Updated[j].Key
-		})
-		for _, val := range diff.Updated {
-			table.Append([]string{block.GetFilePath(), block.GetResourceID(), val.Key, val.PrevValue, val.NewValue, block.GetTraceID()})
-		}
+	for _, tr := range r.report.UpdatedResourceTags {
+		table.Append([]string{tr.File, tr.ResourceID, tr.TagKey, tr.OldValue, tr.UpdatedValue, tr.YorTraceID})
 	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0, 1, 5})
 	table.Render()
 }
 
 func (r *ReportService) printNewResourcesToStdout() {
-	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", len(r.report.NewResources)))
+	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", r.report.Summary.NewResources))
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Tag Value", "Yor ID"})
 	table.SetRowLine(true)
@@ -121,11 +181,29 @@ func (r *ReportService) printNewResourcesToStdout() {
 		tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
 		tablewriter.Colors{},
 	)
-	for _, block := range r.report.NewResources {
-		for _, tag := range block.MergeTags() {
-			table.Append([]string{block.GetFilePath(), block.GetResourceID(), tag.GetKey(), tag.GetValue(), block.GetTraceID()})
-		}
+	for _, tr := range r.report.NewResourceTags {
+		table.Append([]string{tr.File, tr.ResourceID, tr.TagKey, tr.UpdatedValue, tr.YorTraceID})
 	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0, 1, 4})
 	table.Render()
+}
+
+func (r *ReportService) PrintJsonToFile(file string) {
+	jr, err := r.report.AsJsonBytes()
+	if err != nil {
+		logger.Warning("Failed to create report as JSON")
+	}
+
+	err = ioutil.WriteFile(file, jr, 0644)
+	if err != nil {
+		logger.Warning("Failed to write to JSON file", err.Error())
+	}
+}
+
+func (r *ReportService) PrintJsonToStdout() {
+	jr, err := r.report.AsJsonBytes()
+	if err != nil {
+		logger.Error("couldn't parse report to JSON")
+	}
+	fmt.Println(string(jr))
 }
