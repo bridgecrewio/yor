@@ -27,7 +27,7 @@ func (t *GitTagger) TagFile(path string, fileLength int) bool {
 		logger.Warning(fmt.Sprintf("Unable to get git blame for file %s: %s", path, err))
 		return false
 	}
-	if len(fileBlame.Lines) < fileLength {
+	if len(fileBlame.Lines) != fileLength {
 		logger.Warning(fmt.Sprintf("Unable to tag file %s because the file contains uncommitted changes", path))
 		return false
 	}
