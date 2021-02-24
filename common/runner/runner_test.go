@@ -2,7 +2,12 @@ package runner
 
 import (
 	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/common/tagging"
+	terraformStructure "bridgecrewio/yor/terraform/structure"
+	"bridgecrewio/yor/tests/terraform/resources/taggedkms"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -44,5 +49,56 @@ func Test_loadExternalTags(t *testing.T) {
 			value := tag.GetValue()
 			assert.Equal(t, expectedTags[key], value)
 		}
+	})
+}
+
+func Test_E2E(t *testing.T) {
+	t.Run("modified file not changing", func(t *testing.T) {
+		filePath := "../../tests/terraform/resources/taggedkms/modified/modified_kms.tf"
+		taggedFilePath := "../../tests/terraform/resources/taggedkms/modified/modified_kms_tagged.tf"
+
+		defer func() {
+			err := os.Remove(taggedFilePath)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		textBefore, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", filePath, err))
+		}
+		rootDir := "../../tests/terraform/resources/taggedkms/modified"
+		blame := taggedkms.KmsBlame
+		gitService, err := gitservice.NewGitService(rootDir)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to init git service: %s", err))
+		}
+		gitService.BlameByFile = map[string]*git.BlameResult{filePath: &blame}
+		gitTagger := tagging.GitTagger{GitService: gitService}
+		gitTagger.InitTags(nil)
+		terraformParser := terraformStructure.TerrraformParser{}
+		terraformParser.Init(rootDir, nil)
+
+		blocks, err := terraformParser.ParseFile(filePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to parse file %v", filePath))
+		}
+		for _, block := range blocks {
+			if block.IsBlockTaggable() {
+				gitTagger.CreateTagsForBlock(block)
+			}
+		}
+
+		err = terraformParser.WriteFile(filePath, blocks, taggedFilePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to write file %s because %s", taggedFilePath, err))
+		}
+
+		textAfter, err := ioutil.ReadFile(taggedFilePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", taggedFilePath, err))
+		}
+		assert.Equal(t, textBefore, textAfter)
 	})
 }

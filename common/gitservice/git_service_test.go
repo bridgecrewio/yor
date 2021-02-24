@@ -84,8 +84,8 @@ func TestGetBlameForFileLines(t *testing.T) {
 			t.Errorf("failed to read expected file because %s", err)
 		}
 
-		for lineNum := startLine - 1; lineNum <= endLine-1; lineNum++ {
-			expectedTime := extractUnixDateFromLine(expectedFileLines[lineNum])
+		for lineNum := startLine; lineNum <= endLine; lineNum++ {
+			expectedTime := extractUnixDateFromLine(expectedFileLines[lineNum-1])
 			actualTime := generatedGitBlame.BlamesByLine[lineNum].Date
 			assert.Equal(t, expectedTime.Unix(), actualTime.Unix())
 		}

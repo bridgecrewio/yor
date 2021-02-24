@@ -5,7 +5,7 @@ import (
 	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/tests/utils/blameutils"
+	"bridgecrewio/yor/tests/terraform/resources"
 	"fmt"
 	"strings"
 	"testing"
@@ -38,7 +38,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {55, 63},
 			"eks_cluster": {65, 78},
 		}
-		parsedBlocks, _, err := p.ParseFile(filePath)
+		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -87,7 +87,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"instance_merged_override": {"\"Environment\"": "\"new_env\""},
 		}
 
-		parsedBlocks, _, err := p.ParseFile(filePath)
+		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -132,15 +132,17 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		blame := blameutils.SetupBlameResults(t, filePath, 62)
+		blameLines := resources.CreateComplexTagsLines()
 		gitService := &gitservice.GitService{
-			BlameByFile: map[string]*git.BlameResult{filePath: blame},
+			BlameByFile: map[string]*git.BlameResult{filePath: {
+				Lines: blameLines,
+			}},
 		}
 		tagger := &tagging.GitTagger{GitService: gitService}
 		tagger.InitTags(nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
-		parsedBlocks, _, err := p.ParseFile(filePath)
+		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -156,7 +158,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -182,7 +184,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../tests/terraform/mixed", nil)
-		blocks, _, err := p.ParseFile("../../tests/terraform/mixed/mixed.tf")
+		blocks, err := p.ParseFile("../../tests/terraform/mixed/mixed.tf")
 		if err != nil {
 			t.Fail()
 		}

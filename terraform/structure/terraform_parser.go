@@ -81,28 +81,27 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
-func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, int, error) {
-	var fileLength int
+func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// read file bytes
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return nil, fileLength, fmt.Errorf("failed to read file %s because %s", filePath, err)
+		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
 
 	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 	hclSyntaxFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 
 	if hclFile == nil || hclSyntaxFile == nil {
-		return nil, fileLength, fmt.Errorf("failed to parse hcl file %s", filePath)
+		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
@@ -119,9 +118,8 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, int, 
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
-	fileLength = syntaxBlocks[len(syntaxBlocks)-1].Body.Range().End.Line
 
-	return parsedBlocks, fileLength, nil
+	return parsedBlocks, nil
 }
 
 func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -373,7 +371,9 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	client := p.getClient(providerName)
 	taggable := false
 	if client != nil {
+		logger.MuteLogging()
 		typeSchema, err := client.GetResourceTypeSchema(resourceType)
+		logger.UnmuteLogging()
 		if err != nil {
 			if strings.Contains(err.Error(), "Failed to find resource type") {
 				// Resource Type doesn't have schema yet in the provider

@@ -74,16 +74,13 @@ func (r *Runner) TagFile(file string) {
 		if structure.IsFileSkipped(parser, file) {
 			continue
 		}
-		blocks, fileLength, err := parser.ParseFile(file)
+		blocks, err := parser.ParseFile(file)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
 			continue
 		}
 		isFileTaggable := false
 		for _, tagger := range r.taggers {
-			if !tagger.TagFile(file, fileLength) {
-				continue
-			}
 			for _, block := range blocks {
 				if block.IsBlockTaggable() {
 					isFileTaggable = true
