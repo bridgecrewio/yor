@@ -135,7 +135,7 @@ We are working on extending Yor and adding more parsers (to support additional I
 
 To maintain our conventions, please run lint on your branch before opening a PR. To run lint:
 ```sh
-golangci-lint run --fix
+golangci-lint run --fix --skip-dirs tests/yor_plugins
 ```
 
 ## Disclaimer

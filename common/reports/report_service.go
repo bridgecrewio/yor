@@ -25,24 +25,24 @@ const (
 )
 
 type ReportSummary struct {
-	Scanned          int
-	NewResources     int
-	UpdatedResources int
+	Scanned          int `json:"scanned"`
+	NewResources     int `json:"newResources"`
+	UpdatedResources int `json:"updatedResources"`
 }
 
 type TagRecord struct {
-	File         string
-	ResourceID   string
-	TagKey       string
-	OldValue     string
-	UpdatedValue string
-	YorTraceID   string
+	File         string `json:"file"`
+	ResourceID   string `json:"resourceId"`
+	TagKey       string `json:"key"`
+	OldValue     string `json:"oldValue"`
+	UpdatedValue string `json:"updatedValue"`
+	YorTraceID   string `json:"yorTraceId"`
 }
 
 type Report struct {
-	Summary             ReportSummary
-	NewResourceTags     []TagRecord
-	UpdatedResourceTags []TagRecord
+	Summary             ReportSummary `json:"summary"`
+	NewResourceTags     []TagRecord   `json:"newResourceTags"`
+	UpdatedResourceTags []TagRecord   `json:"updatedResourceTags"`
 }
 
 func (r *Report) AsJSONBytes() ([]byte, error) {
