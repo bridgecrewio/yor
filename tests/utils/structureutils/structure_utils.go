@@ -1,6 +1,9 @@
 package structureutils
 
-import commonStructure "bridgecrewio/yor/common/structure"
+import (
+	"bridgecrewio/yor/common"
+	commonStructure "bridgecrewio/yor/common/structure"
+)
 
 type MockTestBlock struct {
 	commonStructure.Block
@@ -16,6 +19,6 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines() []int {
-	return []int{1, 3}
+func (b *MockTestBlock) GetLines() common.Lines {
+	return common.Lines{Start: 1, End: 3}
 }

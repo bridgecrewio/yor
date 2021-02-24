@@ -1,8 +1,8 @@
 package resources
 
 import (
+	"bridgecrewio/yor/common"
 	"io/ioutil"
-	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -21,7 +21,7 @@ func CreateComplexTagsLines() []*git.Line {
 	if err != nil {
 		panic(err)
 	}
-	originLines := strings.Split(string(originFileText), "\n")
+	originLines := common.GetLinesFromBytes(originFileText)
 	lines := make([]*git.Line, 0)
 
 	for _, line := range originLines {

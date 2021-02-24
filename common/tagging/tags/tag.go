@@ -1,5 +1,10 @@
 package tags
 
+import (
+	"fmt"
+	"regexp"
+)
+
 type Tag struct {
 	Key   string
 	Value string
@@ -53,4 +58,10 @@ func (t *Tag) GetKey() string {
 
 func (t *Tag) GetValue() string {
 	return t.Value
+}
+
+// Try to match the tag's key name with a potentially quoted string
+func IsTagKeyMatch(tag ITag, keyName string) bool {
+	match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
+	return match
 }

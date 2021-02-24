@@ -8,7 +8,11 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/awslabs/goformation/v4"
+	"github.com/awslabs/goformation/v4/cloudformation"
 	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
+	"github.com/sanathkr/yaml"
+	"io/ioutil"
+	"math"
 
 	"os"
 	"reflect"
@@ -20,11 +24,21 @@ const TagsAttributeName = "Tags"
 var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Description", "Metadata", "Parameters", "Mappings", "Conditions", "Outputs", "Resources"}
 
 type CloudformationParser struct {
-	rootDir string
+	rootDir              string
+	fileToResourcesLines map[string]common.Lines
 }
 
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.rootDir = rootDir
+	p.fileToResourcesLines = make(map[string]common.Lines)
+}
+
+func (p *CloudformationParser) GetSkippedDirs() []string {
+	return []string{}
+}
+
+func (p *CloudformationParser) GetAllowedFileTypes() []string {
+	return []string{".yaml"}
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -38,7 +52,8 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		resourceNames = append(resourceNames, resourceName)
 	}
 	resourceNamesToLines := mapResourcesLineYAML(filePath, resourceNames)
-
+	minResourceLine := math.MaxInt8
+	maxResourceLine := 0
 	parsedBlocks := make([]structure.IBlock, 0)
 	for resourceName := range template.Resources {
 		resource := template.Resources[resourceName]
@@ -47,6 +62,10 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		if isTaggable {
 			existingTags = p.GetExistingTags(tagsValue)
 		}
+		lines := resourceNamesToLines[resourceName]
+		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
+		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
+
 		cfnBlock := &CloudformationBlock{
 			Block: structure.Block{
 				FilePath:          filePath,
@@ -55,11 +74,13 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 				IsTaggable:        isTaggable,
 				TagsAttributeName: TagsAttributeName,
 			},
-			lines: resourceNamesToLines[resourceName],
+			lines: *lines,
 			name:  resourceName,
 		}
 		parsedBlocks = append(parsedBlocks, cfnBlock)
 	}
+
+	p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
 
 	return parsedBlocks, nil
 }
@@ -79,11 +100,11 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 	return iTags
 }
 
-func mapResourcesLineYAML(filePath string, resourceNames []string) map[string][]int {
-	resourceToLines := make(map[string][]int)
+func mapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
+	resourceToLines := make(map[string]*common.Lines)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
-		resourceToLines[resourceName] = []int{-1, -1}
+		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
 	}
 
 	file, err := os.Open(filePath)
@@ -120,7 +141,7 @@ func mapResourcesLineYAML(filePath string, resourceNames []string) map[string][]
 
 			if !readResources && latestResourceName != "" {
 				// if we already read all the resources set the end line of the last resource and stop iterating the file
-				resourceToLines[latestResourceName][1] = lineCounter - 1
+				resourceToLines[latestResourceName].End = lineCounter - 1
 				break
 			}
 			// remove found section to avoid searching for it once it was found
@@ -134,11 +155,11 @@ func mapResourcesLineYAML(filePath string, resourceNames []string) map[string][]
 				if strings.Contains(line, resourceName) {
 					if latestResourceName != "" {
 						// set the end line of the previous resource
-						resourceToLines[latestResourceName][1] = lineCounter - 1
+						resourceToLines[latestResourceName].End = lineCounter - 1
 					}
 
 					foundResourceIndex = i
-					resourceToLines[resourceName][0] = lineCounter
+					resourceToLines[resourceName].Start = lineCounter
 					latestResourceName = resourceName
 					break
 				}
@@ -150,15 +171,95 @@ func mapResourcesLineYAML(filePath string, resourceNames []string) map[string][]
 			}
 		}
 	}
-	if latestResourceName != "" && resourceToLines[latestResourceName][1] == -1 {
+	if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
 		// in case we reached the end of the file without setting the end line of the last resource
-		resourceToLines[latestResourceName][1] = lineCounter
+		resourceToLines[latestResourceName].End = lineCounter
 	}
 
 	return resourceToLines
 }
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
+	// read file bytes
+	fileFormat := common.GetFileFormat(readFilePath)
+	src, err := ioutil.ReadFile(readFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
+	}
 
-	return nil
+	originLines := common.GetLinesFromBytes(src)
+
+	resourcesStart := p.fileToResourcesLines[readFilePath].Start
+	resourcesEnd := p.fileToResourcesLines[readFilePath].End
+
+	linesBeforeResources := originLines[:resourcesStart]
+	linesAfterResources := originLines[resourcesEnd+1:]
+	resourcesIndent := extractIndentationOfLine(originLines[resourcesStart])
+
+	for _, resourceBlock := range blocks {
+		cloudformationBlock, ok := resourceBlock.(*CloudformationBlock)
+		if !ok {
+			logger.Warning("failed to convert block to CloudformationBlock")
+			continue
+		}
+		cloudformationBlock.UpdateTags()
+	}
+
+	resourcesLines := p.GetResourcesLines(resourcesIndent, fileFormat, blocks)
+	allLines := append(linesBeforeResources, resourcesLines...)
+	allLines = append(allLines, linesAfterResources...)
+	linesText := strings.Join(allLines, "\n")
+
+	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0644)
+
+	return err
+}
+
+func extractIndentationOfLine(textLine string) string {
+	indent := ""
+	for c := range textLine {
+		if c != ' ' {
+			break
+		}
+		indent += " "
+	}
+
+	return indent
+}
+
+func (p *CloudformationParser) GetResourcesLines(indent string, fileExtension string, blocks []structure.IBlock) []string {
+	resources := make(map[string]cloudformation.Resource)
+	for _, block := range blocks {
+		resources[block.GetResourceID()] = block.GetRawBlock().(cloudformation.Resource)
+	}
+	cfnResources := cloudformation.Resources(resources)
+	jsonBytes := make([]byte, 0)
+	err := cfnResources.UnmarshalJSON(jsonBytes)
+	if err != nil {
+		logger.Warning("unable to get resources bytes")
+		return nil
+	}
+
+	switch fileExtension {
+	case "yaml":
+		return p.getYAMLLines(indent, jsonBytes)
+	default:
+		logger.Warning(fmt.Sprintf("unsupported file type %s", fileExtension))
+		return nil
+	}
+
+}
+
+func (p *CloudformationParser) getYAMLLines(indent string, jsonBytes []byte) []string {
+	yamlBytes, err := yaml.JSONToYAML(jsonBytes)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("failed to convert JSON into YAML: %s", err))
+	}
+	textLines := common.GetLinesFromBytes(yamlBytes)
+	indentedLines := make([]string, len(textLines))
+	for i, originLine := range textLines {
+		indentedLines[i] = indent + originLine
+	}
+
+	return indentedLines
 }

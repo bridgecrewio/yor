@@ -28,7 +28,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {"Name": "\"${local.resource_prefix.value}-eks-subnet2\"", "\"kubernetes.io/cluster/${local.eks_name.value}\"": "\"shared\""},
 		}
 
-		expectedLines := map[string][]int{
+		expectedLines := map[string]common.Lines{
 			"iam_policy_eks": {10, 19},
 			"iam_for_eks":    {21, 24},
 			"policy_attachment-AmazonEKSClusterPolicy": {26, 29},

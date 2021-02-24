@@ -1,16 +1,15 @@
 package tagging
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/logger"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
-	"io/ioutil"
-	"strings"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/pmezard/go-difflib/difflib"
+	"io/ioutil"
 )
 
 type GitTagger struct {
@@ -49,7 +48,7 @@ func (t *GitTagger) CreateTagsForBlock(block structure.IBlock) {
 		t.initFileMapping(block.GetFilePath())
 	}
 	linesInGit := t.getBlockLinesInGit(block)
-	if linesInGit[0] < 0 || linesInGit[1] < 0 {
+	if linesInGit.Start < 0 || linesInGit.End < 0 {
 		return
 	}
 	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), t.getBlockLinesInGit(block))
@@ -78,11 +77,11 @@ func (t *GitTagger) CreateTagsForBlock(block structure.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *GitTagger) getBlockLinesInGit(block structure.IBlock) []int {
+func (t *GitTagger) getBlockLinesInGit(block structure.IBlock) common.Lines {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
-	originStart := blockLines[0]
-	originEnd := blockLines[1]
+	originStart := blockLines.Start
+	originEnd := blockLines.End
 	gitStart := -1
 	gitEnd := -1
 
@@ -92,13 +91,13 @@ func (t *GitTagger) getBlockLinesInGit(block structure.IBlock) []int {
 		originStart++
 	}
 
-	for gitEnd == -1 && originEnd >= blockLines[0] {
+	for gitEnd == -1 && originEnd >= blockLines.Start {
 		// find the last mapped line
 		gitEnd = originToGit[originEnd]
 		originEnd--
 	}
 
-	return []int{gitStart, gitEnd}
+	return common.Lines{Start: gitStart, End: gitEnd}
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
@@ -121,7 +120,7 @@ func (t *GitTagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResu
 		return
 	}
 
-	originLines := strings.Split(string(originFileText), "\n")
+	originLines := common.GetLinesFromBytes(originFileText)
 
 	matcher := difflib.NewMatcher(originLines, gitLines)
 	matches := matcher.GetMatchingBlocks()
@@ -159,9 +158,9 @@ func (t *GitTagger) updateBlameForOriginLines(block structure.IBlock, blame *git
 	fileMapping := t.fileLinesMapper[block.GetFilePath()].originToGit
 
 	shouldTag := true
-	for blockLine := blockLines[0]; blockLine <= blockLines[1]; blockLine++ {
+	for blockLine := blockLines.Start; blockLine <= blockLines.End; blockLine++ {
 		if fileMapping[blockLine] == -1 {
-			logger.Warning(fmt.Sprintf("unable to tag block in file %s (lines %d-%d) because it contains uncomitted changes", blame.FilePath, blockLines[0], blockLines[1]))
+			logger.Warning(fmt.Sprintf("unable to tag block in file %s (lines %d-%d) because it contains uncomitted changes", blame.FilePath, blockLines.Start, blockLines.End))
 			shouldTag = false
 			break
 		} else {

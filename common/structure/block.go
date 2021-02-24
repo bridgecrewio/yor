@@ -23,7 +23,7 @@ type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	String() string
 	GetFilePath() string
-	GetLines() []int
+	GetLines() common.Lines
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
@@ -41,7 +41,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	yorTag.Init()
 	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		match := common.IsTagKeyMatch(tag, yorTagKeyName)
+		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
 		if _, ok := tag.(*tags.YorTraceTag); ok || match {
 			isTraced = true
 			break
@@ -50,7 +50,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if isTraced {
 		var yorTraceIndex int
 		for index, tag := range newTags {
-			match := common.IsTagKeyMatch(tag, yorTagKeyName)
+			match := tags.IsTagKeyMatch(tag, yorTagKeyName)
 			if _, ok := tag.(*tags.YorTraceTag); ok || match {
 				yorTraceIndex = index
 			}
@@ -72,7 +72,7 @@ func (b *Block) MergeTags() []tags.ITag {
 	yorTag.Init()
 	yorTagKeyName := yorTag.GetKey()
 	for _, tag := range b.ExitingTags {
-		match := common.IsTagKeyMatch(tag, yorTagKeyName)
+		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
 		if val, ok := tag.(*tags.YorTraceTag); ok || match {
 			if val != nil {
 				mergedTags = append(mergedTags, val)

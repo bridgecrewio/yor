@@ -1,11 +1,14 @@
 package common
 
 import (
-	"bridgecrewio/yor/common/tagging/tags"
-	"fmt"
 	"reflect"
-	"regexp"
+	"strings"
 )
+
+type Lines struct {
+	Start int
+	End   int
+}
 
 func InSlice(slice interface{}, elem interface{}) bool {
 	for _, e := range convertToInterfaceSlice(slice) {
@@ -51,12 +54,6 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 	return ret
 }
 
-// Try to match the tag's key name with a potentially quoted string
-func IsTagKeyMatch(tag tags.ITag, keyName string) bool {
-	match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
-	return match
-}
-
 func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {
 	sValue := reflect.ValueOf(s)
 
@@ -73,4 +70,12 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 	}
 
 	return true, field
+}
+
+func GetFileFormat(filePath string) string {
+	return strings.Split(filePath, ".")[0]
+}
+
+func GetLinesFromBytes(bytes []byte) []string {
+	return strings.Split(string(bytes), "\n")
 }

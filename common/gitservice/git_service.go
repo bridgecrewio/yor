@@ -1,6 +1,7 @@
 package gitservice
 
 import (
+	"bridgecrewio/yor/common"
 	"bridgecrewio/yor/common/logger"
 	"fmt"
 	"path/filepath"
@@ -82,8 +83,8 @@ func (g *GitService) ComputeRelativeFilePath(filepath string) string {
 	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.rootDir), "")
 }
 
-func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
-	logger.Info(fmt.Sprintf("Getting git blame for %v (%v:%v)", filePath, lines[0], lines[1]))
+func (g *GitService) GetBlameForFileLines(filePath string, lines common.Lines) (*GitBlame, error) {
+	logger.Info(fmt.Sprintf("Getting git blame for %v (%v:%v)", filePath, lines.Start, lines.End))
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	blame, ok := g.BlameByFile[filePath]
 	if ok {
