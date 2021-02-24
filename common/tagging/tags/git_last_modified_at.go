@@ -2,7 +2,6 @@ package tags
 
 import (
 	"bridgecrewio/yor/common/gitservice"
-	"errors"
 	"fmt"
 	"reflect"
 )
@@ -22,7 +21,7 @@ func (t *GitLastModifiedAtTag) CalculateValue(data interface{}) (ITag, error) {
 	}
 	latestCommit := gitBlame.GetLatestCommit()
 	if latestCommit == nil {
-		return nil, errors.New("latest commit is unavailable")
+		return nil, fmt.Errorf("latest commit is unavailable")
 	}
 	return &Tag{Key: t.Key, Value: latestCommit.Date.UTC().Format("2006-01-02 15:04:05")}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 )
@@ -91,38 +90,10 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHa
 		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
 	}
 
-	if len(commitHash) == 0 {
-		var err error
-		blame, err = g.GetFileBlame(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
-		}
-	} else {
-		var selectedCommit *object.Commit
-		logOptions := git.LogOptions{
-			// order the commits from most to least recent
-			Order:    git.LogOrderCommitterTime,
-			FileName: &relativeFilePath,
-		}
-		// fetch commit iterator
-		commitIter, err := g.repository.Log(&logOptions)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get log for repository %s because of error %s", g.repository, err)
-		}
-		// find the matching commit
-		_ = commitIter.ForEach(func(commit *object.Commit) error {
-			if commit.Hash == plumbing.NewHash(commitHash[0]) {
-				selectedCommit = commit
-			}
-			return nil
-		})
-		if selectedCommit == nil {
-			return nil, fmt.Errorf("failed to find commits hash %s in commit logs", commitHash[0])
-		}
-		blame, err = git.Blame(selectedCommit, relativeFilePath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
-		}
+	var err error
+	blame, err = g.GetFileBlame(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
 
 	g.BlameByFile[filePath] = blame
