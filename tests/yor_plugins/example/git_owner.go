@@ -2,6 +2,7 @@ package main
 
 import (
 	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/common/tagging/tags"
 	"fmt"
 	"reflect"
 )
@@ -15,14 +16,13 @@ func (t *GitOwnerTag) Init() {
 	t.Key = "git_owner"
 }
 
-func (t *GitOwnerTag) CalculateValue(data interface{}) error {
+func (t *GitOwnerTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	gitBlame, ok := data.(*gitservice.GitBlame)
 	if !ok {
-		return fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
+		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
-	t.Value = gitBlame.GetLatestCommit().Author
 
-	return nil
+	return &tags.Tag{Key: t.Key, Value: gitBlame.GetLatestCommit().Author}, nil
 }
 
 func (t *GitOwnerTag) GetKey() string {

@@ -1,5 +1,7 @@
 package main
 
+import "bridgecrewio/yor/common/tagging/tags"
+
 type CheckovTag struct {
 	Key   string
 	Value string
@@ -9,9 +11,8 @@ func (t *CheckovTag) Init() {
 	t.Key = "yor_checkov"
 }
 
-func (t *CheckovTag) CalculateValue(data interface{}) error {
-	t.Value = "checkov"
-	return nil
+func (t *CheckovTag) CalculateValue(_ interface{}) (tags.ITag, error) {
+	return &tags.Tag{Key: t.Key, Value: "checkov"}, nil
 }
 
 func (t *CheckovTag) GetKey() string {

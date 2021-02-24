@@ -1,7 +1,6 @@
 package tagging
 
 import (
-	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 )
@@ -13,9 +12,9 @@ type Tagger struct {
 var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
 type ITagger interface {
+	InitTagger(path string)
 	InitTags(extraTags []tags.ITag)
-	CreateTagsForBlock(block structure.IBlock, gitBlame *gitservice.GitBlame)
-	IsFileSkipped(file string) bool
+	CreateTagsForBlock(block structure.IBlock)
 }
 
 func (t *Tagger) InitTags(extraTags []tags.ITag) {

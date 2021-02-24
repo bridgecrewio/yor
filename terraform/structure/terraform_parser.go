@@ -22,6 +22,7 @@ import (
 )
 
 var prefixToTagAttribute = map[string]string{"aws": "tags", "azure": "tags", "gcp": "labels"}
+var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 
 type TerrraformParser struct {
 	rootDir                string
@@ -40,6 +41,14 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
+}
+
+func (p *TerrraformParser) GetSkippedDirs() []string {
+	return ignoredDirs
+}
+
+func (p *TerrraformParser) GetAllowedFileTypes() []string {
+	return []string{".tf"}
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
@@ -362,7 +371,9 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	client := p.getClient(providerName)
 	taggable := false
 	if client != nil {
+		logger.MuteLogging()
 		typeSchema, err := client.GetResourceTypeSchema(resourceType)
+		logger.UnmuteLogging()
 		if err != nil {
 			if strings.Contains(err.Error(), "Failed to find resource type") {
 				// Resource Type doesn't have schema yet in the provider
@@ -452,18 +463,19 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	hclLogger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
-		Level:  hclog.Trace,
+		Level:  hclog.Error,
 		Output: hclog.DefaultOutput,
 	})
 	client, exists := p.providerToClientMap[providerName]
 	if exists {
 		return client
 	}
+	logger.MuteLogging()
 	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
 		RootDir: p.terraformModule.ProvidersInstallDir,
 		Logger:  hclLogger,
 	})
-
+	logger.UnmuteLogging()
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
 			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))

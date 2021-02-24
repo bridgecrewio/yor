@@ -12,66 +12,70 @@ func TestTagCreation(t *testing.T) {
 	blame := blameutils.SetupBlame(t)
 	t.Run("BcTraceTagCreation", func(t *testing.T) {
 		tag := YorTraceTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "yor_trace", tag.Key)
-		assert.Equal(t, 36, len(tag.Value))
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "yor_trace", valueTag.GetKey())
+		assert.Equal(t, 36, len(valueTag.GetValue()))
 	})
 
 	t.Run("GitOrgTagCreation", func(t *testing.T) {
 		tag := GitOrgTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_org", tag.Key)
-		assert.Equal(t, blameutils.Org, tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_org", valueTag.GetKey())
+		assert.Equal(t, blameutils.Org, valueTag.GetValue())
 	})
 
 	t.Run("GitRepoTagCreation", func(t *testing.T) {
 		tag := GitRepoTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_repo", tag.Key)
-		assert.Equal(t, blameutils.Repository, tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_repo", valueTag.GetKey())
+		assert.Equal(t, blameutils.Repository, valueTag.GetValue())
 	})
 
 	t.Run("GitFileTagCreation", func(t *testing.T) {
 		tag := GitFileTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_file", tag.Key)
-		assert.Equal(t, blameutils.FilePath, tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_file", valueTag.GetKey())
+		assert.Equal(t, blameutils.FilePath, valueTag.GetValue())
 	})
 
 	t.Run("GitCommitTagCreation", func(t *testing.T) {
 		tag := GitCommitTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_commit", tag.Key)
-		assert.Equal(t, blameutils.CommitHash1, tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_commit", valueTag.GetKey())
+		assert.Equal(t, blameutils.CommitHash1, valueTag.GetValue())
 	})
 
 	t.Run("GitLastModifiedAtCreation", func(t *testing.T) {
 		tag := GitLastModifiedAtTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_last_modified_at", tag.Key)
-		assert.Equal(t, "2020-03-28 21:42:46", tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_last_modified_at", valueTag.GetKey())
+		assert.Equal(t, "2020-03-28 21:42:46", valueTag.GetValue())
 	})
 
 	t.Run("GitLastModifiedByCreation", func(t *testing.T) {
 		tag := GitLastModifiedByTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_last_modified_by", tag.Key)
-		assert.Equal(t, "schosterbarak@gmail.com", tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_last_modified_by", valueTag.GetKey())
+		assert.Equal(t, "schosterbarak@gmail.com", valueTag.GetValue())
 	})
 
 	t.Run("GitModifiersCreation", func(t *testing.T) {
 		tag := GitModifiersTag{}
-		EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "git_modifiers", tag.Key)
-		assert.Equal(t, "jonjozwiak/schosterbarak", tag.Value)
+		valueTag := EvaluateTag(t, &tag, blame)
+		assert.Equal(t, "git_modifiers", valueTag.GetKey())
+		assert.Equal(t, "jonjozwiak/schosterbarak", valueTag.GetValue())
 	})
 
 }
 
-func EvaluateTag(t *testing.T, tag ITag, blame gitservice.GitBlame) {
+func EvaluateTag(t *testing.T, tag ITag, blame gitservice.GitBlame) ITag {
 	tag.Init()
-	err := tag.CalculateValue(&blame)
+	newTag, err := tag.CalculateValue(&blame)
 	if err != nil {
 		assert.Fail(t, "Failed to generate BC trace", err)
 	}
+	assert.Equal(t, "", tag.GetValue())
+	assert.IsType(t, &Tag{}, newTag)
+
+	return newTag
 }
