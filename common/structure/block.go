@@ -59,10 +59,6 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 		newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
 	}
 	b.NewTags = append(b.NewTags, newTags...)
-	for _, tag := range newTags {
-		switch tag.GetKey() {
-		}
-	}
 }
 
 // MergeTags merges the tags and returns only the relevant Yor tags.
