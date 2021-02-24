@@ -53,6 +53,6 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 
 // Try to match the tag's key name with a potentially quoted string
 func IsTagKeyMatch(tag tags.ITag, keyName string) bool {
-	match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
+	match, _ := regexp.Match(fmt.Sprintf(`\b"?%s"?\b`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
 	return match
 }
