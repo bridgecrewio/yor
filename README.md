@@ -1,6 +1,6 @@
 # Yor
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-75%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-72%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 Automated IaC tagging using external sources of data.
 
@@ -132,6 +132,11 @@ Build yor with `go build -gcflags="all=-N -l"`
 Contribution is welcomed! 
 
 We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
+
+To maintain our conventions, please run lint on your branch before opening a PR. To run lint:
+```sh
+golangci-lint run --fix --skip-dirs tests/yor_plugins
+```
 
 ## Disclaimer
 
