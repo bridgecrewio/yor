@@ -6,9 +6,10 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"bridgecrewio/yor/tests/utils/structureutils"
-	"github.com/go-git/go-git/v5/plumbing"
 	"testing"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/go-git/go-git/v5"
 
