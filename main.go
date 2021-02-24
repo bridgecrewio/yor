@@ -57,9 +57,15 @@ func run(options *common.Options) error {
 
 func printReport(reportService *reports.ReportService, options *common.Options) {
 	reportService.CreateReport()
+
+	if options.OutputJSONFile != "" {
+		reportService.PrintJSONToFile(options.OutputJSONFile)
+	}
 	switch strings.ToLower(options.Output) {
 	case "cli":
 		reportService.PrintToStdout()
+	case "json":
+		reportService.PrintJSONToStdout()
 	default:
 		return
 	}

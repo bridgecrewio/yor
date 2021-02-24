@@ -6,7 +6,10 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -25,29 +28,87 @@ func TestResultsGeneration(t *testing.T) {
 		assert.Equal(t, 2, len(updatedBlocks))
 	})
 
+	t.Run("Test report JSON stdout", func(t *testing.T) {
+		ReportServiceInst.CreateReport()
+		_, _ = ReportServiceInst.report.AsJSONBytes()
+		output := utils.CaptureOutput(ReportServiceInst.PrintJSONToStdout)
+		lines := strings.Split(output, "\n")
+		assert.NotNil(t, output)
+		assert.LessOrEqual(t, 100, len(lines))
+		match, _ := regexp.Match(" +\"summary\": {", []byte(lines[1]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"scanned\": \\d,", []byte(lines[2]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"newResources\": \\d,", []byte(lines[3]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"updatedResources\": \\d", []byte(lines[4]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +},", []byte(lines[5]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" \"newResourceTags\": \\[", []byte(lines[6]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +{", []byte(lines[7]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"file\": \".*?\",$", []byte(lines[8]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"resourceId\": \".*?\",$", []byte(lines[9]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"key\": \".*?\",$", []byte(lines[10]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"oldValue\": \"\",$", []byte(lines[11]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"updatedValue\": \".*?\",$", []byte(lines[12]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" +\"yorTraceId\": \".*?\"$", []byte(lines[13]))
+		assert.True(t, match)
+		match, _ = regexp.Match(" },$", []byte(lines[14]))
+		assert.True(t, match)
+	})
+
+	t.Run("Test report JSON file", func(t *testing.T) {
+		ReportServiceInst.CreateReport()
+		reportFileName := "test.json"
+		defer func() {
+			err := os.Remove(reportFileName)
+			if err != nil {
+				assert.Fail(t, "Failed to delete the report file")
+			}
+		}()
+
+		_, _ = ReportServiceInst.report.AsJSONBytes()
+		ReportServiceInst.PrintJSONToFile(reportFileName)
+		content, _ := ioutil.ReadFile(reportFileName)
+		result := Report{}
+		_ = json.Unmarshal(content, &result)
+
+		assert.Equal(t, 5, result.Summary.Scanned)
+		assert.Equal(t, 2, result.Summary.NewResources)
+		assert.Equal(t, 2, result.Summary.UpdatedResources)
+		assert.LessOrEqual(t, 8, len(result.NewResourceTags))
+		assert.LessOrEqual(t, 4, len(result.UpdatedResourceTags))
+	})
+
 	t.Run("Test report structure", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
 		report := ReportServiceInst.report
-		assert.Equal(t, len(accumulator.GetScannedBlocks()), report.ScannedResources)
-		assert.Equal(t, 2, len(report.NewResources))
-		for _, newRes := range report.NewResources {
-			assert.NotNil(t, newRes.GetTraceID())
-			assert.NotNil(t, newRes.MergeTags())
+		assert.Equal(t, len(accumulator.GetScannedBlocks()), report.Summary.Scanned)
+		assert.Equal(t, 2, report.Summary.NewResources)
+		for _, tr := range report.NewResourceTags {
+			assert.NotEqual(t, "", tr.YorTraceID)
+			assert.NotEqual(t, "", tr.UpdatedValue)
+			assert.NotEqual(t, "", tr.File)
+			assert.NotEqual(t, "", tr.TagKey)
+			assert.NotEqual(t, "", tr.ResourceID)
+			assert.Equal(t, "", tr.OldValue)
 		}
 
-		assert.Equal(t, 2, len(report.UpdatedResources))
-		for _, updatedRes := range report.UpdatedResources {
-			tagDiff := updatedRes.CalculateTagsDiff()
-			for _, diff := range tagDiff.Updated {
-				assert.NotNil(t, diff.Key)
-				assert.NotNil(t, diff.PrevValue)
-				assert.NotNil(t, diff.NewValue)
-			}
-
-			for _, diff := range tagDiff.Added {
-				assert.NotNil(t, diff.GetKey())
-				assert.NotNil(t, diff.GetValue())
-			}
+		assert.Equal(t, 2, report.Summary.UpdatedResources)
+		for _, tr := range report.UpdatedResourceTags {
+			assert.NotEqual(t, "", tr.YorTraceID)
+			assert.NotEqual(t, "", tr.UpdatedValue)
+			assert.NotEqual(t, "", tr.File)
+			assert.NotEqual(t, "", tr.TagKey)
+			assert.NotEqual(t, "", tr.ResourceID)
 		}
 	})
 
