@@ -18,14 +18,14 @@ type GitBlame struct {
 // lines: []int{startLine, endLine}
 func NewGitBlame(filePath string, lines []int, blameResult *git.BlameResult, gitOrg string, gitRepository string) *GitBlame {
 	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath}
-	i := 0
-	for line := lines[0]; line <= lines[1]; line++ {
-		if i < 0 || i >= len(blameResult.Lines) {
+	startLine := lines[0] - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
+	endLine := lines[1] - 1
+	for line := startLine; line <= endLine; line++ {
+		if line >= len(blameResult.Lines) {
 			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))
 			return &gitBlame
 		}
-		gitBlame.BlamesByLine[line] = blameResult.Lines[i]
-		i++
+		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
 	}
 
 	return &gitBlame

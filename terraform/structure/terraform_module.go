@@ -50,6 +50,9 @@ func (t *TerraformModule) InitProvider() {
 		Ui:                    &cli.MockUi{},
 	}
 	for provider, constraints := range providers {
+		if provider == "null" {
+			continue
+		}
 		if providerExists(t.ProvidersInstallDir, provider) {
 			return
 		}

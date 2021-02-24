@@ -71,7 +71,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
-		if parser.IsFileSkipped(file) {
+		if isFileSkipped(parser, file) {
 			continue
 		}
 		blocks, err := parser.ParseFile(file)
@@ -167,4 +167,22 @@ func loadExternalTags(customTags []string) ([]tags.ITag, error) {
 	}
 
 	return extraTags, nil
+}
+
+func isFileSkipped(p structure.IParser, file string) bool {
+	matchingSuffix := false
+	for _, suffix := range p.GetAllowedFileTypes() {
+		if strings.HasSuffix(file, suffix) {
+			matchingSuffix = true
+		}
+	}
+	if !matchingSuffix {
+		return true
+	}
+	for _, pattern := range p.GetSkippedDirs() {
+		if strings.Contains(file, pattern) {
+			return true
+		}
+	}
+	return false
 }
