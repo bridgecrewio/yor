@@ -17,5 +17,5 @@ func (b *MockTestBlock) GetResourceID() string {
 }
 
 func (b *MockTestBlock) GetLines() []int {
-	return []int{0, 2}
+	return []int{1, 3}
 }

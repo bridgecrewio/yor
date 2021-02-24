@@ -5,7 +5,7 @@ import (
 	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/tests/utils/blameutils"
+	"bridgecrewio/yor/tests/terraform/resources"
 	"fmt"
 	"strings"
 	"testing"
@@ -132,9 +132,11 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		blame := blameutils.SetupBlameResults(t, filePath)
+		blameLines := resources.CreateComplexTagsLines()
 		gitService := &gitservice.GitService{
-			BlameByFile: map[string]*git.BlameResult{filePath: blame},
+			BlameByFile: map[string]*git.BlameResult{filePath: {
+				Lines: blameLines,
+			}},
 		}
 		tagger := &tagging.GitTagger{GitService: gitService}
 		tagger.InitTags(nil)

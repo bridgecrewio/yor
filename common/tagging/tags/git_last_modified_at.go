@@ -19,6 +19,9 @@ func (t *GitLastModifiedAtTag) CalculateValue(data interface{}) (ITag, error) {
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
-
-	return &Tag{Key: t.Key, Value: gitBlame.GetLatestCommit().Date.UTC().Format("2006-01-02 15:04:05")}, nil
+	latestCommit := gitBlame.GetLatestCommit()
+	if latestCommit == nil {
+		return nil, fmt.Errorf("latest commit is unavailable")
+	}
+	return &Tag{Key: t.Key, Value: latestCommit.Date.UTC().Format("2006-01-02 15:04:05")}, nil
 }

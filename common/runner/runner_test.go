@@ -2,7 +2,11 @@ package runner
 
 import (
 	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/common/tagging"
+	terraformStructure "bridgecrewio/yor/terraform/structure"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -46,3 +50,130 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 	})
 }
+
+func Test_E2E(t *testing.T) {
+	t.Run("modified file not changing", func(t *testing.T) {
+		filePath := "../../tests/terraform/resources/taggedkms/modified/modified_kms.tf"
+		taggedFilePath := "../../tests/terraform/resources/taggedkms/modified/modified_kms_tagged.tf"
+
+		defer func() {
+			err := os.Remove(taggedFilePath)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		textBefore, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", filePath, err))
+		}
+		rootDir := "../../tests/terraform/resources/taggedkms/modified"
+		blame := KmsBlame
+		gitService, err := gitservice.NewGitService(rootDir)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to init git service: %s", err))
+		}
+		gitService.BlameByFile = map[string]*git.BlameResult{filePath: &blame}
+		gitTagger := tagging.GitTagger{GitService: gitService}
+		gitTagger.InitTags(nil)
+		terraformParser := terraformStructure.TerrraformParser{}
+		terraformParser.Init(rootDir, nil)
+
+		blocks, err := terraformParser.ParseFile(filePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to parse file %v", filePath))
+		}
+		for _, block := range blocks {
+			if block.IsBlockTaggable() {
+				gitTagger.CreateTagsForBlock(block)
+			}
+		}
+
+		err = terraformParser.WriteFile(filePath, blocks, taggedFilePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to write file %s because %s", taggedFilePath, err))
+		}
+
+		textAfter, err := ioutil.ReadFile(taggedFilePath)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", taggedFilePath, err))
+		}
+		assert.Equal(t, textBefore, textAfter)
+	})
+}
+
+var layout = "2006-01-02 15:04:05"
+
+func getTime() time.Time {
+	t, _ := time.Parse(layout, "2020-06-16 17:46:24")
+	return t
+}
+
+var KmsBlame = git.BlameResult{Lines: []*git.Line{
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "resource \"aws_kms_key\" \"logs_key\" {",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "  # key does not have rotation enabled",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "  description = \"${local.resource_prefix.value}-logs bucket key\"",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "  deletion_window_in_days = 7",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "}",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "resource \"aws_kms_alias\" \"logs_key_alias\" {",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "  name          = \"alias/${local.resource_prefix.value}-logs-bucket-key\"",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "  target_key_id = \"${aws_kms_key.logs_key.key_id}\"",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+	{
+		Author: "nimrodkor@gmail.com",
+		Text:   "}",
+		Date:   getTime(),
+		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
+	},
+}}
