@@ -26,7 +26,7 @@ jobs:
       - name: Test
         run: |
           go get github.com/jpoles1/gopherbadger
-          gopherbadger -root src -md="README.md"
+          gopherbadger -root="./src" -md="README.md"
       - name: Update coverage
         run: |
           git config --local user.email "action@github.com"
