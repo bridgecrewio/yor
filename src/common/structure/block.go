@@ -131,6 +131,7 @@ func (b *Block) GetFilePath() string {
 
 func (b *Block) GetTraceID() string {
 	yorTrace := tags.YorTraceTag{}
+	yorTrace.Init()
 	for _, tag := range b.MergeTags() {
 		if tag.GetKey() == yorTrace.Key {
 			return tag.GetValue()
