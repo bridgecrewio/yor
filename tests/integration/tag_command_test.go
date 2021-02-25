@@ -25,13 +25,15 @@ func TestRunResults(t *testing.T) {
 		var taggedAWS, taggedGCP, taggedAzure bool
 
 		for _, tr := range report.NewResourceTags {
-			if strings.HasPrefix(tr.ResourceID, "aws") {
+			switch {
+			case strings.HasPrefix(tr.ResourceID, "aws"):
 				taggedAWS = true
-			} else if strings.HasPrefix(tr.ResourceID, "google_") {
+			case strings.HasPrefix(tr.ResourceID, "google_"):
 				taggedGCP = true
-			} else if strings.HasPrefix(tr.ResourceID, "azurerm") {
+			case strings.HasPrefix(tr.ResourceID, "azurerm"):
 				taggedAzure = true
 			}
+
 			if taggedAWS && taggedGCP && taggedAzure {
 				break
 			}
