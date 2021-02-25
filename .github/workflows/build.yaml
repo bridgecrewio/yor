@@ -95,9 +95,9 @@ jobs:
           echo "latest tag: $latest_tag"
           new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
           echo "new tag: $new_tag"
-          echo "package common" > common/version.go
-          echo "" >> common/version.go
-          echo "const Version = \"$new_tag\"" >> common/version.go
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -m "Tag new version" common/version.go
