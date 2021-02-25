@@ -3,6 +3,7 @@ package logger
 import (
 	"bridgecrewio/yor/tests/utils"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,5 +57,35 @@ func TestLogger(t *testing.T) {
 	t.Run("Test logger not logging due to logLevel - INFO", func(t *testing.T) {
 		logs := utils.CaptureOutput(func() { Info("Test info 2") })
 		assert.Equal(t, "", logs)
+	})
+
+	t.Run("Test mute and unmute", func(t *testing.T) {
+		Logger.SetLogLevel("DEBUG")
+		MuteLogging()
+		infoMsg := "Test muted INFO"
+		result := utils.CaptureOutput(func() { Info(infoMsg) })
+		assert.Equal(t, "", result)
+		warningMsg := "Test muted WARNING"
+		result = utils.CaptureOutput(func() { Warning(warningMsg) })
+		assert.Equal(t, "", result)
+		debugMsg := "Test muted DEBUG"
+		result = utils.CaptureOutput(func() { Debug(debugMsg) })
+		assert.Equal(t, "", result)
+		UnmuteLogging()
+		result = utils.CaptureOutput(func() { Info(infoMsg) })
+		assert.True(t, strings.Contains(result, infoMsg))
+		result = utils.CaptureOutput(func() { Warning(warningMsg) })
+		assert.True(t, strings.Contains(result, warningMsg))
+		result = utils.CaptureOutput(func() { Debug(debugMsg) })
+		assert.True(t, strings.Contains(result, debugMsg))
+		Logger.SetLogLevel("WARNING")
+	})
+
+	t.Run("Expect panic on mute when error", func(t *testing.T) {
+		MuteLogging()
+		assert.Panics(t, func() {
+			Error("Should panic")
+		})
+		UnmuteLogging()
 	})
 }
