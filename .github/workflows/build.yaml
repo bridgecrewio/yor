@@ -100,7 +100,7 @@ jobs:
           echo "const Version = \"$new_tag\"" >> src/common/version.go
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -m "Tag new version" common/version.go
+          git commit -m "Tag new version" src/common/version.go
           git push origin
           git tag $new_tag
           git push origin --tags
