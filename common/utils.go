@@ -73,7 +73,8 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 }
 
 func GetFileFormat(filePath string) string {
-	return strings.Split(filePath, ".")[0]
+	splitByDot := strings.Split(filePath, ".")
+	return splitByDot[len(splitByDot)-1]
 }
 
 func GetLinesFromBytes(bytes []byte) []string {

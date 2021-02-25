@@ -49,7 +49,7 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 			&tags.Tag{Key: "MyTag", Value: "TagValue"}, &tags.Tag{Key: "yor_trace", Value: "yor_trace"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
 
-		template, err := goformation.Open("../../tests/cloudformation/resources/ebs.yaml")
+		template, err := goformation.Open("../../tests/cloudformation/resources/ebs/ebs.yaml")
 		if err != nil {
 			t.Errorf("There was an error processing the cloudformation template: %s", err)
 		}

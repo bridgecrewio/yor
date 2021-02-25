@@ -7,6 +7,7 @@ import (
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/tests/terraform/resources"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 
@@ -130,6 +131,10 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../tests/terraform/resources"
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
+		originFileBytes, _ := ioutil.ReadFile(filePath)
+		defer func() {
+			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+		}()
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
 		blameLines := resources.CreateComplexTagsLines()
