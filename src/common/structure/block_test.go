@@ -12,7 +12,7 @@ var yorTraceTag = &tags.Tag{
 	Value: "123456789",
 }
 
-func TestResultsGenerationNewResource(t *testing.T) {
+func TestTagsUpdatedResource(t *testing.T) {
 	var existingTags = []tags.ITag{
 		&tags.Tag{
 			Key:   "git_modifiers",
@@ -80,7 +80,7 @@ func TestResultsGenerationNewResource(t *testing.T) {
 	})
 }
 
-func TestResultsGenerationUpdatedResource(t *testing.T) {
+func TestTagsNewResource(t *testing.T) {
 	var existingTags = []tags.ITag{
 		&tags.Tag{
 			Key:   "git_modifiers",
