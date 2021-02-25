@@ -18,7 +18,7 @@ jobs:
       - name: Prepare external plugin test
         run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
       - name: Test
-        run: go build -v && go test ./tests/...
+        run: go build -v && go test ./src/...
   linter:
     name: golangci-lint
     runs-on: ubuntu-latest
