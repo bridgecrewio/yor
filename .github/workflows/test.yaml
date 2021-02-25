@@ -18,7 +18,7 @@ jobs:
       - name: Prepare external plugin test
         run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
       - name: Test
-        run: go build -v && go test ./...
+        run: go build -v && go test ./src/...
   linter:
     name: golangci-lint
     runs-on: ubuntu-latest
@@ -43,4 +43,15 @@ jobs:
         uses: actions/checkout@v2
       - name: build
         run: go build
-      # TODO: Run yor on a repo to see it works
+      - name: Clone Terragoat - vulnerable terraform
+        uses: actions/checkout@v2
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+      - name: Run yor
+        run: |
+          ./yor tag -d terragoat -o json --output-json-file result.json
+          go test ./tests/integration/...

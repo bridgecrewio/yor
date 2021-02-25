@@ -1,7 +1,7 @@
 package blameutils
 
 import (
-	"bridgecrewio/yor/common/gitservice"
+	"bridgecrewio/yor/src/common/gitservice"
 	"testing"
 	"time"
 
