@@ -136,7 +136,7 @@ func (r *ReportService) PrintToStdout() {
 		r.printNewResourcesToStdout()
 	}
 	fmt.Println()
-	if r.report.Summary.NewResources > 0 {
+	if r.report.Summary.UpdatedResources > 0 {
 		r.printUpdatedResourcesToStdout()
 	}
 }
