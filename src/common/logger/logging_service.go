@@ -103,7 +103,7 @@ func MuteLogging() {
 
 func UnmuteLogging() {
 	if Logger.tempWriter != nil {
-		Logger.tempWriter.Close()
+		_ = Logger.tempWriter.Close()
 	}
 	os.Stdout = Logger.stdout
 	os.Stderr = Logger.stderr
