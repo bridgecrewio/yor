@@ -12,6 +12,7 @@ type loggingService struct {
 	stdout     *os.File
 	stderr     *os.File
 	tempWriter *os.File
+	enabled    bool
 }
 
 type LogLevel int
@@ -34,7 +35,7 @@ var Logger loggingService
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
-	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr}
+	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr, enabled: true}
 
 	val, ok := os.LookupEnv("LOG_LEVEL")
 	if ok {
@@ -47,10 +48,10 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 		strArgs := strings.Join(args, " ")
 		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
-		case DEBUG, INFO:
-			log.Println(strArgs)
-		case WARNING:
-			log.Println(strArgs)
+		case DEBUG, INFO, WARNING:
+			if e.enabled {
+				log.Println(strArgs)
+			}
 		case ERROR:
 			log.Panic(strArgs)
 		}
@@ -97,6 +98,7 @@ func MuteLogging() {
 	os.Stdout = Logger.tempWriter
 	os.Stderr = Logger.tempWriter
 	log.SetOutput(Logger.tempWriter)
+	Logger.enabled = false
 }
 
 func UnmuteLogging() {
@@ -106,5 +108,6 @@ func UnmuteLogging() {
 	os.Stdout = Logger.stdout
 	os.Stderr = Logger.stderr
 	log.SetOutput(os.Stderr)
+	Logger.enabled = true
 	Debug("Unmute logging")
 }
