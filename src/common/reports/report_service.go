@@ -146,7 +146,7 @@ func PrintBanner() {
 }
 
 func (r *ReportService) printUpdatedResourcesToStdout() {
-	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", r.report.Summary.UpdatedResources))
+	fmt.Print(colorGreen, fmt.Sprintf("Updated Resource Traces (%v):\n", r.report.Summary.UpdatedResources), colorReset)
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Old Value", "Updated Value", "Yor ID"})
 	table.SetColumnColor(
@@ -169,7 +169,7 @@ func (r *ReportService) printUpdatedResourcesToStdout() {
 }
 
 func (r *ReportService) printNewResourcesToStdout() {
-	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", r.report.Summary.NewResources))
+	fmt.Print(colorYellow, fmt.Sprintf("New Resources Traced (%v):\n", r.report.Summary.NewResources), colorReset)
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Tag Value", "Yor ID"})
 	table.SetRowLine(true)
