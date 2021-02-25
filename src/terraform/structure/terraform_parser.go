@@ -21,7 +21,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-var prefixToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels"}
+var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels"}
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 
 type TerrraformParser struct {
@@ -329,7 +329,7 @@ func getProviderFromResourceType(resourceType string) string {
 }
 
 func getTagAttributeByResourceType(resourceType string) (string, error) {
-	prefix := prefixToTagAttribute[getProviderFromResourceType(resourceType)]
+	prefix := ProviderToTagAttribute[getProviderFromResourceType(resourceType)]
 	if prefix == "" {
 		return "", fmt.Errorf("failed to find tags attribute name for resource type %s", resourceType)
 	}

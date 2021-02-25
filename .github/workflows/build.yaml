@@ -56,18 +56,17 @@ jobs:
         uses: actions/checkout@v2
       - name: build
         run: go build
-#        TODO: re-enable
-#      - name: Clone Terragoat - vulnerable terraform
-#        uses: actions/checkout@master
-#        with:
-#          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          clean: false
-#          path: 'terragoat'
-#      - name: Run yor
-#        run: |
-#          ./yor tag -d terragoat -o json --output-json-file result.json
-#          go test ./tests/integration/...
+      - name: Clone Terragoat - vulnerable terraform
+        uses: actions/checkout@master
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+      - name: Run yor
+        run: |
+          ./yor tag -d terragoat -o json --output-json-file result.json
+          go test ./tests/integration/...
   create-release:
     runs-on: ubuntu-latest
     needs:

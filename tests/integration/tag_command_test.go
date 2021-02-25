@@ -22,23 +22,21 @@ func TestRunResults(t *testing.T) {
 		assert.LessOrEqual(t, 63, report.Summary.NewResources)
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
-		var taggedAWS, taggedGCP, taggedAzure bool
+		var taggedAWS, taggedGCP, taggedAzure int
 
 		for _, tr := range report.NewResourceTags {
 			switch {
 			case strings.HasPrefix(tr.ResourceID, "aws"):
-				taggedAWS = true
+				taggedAWS++
 			case strings.HasPrefix(tr.ResourceID, "google_"):
-				taggedGCP = true
+				taggedGCP++
 			case strings.HasPrefix(tr.ResourceID, "azurerm"):
-				taggedAzure = true
-			}
-
-			if taggedAWS && taggedGCP && taggedAzure {
-				break
+				taggedAzure++
 			}
 		}
 
-		assert.True(t, taggedAWS && taggedGCP && taggedAzure)
+		assert.LessOrEqual(t, 312, taggedAWS)
+		assert.LessOrEqual(t, 32, taggedGCP)
+		assert.LessOrEqual(t, 160, taggedAzure)
 	})
 }

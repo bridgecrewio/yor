@@ -50,7 +50,7 @@ func (t *TerraformModule) InitProvider() {
 		Ui:                    &cli.MockUi{},
 	}
 	for provider, constraints := range providers {
-		if provider == "null" {
+		if provider == "null" || provider == "random" {
 			continue
 		}
 		if providerExists(t.ProvidersInstallDir, provider) {
@@ -122,6 +122,16 @@ func getProviderDependencies(tfModule *tfconfig.Module) *moduledeps.Module {
 		providers[inst] = moduledeps.ProviderDependency{
 			Constraints: discovery.NewConstraints(constraints),
 			Reason:      moduledeps.ProviderDependencyExplicit,
+		}
+	}
+
+	for name := range ProviderToTagAttribute {
+		inst := moduledeps.ProviderInstance(name)
+		if _, ok := providers[inst]; !ok {
+			providers[inst] = moduledeps.ProviderDependency{
+				Constraints: discovery.Constraints{},
+				Reason:      moduledeps.ProviderDependencyImplicit,
+			}
 		}
 	}
 	moduleDependencies.Providers = providers
