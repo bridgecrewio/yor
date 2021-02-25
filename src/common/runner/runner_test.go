@@ -8,13 +8,14 @@ import (
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
-	"github.com/awslabs/goformation/v4"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
-	"github.com/pmezard/go-difflib/difflib"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/awslabs/goformation/v4"
+	"github.com/awslabs/goformation/v4/cloudformation/ec2"
+	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"

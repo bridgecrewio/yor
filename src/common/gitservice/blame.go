@@ -1,8 +1,8 @@
 package gitservice
 
 import (
-	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"time"
 

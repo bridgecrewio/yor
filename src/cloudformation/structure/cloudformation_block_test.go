@@ -4,10 +4,11 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"testing"
+
 	"github.com/awslabs/goformation/v4"
 	"github.com/awslabs/goformation/v4/cloudformation/ec2"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCloudformationBlock_MergeCFNTags(t *testing.T) {

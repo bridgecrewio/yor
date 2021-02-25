@@ -2,8 +2,9 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCloudformationParser_ParseFile(t *testing.T) {
@@ -56,10 +57,10 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.yaml"
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
 		expected := map[string]*common.Lines{
-			"EC2InstanceResource0":       {3, 6},
-			"EC2InstanceResource1":       {7, 16},
-			"EC2LaunchTemplateResource0": {17, 21},
-			"EC2LaunchTemplateResource1": {22, 32},
+			"EC2InstanceResource0":       {Start: 3, End: 6},
+			"EC2InstanceResource1":       {Start: 7, End: 16},
+			"EC2LaunchTemplateResource0": {Start: 17, End: 21},
+			"EC2LaunchTemplateResource1": {Start: 22, End: 32},
 		}
 		actual := MapResourcesLineYAML(filePath, resourcesNames)
 		compareLines(t, expected, actual)

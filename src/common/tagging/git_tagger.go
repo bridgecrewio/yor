@@ -7,9 +7,10 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/pmezard/go-difflib/difflib"
-	"io/ioutil"
 )
 
 type GitTagger struct {

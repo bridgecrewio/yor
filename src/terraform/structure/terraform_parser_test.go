@@ -31,14 +31,14 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		}
 
 		expectedLines := map[string]common.Lines{
-			"iam_policy_eks": {10, 19},
-			"iam_for_eks":    {21, 24},
-			"policy_attachment-AmazonEKSClusterPolicy": {26, 29},
-			"policy_attachment-AmazonEKSServicePolicy": {31, 34},
-			"eks_vpc":     {36, 43},
-			"eks_subnet1": {45, 53},
-			"eks_subnet2": {55, 63},
-			"eks_cluster": {65, 78},
+			"iam_policy_eks": {Start: 10, End: 19},
+			"iam_for_eks":    {Start: 21, End: 24},
+			"policy_attachment-AmazonEKSClusterPolicy": {Start: 26, End: 29},
+			"policy_attachment-AmazonEKSServicePolicy": {Start: 31, End: 34},
+			"eks_vpc":     {Start: 36, End: 43},
+			"eks_subnet1": {Start: 45, End: 53},
+			"eks_subnet2": {Start: 55, End: 63},
+			"eks_cluster": {Start: 65, End: 78},
 		}
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {

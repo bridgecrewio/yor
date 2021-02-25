@@ -1,8 +1,8 @@
 package blameutils
 
 import (
-	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/gitservice"
 	"math/rand"
 	"testing"
 	"time"

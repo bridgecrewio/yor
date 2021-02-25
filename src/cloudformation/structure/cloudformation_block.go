@@ -4,15 +4,15 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"reflect"
+
+	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )
 
 type CloudformationBlock struct {
 	structure.Block
-	lines            common.Lines
-	name             string
-	linesIndentation map[int]string
+	lines common.Lines
+	name  string
 }
 
 func (b *CloudformationBlock) GetResourceID() string {

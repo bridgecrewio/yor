@@ -6,9 +6,10 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
+	"math"
+
 	"github.com/awslabs/goformation/v4"
 	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
-	"math"
 
 	"reflect"
 )

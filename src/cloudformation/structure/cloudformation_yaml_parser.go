@@ -6,11 +6,12 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bufio"
 	"fmt"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"github.com/sanathkr/yaml"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/awslabs/goformation/v4/cloudformation"
+	"github.com/sanathkr/yaml"
 )
 
 func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {

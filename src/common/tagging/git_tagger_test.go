@@ -6,10 +6,11 @@ import (
 	commonStructure "bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
-	"github.com/go-git/go-git/v5"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGitTagger(t *testing.T) {
