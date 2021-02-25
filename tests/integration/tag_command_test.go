@@ -33,6 +33,13 @@ func TestRunResults(t *testing.T) {
 			case strings.HasPrefix(tr.ResourceID, "azurerm"):
 				taggedAzure++
 			}
+
+			assert.NotEqual(t, "", tr.ResourceID)
+			assert.NotEqual(t, "", tr.File)
+			assert.NotEqual(t, "", tr.UpdatedValue)
+			assert.NotEqual(t, "", tr.TagKey)
+			assert.NotEqual(t, "", tr.YorTraceID)
+			assert.Equal(t, "", tr.OldValue)
 		}
 
 		assert.LessOrEqual(t, 312, taggedAWS)
