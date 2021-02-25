@@ -139,15 +139,18 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
 		blameLines := CreateComplexTagsLines()
-		gitService := &gitservice.GitService{
-			BlameByFile: map[string]*git.BlameResult{filePath: {
-				Lines: blameLines,
-			}},
-		}
+		gitService, _ := gitservice.NewGitService(rootDir)
+		gitService.BlameByFile = map[string]*git.BlameResult{filePath: {
+			Lines: blameLines,
+		}}
 		tagger := &tagging.GitTagger{GitService: gitService}
 		tagger.InitTags(nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
+		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		defer func() {
+			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+		}()
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
