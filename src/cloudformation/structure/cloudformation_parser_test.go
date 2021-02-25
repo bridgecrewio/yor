@@ -48,12 +48,12 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		expected := map[string]*common.Lines{
 			"NewVolume": {Start: 4, End: 14},
 		}
-		actual := mapResourcesLineYAML(filePath, resourcesNames)
+		actual := MapResourcesLineYAML(filePath, resourcesNames)
 		compareLines(t, expected, actual)
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/ec2_untagged.yaml"
+		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.yaml"
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
 		expected := map[string]*common.Lines{
 			"EC2InstanceResource0":       {3, 6},
@@ -61,7 +61,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			"EC2LaunchTemplateResource0": {17, 21},
 			"EC2LaunchTemplateResource1": {22, 32},
 		}
-		actual := mapResourcesLineYAML(filePath, resourcesNames)
+		actual := MapResourcesLineYAML(filePath, resourcesNames)
 		compareLines(t, expected, actual)
 	})
 }

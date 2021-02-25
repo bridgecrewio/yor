@@ -80,3 +80,25 @@ func GetFileFormat(filePath string) string {
 func GetLinesFromBytes(bytes []byte) []string {
 	return strings.Split(string(bytes), "\n")
 }
+
+func ExtractIndentationOfLine(textLine string) string {
+	indent := ""
+	for _, c := range textLine {
+		if c != ' ' {
+			break
+		}
+		indent += " "
+	}
+
+	return indent
+}
+
+func IndentLines(textLines []string, indent string) []string {
+	originIndent := ExtractIndentationOfLine(textLines[0])
+	for i, originLine := range textLines {
+		noLeadingWhitespace := originLine[len(originIndent):]
+		textLines[i] = indent + noLeadingWhitespace
+	}
+
+	return textLines
+}
