@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bridgecrewio/yor/common/gitservice"
-	"bridgecrewio/yor/common/tagging/tags"
+	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"reflect"
 )
