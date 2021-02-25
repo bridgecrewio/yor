@@ -1,13 +1,10 @@
 package runner
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
-	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/gitservice"
-	"bridgecrewio/yor/common/tagging"
-	terraformStructure "bridgecrewio/yor/terraform/structure"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"github.com/pmezard/go-difflib/difflib"
@@ -74,7 +71,7 @@ func Test_E2E(t *testing.T) {
 			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", filePath, err))
 		}
 		rootDir := "../../../tests/terraform/resources/taggedkms/modified"
-		gitTagger := initMockGitTagger(rootDir, map[string]string{filePath: "../../tests/terraform/resources/taggedkms/origin_kms.tf"})
+		gitTagger := initMockGitTagger(rootDir, map[string]string{filePath: "../../../tests/terraform/resources/taggedkms/origin_kms.tf"})
 		terraformParser := terraformStructure.TerrraformParser{}
 		terraformParser.Init(rootDir, nil)
 
@@ -104,7 +101,7 @@ func Test_E2E(t *testing.T) {
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml dir", func(t *testing.T) {
 		options := common.Options{
-			Directory: "../../tests/cloudformation/resources/ebs",
+			Directory: "../../../tests/cloudformation/resources/ebs",
 			ExtraTags: "{}",
 		}
 		filePath := options.Directory + "/ebs.yaml"

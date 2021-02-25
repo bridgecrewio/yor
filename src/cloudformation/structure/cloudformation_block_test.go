@@ -1,9 +1,9 @@
 package structure
 
 import (
-	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/structure"
-	"bridgecrewio/yor/common/tagging/tags"
+	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/awslabs/goformation/v4"
 	"github.com/awslabs/goformation/v4/cloudformation/ec2"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +49,7 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 			&tags.Tag{Key: "MyTag", Value: "TagValue"}, &tags.Tag{Key: "yor_trace", Value: "yor_trace"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
 
-		template, err := goformation.Open("../../tests/cloudformation/resources/ebs/ebs.yaml")
+		template, err := goformation.Open("../../../tests/cloudformation/resources/ebs/ebs.yaml")
 		if err != nil {
 			t.Errorf("There was an error processing the cloudformation template: %s", err)
 		}

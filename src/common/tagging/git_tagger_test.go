@@ -1,21 +1,15 @@
 package tagging
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	commonStructure "bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
-	"testing"
-	"time"
-
-	"github.com/go-git/go-git/v5/plumbing"
-
-	"bridgecrewio/yor/tests/utils/structureutils"
 	"github.com/go-git/go-git/v5"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGitTagger(t *testing.T) {
@@ -56,7 +50,7 @@ func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 		expectedMapping := ExpectedFileMappingTagged
 		gitTagger := GitTagger{}
 		filePath := "../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
-		src, _ := ioutil.ReadFile("../../tests/terraform/resources/taggedkms/origin_kms.tf")
+		src, _ := ioutil.ReadFile("../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)
@@ -66,7 +60,7 @@ func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
 		gitTagger := GitTagger{}
 		filePath := "../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
-		src, _ := ioutil.ReadFile("../../tests/terraform/resources/taggedkms/origin_kms.tf")
+		src, _ := ioutil.ReadFile("../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)
@@ -97,6 +91,6 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines() []int {
-	return []int{1, 3}
+func (b *MockTestBlock) GetLines() common.Lines {
+	return common.Lines{Start: 1, End: 3}
 }

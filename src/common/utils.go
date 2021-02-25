@@ -1,8 +1,6 @@
 package common
 
 import (
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"fmt"
 	"reflect"
 	"strings"
 )

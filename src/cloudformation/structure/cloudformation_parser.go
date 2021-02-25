@@ -1,10 +1,10 @@
 package structure
 
 import (
-	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/logger"
-	"bridgecrewio/yor/common/structure"
-	"bridgecrewio/yor/common/tagging/tags"
+	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"bufio"
 	"fmt"
 	"github.com/awslabs/goformation/v4"

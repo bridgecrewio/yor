@@ -7,7 +7,7 @@ resource "aws_instance" "many_instance_tags" {
     { "yor_trace"          = "4329587194",
       "git_org"            = "" }, {
       git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "....teststerraformresourcescomplex_tags.tf"
+      git_file             = "......teststerraformresourcescomplex_tags.tf"
       git_last_modified_at = "2020-06-16 17:46:24"
       git_last_modified_by = "user@gmail.com"
       git_modifiers        = "user"
@@ -20,7 +20,7 @@ resource "aws_alb" "alb_with_merged_tags" {
     { "yor_trace"          = "4329587194",
       "git_org"            = "" }, {
       git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "....teststerraformresourcescomplex_tags.tf"
+      git_file             = "......teststerraformresourcescomplex_tags.tf"
       git_last_modified_at = "2020-06-16 17:46:24"
       git_last_modified_by = "user@gmail.com"
       git_modifiers        = "user"
@@ -32,26 +32,26 @@ resource "aws_vpc" "vpc_tags_one_line" {
   cidr_block = ""
   tags = merge({ "Name" = "tag-for-s3", "Environment" = "prod" }, {
     git_commit           = "0000000000000000000000000000000000000000"
-    git_file             = "....teststerraformresourcescomplex_tags.tf"
+    git_file             = "......teststerraformresourcescomplex_tags.tf"
     git_last_modified_at = "2020-06-16 17:46:24"
     git_last_modified_by = "user@gmail.com"
     git_modifiers        = "user"
     git_org              = ""
     git_repo             = ""
-    yor_trace            = "4f9373f9-3ba8-461a-b067-189b20bfc8eb"
+    yor_trace            = "47127974-d01d-4ec0-b2b1-231e96096be5"
   })
 }
 
 resource "aws_s3_bucket" "bucket_var_tags" {
   tags = merge(var.tags, {
     git_commit           = "0000000000000000000000000000000000000000"
-    git_file             = "....teststerraformresourcescomplex_tags.tf"
+    git_file             = "......teststerraformresourcescomplex_tags.tf"
     git_last_modified_at = "2020-06-16 17:46:24"
     git_last_modified_by = "user@gmail.com"
     git_modifiers        = "user"
     git_org              = ""
     git_repo             = ""
-    yor_trace            = "bae7f24f-45f4-436a-b98a-aaeed6e4aff3"
+    yor_trace            = "8f9bd7da-aadf-49f8-a12f-59347941d699"
   })
 }
 
@@ -69,7 +69,7 @@ resource "aws_instance" "instance_merged_var" {
     { "yor_trace"          = "4329587194",
       "git_org"            = "" }, {
       git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "....teststerraformresourcescomplex_tags.tf"
+      git_file             = "......teststerraformresourcescomplex_tags.tf"
       git_last_modified_at = "2020-06-16 17:46:24"
       git_last_modified_by = "user@gmail.com"
       git_modifiers        = "user"
@@ -88,13 +88,13 @@ resource "aws_instance" "instance_merged_override" {
   instance_type = ""
   tags = merge(var.new_env_tag, { "Environment" = "new_env" }, {
     git_commit           = "0000000000000000000000000000000000000000"
-    git_file             = "....teststerraformresourcescomplex_tags.tf"
+    git_file             = "......teststerraformresourcescomplex_tags.tf"
     git_last_modified_at = "2020-06-16 17:46:24"
     git_last_modified_by = "user@gmail.com"
     git_modifiers        = "user"
     git_org              = ""
     git_repo             = ""
-    yor_trace            = "1861aa93-ae51-40f6-9e5e-ccbadc88cde1"
+    yor_trace            = "fddc0ef6-ae83-4344-9f80-84cb5ada0693"
   })
 }
 
@@ -103,13 +103,13 @@ resource "aws_instance" "instance_empty_tag" {
   instance_type = ""
   tags = merge({}, {
     git_commit           = "0000000000000000000000000000000000000000"
-    git_file             = "....teststerraformresourcescomplex_tags.tf"
+    git_file             = "......teststerraformresourcescomplex_tags.tf"
     git_last_modified_at = "2020-06-16 17:46:24"
     git_last_modified_by = "user@gmail.com"
     git_modifiers        = "user"
     git_org              = ""
     git_repo             = ""
-    yor_trace            = "f57b258b-b562-4166-9976-467c5879705a"
+    yor_trace            = "d8ec2406-0064-45b3-8a70-b06c66597d9f"
   })
 }
 
@@ -118,12 +118,12 @@ resource "aws_instance" "instance_no_tags" {
   instance_type = ""
   tags = {
     git_commit           = "0000000000000000000000000000000000000000"
-    git_file             = "....teststerraformresourcescomplex_tags.tf"
+    git_file             = "......teststerraformresourcescomplex_tags.tf"
     git_last_modified_at = "2020-06-16 17:46:24"
     git_last_modified_by = "user@gmail.com"
     git_modifiers        = "user"
     git_org              = ""
     git_repo             = ""
-    yor_trace            = "b55edc53-6322-445f-a983-45d5000ee620"
+    yor_trace            = "6fca1c11-3a33-4dbf-b8a7-5f8e59bac1e2"
   }
 }

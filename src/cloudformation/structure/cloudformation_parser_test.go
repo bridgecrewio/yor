@@ -1,14 +1,14 @@
 package structure
 
 import (
-	"bridgecrewio/yor/common"
+	"bridgecrewio/yor/src/common"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestCloudformationParser_ParseFile(t *testing.T) {
 	t.Run("parse ebs file", func(t *testing.T) {
-		directory := "../../tests/cloudformation/resources/ebs"
+		directory := "../../../tests/cloudformation/resources/ebs"
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
 		cfnBlocks, err := cfnParser.ParseFile(directory + "/ebs.yaml")
@@ -43,7 +43,7 @@ func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[st
 
 func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test single resource", func(t *testing.T) {
-		filePath := "../../tests/cloudformation/resources/ebs/ebs.yaml"
+		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
 		resourcesNames := []string{"NewVolume"}
 		expected := map[string]*common.Lines{
 			"NewVolume": {Start: 4, End: 14},
@@ -53,7 +53,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
-		filePath := "../../tests/cloudformation/resources/ec2_untagged.yaml"
+		filePath := "../../../tests/cloudformation/resources/ec2_untagged.yaml"
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
 		expected := map[string]*common.Lines{
 			"EC2InstanceResource0":       {3, 6},
