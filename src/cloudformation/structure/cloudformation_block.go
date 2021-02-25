@@ -24,10 +24,6 @@ func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
 	b.FilePath = filePath
 }
 
-func (b *CloudformationBlock) String() string {
-	// TODO
-	return ""
-}
 func (b *CloudformationBlock) GetLines() common.Lines {
 	return b.lines
 }

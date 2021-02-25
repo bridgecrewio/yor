@@ -177,6 +177,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		time.Sleep(time.Second)
 
 		editedFileBytes, err := ioutil.ReadFile(filePath)
 		if err != nil {

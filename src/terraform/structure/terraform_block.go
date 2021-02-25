@@ -26,10 +26,6 @@ func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
 	b.HclSyntaxBlock = hclSyntaxBlock
 }
 
-func (b *TerraformBlock) String() string {
-	// TODO
-	return ""
-}
 func (b *TerraformBlock) GetLines() common.Lines {
 	r := b.HclSyntaxBlock.Body.Range()
 	return common.Lines{Start: r.Start.Line, End: r.End.Line}
