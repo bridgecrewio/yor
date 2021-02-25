@@ -5,12 +5,14 @@ import (
 	"bridgecrewio/yor/common/gitservice"
 	"bridgecrewio/yor/common/tagging"
 	"bridgecrewio/yor/common/tagging/tags"
-	"bridgecrewio/yor/tests/terraform/resources"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
@@ -132,7 +134,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		filePath := "../../tests/terraform/resources/complex_tags.tf"
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
-		blameLines := resources.CreateComplexTagsLines()
+		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{
 			BlameByFile: map[string]*git.BlameResult{filePath: {
 				Lines: blameLines,
@@ -191,4 +193,31 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		assert.Equal(t, 1, len(blocks))
 		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
 	})
+}
+
+var layout = "2006-01-02 15:04:05"
+
+func getTime() time.Time {
+	t, _ := time.Parse(layout, "2020-06-16 17:46:24")
+	return t
+}
+
+func CreateComplexTagsLines() []*git.Line {
+	originFileText, err := ioutil.ReadFile("../../tests/terraform/resources/complex_tags.tf")
+	if err != nil {
+		panic(err)
+	}
+	originLines := strings.Split(string(originFileText), "\n")
+	lines := make([]*git.Line, 0)
+
+	for _, line := range originLines {
+		lines = append(lines, &git.Line{
+			Author: "user@gmail.com",
+			Text:   line,
+			Date:   getTime(),
+			Hash:   plumbing.NewHash("hash"),
+		})
+	}
+
+	return lines
 }

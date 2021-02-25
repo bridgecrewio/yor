@@ -5,7 +5,6 @@ import (
 	commonStructure "bridgecrewio/yor/common/structure"
 	"bridgecrewio/yor/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
-	"bridgecrewio/yor/tests/utils/structureutils"
 	"testing"
 	"time"
 
@@ -37,7 +36,7 @@ func TestGitTagger(t *testing.T) {
 			},
 		}
 		tagger.InitTags(extraTags)
-		block := &structureutils.MockTestBlock{
+		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
 				IsTaggable: true,
@@ -153,4 +152,22 @@ var ExpectedFileMappingTagged = map[string]map[int]int{
 var ExpectedFileMappingDeleted = map[string]map[int]int{
 	"originToGit": {1: 1, 2: 2, 3: 3, 4: 4, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: -1},
 	"gitToOrigin": {1: 1, 2: 2, 3: 3, 4: 4, 5: -1, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9, 11: 10},
+}
+
+type MockTestBlock struct {
+	commonStructure.Block
+}
+
+func (b *MockTestBlock) Init(filePath string, rawBlock interface{}) {}
+
+func (b *MockTestBlock) String() string {
+	return ""
+}
+
+func (b *MockTestBlock) GetResourceID() string {
+	return ""
+}
+
+func (b *MockTestBlock) GetLines() []int {
+	return []int{1, 3}
 }

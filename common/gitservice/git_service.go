@@ -82,7 +82,7 @@ func (g *GitService) ComputeRelativeFilePath(filepath string) string {
 	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.rootDir), "")
 }
 
-func (g *GitService) GetBlameForFileLines(filePath string, lines []int, commitHash ...string) (*GitBlame, error) {
+func (g *GitService) GetBlameForFileLines(filePath string, lines []int) (*GitBlame, error) {
 	logger.Info(fmt.Sprintf("Getting git blame for %v (%v:%v)", filePath, lines[0], lines[1]))
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	blame, ok := g.BlameByFile[filePath]
