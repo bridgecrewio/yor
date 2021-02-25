@@ -44,9 +44,10 @@ jobs:
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          ref: master
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
