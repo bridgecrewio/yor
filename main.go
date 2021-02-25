@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/logger"
-	"bridgecrewio/yor/common/reports"
-	"bridgecrewio/yor/common/runner"
+	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/reports"
+	"bridgecrewio/yor/src/common/runner"
 	"fmt"
 	"os"
 	"strings"
