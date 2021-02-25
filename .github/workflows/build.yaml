@@ -26,7 +26,7 @@ jobs:
       - name: Test
         run: |
           go get github.com/jpoles1/gopherbadger
-          gopherbadger -md="README.md"
+          gopherbadger -root="./src" -md="README.md"
       - name: Update coverage
         run: |
           git config --local user.email "action@github.com"
@@ -56,7 +56,18 @@ jobs:
         uses: actions/checkout@v2
       - name: build
         run: go build
-        # TODO: Run yor on a repo to see it works
+      - name: Clone Terragoat - vulnerable terraform
+        uses: actions/checkout@v2
+        with:
+          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+          path: 'terragoat'
+      - name: Run yor
+        run: |
+          ./yor tag -d terragoat -o json --output-json-file result.json
+          go test ./tests/integration/...
   create-release:
     runs-on: ubuntu-latest
     needs:
@@ -84,12 +95,12 @@ jobs:
           echo "latest tag: $latest_tag"
           new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
           echo "new tag: $new_tag"
-          echo "package common" > common/version.go
-          echo "" >> common/version.go
-          echo "const Version = \"$new_tag\"" >> common/version.go
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -m "Tag new version" common/version.go
+          git commit -m "Tag new version" src/common/version.go
           git push origin
           git tag $new_tag
           git push origin --tags

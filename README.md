@@ -1,6 +1,6 @@
 # Yor
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-72%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-73%25-brightgreen.svg?longCache=true&style=flat)</a>
 
 Automated IaC tagging using external sources of data.
 
@@ -54,7 +54,7 @@ brew install yor
 * Tag an entire directory
 
 ```sh
-yor --directory terraform/
+./yor tag --directory terraform/
 ```
 
 ### Skipping tags 
@@ -63,28 +63,28 @@ Using command line flags you can specify to run only named tags (allow list) or 
 those listed (deny list).
 
 ```sh
-yor -d . --tag yor_trace
+./yor tag -d . --tag yor_trace
 ## Run only yor_trace
 
-yor -d . --skip-tag yor_trace
+./yor tag -d . --skip-tag yor_trace
 ## Run all but yor_trace
 
-yor -d . --skip-tag git*
+./yor tag -d . --skip-tag git*
 ## Run all tags except tags with specified patterns
 
-yor -d . --skip-tag
+./yor tag -d . --skip-tag
 ```
 
 ### Output formats
 
 ```sh
-yor -d . -o cli
+./yor tag -d . -o cli
 # default cli output
 
-yor -d . -o json
+./yor tag -d . -o json
 # json output
 
-yor -d . --output cli --output-json-file result.json
+./yor tag -d . --output cli --output-json-file result.json
 # will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
 ```
 
@@ -108,7 +108,7 @@ var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
 #### Running yor
 
 ```sh
-yor --custom-tagger tests/yor_plugins/example
+./yor tag --custom-tagger tests/yor_plugins/example
 # run yor with custom tags located in tests/yor_plugins/example
 ```
 
@@ -116,7 +116,7 @@ Using docker:
 ```sh
 docker pull bridgecrew/yor
 
-docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor --directory /tf
+docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
 

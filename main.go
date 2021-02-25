@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bridgecrewio/yor/common"
-	"bridgecrewio/yor/common/logger"
-	"bridgecrewio/yor/common/reports"
-	"bridgecrewio/yor/common/runner"
+	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/reports"
+	"bridgecrewio/yor/src/common/runner"
 	"fmt"
 	"os"
 	"strings"
@@ -32,7 +32,17 @@ func main() {
 			return run(options)
 		},
 	}
-	parseCommands(cmd.PersistentFlags(), options)
+	tagCmd := &cobra.Command{
+		Use:           "tag",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Short:         "Tag you IaC files",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return run(options)
+		},
+	}
+	addTagFlags(tagCmd.Flags(), options)
+	cmd.AddCommand(tagCmd)
 	options.Validate()
 	cmd.SetVersionTemplate(fmt.Sprintf("Yor version %s", cmd.Version))
 	if err := cmd.Execute(); err != nil {
@@ -71,7 +81,7 @@ func printReport(reportService *reports.ReportService, options *common.Options) 
 	}
 }
 
-func parseCommands(flag *pflag.FlagSet, commands *common.Options) {
+func addTagFlags(flag *pflag.FlagSet, commands *common.Options) {
 	flag.StringVarP(&commands.Directory, "directory", "d", "", "directory to tag")
 	flag.StringVarP(&commands.Tag, "tag", "t", "", "run yor only with the specified tag")
 	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "run yor without ths specified tag")
