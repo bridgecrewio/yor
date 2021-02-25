@@ -130,14 +130,10 @@ func (b *Block) GetFilePath() string {
 }
 
 func (b *Block) GetTraceID() string {
-	for _, tag := range b.GetExistingTags() {
-		if val, ok := tag.(*tags.YorTraceTag); ok {
-			return val.GetValue()
-		}
-	}
-	for _, tag := range b.GetNewTags() {
-		if val, ok := tag.(*tags.YorTraceTag); ok {
-			return val.GetValue()
+	yorTrace := tags.YorTraceTag{}
+	for _, tag := range b.MergeTags() {
+		if tag.GetKey() == yorTrace.Key {
+			return tag.GetValue()
 		}
 	}
 	return ""
