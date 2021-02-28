@@ -4,7 +4,6 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
@@ -13,8 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/awslabs/goformation/v4"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/go-git/go-git/v5"
@@ -131,6 +128,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		time.Sleep(time.Second)
 
 		editedFileBytes, err := ioutil.ReadFile(filePath)
 		if err != nil {
@@ -147,141 +145,6 @@ func Test_TagCFNDir(t *testing.T) {
 			{A: 0, B: 0, Size: 13}, {A: 13, B: 29, Size: 2}, {A: 15, B: 31, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
-	})
-
-	t.Run("tag cloudformation yaml without tags", func(t *testing.T) {
-		options := common.Options{
-			Directory: "../../../tests/cloudformation/resources/ec2_untagged",
-			ExtraTags: "{}",
-		}
-		filePath := options.Directory + "/ec2_untagged.yaml"
-
-		originFileBytes, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			t.Error(err)
-		}
-		originFileLines := common.GetLinesFromBytes(originFileBytes)
-
-		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
-		}()
-
-		mockGitTagger := initMockGitTagger(options.Directory, map[string]string{filePath: filePath})
-		runner := Runner{}
-		err = runner.Init(&options)
-		if err != nil {
-			t.Error(err)
-		}
-		runner.taggers[0] = mockGitTagger
-		_, err = runner.TagDirectory(options.Directory)
-		if err != nil {
-			t.Error(err)
-		}
-		time.Sleep(time.Second)
-
-		editedFileBytes, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			t.Error(err)
-		}
-		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
-		numOfResourcsToTag := 2
-		numOfAddedTagAttribute := 2
-		expectedAddedLines := (len(mockGitTagger.Tags) * 2 * numOfResourcsToTag) + numOfAddedTagAttribute
-		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
-
-		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
-		matches := matcher.GetMatchingBlocks()
-		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 6}, {A: 6, B: 23, Size: 10}, {A: 16, B: 50, Size: 29}, {A: 45, B: 79, Size: 0},
-		}
-		assert.Equal(t, expectedMatches, matches)
-	})
-
-	t.Run("tag cloudformation yaml with yor tags", func(t *testing.T) {
-		options := common.Options{
-			Directory: "../../../tests/cloudformation/resources/yor_tagged",
-			ExtraTags: "{}",
-		}
-		filePath := options.Directory + "/ebs.yaml"
-
-		originFileBytes, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			t.Error(err)
-		}
-		originFileLines := common.GetLinesFromBytes(originFileBytes)
-
-		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
-		}()
-
-		mockGitTagger := initMockGitTagger(options.Directory, map[string]string{filePath: filePath})
-		runner := Runner{}
-		err = runner.Init(&options)
-		if err != nil {
-			t.Error(err)
-		}
-		runner.taggers[0] = mockGitTagger
-		_, err = runner.TagDirectory(options.Directory)
-		if err != nil {
-			t.Error(err)
-		}
-
-		editedFileBytes, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			t.Error(err)
-		}
-		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
-		expectedAddedLines := 0
-		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
-
-		template, err := goformation.Open(filePath)
-		if err != nil {
-			t.Error(err)
-		}
-		resourceName := "NewVolume"
-		resource := template.Resources[resourceName]
-		ebsVol := resource.(*ec2.Volume)
-		currentTags := ebsVol.Tags
-
-		expectToDiffer := map[string]tags.ITag{
-			"git_file":             &tags.Tag{Key: "git_file", Value: "temp/git/file.yaml"},
-			"git_commit":           &tags.Tag{Key: "git_commit", Value: "old_commit"},
-			"git_modifiers":        &tags.Tag{Key: "git_modifiers", Value: "not_bana"},
-			"git_last_modified_at": &tags.Tag{Key: "git_last_modified_at", Value: "2019-09-25 19:19:02"},
-			"git_last_modified_by": &tags.Tag{Key: "git_last_modified_by", Value: "not_bana@gmail.com"},
-		}
-
-		expectedTags := map[string]tags.ITag{
-			"MyTag":     &tags.Tag{Key: "MyTag", Value: "TagValue"},
-			"yor_trace": &tags.Tag{Key: "yor_trace", Value: "8c60f755-243e-4a51-9034-342a6757605b"},
-			"git_org":   &tags.Tag{Key: "git_org", Value: "bridgecrewio"},
-			"git_repo":  &tags.Tag{Key: "git_repo", Value: "yor"},
-		}
-
-		shouldEqual := map[string]bool{
-			"git_file":             false,
-			"MyTag":                true,
-			"yor_trace":            true,
-			"git_commit":           false,
-			"git_modifiers":        false,
-			"git_last_modified_at": false,
-			"git_last_modified_by": false,
-			"git_org":              true,
-			"git_repo":             true,
-		}
-
-		assert.Equal(t, len(shouldEqual), len(currentTags))
-		for _, tag := range currentTags {
-			key := tag.Key
-			if shouldEqual[key] {
-				expectedValue := expectedTags[key].GetValue()
-				assert.Equal(t, expectedValue, tag.Value)
-			} else {
-				expectedValue := expectToDiffer[key].GetValue()
-				assert.NotEqual(t, expectedValue, tag.Value)
-			}
-		}
-
 	})
 }
 
