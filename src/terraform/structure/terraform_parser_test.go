@@ -137,7 +137,6 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		defer func() {
 			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{

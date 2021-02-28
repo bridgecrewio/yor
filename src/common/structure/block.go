@@ -21,7 +21,6 @@ type TagDiff struct {
 
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
-	String() string
 	GetFilePath() string
 	GetLines() common.Lines
 	GetExistingTags() []tags.ITag

@@ -3,6 +3,7 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"reflect"
 
@@ -58,13 +59,13 @@ func (b *CloudformationBlock) MergeCFNTags() []tags.ITag {
 	}
 
 	var mergedTags []tags.ITag
-	var yorTag tags.YorTraceTag
+	var yorTag code2cloud.YorTraceTag
 	yorTag.Init()
 	yorTagKeyName := yorTag.GetKey()
 	for _, existingTag := range b.ExitingTags {
 		if newTag, ok := newTagsByKey[existingTag.GetKey()]; ok {
 			match := tags.IsTagKeyMatch(existingTag, yorTagKeyName)
-			if val, ok := existingTag.(*tags.YorTraceTag); ok || match {
+			if val, ok := existingTag.(*code2cloud.YorTraceTag); ok || match {
 				if val != nil {
 					mergedTags = append(mergedTags, val)
 				} else {

@@ -1,6 +1,7 @@
 package simple
 
 import (
+	"bridgecrewio/yor/src/common"
 	commonStructure "bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
@@ -57,6 +58,6 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines() []int {
-	return []int{1, 3}
+func (b *MockTestBlock) GetLines() common.Lines {
+	return common.Lines{Start: 1, End: 3}
 }
