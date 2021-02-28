@@ -4,7 +4,7 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/git"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
@@ -169,19 +169,19 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "mock-uuid",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
@@ -212,31 +212,31 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "mock-uuid",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -250,31 +250,31 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "mock-uuid",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T10:00:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -306,19 +306,19 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "another-uuid",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "gandalf",
@@ -349,31 +349,31 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "yet-another-uuid",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -381,31 +381,31 @@ func setupAccumulator() *TagChangeAccumulator {
 				},
 			},
 			NewTags: []tags.ITag{
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "gandalf/shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:15:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "gandalf",
@@ -436,31 +436,31 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "yet-another-uuid-2",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -474,31 +474,31 @@ func setupAccumulator() *TagChangeAccumulator {
 						Value: "yet-another-uuid-2",
 					},
 				},
-				&git.GitOrgTag{
+				&gittag.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&git.GitRepoTag{
+				&gittag.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&git.GitModifiersTag{
+				&gittag.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&git.GitLastModifiedAtTag{
+				&gittag.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&git.GitLastModifiedByTag{
+				&gittag.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",

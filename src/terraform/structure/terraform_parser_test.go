@@ -4,7 +4,7 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	git2 "bridgecrewio/yor/src/common/tagging/git"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -139,7 +139,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 				Lines: blameLines,
 			}},
 		}
-		gitTagger := &git2.Tagger{GitService: gitService}
+		gitTagger := &gittag.Tagger{GitService: gitService}
 		c2cTagger := &code2cloud.Tagger{}
 		gitTagger.InitTagger(rootDir)
 		c2cTagger.InitTagger("")

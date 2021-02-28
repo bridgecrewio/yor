@@ -1,4 +1,4 @@
-package git
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
@@ -7,18 +7,18 @@ import (
 	"reflect"
 )
 
-type GitRepoTag struct {
+type GitFileTag struct {
 	tags.Tag
 }
 
-func (t *GitRepoTag) Init() {
-	t.Key = "git_repo"
+func (t *GitFileTag) Init() {
+	t.Key = "git_file"
 }
 
-func (t *GitRepoTag) CalculateValue(data interface{}) (tags.ITag, error) {
+func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	gitBlame, ok := data.(*gitservice.GitBlame)
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
-	return &tags.Tag{Key: t.Key, Value: gitBlame.GitRepository}, nil
+	return &tags.Tag{Key: t.Key, Value: gitBlame.FilePath}, nil
 }

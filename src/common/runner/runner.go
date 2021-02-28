@@ -7,7 +7,7 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/git"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
@@ -28,7 +28,7 @@ type Runner struct {
 
 func (r *Runner) Init(commands *common.Options) error {
 	dir := commands.Directory
-	r.taggers = append(r.taggers, &git.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
+	r.taggers = append(r.taggers, &gittag.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
 	for _, tagger := range r.taggers {
 		tagger.InitTagger(dir)
 		if val, ok := tagger.(*simple.Tagger); ok {

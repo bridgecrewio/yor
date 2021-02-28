@@ -1,4 +1,4 @@
-package git
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
@@ -7,15 +7,15 @@ import (
 	"reflect"
 )
 
-type GitCommitTag struct {
+type GitLastModifiedByTag struct {
 	tags.Tag
 }
 
-func (t *GitCommitTag) Init() {
-	t.Key = "git_commit"
+func (t *GitLastModifiedByTag) Init() {
+	t.Key = "git_last_modified_by"
 }
 
-func (t *GitCommitTag) CalculateValue(data interface{}) (tags.ITag, error) {
+func (t *GitLastModifiedByTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	gitBlame, ok := data.(*gitservice.GitBlame)
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
@@ -25,5 +25,5 @@ func (t *GitCommitTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	if latestCommit == nil {
 		return nil, fmt.Errorf("latest commit is unavailable")
 	}
-	return &tags.Tag{Key: t.Key, Value: latestCommit.Hash.String()}, nil
+	return &tags.Tag{Key: t.Key, Value: latestCommit.Author}, nil
 }

@@ -1,4 +1,4 @@
-package git
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
