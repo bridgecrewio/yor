@@ -26,9 +26,9 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		filePath := "../../../tests/terraform/resources/eks.tf"
 		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{
-			"eks_vpc":     {"Name": "\"${local.resource_prefix.value}-eks-vpc\""},
-			"eks_subnet1": {"Name": "\"${local.resource_prefix.value}-eks-subnet\"", "\"kubernetes.io/cluster/${local.eks_name.value}\"": "\"shared\""},
-			"eks_subnet2": {"Name": "\"${local.resource_prefix.value}-eks-subnet2\"", "\"kubernetes.io/cluster/${local.eks_name.value}\"": "\"shared\""},
+			"eks_vpc":     {"Name": "${local.resource_prefix.value}-eks-vpc"},
+			"eks_subnet1": {"Name": "${local.resource_prefix.value}-eks-subnet", "kubernetes.io/cluster/${local.eks_name.value}": "shared"},
+			"eks_subnet2": {"Name": "${local.resource_prefix.value}-eks-subnet2", "kubernetes.io/cluster/${local.eks_name.value}": "shared"},
 		}
 
 		expectedLines := map[string]common.Lines{
@@ -82,13 +82,13 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		p.Init("../../../tests/terraform/resources", nil)
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
-			"vpc_tags_one_line":                         {"\"Name\"": "\"tag-for-s3\"", "\"Environment\"": "\"prod\""},
+			"vpc_tags_one_line":                         {"Name": "tag-for-s3", "Environment": "prod"},
 			"bucket_var_tags":                           {},
-			"alb_with_merged_tags":                      {"\"Name\"": "\"tag-for-alb\"", "\"Environment\"": "\"prod\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
-			"many_instance_tags":                        {"\"Name\"": "\"tag-for-instance\"", "\"Environment\"": "\"prod\"", "\"Owner\"": "\"bridgecrew\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
-			"instance_merged_var":                       {"\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
-			"instance_merged_override":                  {"\"Environment\"": "\"new_env\""},
-			"aurora_cluster_bastion_auto_scaling_group": {"git_org": "\"bridgecrewio\"", "git_repo": "\"platform\"", "yor_trace": "\"48564943-4cfc-403c-88cd-cbb207e0d33e\"", "Name": "\"bc-aurora-bastion\""},
+			"alb_with_merged_tags":                      {"Name": "tag-for-alb", "Environment": "prod", "yor_trace": "4329587194", "git_org": "bana"},
+			"many_instance_tags":                        {"Name": "tag-for-instance", "Environment": "prod", "Owner": "bridgecrew", "yor_trace": "4329587194", "git_org": "bana"},
+			"instance_merged_var":                       {"yor_trace": "4329587194", "git_org": "bana"},
+			"instance_merged_override":                  {"Environment": "new_env"},
+			"aurora_cluster_bastion_auto_scaling_group": {"git_org": "bridgecrewio", "git_repo": "platform", "yor_trace": "48564943-4cfc-403c-88cd-cbb207e0d33e", "Name": "bc-aurora-bastion"},
 		}
 
 		parsedBlocks, err := p.ParseFile(filePath)
