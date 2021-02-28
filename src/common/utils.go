@@ -16,10 +16,15 @@ func InSlice(slice interface{}, elem interface{}) bool {
 			continue
 		}
 		if getKind(e) == reflect.Slice {
+			inSlice := true
 			for _, subElem := range convertToInterfaceSlice(elem) {
-				if InSlice(e, subElem) {
-					return true
+				inSlice = inSlice && InSlice(e, subElem)
+				if !inSlice {
+					break
 				}
+			}
+			if inSlice {
+				return true
 			}
 		} else if e == elem {
 			return true
@@ -37,11 +42,6 @@ func getKind(val interface{}) reflect.Kind {
 func convertToInterfaceSlice(origin interface{}) []interface{} {
 	s := reflect.ValueOf(origin)
 	if s.Kind() != reflect.Slice {
-		panic("InterfaceSlice() given a non-slice type")
-	}
-
-	// Keep the distinction between nil and empty slice input
-	if s.IsNil() {
 		return make([]interface{}, 0)
 	}
 
@@ -55,16 +55,18 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 }
 
 func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {
+	var field reflect.Value
 	sValue := reflect.ValueOf(s)
 
 	// Check if the passed interface is a pointer
 	if sValue.Type().Kind() != reflect.Ptr {
 		// Create a new type of Iface's Type, so we have a pointer to work with
-		sValue = reflect.New(reflect.TypeOf(s))
+		field = sValue.FieldByName(property)
+	} else {
+		// 'dereference' with Elem() and get the field by name
+		field = sValue.Elem().FieldByName(property)
 	}
 
-	// 'dereference' with Elem() and get the field by name
-	field := sValue.Elem().FieldByName(property)
 	if !field.IsValid() {
 		return false, field
 	}
@@ -74,6 +76,9 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 
 func GetFileFormat(filePath string) string {
 	splitByDot := strings.Split(filePath, ".")
+	if len(splitByDot) < 2 {
+		return ""
+	}
 	return splitByDot[len(splitByDot)-1]
 }
 
