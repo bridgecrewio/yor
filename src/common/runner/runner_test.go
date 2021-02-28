@@ -1,14 +1,18 @@
 package runner
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
+	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -68,14 +72,7 @@ func Test_E2E(t *testing.T) {
 			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", filePath, err))
 		}
 		rootDir := "../../../tests/terraform/resources/taggedkms/modified"
-		blame := KmsBlame
-		gitService, err := gitservice.NewGitService(rootDir)
-		if err != nil {
-			t.Errorf(fmt.Sprintf("Failed to init git service: %s", err))
-		}
-		gitService.BlameByFile = map[string]*git.BlameResult{filePath: &blame}
-		gitTagger := gittag.Tagger{GitService: gitService}
-		gitTagger.InitTags()
+		gitTagger := initMockGitTagger(rootDir, map[string]string{filePath: "../../../tests/terraform/resources/taggedkms/origin_kms.tf"})
 		terraformParser := terraformStructure.TerrraformParser{}
 		terraformParser.Init(rootDir, nil)
 
@@ -102,78 +99,66 @@ func Test_E2E(t *testing.T) {
 	})
 }
 
-var layout = "2006-01-02 15:04:05"
+func Test_TagCFNDir(t *testing.T) {
+	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
+		options := common.Options{
+			Directory: "../../../tests/cloudformation/resources/ebs",
+			ExtraTags: "{}",
+		}
+		filePath := options.Directory + "/ebs.yaml"
 
-func getTime() time.Time {
-	t, _ := time.Parse(layout, "2020-06-16 17:46:24")
-	return t
+		originFileBytes, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			t.Error(err)
+		}
+		originFileLines := common.GetLinesFromBytes(originFileBytes)
+
+		defer func() {
+			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+		}()
+
+		mockGitTagger := initMockGitTagger(options.Directory, map[string]string{filePath: filePath})
+		runner := Runner{}
+		err = runner.Init(&options)
+		if err != nil {
+			t.Error(err)
+		}
+		runner.taggers[0] = mockGitTagger
+		_, err = runner.TagDirectory(options.Directory)
+		if err != nil {
+			t.Error(err)
+		}
+		time.Sleep(time.Second)
+
+		editedFileBytes, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			t.Error(err)
+		}
+		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
+
+		expectedAddedLines := len(mockGitTagger.Tags)*2 + 2
+		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
+
+		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
+		matches := matcher.GetMatchingBlocks()
+		expectedMatches := []difflib.Match{
+			{A: 0, B: 0, Size: 13}, {A: 13, B: 29, Size: 2}, {A: 15, B: 31, Size: 0},
+		}
+		assert.Equal(t, expectedMatches, matches)
+	})
 }
 
-var KmsBlame = git.BlameResult{Lines: []*git.Line{
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "resource \"aws_kms_key\" \"logs_key\" {",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "  # key does not have rotation enabled",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "  description = \"${local.resource_prefix.value}-logs bucket key\"",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "  deletion_window_in_days = 7",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "}",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "resource \"aws_kms_alias\" \"logs_key_alias\" {",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "  name          = \"alias/${local.resource_prefix.value}-logs-bucket-key\"",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "  target_key_id = \"${aws_kms_key.logs_key.key_id}\"",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-	{
-		Author: "nimrodkor@gmail.com",
-		Text:   "}",
-		Date:   getTime(),
-		Hash:   plumbing.NewHash("d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0"),
-	},
-}}
+func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.Tagger {
+	gitService, _ := gitservice.NewGitService(rootDir)
+
+	for filePath := range filesToBlames {
+		blameSrc, _ := ioutil.ReadFile(filesToBlames[filePath])
+		blame := blameutils.CreateMockBlame(blameSrc)
+		gitService.BlameByFile[filePath] = &blame
+	}
+
+	gitTagger := gittag.Tagger{GitService: gitService}
+	gitTagger.InitTags()
+
+	return &gitTagger
+}

@@ -1,7 +1,9 @@
 package blameutils
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -74,4 +76,48 @@ func ExtractDate(dateStr string) (time.Time, error) {
 	layout := "2006-01-02T15:04:05.000Z"
 	parsedDate, err := time.Parse(layout, dateStr)
 	return parsedDate, err
+}
+
+func CreateMockBlame(textBytes []byte) git.BlameResult {
+	textLines := common.GetLinesFromBytes(textBytes)
+	layout = "2006-01-02 15:04:05"
+	possibleLines := []*git.Line{
+		{
+			Author: "shati@gmail.com",
+			Date:   getTime("2020-06-16 17:46:24"),
+			Hash:   plumbing.NewHash("shati"),
+		},
+		{
+			Author: "bana@gmail.com",
+			Date:   getTime("2020-09-25 19:19:02"),
+			Hash:   plumbing.NewHash("bana"),
+		},
+		{
+			Author: "checkov@gmail.com",
+			Date:   getTime("2020-04-08 19:19:02"),
+			Hash:   plumbing.NewHash("checkov"),
+		},
+	}
+
+	blameLines := make([]*git.Line, 0)
+	for _, textLine := range textLines {
+		randomIndex := rand.Intn(len(possibleLines))
+		selectedLine := possibleLines[randomIndex]
+		newLine := git.Line{
+			Author: selectedLine.Author,
+			Text:   textLine,
+			Date:   selectedLine.Date,
+			Hash:   selectedLine.Hash,
+		}
+		blameLines = append(blameLines, &newLine)
+	}
+
+	return git.BlameResult{Lines: blameLines}
+}
+
+var layout = "2006-01-02 15:04:05"
+
+func getTime(strT string) time.Time {
+	t, _ := time.Parse(layout, strT)
+	return t
 }

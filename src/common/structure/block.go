@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/tagging/tags"
 )
 
@@ -20,9 +21,8 @@ type TagDiff struct {
 
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
-	String() string
 	GetFilePath() string
-	GetLines() []int
+	GetLines() common.Lines
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
