@@ -23,3 +23,10 @@ func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 	}
 	block.AddNewTags([]tags.ITag{tag})
 }
+
+func (t *Tagger) GetDescription() string {
+	return `
+The Code-to-cloud tagger adds a single tag, "yor_trace", which is a UUID.
+This tag can be leveraged to find this resource easily across accounts and deployment stacks.
+`
+}

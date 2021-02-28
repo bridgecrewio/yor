@@ -8,7 +8,7 @@ import (
 
 func TestCliArgParsing(t *testing.T) {
 	t.Run("Test CLI argument parsing", func(t *testing.T) {
-		options := Options{
+		options := TagOptions{
 			Directory:              "",
 			Tag:                    "",
 			SkipTag:                "",
@@ -22,7 +22,7 @@ func TestCliArgParsing(t *testing.T) {
 	})
 
 	t.Run("Test CLI argument parsing - valid output", func(t *testing.T) {
-		options := Options{
+		options := TagOptions{
 			Directory:              "some/dir",
 			Tag:                    "",
 			SkipTag:                "",
@@ -36,7 +36,7 @@ func TestCliArgParsing(t *testing.T) {
 	})
 
 	t.Run("Test CLI argument parsing - invalid output", func(t *testing.T) {
-		options := Options{
+		options := TagOptions{
 			Directory:              "some/dir",
 			Tag:                    "",
 			SkipTag:                "",

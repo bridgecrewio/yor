@@ -101,7 +101,7 @@ func Test_E2E(t *testing.T) {
 
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
-		options := common.Options{
+		options := common.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
 			ExtraTags: "{}",
 		}

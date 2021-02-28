@@ -33,3 +33,10 @@ func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 	}
 	block.AddNewTags(newTags)
 }
+
+func (t *Tagger) GetDescription() string {
+	return `
+The simple tagger is a placeholder tagger to support simple external tags.
+It does not pass anything into the CalculateValue method of the tags that are implemented.
+`
+}

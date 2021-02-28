@@ -5,6 +5,10 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/runner"
+	"bridgecrewio/yor/src/common/tagging"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
+	"bridgecrewio/yor/src/common/tagging/gittag"
+	"bridgecrewio/yor/src/common/tagging/simple"
 	"fmt"
 	"os"
 	"strings"
@@ -14,14 +18,14 @@ import (
 )
 
 func main() {
-	options := &common.Options{}
+	tagOptions := &common.TagOptions{}
 	cmd := &cobra.Command{
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Version:       common.Version,
 		Short:         fmt.Sprintf("\nYor, the IaC auto-tagger (v%v)", common.Version),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if options.Directory == "" {
+			if tagOptions.Directory == "" {
 				// If no flags supplied display the help menu and quit cleanly
 				err := cmd.Help()
 				if err == nil {
@@ -29,7 +33,8 @@ func main() {
 				}
 				logger.Error(err.Error())
 			}
-			return run(options)
+			tagOptions.Validate()
+			return tag(tagOptions)
 		},
 	}
 	tagCmd := &cobra.Command{
@@ -38,19 +43,39 @@ func main() {
 		SilenceUsage:  true,
 		Short:         "Tag you IaC files",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return run(options)
+			return tag(tagOptions)
 		},
 	}
-	addTagFlags(tagCmd.Flags(), options)
-	cmd.AddCommand(tagCmd)
-	options.Validate()
+	dtOptions := &common.DescribeTaggersOptions{}
+	describeTaggersCmd := &cobra.Command{
+		Use:           "describe-taggers",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Short:         "Get more details on each tagger",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dtOptions.Validate()
+			return describeTagger(dtOptions)
+		},
+	}
+	listTaggersCmd := &cobra.Command{
+		Use:           "list-taggers",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Short:         "List the available taggers",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return listTaggers()
+		},
+	}
+	addTagFlags(tagCmd.Flags(), tagOptions)
+	addDescribeTaggerFlags(describeTaggersCmd.Flags(), dtOptions)
+	cmd.AddCommand(tagCmd, describeTaggersCmd, listTaggersCmd)
 	cmd.SetVersionTemplate(fmt.Sprintf("Yor version %s", cmd.Version))
 	if err := cmd.Execute(); err != nil {
 		logger.Error(err.Error())
 	}
 }
 
-func run(options *common.Options) error {
+func tag(options *common.TagOptions) error {
 	yorRunner := new(runner.Runner)
 	err := yorRunner.Init(options)
 	if err != nil {
@@ -65,7 +90,31 @@ func run(options *common.Options) error {
 	return nil
 }
 
-func printReport(reportService *reports.ReportService, options *common.Options) {
+func describeTagger(options *common.DescribeTaggersOptions) error {
+	var tagger tagging.ITagger
+	switch options.Tagger {
+	case "simple":
+		tagger = &simple.Tagger{}
+	case "code2cloud":
+		tagger = &code2cloud.Tagger{}
+	case "git":
+		tagger = &gittag.Tagger{}
+	default:
+		return fmt.Errorf("the tagger \"%s\" it not supported. Please try list-taggers to get a list of supported taggers", options.Tagger)
+	}
+	fmt.Println(tagger.GetDescription())
+	return nil
+}
+
+func listTaggers() error {
+	fmt.Println("Existing taggers:")
+	for i, tagger := range common.SupportedTaggers {
+		fmt.Printf("%d) %s\n", i+1, tagger)
+	}
+	return nil
+}
+
+func printReport(reportService *reports.ReportService, options *common.TagOptions) {
 	reportService.CreateReport()
 
 	if options.OutputJSONFile != "" {
@@ -81,13 +130,17 @@ func printReport(reportService *reports.ReportService, options *common.Options) 
 	}
 }
 
-func addTagFlags(flag *pflag.FlagSet, commands *common.Options) {
+func addTagFlags(flag *pflag.FlagSet, commands *common.TagOptions) {
 	flag.StringVarP(&commands.Directory, "directory", "d", "", "directory to tag")
-	flag.StringVarP(&commands.Tag, "tag", "t", "", "run yor only with the specified tag")
-	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "run yor without ths specified tag")
+	flag.StringVarP(&commands.Tag, "tag", "t", "", "tag yor only with the specified tag")
+	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "tag yor without ths specified tag")
 	flag.StringVarP(&commands.Output, "output", "o", "cli", "set output format")
 	flag.StringVar(&commands.OutputJSONFile, "output-json-file", "", "json file path for output")
 	flag.StringSliceVarP(&commands.CustomTaggers, "custom-taggers", "c", []string{}, "paths to custom taggers plugins")
 	flag.StringVarP(&commands.ExtraTags, "extra-tags", "e", "{}", "json dictionary format of extra tags to add to all taggable resources")
 	flag.StringSliceVar(&commands.SkipConfigurationPaths, "skip-configuration-paths", []string{}, "configuration paths to skip")
+}
+
+func addDescribeTaggerFlags(flag *pflag.FlagSet, commands *common.DescribeTaggersOptions) {
+	flag.StringVarP(&commands.Tagger, "tagger", "t", "", "The tagger to be described")
 }

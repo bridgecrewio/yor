@@ -27,7 +27,7 @@ type Runner struct {
 	reportingService  *reports.ReportService
 }
 
-func (r *Runner) Init(commands *common.Options) error {
+func (r *Runner) Init(commands *common.TagOptions) error {
 	dir := commands.Directory
 	r.taggers = append(r.taggers, &gittag.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
 	for _, tagger := range r.taggers {

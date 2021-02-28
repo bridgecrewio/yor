@@ -10,8 +10,9 @@ import (
 )
 
 var allowedOutputTypes = []string{"cli", "json"}
+var SupportedTaggers = []string{"simple", "code2cloud", "git"}
 
-type Options struct {
+type TagOptions struct {
 	Directory              string
 	Tag                    string
 	SkipTag                string
@@ -22,12 +23,20 @@ type Options struct {
 	ExtraTags              string `validate:"extraTags"`
 }
 
-func (o *Options) Validate() {
+type DescribeTaggersOptions struct {
+	Tagger string `validate:"taggerType"`
+}
+
+func (o *TagOptions) Validate() {
 	_ = validator.SetValidationFunc("extraTags", validateExtraTags)
 	_ = validator.SetValidationFunc("output", validateOutput)
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
+}
+
+func (o *DescribeTaggersOptions) Validate() {
+	_ = validator.SetValidationFunc("taggerType", validateTaggerType)
 }
 
 func validateExtraTags(v interface{}, _ string) error {
@@ -51,6 +60,19 @@ func validateOutput(v interface{}, _ string) error {
 	}
 
 	if val != "" && !InSlice(allowedOutputTypes, strings.ToLower(val)) {
+		return fmt.Errorf("unsupported output type [%s]. allowed types: %s", val, allowedOutputTypes)
+	}
+
+	return nil
+}
+
+func validateTaggerType(v interface{}, _ string) error {
+	val, ok := v.(string)
+	if !ok {
+		return validator.ErrUnsupported
+	}
+
+	if val != "" && !InSlice(SupportedTaggers, strings.ToLower(val)) {
 		return fmt.Errorf("unsupported output type [%s]. allowed types: %s", val, allowedOutputTypes)
 	}
 

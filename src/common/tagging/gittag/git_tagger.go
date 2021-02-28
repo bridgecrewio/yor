@@ -191,3 +191,16 @@ func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitser
 	blame.BlamesByLine = newBlameByLines
 	return shouldTag
 }
+
+func (t *Tagger) GetDescription() string {
+	return `
+The Git tagger tags 7 tags by default:
+1. Org tag (i.e. for bridgecrewio/terragoat, bridgecrewio)
+2. Repo tag (i.e. for bridgecrewio/terragoat, terragoat)
+3. File tag (i.e. src/main.tf)
+4. Commit tag (i.e. d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0)
+5. Modifiers tag - the users who last modified this resource
+6. Last Modified By - the last user to modify this resource
+7. Last Modified At - the last time this resource configuration was updated
+`
+}
