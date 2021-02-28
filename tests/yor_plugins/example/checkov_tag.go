@@ -7,6 +7,10 @@ type CheckovTag struct {
 	Value string
 }
 
+func (t *CheckovTag) GetDescription() string {
+	return "Checkov tag - adds the static tag {yor_checkov:checkov} to every taggable resource"
+}
+
 func (t *CheckovTag) Init() {
 	t.Key = "yor_checkov"
 }

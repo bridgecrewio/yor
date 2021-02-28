@@ -36,3 +36,7 @@ func (t *GitOwnerTag) GetValue() string {
 func (t *GitOwnerTag) GetPriority() int {
 	return -1
 }
+
+func (t *GitOwnerTag) GetDescription() string {
+	return "Owner tag - tags each resource with the owner tag"
+}
