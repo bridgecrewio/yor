@@ -48,7 +48,7 @@ func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 	t.Run("map tagged kms", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingTagged
 		gitTagger := Tagger{}
-		filePath := "../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
+		filePath := "../../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
 		blame := KmsBlame
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)
@@ -57,7 +57,7 @@ func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 	t.Run("map kms with deleted lines", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
 		gitTagger := Tagger{}
-		filePath := "../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
+		filePath := "../../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
 		blame := KmsBlame
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)

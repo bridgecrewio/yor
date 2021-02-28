@@ -65,11 +65,7 @@ func (b *Block) MergeTags() []tags.ITag {
 	for _, tag := range b.ExitingTags {
 		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
 		if match {
-			if tag != nil {
-				mergedTags = append(mergedTags, tag)
-			} else {
-				mergedTags = append(mergedTags, tag)
-			}
+			mergedTags = append(mergedTags, tag)
 		}
 	}
 
