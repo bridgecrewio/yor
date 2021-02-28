@@ -1,9 +1,10 @@
-package tagging
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
@@ -13,10 +14,20 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-type GitTagger struct {
-	Tagger
+type Tagger struct {
+	tagging.Tagger
 	GitService      *gitservice.GitService
 	fileLinesMapper map[string]fileLineMapper
+}
+
+var TagTypes = []tags.ITag{
+	&GitOrgTag{},
+	&GitRepoTag{},
+	&GitFileTag{},
+	&GitCommitTag{},
+	&GitModifiersTag{},
+	&GitLastModifiedAtTag{},
+	&GitLastModifiedByTag{},
 }
 
 type fileLineMapper struct {
@@ -24,15 +35,23 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-func (t *GitTagger) InitTagger(path string) {
+func (t *Tagger) InitTagger(path string) {
 	gitService, err := gitservice.NewGitService(path)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s", path))
 	}
 	t.GitService = gitService
+	t.InitTags()
 }
 
-func (t *GitTagger) initFileMapping(path string) bool {
+func (t *Tagger) InitTags() {
+	for _, tagType := range TagTypes {
+		tagType.Init()
+	}
+	t.Tags = append(t.Tags, TagTypes...)
+}
+
+func (t *Tagger) initFileMapping(path string) bool {
 	fileBlame, err := t.GitService.GetFileBlame(path)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Unable to get git blame for file %s: %s", path, err))
@@ -44,7 +63,7 @@ func (t *GitTagger) initFileMapping(path string) bool {
 	return true
 }
 
-func (t *GitTagger) CreateTagsForBlock(block structure.IBlock) {
+func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 	if _, ok := t.fileLinesMapper[block.GetFilePath()]; !ok {
 		t.initFileMapping(block.GetFilePath())
 	}
@@ -78,7 +97,7 @@ func (t *GitTagger) CreateTagsForBlock(block structure.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *GitTagger) getBlockLinesInGit(block structure.IBlock) []int {
+func (t *Tagger) getBlockLinesInGit(block structure.IBlock) []int {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
 	originStart := blockLines[0]
@@ -102,7 +121,7 @@ func (t *GitTagger) getBlockLinesInGit(block structure.IBlock) []int {
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
-func (t *GitTagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) {
+func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) {
 	if t.fileLinesMapper == nil {
 		t.fileLinesMapper = make(map[string]fileLineMapper)
 	}
@@ -152,7 +171,7 @@ func (t *GitTagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResu
 	t.fileLinesMapper[path] = mapper
 }
 
-func (t *GitTagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) bool {
+func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) bool {
 	gitBlameLines := blame.BlamesByLine
 	blockLines := block.GetLines()
 	newBlameByLines := make(map[int]*git.Line)

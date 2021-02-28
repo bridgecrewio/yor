@@ -2,7 +2,7 @@ package runner
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
 	"io/ioutil"
@@ -74,8 +74,8 @@ func Test_E2E(t *testing.T) {
 			t.Errorf(fmt.Sprintf("Failed to init git service: %s", err))
 		}
 		gitService.BlameByFile = map[string]*git.BlameResult{filePath: &blame}
-		gitTagger := tagging.GitTagger{GitService: gitService}
-		gitTagger.InitTags(nil)
+		gitTagger := gittag.Tagger{GitService: gitService}
+		gitTagger.InitTags()
 		terraformParser := terraformStructure.TerrraformParser{}
 		terraformParser.Init(rootDir, nil)
 
