@@ -287,12 +287,8 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
-	var tagsAttributeName string
 	isTaggable := false
-	tagsAttributeName, err := p.getTagsAttributeName(hclBlock)
-	if err != nil {
-		return nil, err
-	}
+	var tagsAttributeName string
 	if hclBlock.Type() == "resource" {
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
@@ -301,7 +297,10 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 		if err != nil {
 			return nil, err
 		}
-
+		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
+		if err != nil {
+			return nil, err
+		}
 		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
 
 		if !isTaggable {
