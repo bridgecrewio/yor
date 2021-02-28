@@ -38,27 +38,25 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if newTags == nil {
 		return
 	}
-	isTraced := false
-	yorTagKey := tags.YorTraceTagKey
-	for _, tag := range b.ExitingTags {
-		match := tags.IsTagKeyMatch(tag, yorTagKey)
-		if match {
-			isTraced = true
-			break
-		}
-	}
-	if isTraced {
-		var yorTraceIndex int
-		for index, tag := range newTags {
-			match := tags.IsTagKeyMatch(tag, yorTagKey)
-			if match {
-				yorTraceIndex = index
+	var tagsToAdd []tags.ITag
+	traceTagKey := tags.YorTraceTagKey
+	for _, newTag := range newTags {
+		found := false
+		for _, existingTag := range b.ExitingTags {
+			if existingTag.GetKey() == newTag.GetKey() {
+				found = true
+				if existingTag.GetKey() == traceTagKey || existingTag.GetValue() == newTag.GetValue() {
+					continue
+				}
+				tagsToAdd = append(tagsToAdd, newTag)
 			}
 		}
-
-		newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
+		if !found {
+			tagsToAdd = append(tagsToAdd, newTag)
+		}
 	}
-	b.NewTags = append(b.NewTags, newTags...)
+
+	b.NewTags = append(b.NewTags, tagsToAdd...)
 }
 
 // MergeTags merges the tags and returns only the relevant Yor tags.

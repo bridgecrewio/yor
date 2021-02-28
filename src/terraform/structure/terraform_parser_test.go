@@ -3,6 +3,7 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
 	git2 "bridgecrewio/yor/src/common/tagging/git"
 	"fmt"
 	"io/ioutil"
@@ -138,8 +139,10 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 				Lines: blameLines,
 			}},
 		}
-		tagger := &git2.Tagger{GitService: gitService}
-		tagger.InitTags()
+		gitTagger := &git2.Tagger{GitService: gitService}
+		c2cTagger := &code2cloud.Tagger{}
+		gitTagger.InitTagger(rootDir)
+		c2cTagger.InitTagger("")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		parsedBlocks, err := p.ParseFile(filePath)
@@ -149,9 +152,9 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedBlocks {
 			if block.IsBlockTaggable() {
-				tagger.CreateTagsForBlock(block)
+				gitTagger.CreateTagsForBlock(block)
+				c2cTagger.CreateTagsForBlock(block)
 			}
-
 		}
 
 		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
@@ -165,7 +168,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedTaggedFileTags {
 			if block.IsBlockTaggable() {
-				for _, tagType := range tagger.Tags {
+				for _, tagType := range gitTagger.Tags {
 					isYorTagExists := false
 					yorTagKey := tagType.GetKey()
 					for _, tag := range block.GetExistingTags() {
