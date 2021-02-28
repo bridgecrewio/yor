@@ -18,7 +18,7 @@ func TestRunResults(t *testing.T) {
 		if err != nil {
 			assert.Fail(t, "Failed to parse json result")
 		}
-		assert.LessOrEqual(t, 63, report.Summary.Scanned)
+		assert.Less(t, 63, report.Summary.Scanned)
 		assert.LessOrEqual(t, 63, report.Summary.NewResources)
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
@@ -48,6 +48,6 @@ func TestRunResults(t *testing.T) {
 		assert.LessOrEqual(t, 312, taggedAWS)
 		assert.LessOrEqual(t, 32, taggedGCP)
 		assert.LessOrEqual(t, 160, taggedAzure)
-		assert.Equal(t, report.Summary.Scanned, len(resourceSet))
+		assert.Equal(t, report.Summary.NewResources, len(resourceSet))
 	})
 }
