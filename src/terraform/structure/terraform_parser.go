@@ -341,9 +341,7 @@ func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttrib
 	}
 	if foundTagToken && foundTagsToken {
 		if _, okTags := resourceScheme.Attributes[tagsAttributeName]; okTags {
-			if okTags {
-				return true
-			}
+			return true
 		}
 	}
 	return false
