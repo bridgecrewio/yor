@@ -3,7 +3,7 @@ package runner
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"

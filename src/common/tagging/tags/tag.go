@@ -10,16 +10,7 @@ type Tag struct {
 	Value string
 }
 
-var TagTypes = []ITag{
-	&GitOrgTag{},
-	&GitRepoTag{},
-	&GitFileTag{},
-	&GitCommitTag{},
-	&GitModifiersTag{},
-	&GitLastModifiedAtTag{},
-	&GitLastModifiedByTag{},
-	&YorTraceTag{},
-}
+const YorTraceTagKey = "yor_trace"
 
 type ITag interface {
 	Init()
@@ -62,6 +53,6 @@ func (t *Tag) GetValue() string {
 
 // Try to match the tag's key name with a potentially quoted string
 func IsTagKeyMatch(tag ITag, keyName string) bool {
-	match, _ := regexp.Match(fmt.Sprintf(`^"?%s"?$`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
+	match, _ := regexp.Match(fmt.Sprintf(`\b"?%s"?\b`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
 	return match
 }

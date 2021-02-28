@@ -21,6 +21,7 @@ type TagDiff struct {
 
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
+	String() string
 	GetFilePath() string
 	GetLines() common.Lines
 	GetExistingTags() []tags.ITag
@@ -35,13 +36,14 @@ type IBlock interface {
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
+	if newTags == nil {
+		return
+	}
 	isTraced := false
-	var yorTag tags.YorTraceTag
-	yorTag.Init()
-	yorTagKeyName := yorTag.GetKey()
+	yorTagKey := tags.YorTraceTagKey
 	for _, tag := range b.ExitingTags {
-		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
-		if _, ok := tag.(*tags.YorTraceTag); ok || match {
+		match := tags.IsTagKeyMatch(tag, yorTagKey)
+		if match {
 			isTraced = true
 			break
 		}
@@ -49,8 +51,8 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if isTraced {
 		var yorTraceIndex int
 		for index, tag := range newTags {
-			match := tags.IsTagKeyMatch(tag, yorTagKeyName)
-			if _, ok := tag.(*tags.YorTraceTag); ok || match {
+			match := tags.IsTagKeyMatch(tag, yorTagKey)
+			if match {
 				yorTraceIndex = index
 			}
 		}
@@ -63,17 +65,11 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 // MergeTags merges the tags and returns only the relevant Yor tags.
 func (b *Block) MergeTags() []tags.ITag {
 	var mergedTags []tags.ITag
-	var yorTag tags.YorTraceTag
-	yorTag.Init()
-	yorTagKeyName := yorTag.GetKey()
+	yorTagKeyName := tags.YorTraceTagKey
 	for _, tag := range b.ExitingTags {
 		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
-		if val, ok := tag.(*tags.YorTraceTag); ok || match {
-			if val != nil {
-				mergedTags = append(mergedTags, val)
-			} else {
-				mergedTags = append(mergedTags, tag)
-			}
+		if match {
+			mergedTags = append(mergedTags, tag)
 		}
 	}
 
@@ -129,10 +125,8 @@ func (b *Block) GetFilePath() string {
 }
 
 func (b *Block) GetTraceID() string {
-	yorTrace := tags.YorTraceTag{}
-	yorTrace.Init()
 	for _, tag := range b.MergeTags() {
-		if tag.GetKey() == yorTrace.Key {
+		if tag.GetKey() == tags.YorTraceTagKey {
 			return tag.GetValue()
 		}
 	}

@@ -4,27 +4,27 @@ resource "aws_instance" "many_instance_tags" {
   tags = merge({ "Name" = "tag-for-instance", "Environment" = "prod" },
     { "Owner" = "bridgecrew"
     },
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
-      git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "tests/terraform/resources/complex_tags.tf"
-      git_last_modified_at = "2020-06-16 17:46:24"
-      git_last_modified_by = "user@gmail.com"
-      git_modifiers        = "user"
-      git_repo             = "yor"
+    { yor_trace          = "4329587194",
+      git_org            = "bridgecrewio" }, {
+    git_commit           = "0000000000000000000000000000000000000000"
+    git_file             = "tests/terraform/resources/complex_tags.tf"
+    git_last_modified_at = "2020-06-16 17:46:24"
+    git_last_modified_by = "user@gmail.com"
+    git_modifiers        = "user"
+    git_repo             = "yor"
   })
 }
 
 resource "aws_alb" "alb_with_merged_tags" {
   tags = merge({ "Name" = "tag-for-alb", "Environment" = "prod" },
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
-      git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "tests/terraform/resources/complex_tags.tf"
-      git_last_modified_at = "2020-06-16 17:46:24"
-      git_last_modified_by = "user@gmail.com"
-      git_modifiers        = "user"
-      git_repo             = "yor"
+    { yor_trace            = "4329587194",
+      git_org              = "bridgecrewio" }, {
+    git_commit           = "0000000000000000000000000000000000000000"
+    git_file             = "tests/terraform/resources/complex_tags.tf"
+    git_last_modified_at = "2020-06-16 17:46:24"
+    git_last_modified_by = "user@gmail.com"
+    git_modifiers        = "user"
+    git_repo             = "yor"
   })
 }
 
@@ -66,14 +66,14 @@ resource "aws_instance" "instance_merged_var" {
   ami           = ""
   instance_type = ""
   tags = merge(var.tags,
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
-      git_commit           = "0000000000000000000000000000000000000000"
-      git_file             = "tests/terraform/resources/complex_tags.tf"
-      git_last_modified_at = "2020-06-16 17:46:24"
-      git_last_modified_by = "user@gmail.com"
-      git_modifiers        = "user"
-      git_repo             = "yor"
+    { yor_trace            = "4329587194",
+      git_org              = "bridgecrewio" }, {
+    git_commit           = "0000000000000000000000000000000000000000"
+    git_file             = "tests/terraform/resources/complex_tags.tf"
+    git_last_modified_at = "2020-06-16 17:46:24"
+    git_last_modified_by = "user@gmail.com"
+    git_modifiers        = "user"
+    git_repo             = "yor"
   })
 }
 

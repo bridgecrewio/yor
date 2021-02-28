@@ -3,7 +3,8 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
@@ -139,12 +140,15 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		var yorTagTypes = tags.TagTypes
 		p := &TerrraformParser{}
 		blameLines := CreateComplexTagsLines()
-		gitService, _ := gitservice.NewGitService(rootDir)
-		gitService.BlameByFile = map[string]*git.BlameResult{filePath: {
-			Lines: blameLines,
-		}}
-		tagger := &tagging.GitTagger{GitService: gitService}
-		tagger.InitTags(nil)
+		gitService := &gitservice.GitService{
+			BlameByFile: map[string]*git.BlameResult{filePath: {
+				Lines: blameLines,
+			}},
+		}
+		gitTagger := &gittag.Tagger{GitService: gitService}
+		c2cTagger := &code2cloud.Tagger{}
+		gitTagger.InitTagger(rootDir)
+		c2cTagger.InitTagger("")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
@@ -158,9 +162,9 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedBlocks {
 			if block.IsBlockTaggable() {
-				tagger.CreateTagsForBlock(block)
+				gitTagger.CreateTagsForBlock(block)
+				c2cTagger.CreateTagsForBlock(block)
 			}
-
 		}
 
 		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
@@ -174,17 +178,15 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedTaggedFileTags {
 			if block.IsBlockTaggable() {
-				for _, tagType := range yorTagTypes {
-					isYorTagExists := false
-					yorTagKey := tagType.GetKey()
-					for _, tag := range block.GetExistingTags() {
-						if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
-							isYorTagExists = true
-						}
+				isYorTagExists := false
+				yorTagKey := tags.YorTraceTagKey
+				for _, tag := range block.GetExistingTags() {
+					if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
+						isYorTagExists = true
 					}
-					if !isYorTagExists {
-						t.Error(fmt.Sprintf("tag not found on merged block %v", tagType))
-					}
+				}
+				if !isYorTagExists {
+					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
 				}
 			}
 		}
