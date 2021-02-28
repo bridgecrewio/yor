@@ -1,6 +1,7 @@
 package gitservice
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"time"
@@ -15,11 +16,10 @@ type GitBlame struct {
 	FilePath      string
 }
 
-// lines: []int{startLine, endLine}
-func NewGitBlame(filePath string, lines []int, blameResult *git.BlameResult, gitOrg string, gitRepository string) *GitBlame {
+func NewGitBlame(filePath string, lines common.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string) *GitBlame {
 	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath}
-	startLine := lines[0] - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
-	endLine := lines[1] - 1
+	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
+	endLine := lines.End - 1
 	for line := startLine; line <= endLine; line++ {
 		if line >= len(blameResult.Lines) {
 			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))

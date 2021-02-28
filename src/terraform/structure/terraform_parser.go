@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -114,7 +115,10 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
 			continue
 		}
-
+		if terraformBlock == nil {
+			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", block.Labels()))
+			continue
+		}
 		terraformBlock.Init(filePath, block)
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
@@ -283,11 +287,19 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
-	var tagsAttributeName string
-	var err error
 	isTaggable := false
-
+	var tagsAttributeName string
 	if hclBlock.Type() == "resource" {
+		resourceType := hclBlock.Labels()[0]
+		providerName := getProviderFromResourceType(resourceType)
+		client := p.getClient(providerName)
+		if client == nil {
+			return nil, fmt.Errorf("could not find client of %s", providerName)
+		}
+		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
+		if err != nil {
+			return nil, err
+		}
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
@@ -300,6 +312,9 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 				return nil, err
 			}
 		}
+		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
+			return nil, nil
+		}
 	}
 
 	terraformBlock := TerraformBlock{
@@ -311,6 +326,28 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	}
 
 	return &terraformBlock, nil
+}
+
+func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttributeName string, resourceScheme *tfschema.Block) bool {
+	bodyTokens := hclBlock.Body().BuildTokens(hclwrite.Tokens{})
+	foundTagToken := false
+	tagTokenRegex := regexp.MustCompile(`^tag[\d]?$`)
+	foundTagsToken := false
+	tagsTokensRegex := regexp.MustCompile(fmt.Sprintf(`^%s$`, tagsAttributeName))
+	for _, token := range bodyTokens {
+		if matched := tagTokenRegex.Match(token.Bytes); matched {
+			foundTagToken = true
+		}
+		if matched := tagsTokensRegex.Match(token.Bytes); matched {
+			foundTagsToken = true
+		}
+	}
+	if foundTagToken && foundTagsToken {
+		if _, okTags := resourceScheme.Attributes[tagsAttributeName]; okTags {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclwrite.Block) (string, error) {

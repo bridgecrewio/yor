@@ -31,15 +31,15 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {"Name": "${local.resource_prefix.value}-eks-subnet2", "kubernetes.io/cluster/${local.eks_name.value}": "shared"},
 		}
 
-		expectedLines := map[string][]int{
-			"iam_policy_eks": {10, 19},
-			"iam_for_eks":    {21, 24},
-			"policy_attachment-AmazonEKSClusterPolicy": {26, 29},
-			"policy_attachment-AmazonEKSServicePolicy": {31, 34},
-			"eks_vpc":     {36, 43},
-			"eks_subnet1": {45, 53},
-			"eks_subnet2": {55, 63},
-			"eks_cluster": {65, 78},
+		expectedLines := map[string]common.Lines{
+			"iam_policy_eks": {Start: 10, End: 19},
+			"iam_for_eks":    {Start: 21, End: 24},
+			"policy_attachment-AmazonEKSClusterPolicy": {Start: 26, End: 29},
+			"policy_attachment-AmazonEKSServicePolicy": {Start: 31, End: 34},
+			"eks_vpc":     {Start: 36, End: 43},
+			"eks_subnet1": {Start: 45, End: 53},
+			"eks_subnet2": {Start: 55, End: 63},
+			"eks_cluster": {Start: 65, End: 78},
 		}
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
@@ -82,12 +82,13 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		p.Init("../../../tests/terraform/resources", nil)
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
-			"vpc_tags_one_line":        {"Name": "tag-for-s3", "Environment": "prod"},
-			"bucket_var_tags":          {},
-			"alb_with_merged_tags":     {"Name": "tag-for-alb", "Environment": "prod", "yor_trace": "4329587194", "git_org": "bana"},
-			"many_instance_tags":       {"Name": "tag-for-instance", "Environment": "prod", "Owner": "bridgecrew", "yor_trace": "4329587194", "git_org": "bana"},
-			"instance_merged_var":      {"yor_trace": "4329587194", "git_org": "bana"},
-			"instance_merged_override": {"Environment": "new_env"},
+			"vpc_tags_one_line":                         {"\"Name\"": "\"tag-for-s3\"", "\"Environment\"": "\"prod\""},
+			"bucket_var_tags":                           {},
+			"alb_with_merged_tags":                      {"\"Name\"": "\"tag-for-alb\"", "\"Environment\"": "\"prod\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+			"many_instance_tags":                        {"\"Name\"": "\"tag-for-instance\"", "\"Environment\"": "\"prod\"", "\"Owner\"": "\"bridgecrew\"", "\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+			"instance_merged_var":                       {"\"yor_trace\"": "\"4329587194\"", "\"git_org\"": "\"bana\""},
+			"instance_merged_override":                  {"\"Environment\"": "\"new_env\""},
+			"aurora_cluster_bastion_auto_scaling_group": {"git_org": "\"bridgecrewio\"", "git_repo": "\"platform\"", "yor_trace": "\"48564943-4cfc-403c-88cd-cbb207e0d33e\"", "Name": "\"bc-aurora-bastion\""},
 		}
 
 		parsedBlocks, err := p.ParseFile(filePath)
@@ -107,6 +108,15 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 				}
 			}
 		}
+	})
+
+	t.Run("Skip collision tags block", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/resources", nil)
+		filePath := "../../../tests/terraform/resources/collision/main.tf"
+		parsedBlocks, err := p.ParseFile(filePath)
+		assert.Nil(t, parsedBlocks)
+		assert.NotNil(t, err)
 	})
 }
 
@@ -133,6 +143,10 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources"
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
+		originFileBytes, _ := ioutil.ReadFile(filePath)
+		defer func() {
+			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+		}()
 		p := &TerrraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{
@@ -146,6 +160,10 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		c2cTagger.InitTagger("")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
+		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		defer func() {
+			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+		}()
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
