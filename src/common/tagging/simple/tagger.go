@@ -13,7 +13,6 @@ type Tagger struct {
 }
 
 func (t *Tagger) InitTagger(_ string) {
-	return
 }
 
 func (t *Tagger) InitExtraTags(extraTags []tags.ITag) {
