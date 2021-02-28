@@ -23,6 +23,7 @@ func TestRunResults(t *testing.T) {
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
 		var taggedAWS, taggedGCP, taggedAzure int
+		resourceSet := make(map[string]bool)
 
 		for _, tr := range report.NewResourceTags {
 			switch {
@@ -40,10 +41,13 @@ func TestRunResults(t *testing.T) {
 			assert.NotEqual(t, "", tr.TagKey)
 			assert.NotEqual(t, "", tr.YorTraceID)
 			assert.Equal(t, "", tr.OldValue)
+
+			resourceSet[tr.ResourceID] = true
 		}
 
 		assert.LessOrEqual(t, 312, taggedAWS)
 		assert.LessOrEqual(t, 32, taggedGCP)
 		assert.LessOrEqual(t, 160, taggedAzure)
+		assert.Equal(t, report.Summary.Scanned, len(resourceSet))
 	})
 }

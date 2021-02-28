@@ -35,6 +35,9 @@ type IBlock interface {
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
+	if newTags == nil {
+		return
+	}
 	isTraced := false
 	yorTagKey := tags.YorTraceTagKey
 	for _, tag := range b.ExitingTags {
