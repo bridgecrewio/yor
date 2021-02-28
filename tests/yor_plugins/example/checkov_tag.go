@@ -1,6 +1,6 @@
 package main
 
-import "bridgecrewio/yor/common/tagging/tags"
+import "bridgecrewio/yor/src/common/tagging/tags"
 
 type CheckovTag struct {
 	Key   string
