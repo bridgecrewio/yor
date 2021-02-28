@@ -1,7 +1,8 @@
-package tags
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"reflect"
 	"sort"
@@ -9,14 +10,14 @@ import (
 )
 
 type GitModifiersTag struct {
-	Tag
+	tags.Tag
 }
 
 func (t *GitModifiersTag) Init() {
 	t.Key = "git_modifiers"
 }
 
-func (t *GitModifiersTag) CalculateValue(data interface{}) (ITag, error) {
+func (t *GitModifiersTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	gitBlame, ok := data.(*gitservice.GitBlame)
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
@@ -33,5 +34,5 @@ func (t *GitModifiersTag) CalculateValue(data interface{}) (ITag, error) {
 
 	sort.Strings(modifyingUsers)
 
-	return &Tag{Key: t.Key, Value: strings.Join(modifyingUsers, "/")}, nil
+	return &tags.Tag{Key: t.Key, Value: strings.Join(modifyingUsers, "/")}, nil
 }

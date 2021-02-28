@@ -184,11 +184,10 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				break
 			}
 		}
-		var yorTagTypes = tags.TagTypes
+		updated := parsedBlock.CalculateTagsDiff().Updated
 		var yorTagTypesKeys []string
-		for _, tagType := range yorTagTypes {
-			tagType.Init()
-			yorTagTypesKeys = append(yorTagTypesKeys, tagType.GetKey())
+		for _, updatedTags := range updated {
+			yorTagTypesKeys = append(yorTagTypesKeys, updatedTags.Key)
 		}
 		var replacedTags []tags.ITag
 		k := 0
