@@ -3,6 +3,8 @@ package reports
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
+	"bridgecrewio/yor/src/common/tagging/git"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
@@ -161,25 +163,25 @@ func setupAccumulator() *TagChangeAccumulator {
 			FilePath:    "/module/regional/mock.tf",
 			ExitingTags: nil,
 			NewTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "mock-uuid",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
@@ -204,37 +206,37 @@ func setupAccumulator() *TagChangeAccumulator {
 		Block: structure.Block{
 			FilePath: "/module/regional/mock.tf",
 			ExitingTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "mock-uuid",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -242,37 +244,37 @@ func setupAccumulator() *TagChangeAccumulator {
 				},
 			},
 			NewTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "mock-uuid",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T10:00:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -298,25 +300,25 @@ func setupAccumulator() *TagChangeAccumulator {
 			FilePath:    "/eks.tf",
 			ExitingTags: nil,
 			NewTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "another-uuid",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "gandalf",
@@ -341,37 +343,37 @@ func setupAccumulator() *TagChangeAccumulator {
 		Block: structure.Block{
 			FilePath: "/iam.tf",
 			ExitingTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "yet-another-uuid",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -379,31 +381,31 @@ func setupAccumulator() *TagChangeAccumulator {
 				},
 			},
 			NewTags: []tags.ITag{
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "gandalf/shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:15:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "gandalf",
@@ -428,37 +430,37 @@ func setupAccumulator() *TagChangeAccumulator {
 		Block: structure.Block{
 			FilePath: "/iam.tf",
 			ExitingTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "yet-another-uuid-2",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",
@@ -466,37 +468,37 @@ func setupAccumulator() *TagChangeAccumulator {
 				},
 			},
 			NewTags: []tags.ITag{
-				&tags.YorTraceTag{
+				&code2cloud.YorTraceTag{
 					Tag: tags.Tag{
 						Key:   "yor_trace",
 						Value: "yet-another-uuid-2",
 					},
 				},
-				&tags.GitOrgTag{
+				&git.GitOrgTag{
 					Tag: tags.Tag{
 						Key:   "git_org",
 						Value: "bridgecrewio",
 					},
 				},
-				&tags.GitRepoTag{
+				&git.GitRepoTag{
 					Tag: tags.Tag{
 						Key:   "git_repository",
 						Value: "terragoat",
 					},
 				},
-				&tags.GitModifiersTag{
+				&git.GitModifiersTag{
 					Tag: tags.Tag{
 						Key:   "git_modifiers",
 						Value: "shati",
 					},
 				},
-				&tags.GitLastModifiedAtTag{
+				&git.GitLastModifiedAtTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_at",
 						Value: "2021-02-11T09:00:00.000Z",
 					},
 				},
-				&tags.GitLastModifiedByTag{
+				&git.GitLastModifiedByTag{
 					Tag: tags.Tag{
 						Key:   "git_last_modified_by",
 						Value: "shati",

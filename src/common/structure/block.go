@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/tagging/tags"
 )
 
@@ -37,12 +36,10 @@ type IBlock interface {
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
 	isTraced := false
-	var yorTag tags.YorTraceTag
-	yorTag.Init()
-	yorTagKeyName := yorTag.GetKey()
+	yorTagKey := tags.YorTraceTagKey
 	for _, tag := range b.ExitingTags {
-		match := common.IsTagKeyMatch(tag, yorTagKeyName)
-		if _, ok := tag.(*tags.YorTraceTag); ok || match {
+		match := tags.IsTagKeyMatch(tag, yorTagKey)
+		if match {
 			isTraced = true
 			break
 		}
@@ -50,8 +47,8 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	if isTraced {
 		var yorTraceIndex int
 		for index, tag := range newTags {
-			match := common.IsTagKeyMatch(tag, yorTagKeyName)
-			if _, ok := tag.(*tags.YorTraceTag); ok || match {
+			match := tags.IsTagKeyMatch(tag, yorTagKey)
+			if match {
 				yorTraceIndex = index
 			}
 		}
@@ -64,14 +61,12 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 // MergeTags merges the tags and returns only the relevant Yor tags.
 func (b *Block) MergeTags() []tags.ITag {
 	var mergedTags []tags.ITag
-	var yorTag tags.YorTraceTag
-	yorTag.Init()
-	yorTagKeyName := yorTag.GetKey()
+	yorTagKeyName := tags.YorTraceTagKey
 	for _, tag := range b.ExitingTags {
-		match := common.IsTagKeyMatch(tag, yorTagKeyName)
-		if val, ok := tag.(*tags.YorTraceTag); ok || match {
-			if val != nil {
-				mergedTags = append(mergedTags, val)
+		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
+		if match {
+			if tag != nil {
+				mergedTags = append(mergedTags, tag)
 			} else {
 				mergedTags = append(mergedTags, tag)
 			}
@@ -130,10 +125,8 @@ func (b *Block) GetFilePath() string {
 }
 
 func (b *Block) GetTraceID() string {
-	yorTrace := tags.YorTraceTag{}
-	yorTrace.Init()
 	for _, tag := range b.MergeTags() {
-		if tag.GetKey() == yorTrace.Key {
+		if tag.GetKey() == tags.YorTraceTagKey {
 			return tag.GetValue()
 		}
 	}

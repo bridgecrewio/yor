@@ -1,8 +1,9 @@
-package tagging
+package git
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
 	commonStructure "bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"testing"
@@ -16,26 +17,21 @@ import (
 )
 
 func TestGitTagger(t *testing.T) {
-	path := "../../../tests/utils/blameutils/git_tagger_file.txt"
+	path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
 	blame := blameutils.SetupBlameResults(t, path, 3)
 
 	t.Run("test git tagger CreateTagsForBlock", func(t *testing.T) {
 		gitService := &gitservice.GitService{
 			BlameByFile: map[string]*git.BlameResult{path: blame},
 		}
-		tagger := GitTagger{Tagger: Tagger{
-			Tags: []tags.ITag{},
-		},
+		tagger := Tagger{
+			Tagger: tagging.Tagger{
+				Tags: []tags.ITag{},
+			},
 			GitService: gitService,
 		}
 
-		extraTags := []tags.ITag{
-			&tags.Tag{
-				Key:   "new_tag",
-				Value: "new_value",
-			},
-		}
-		tagger.InitTags(extraTags)
+		tagger.InitTags()
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
@@ -44,14 +40,14 @@ func TestGitTagger(t *testing.T) {
 		}
 
 		tagger.CreateTagsForBlock(block)
-		assert.Equal(t, len(block.NewTags), len(tags.TagTypes)+len(extraTags))
+		assert.Equal(t, len(block.NewTags), len(TagTypes))
 	})
 }
 
 func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 	t.Run("map tagged kms", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingTagged
-		gitTagger := GitTagger{}
+		gitTagger := Tagger{}
 		filePath := "../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
 		blame := KmsBlame
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
@@ -60,7 +56,7 @@ func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
 	})
 	t.Run("map kms with deleted lines", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
-		gitTagger := GitTagger{}
+		gitTagger := Tagger{}
 		filePath := "../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
 		blame := KmsBlame
 		gitTagger.mapOriginFileToGitFile(filePath, &blame)
@@ -158,7 +154,7 @@ type MockTestBlock struct {
 	commonStructure.Block
 }
 
-func (b *MockTestBlock) Init(filePath string, rawBlock interface{}) {}
+func (b *MockTestBlock) Init(_ string, _ interface{}) {}
 
 func (b *MockTestBlock) String() string {
 	return ""

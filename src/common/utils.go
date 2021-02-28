@@ -1,10 +1,7 @@
 package common
 
 import (
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"fmt"
 	"reflect"
-	"regexp"
 )
 
 func InSlice(slice interface{}, elem interface{}) bool {
@@ -49,10 +46,4 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 	}
 
 	return ret
-}
-
-// Try to match the tag's key name with a potentially quoted string
-func IsTagKeyMatch(tag tags.ITag, keyName string) bool {
-	match, _ := regexp.Match(fmt.Sprintf(`\b"?%s"?\b`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
-	return match
 }

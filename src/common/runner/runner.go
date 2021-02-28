@@ -6,6 +6,9 @@ import (
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
+	"bridgecrewio/yor/src/common/tagging/git"
+	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"encoding/json"
@@ -25,17 +28,18 @@ type Runner struct {
 
 func (r *Runner) Init(commands *common.Options) error {
 	dir := commands.Directory
-	r.taggers = append(r.taggers, &tagging.GitTagger{})
+	r.taggers = append(r.taggers, &git.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
 	for _, tagger := range r.taggers {
 		tagger.InitTagger(dir)
-	}
-	extraTags, err := loadExternalTags(commands.CustomTaggers)
-	if err != nil {
-		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
-	}
-	extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
-	for _, tagger := range r.taggers {
-		tagger.InitTags(extraTags)
+		if val, ok := tagger.(*simple.Tagger); ok {
+			extraTags, err := loadExternalTags(commands.CustomTaggers)
+			if err != nil {
+				logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
+			} else {
+				extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
+				val.InitExtraTags(extraTags)
+			}
+		}
 	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 	for _, parser := range r.parsers {
