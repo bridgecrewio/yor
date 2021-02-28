@@ -1,7 +1,8 @@
-package tags
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"testing"
 
@@ -10,13 +11,6 @@ import (
 
 func TestTagCreation(t *testing.T) {
 	blame := blameutils.SetupBlame(t)
-	t.Run("BcTraceTagCreation", func(t *testing.T) {
-		tag := YorTraceTag{}
-		valueTag := EvaluateTag(t, &tag, blame)
-		assert.Equal(t, "yor_trace", valueTag.GetKey())
-		assert.Equal(t, 36, len(valueTag.GetValue()))
-	})
-
 	t.Run("GitOrgTagCreation", func(t *testing.T) {
 		tag := GitOrgTag{}
 		valueTag := EvaluateTag(t, &tag, blame)
@@ -68,14 +62,14 @@ func TestTagCreation(t *testing.T) {
 
 }
 
-func EvaluateTag(t *testing.T, tag ITag, blame gitservice.GitBlame) ITag {
+func EvaluateTag(t *testing.T, tag tags.ITag, blame gitservice.GitBlame) tags.ITag {
 	tag.Init()
 	newTag, err := tag.CalculateValue(&blame)
 	if err != nil {
 		assert.Fail(t, "Failed to generate BC trace", err)
 	}
 	assert.Equal(t, "", tag.GetValue())
-	assert.IsType(t, &Tag{}, newTag)
+	assert.IsType(t, &tags.Tag{}, newTag)
 
 	return newTag
 }

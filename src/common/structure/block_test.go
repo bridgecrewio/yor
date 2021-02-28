@@ -54,12 +54,10 @@ func TestTagsUpdatedResource(t *testing.T) {
 		block.AddNewTags(newTags)
 		blockTags := block.MergeTags()
 
-		yorTraceTag := tags.YorTraceTag{}
-		yorTraceTag.Init()
 		count := 0
 		trace := ""
 		for _, tag := range blockTags {
-			if tag.GetKey() == yorTraceTag.Key {
+			if tag.GetKey() == tags.YorTraceTagKey {
 				count++
 				trace = tag.GetValue()
 			}
@@ -123,12 +121,10 @@ func TestTagsNewResource(t *testing.T) {
 		block.AddNewTags(newTags)
 		blockTags := block.MergeTags()
 
-		yorTraceTag := tags.YorTraceTag{}
-		yorTraceTag.Init()
 		count := 0
 		trace := ""
 		for _, tag := range blockTags {
-			if tag.GetKey() == yorTraceTag.Key {
+			if tag.GetKey() == tags.YorTraceTagKey {
 				count++
 				trace = tag.GetValue()
 			}

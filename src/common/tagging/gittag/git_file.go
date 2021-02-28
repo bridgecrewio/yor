@@ -1,23 +1,24 @@
-package tags
+package gittag
 
 import (
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"reflect"
 )
 
-type GitOrgTag struct {
-	Tag
+type GitFileTag struct {
+	tags.Tag
 }
 
-func (t *GitOrgTag) Init() {
-	t.Key = "git_org"
+func (t *GitFileTag) Init() {
+	t.Key = "git_file"
 }
 
-func (t *GitOrgTag) CalculateValue(data interface{}) (ITag, error) {
+func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	gitBlame, ok := data.(*gitservice.GitBlame)
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to *GitBlame, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(data))
 	}
-	return &Tag{Key: t.Key, Value: gitBlame.GitOrg}, nil
+	return &tags.Tag{Key: t.Key, Value: gitBlame.FilePath}, nil
 }

@@ -2,6 +2,8 @@ package structure
 
 import (
 	structure2 "bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/tagging/code2cloud"
+	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"testing"
 
@@ -11,13 +13,13 @@ import (
 func TestTerrraformBlock(t *testing.T) {
 	t.Run("Test tag merging and diff", func(t *testing.T) {
 		existingTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "gandalf",
 				},
 			},
-			&tags.GitOrgTag{
+			&gittag.GitOrgTag{
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
@@ -26,19 +28,19 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 
 		newTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "gandalf/hatulik",
 				},
 			},
-			&tags.GitRepoTag{
+			&gittag.GitRepoTag{
 				Tag: tags.Tag{
 					Key:   "git_repository",
 					Value: "terragoat",
 				},
 			},
-			&tags.GitOrgTag{
+			&gittag.GitOrgTag{
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
@@ -65,13 +67,13 @@ func TestTerrraformBlock(t *testing.T) {
 	})
 	t.Run("Test no reported diff for non-yor tags diff", func(t *testing.T) {
 		existingTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "gandalf",
 				},
 			},
-			&tags.GitOrgTag{
+			&gittag.GitOrgTag{
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
@@ -81,7 +83,7 @@ func TestTerrraformBlock(t *testing.T) {
 				Key:   "env",
 				Value: "dev",
 			},
-			&tags.GitRepoTag{
+			&gittag.GitRepoTag{
 				Tag: tags.Tag{
 					Key:   "git_repository",
 					Value: "terragoat",
@@ -90,19 +92,19 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 
 		newTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "gandalf",
 				},
 			},
-			&tags.GitRepoTag{
+			&gittag.GitRepoTag{
 				Tag: tags.Tag{
 					Key:   "git_repository",
 					Value: "terragoat",
 				},
 			},
-			&tags.GitOrgTag{
+			&gittag.GitOrgTag{
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
@@ -130,25 +132,25 @@ func TestTerrraformBlock(t *testing.T) {
 
 	t.Run("Ensure old trace tag is not overridden by a new trace tag", func(t *testing.T) {
 		existingTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "gandalf",
 				},
 			},
-			&tags.GitOrgTag{
+			&gittag.GitOrgTag{
 				Tag: tags.Tag{
 					Key:   "git_org",
 					Value: "bridgecrewio",
 				},
 			},
-			&tags.GitRepoTag{
+			&gittag.GitRepoTag{
 				Tag: tags.Tag{
 					Key:   "git_repository",
 					Value: "terragoat",
 				},
 			},
-			&tags.YorTraceTag{
+			&code2cloud.YorTraceTag{
 				Tag: tags.Tag{
 					Key:   "yor_trace",
 					Value: "my-old-trace",
@@ -156,19 +158,19 @@ func TestTerrraformBlock(t *testing.T) {
 			},
 		}
 		newTags := []tags.ITag{
-			&tags.GitModifiersTag{
+			&gittag.GitModifiersTag{
 				Tag: tags.Tag{
 					Key:   "git_modifiers",
 					Value: "hatulik",
 				},
 			},
-			&tags.GitRepoTag{
+			&gittag.GitRepoTag{
 				Tag: tags.Tag{
 					Key:   "git_repository",
 					Value: "terragoat",
 				},
 			},
-			&tags.YorTraceTag{
+			&code2cloud.YorTraceTag{
 				Tag: tags.Tag{
 					Key:   "yor_trace",
 					Value: "my-new-trace",
@@ -192,7 +194,7 @@ func TestTerrraformBlock(t *testing.T) {
 		merged := block.MergeTags()
 		assert.Equal(t, 1, len(diff.Updated))
 		for _, tag := range merged {
-			if traceTag, ok := tag.(*tags.YorTraceTag); ok {
+			if traceTag, ok := tag.(*code2cloud.YorTraceTag); ok {
 				assert.Equal(t, traceTag.Value, "my-old-trace")
 			}
 		}

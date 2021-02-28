@@ -4,8 +4,8 @@ resource "aws_instance" "many_instance_tags" {
   tags = merge({ "Name" = "tag-for-instance", "Environment" = "prod" },
     { "Owner" = "bridgecrew"
     },
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
+    { yor_trace            = "4329587194",
+      git_org              = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
       git_last_modified_at = "2020-03-28 21:42:46"
@@ -17,8 +17,8 @@ resource "aws_instance" "many_instance_tags" {
 
 resource "aws_alb" "alb_with_merged_tags" {
   tags = merge({ "Name" = "tag-for-alb", "Environment" = "prod" },
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
+    { yor_trace            = "4329587194",
+      git_org              = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
       git_last_modified_at = "2020-03-28 21:42:46"
@@ -66,8 +66,8 @@ resource "aws_instance" "instance_merged_var" {
   ami           = ""
   instance_type = ""
   tags = merge(var.tags,
-    { "yor_trace"          = "4329587194",
-      "git_org"            = "bridgecrewio" }, {
+    { yor_trace            = "4329587194",
+      git_org              = "bridgecrewio" }, {
       git_commit           = "47accf06f13b503f3bab06fed7860e72f7523cac"
       git_file             = "README.md"
       git_last_modified_at = "2020-03-28 21:42:46"
