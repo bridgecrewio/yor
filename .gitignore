@@ -2,4 +2,3 @@
 .terraform
 .plugins
 *.so
-tests/terraform/resources/tagged
