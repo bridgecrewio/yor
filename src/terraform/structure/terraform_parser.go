@@ -337,6 +337,7 @@ func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttrib
 		}
 		if matched := tagsTokensRegex.Match(token.Bytes); matched {
 			foundTagsToken = true
+			break
 		}
 	}
 	if foundTagToken && foundTagsToken {
