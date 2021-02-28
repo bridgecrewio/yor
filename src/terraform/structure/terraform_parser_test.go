@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
 	"bridgecrewio/yor/src/common/tagging/gittag"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -168,17 +169,15 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedTaggedFileTags {
 			if block.IsBlockTaggable() {
-				for _, tagType := range gitTagger.Tags {
-					isYorTagExists := false
-					yorTagKey := tagType.GetKey()
-					for _, tag := range block.GetExistingTags() {
-						if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
-							isYorTagExists = true
-						}
+				isYorTagExists := false
+				yorTagKey := tags.YorTraceTagKey
+				for _, tag := range block.GetExistingTags() {
+					if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
+						isYorTagExists = true
 					}
-					if !isYorTagExists {
-						t.Error(fmt.Sprintf("tag not found on merged block %v", tagType))
-					}
+				}
+				if !isYorTagExists {
+					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
 				}
 			}
 		}
