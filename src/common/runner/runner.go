@@ -1,6 +1,7 @@
 package runner
 
 import (
+	cfnStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/reports"
@@ -41,7 +42,7 @@ func (r *Runner) Init(commands *common.Options) error {
 			}
 		}
 	}
-	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{})
 	for _, parser := range r.parsers {
 		parser.Init(dir, nil)
 	}

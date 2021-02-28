@@ -1,6 +1,7 @@
 package structure
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"strings"
 
@@ -25,11 +26,7 @@ func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
 	b.HclSyntaxBlock = hclSyntaxBlock
 }
 
-func (b *TerraformBlock) String() string {
-	// TODO
-	return ""
-}
-func (b *TerraformBlock) GetLines() []int {
+func (b *TerraformBlock) GetLines() common.Lines {
 	r := b.HclSyntaxBlock.Body.Range()
-	return []int{r.Start.Line, r.End.Line}
+	return common.Lines{Start: r.Start.Line, End: r.End.Line}
 }
