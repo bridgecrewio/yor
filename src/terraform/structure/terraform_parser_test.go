@@ -108,6 +108,15 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Skip collision tags block", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/resources", nil)
+		filePath := "../../../tests/terraform/resources/collision/main.tf"
+		parsedBlocks, err := p.ParseFile(filePath)
+		assert.Nil(t, parsedBlocks)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestTerrraformParser_GetSourceFiles(t *testing.T) {
