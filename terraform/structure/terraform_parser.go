@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -113,7 +114,10 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
 			continue
 		}
-
+		if terraformBlock == nil {
+			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", block.Labels()))
+			continue
+		}
 		terraformBlock.Init(filePath, block)
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
 		parsedBlocks = append(parsedBlocks, terraformBlock)
@@ -284,11 +288,18 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
 	var tagsAttributeName string
-	var err error
 	isTaggable := false
 
 	if hclBlock.Type() == "resource" {
-		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
+		resourceType := hclBlock.Labels()[0]
+		providerName := getProviderFromResourceType(resourceType)
+		client := p.getClient(providerName)
+		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
+		if err != nil {
+			return nil, err
+		}
+
+		tagsAttributeName, err := p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
 		}
@@ -298,6 +309,26 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 			isTaggable, err = p.isBlockTaggable(hclBlock)
 			if err != nil {
 				return nil, err
+			}
+		}
+		bodyTokens := hclBlock.Body().BuildTokens(hclwrite.Tokens{})
+		foundTagToken := false
+		tagTokenRegex := regexp.MustCompile(`^tag[\d]?$`)
+		foundTagsToken := false
+		tagsTokensRegex := regexp.MustCompile(fmt.Sprintf(`^%s$`, tagsAttributeName))
+		for _, token := range bodyTokens {
+			if matched := tagTokenRegex.Match(token.Bytes); matched {
+				foundTagToken = true
+			}
+			if matched := tagsTokensRegex.Match(token.Bytes); matched {
+				foundTagsToken = true
+			}
+		}
+		if foundTagToken && foundTagsToken {
+			if _, okTags := resourceScheme.Attributes[tagsAttributeName]; okTags {
+				if okTags {
+					return nil, nil
+				}
 			}
 		}
 	}
