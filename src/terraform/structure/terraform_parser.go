@@ -5,7 +5,6 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -294,7 +293,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 		providerName := getProviderFromResourceType(resourceType)
 		client := p.getClient(providerName)
 		if client == nil {
-			return nil, errors.New(fmt.Sprintf("Could not find client of %s", providerName))
+			return nil, fmt.Errorf("could not find client of %s", providerName)
 		}
 		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
 		if err != nil {
