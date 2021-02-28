@@ -22,3 +22,7 @@ func (t *GitOrgTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: gitBlame.GitOrg}, nil
 }
+
+func (t *GitOrgTag) GetDescription() string {
+	return "Org tag (i.e. for bridgecrewio/terragoat, bridgecrewio)"
+}

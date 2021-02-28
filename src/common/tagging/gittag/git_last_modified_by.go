@@ -27,3 +27,7 @@ func (t *GitLastModifiedByTag) CalculateValue(data interface{}) (tags.ITag, erro
 	}
 	return &tags.Tag{Key: t.Key, Value: latestCommit.Author}, nil
 }
+
+func (t *GitLastModifiedByTag) GetDescription() string {
+	return "Last Modified By - the last user to modify this resource"
+}

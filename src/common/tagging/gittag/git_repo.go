@@ -22,3 +22,7 @@ func (t *GitRepoTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: gitBlame.GitRepository}, nil
 }
+
+func (t *GitRepoTag) GetDescription() string {
+	return "Repo tag (i.e. for bridgecrewio/terragoat, terragoat)"
+}

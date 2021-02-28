@@ -18,6 +18,7 @@ type ITag interface {
 	GetKey() string
 	GetValue() string
 	GetPriority() int
+	GetDescription() string
 }
 
 type TagDiff struct {
@@ -49,6 +50,10 @@ func (t *Tag) GetKey() string {
 
 func (t *Tag) GetValue() string {
 	return t.Value
+}
+
+func (t *Tag) GetDescription() string {
+	return "Tag - the abs class of all tags"
 }
 
 // Try to match the tag's key name with a potentially quoted string

@@ -46,9 +46,9 @@ func main() {
 			return tag(tagOptions)
 		},
 	}
-	dtOptions := &common.DescribeTaggersOptions{}
-	describeTaggersCmd := &cobra.Command{
-		Use:           "describe-taggers",
+	dtOptions := &common.DescribeTaggerOptions{}
+	describeTaggerCmd := &cobra.Command{
+		Use:           "describe-tagger",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Short:         "Get more details on each tagger",
@@ -67,8 +67,8 @@ func main() {
 		},
 	}
 	addTagFlags(tagCmd.Flags(), tagOptions)
-	addDescribeTaggerFlags(describeTaggersCmd.Flags(), dtOptions)
-	cmd.AddCommand(tagCmd, describeTaggersCmd, listTaggersCmd)
+	addDescribeTaggerFlags(describeTaggerCmd.Flags(), dtOptions)
+	cmd.AddCommand(tagCmd, describeTaggerCmd, listTaggersCmd)
 	cmd.SetVersionTemplate(fmt.Sprintf("Yor version %s", cmd.Version))
 	if err := cmd.Execute(); err != nil {
 		logger.Error(err.Error())
@@ -90,7 +90,7 @@ func tag(options *common.TagOptions) error {
 	return nil
 }
 
-func describeTagger(options *common.DescribeTaggersOptions) error {
+func describeTagger(options *common.DescribeTaggerOptions) error {
 	var tagger tagging.ITagger
 	switch options.Tagger {
 	case "simple":
@@ -132,8 +132,8 @@ func printReport(reportService *reports.ReportService, options *common.TagOption
 
 func addTagFlags(flag *pflag.FlagSet, commands *common.TagOptions) {
 	flag.StringVarP(&commands.Directory, "directory", "d", "", "directory to tag")
-	flag.StringVarP(&commands.Tag, "tag", "t", "", "tag yor only with the specified tag")
-	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "tag yor without ths specified tag")
+	flag.StringVarP(&commands.Tag, "tag", "t", "", "run yor only with the specified tag")
+	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "run yor without the specified tag")
 	flag.StringVarP(&commands.Output, "output", "o", "cli", "set output format")
 	flag.StringVar(&commands.OutputJSONFile, "output-json-file", "", "json file path for output")
 	flag.StringSliceVarP(&commands.CustomTaggers, "custom-taggers", "c", []string{}, "paths to custom taggers plugins")
@@ -141,6 +141,8 @@ func addTagFlags(flag *pflag.FlagSet, commands *common.TagOptions) {
 	flag.StringSliceVar(&commands.SkipConfigurationPaths, "skip-configuration-paths", []string{}, "configuration paths to skip")
 }
 
-func addDescribeTaggerFlags(flag *pflag.FlagSet, commands *common.DescribeTaggersOptions) {
-	flag.StringVarP(&commands.Tagger, "tagger", "t", "", "The tagger to be described")
+func addDescribeTaggerFlags(flag *pflag.FlagSet, commands *common.DescribeTaggerOptions) {
+	msg := "The tagger to be described. Valid values are "
+	msg += "{" + strings.Join(common.SupportedTaggers, "|") + "}"
+	flag.StringVarP(&commands.Tagger, "tagger", "t", "", msg)
 }

@@ -23,7 +23,7 @@ type TagOptions struct {
 	ExtraTags              string `validate:"extraTags"`
 }
 
-type DescribeTaggersOptions struct {
+type DescribeTaggerOptions struct {
 	Tagger string `validate:"taggerType"`
 }
 
@@ -35,7 +35,7 @@ func (o *TagOptions) Validate() {
 	}
 }
 
-func (o *DescribeTaggersOptions) Validate() {
+func (o *DescribeTaggerOptions) Validate() {
 	_ = validator.SetValidationFunc("taggerType", validateTaggerType)
 }
 

@@ -22,3 +22,7 @@ func (t *YorTraceTag) CalculateValue(_ interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: uuidv4.String()}, nil
 }
+
+func (t *YorTraceTag) GetDescription() string {
+	return "\"yor_trace\", a UUID value tag.\nThis tag can be leveraged to find this resource easily across accounts and deployment stacks."
+}

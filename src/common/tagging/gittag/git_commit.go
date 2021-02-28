@@ -27,3 +27,7 @@ func (t *GitCommitTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: latestCommit.Hash.String()}, nil
 }
+
+func (t *GitCommitTag) GetDescription() string {
+	return "Commit tag (i.e. d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0)"
+}

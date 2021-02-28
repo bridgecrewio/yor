@@ -22,3 +22,7 @@ func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: gitBlame.FilePath}, nil
 }
+
+func (t *GitFileTag) GetDescription() string {
+	return "File tag (i.e. src/main.tf)"
+}
