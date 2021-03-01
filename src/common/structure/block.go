@@ -22,7 +22,7 @@ type TagDiff struct {
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	GetFilePath() string
-	GetLines() common.Lines
+	GetLines(...bool) common.Lines
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}

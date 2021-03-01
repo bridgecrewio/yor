@@ -57,9 +57,17 @@ func (t *Tagger) initFileMapping(path string) bool {
 		logger.Warning(fmt.Sprintf("Unable to get git blame for file %s: %s", path, err))
 		return false
 	}
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("====================================================")
+	for _, line := range fileBlame.Lines {
+		fmt.Printf("([%s] %s) %s\n", line.Date.UTC().Format("2006-01-02 15:04:05"), line.Hash.String(), line.Text)
+	}
 
 	t.mapOriginFileToGitFile(path, fileBlame)
-
+	fmt.Println("====================================================")
+	fmt.Println("")
+	fmt.Println("")
 	return true
 }
 
@@ -173,7 +181,7 @@ func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult)
 
 func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) bool {
 	gitBlameLines := blame.BlamesByLine
-	blockLines := block.GetLines()
+	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
 	fileMapping := t.fileLinesMapper[block.GetFilePath()].originToGit
 

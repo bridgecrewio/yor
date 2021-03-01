@@ -23,7 +23,7 @@ func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
 	b.FilePath = filePath
 }
 
-func (b *CloudformationBlock) GetLines() common.Lines {
+func (b *CloudformationBlock) GetLines(_ ...bool) common.Lines {
 	return b.lines
 }
 
