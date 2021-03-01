@@ -43,7 +43,12 @@ func main() {
 		SilenceUsage:  true,
 		Short:         "Tag you IaC files",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return tag(tagOptions)
+			err := cmd.Help()
+			if err == nil {
+				os.Exit(0)
+			}
+			logger.Error(err.Error())
+			return nil
 		},
 	}
 	dtOptions := &common.DescribeTaggerOptions{}
@@ -53,6 +58,13 @@ func main() {
 		SilenceUsage:  true,
 		Short:         "Get more details on each tagger",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if dtOptions.Tagger == "" {
+				err := cmd.Help()
+				if err == nil {
+					os.Exit(0)
+				}
+				logger.Error(err.Error())
+			}
 			dtOptions.Validate()
 			return describeTagger(dtOptions)
 		},
