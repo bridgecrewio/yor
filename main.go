@@ -120,8 +120,8 @@ func describeTagger(options *common.DescribeTaggerOptions) error {
 
 func listTaggers() error {
 	fmt.Println("Existing taggers:")
-	for i, tagger := range common.SupportedTaggers {
-		fmt.Printf("%d) %s\n", i+1, tagger)
+	for _, tagger := range common.SupportedTaggers {
+		fmt.Printf("%s\n", tagger)
 	}
 	return nil
 }
