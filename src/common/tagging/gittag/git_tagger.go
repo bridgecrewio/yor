@@ -173,7 +173,7 @@ func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult)
 
 func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) bool {
 	gitBlameLines := blame.BlamesByLine
-	blockLines := block.GetLines()
+	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
 	fileMapping := t.fileLinesMapper[block.GetFilePath()].originToGit
 
