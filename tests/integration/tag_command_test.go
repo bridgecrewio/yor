@@ -18,7 +18,7 @@ func TestRunResults(t *testing.T) {
 		if err != nil {
 			assert.Fail(t, "Failed to parse json result")
 		}
-		assert.Less(t, 63, report.Summary.Scanned)
+		assert.LessOrEqual(t, 63, report.Summary.Scanned)
 		assert.LessOrEqual(t, 63, report.Summary.NewResources)
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
