@@ -91,8 +91,8 @@ func (r *Runner) TagFile(file string) {
 				for _, tagger := range r.taggers {
 					tagger.CreateTagsForBlock(block)
 				}
-				r.changeAccumulator.AccumulateChanges(block)
 			}
+			r.changeAccumulator.AccumulateChanges(block)
 		}
 		if isFileTaggable {
 			err = parser.WriteFile(file, blocks, file)

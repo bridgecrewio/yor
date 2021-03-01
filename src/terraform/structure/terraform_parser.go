@@ -110,6 +110,9 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
+		if block.Type() != "resource" {
+			continue
+		}
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))

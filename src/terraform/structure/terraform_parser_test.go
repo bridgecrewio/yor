@@ -74,7 +74,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			}
 		}
 
-		assert.Equal(t, 11, len(parsedBlocks))
+		assert.Equal(t, 7, len(parsedBlocks))
 	})
 
 	t.Run("parse complex tags", func(t *testing.T) {
