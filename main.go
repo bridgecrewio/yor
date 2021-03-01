@@ -25,6 +25,20 @@ func main() {
 		Version:       common.Version,
 		Short:         fmt.Sprintf("\nYor, the IaC auto-tagger (v%v)", common.Version),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			err := cmd.Help()
+			if err == nil {
+				os.Exit(0)
+			}
+			logger.Error(err.Error())
+			return nil
+		},
+	}
+	tagCmd := &cobra.Command{
+		Use:           "tag",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Short:         "Tag you IaC files",
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if tagOptions.Directory == "" {
 				// If no flags supplied display the help menu and quit cleanly
 				err := cmd.Help()
@@ -35,20 +49,6 @@ func main() {
 			}
 			tagOptions.Validate()
 			return tag(tagOptions)
-		},
-	}
-	tagCmd := &cobra.Command{
-		Use:           "tag",
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Short:         "Tag you IaC files",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			err := cmd.Help()
-			if err == nil {
-				os.Exit(0)
-			}
-			logger.Error(err.Error())
-			return nil
 		},
 	}
 	dtOptions := &common.DescribeTaggerOptions{}
