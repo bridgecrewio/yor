@@ -59,9 +59,7 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 
 		diff := block.CalculateTagsDiff()
-		merged := block.MergeTags()
 
-		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
 		assert.Equal(t, newTags[0].GetValue(), diff.Updated[0].NewValue)
 		assert.Equal(t, newTags[1].GetValue(), diff.Added[0].GetValue())
 	})
@@ -123,9 +121,7 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 
 		diff := block.CalculateTagsDiff()
-		merged := block.MergeTags()
 
-		assert.Equal(t, 3, len(merged), "Merging failed, expected to see 3 tags")
 		assert.Equal(t, 0, len(diff.Updated))
 		assert.Equal(t, 0, len(diff.Added))
 	})
