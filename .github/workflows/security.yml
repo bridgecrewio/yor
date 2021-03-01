@@ -1,4 +1,4 @@
-name: Go
+name: Security
 
 on:
   push:
@@ -17,4 +17,4 @@ jobs:
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
-          args: ./src/
+          args: ./...
