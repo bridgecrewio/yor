@@ -3,15 +3,16 @@ package integration
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/runner"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/stretchr/testify/assert"
 )
 
 func panicIfErr(err error) {
@@ -112,6 +113,7 @@ func TestMultipleCommits(t *testing.T) {
 			Directory: dir,
 			ExtraTags: "{}",
 		})
+		panicIfErr(err)
 		time.Sleep(2 * time.Second)
 		reportService, err = yorRunner2.TagDirectory(dir)
 		panicIfErr(err)

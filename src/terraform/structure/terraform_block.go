@@ -28,16 +28,16 @@ func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
 
 func (b *TerraformBlock) GetLines(getContentLinesOnly ...bool) common.Lines {
 	r := b.HclSyntaxBlock.Body.Range()
-	if len(getContentLinesOnly) == 0 || getContentLinesOnly[0] == false {
+	if len(getContentLinesOnly) == 0 || !getContentLinesOnly[0] {
 		return common.Lines{Start: r.Start.Line, End: r.End.Line}
-	} else {
-		endOfLastAttribute := r.Start.Line
-		for _, attr := range b.HclSyntaxBlock.Body.Attributes {
-			if attr.Range().End.Line > endOfLastAttribute {
-				endOfLastAttribute = attr.Range().End.Line
-			}
-		}
-
-		return common.Lines{Start: r.Start.Line, End: endOfLastAttribute}
 	}
+
+	endOfLastAttribute := r.Start.Line
+	for _, attr := range b.HclSyntaxBlock.Body.Attributes {
+		if attr.Range().End.Line > endOfLastAttribute {
+			endOfLastAttribute = attr.Range().End.Line
+		}
+	}
+
+	return common.Lines{Start: r.Start.Line, End: endOfLastAttribute}
 }
