@@ -1,11 +1,18 @@
-# Yor
+# Yor - Infrastructure as code tagging engine
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-73%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-77%25-brightgreen.svg?longCache=true&style=flat)</a>
 
-Automated IaC tagging using external sources of data.
+Cloud service providers allow users to assign metadata to their cloud resources in the form
+of tags. Each tag is a simple label consisting of a customer-defined key and a value
+that can make it easier to manage, search for, and filter resources. Although there are no
+inherent types of tags, they enable customers to categorize resources by purpose, owner,
+environment, or other criteria.
 
-Yor applies IaC tags based on git data so that you can consistently attribute changes to cloud resources managed using infrastructure-as-code. Yor is currently built to tag based on local or remote Git data. It is built 
+Tags can be used for security, cost allocation, automation, console organization, access control, and operations. 
 
+Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code frameworks (Terraform, Cloudformation, Kubernetes, and Serverless Framework) .
+By auto-tagging in IaC you will be able to trace any cloud resource from code to cloud. 
+Yor enables version-controlled owner assignment and resource tracing based git history. It also can extend tag enforcement logic by loading external tagging logic into the CI/CD pipeline. 
 
 
 ## Features

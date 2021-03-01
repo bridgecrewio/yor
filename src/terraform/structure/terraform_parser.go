@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -490,6 +491,8 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 		}
 		value := string(entry[eqIndex:].Bytes())
 		value = strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		_ = json.Unmarshal([]byte(key), &key)
+		_ = json.Unmarshal([]byte(value), &value)
 		parsedTags[key] = value
 	}
 
