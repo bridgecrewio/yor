@@ -30,7 +30,7 @@ func Test_loadExternalTags(t *testing.T) {
 			t.Errorf("loadExternalTags() error = %v", err)
 			return
 		}
-		expectedTags := map[string]string{"yor_checkov": "checkov", "git_owner": "bana"}
+		expectedTags := map[string]string{"yor_foo": "foo", "git_owner": "bana"}
 		assert.Equal(t, len(expectedTags), len(gotTags))
 		now := time.Now()
 		yesterday := now.AddDate(0, 0, -1)

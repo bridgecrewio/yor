@@ -102,7 +102,7 @@ An example can be found in `tests/yor_plugins/example`
 ```go
 package main
 
-var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
+var ExtraTags = []interface{}{&TerragoatTag{}, &FooTag{}}
 ```
 
 #### Running yor
