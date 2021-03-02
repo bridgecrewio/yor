@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -175,7 +176,7 @@ func TestRunnerInternals(t *testing.T) {
 					}
 					if shouldSkip {
 						skippedFiles = append(skippedFiles[:skippedIndex], skippedFiles[skippedIndex+1:]...)
-					} else {
+					} else if strings.HasSuffix(path, ".tf") {
 						assert.Fail(t, fmt.Sprintf("Should not have skipped %v", path))
 					}
 				}
