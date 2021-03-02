@@ -22,7 +22,7 @@ type TagDiff struct {
 type IBlock interface {
 	Init(filePath string, rawBlock interface{})
 	GetFilePath() string
-	GetLines() common.Lines
+	GetLines(...bool) common.Lines
 	GetExistingTags() []tags.ITag
 	GetNewTags() []tags.ITag
 	GetRawBlock() interface{}
@@ -63,16 +63,35 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 
 // MergeTags merges the tags and returns only the relevant Yor tags.
 func (b *Block) MergeTags() []tags.ITag {
+	existingTagsByKey := map[string]tags.ITag{}
+	newTagsByKey := map[string]tags.ITag{}
+
+	for _, tag := range b.ExitingTags {
+		existingTagsByKey[tag.GetKey()] = tag
+	}
+	for _, tag := range b.NewTags {
+		newTagsByKey[tag.GetKey()] = tag
+	}
+
 	var mergedTags []tags.ITag
 	yorTagKeyName := tags.YorTraceTagKey
-	for _, tag := range b.ExitingTags {
-		match := tags.IsTagKeyMatch(tag, yorTagKeyName)
-		if match {
-			mergedTags = append(mergedTags, tag)
+	for _, existingTag := range b.ExitingTags {
+		if newTag, ok := newTagsByKey[existingTag.GetKey()]; ok {
+			match := tags.IsTagKeyMatch(existingTag, yorTagKeyName)
+			if match {
+				mergedTags = append(mergedTags, existingTag)
+			} else {
+				mergedTags = append(mergedTags, newTag)
+			}
+			delete(newTagsByKey, existingTag.GetKey())
+		} else {
+			mergedTags = append(mergedTags, existingTag)
 		}
 	}
 
-	mergedTags = append(mergedTags, b.NewTags...)
+	for newTagKey := range newTagsByKey {
+		mergedTags = append(mergedTags, newTagsByKey[newTagKey])
+	}
 
 	return mergedTags
 }

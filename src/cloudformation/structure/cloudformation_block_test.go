@@ -29,7 +29,7 @@ func TestCloudformationBlock_MergeCFNTags(t *testing.T) {
 				NewTags:     newTags,
 			},
 		}
-		actualMergedTags := b.MergeCFNTags()
+		actualMergedTags := b.MergeTags()
 		for i, expectedTag := range expectedMergedTags {
 			assert.Equal(t, expectedTag.GetKey(), actualMergedTags[i].GetKey())
 			assert.Equal(t, expectedTag.GetValue(), actualMergedTags[i].GetValue())

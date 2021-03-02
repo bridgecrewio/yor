@@ -86,9 +86,9 @@ func (r *Runner) TagFile(file string) {
 		}
 		isFileTaggable := false
 		for _, block := range blocks {
-			for _, tagger := range r.taggers {
-				if block.IsBlockTaggable() {
-					isFileTaggable = true
+			if block.IsBlockTaggable() {
+				isFileTaggable = true
+				for _, tagger := range r.taggers {
 					tagger.CreateTagsForBlock(block)
 				}
 			}

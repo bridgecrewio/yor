@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -109,6 +110,9 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
+		if block.Type() != "resource" {
+			continue
+		}
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
@@ -490,6 +494,8 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 		}
 		value := string(entry[eqIndex:].Bytes())
 		value = strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
+		_ = json.Unmarshal([]byte(key), &key)
+		_ = json.Unmarshal([]byte(value), &value)
 		parsedTags[key] = value
 	}
 

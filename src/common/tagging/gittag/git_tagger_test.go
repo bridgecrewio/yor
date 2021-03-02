@@ -88,6 +88,6 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines() common.Lines {
+func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
 	return common.Lines{Start: 1, End: 3}
 }
