@@ -20,35 +20,27 @@ type Tagger struct {
 	fileLinesMapper map[string]fileLineMapper
 }
 
-var TagTypes = []tags.ITag{
-	&GitOrgTag{},
-	&GitRepoTag{},
-	&GitFileTag{},
-	&GitCommitTag{},
-	&GitModifiersTag{},
-	&GitLastModifiedAtTag{},
-	&GitLastModifiedByTag{},
-}
-
 type fileLineMapper struct {
 	originToGit map[int]int
 	gitToOrigin map[int]int
 }
 
-func (t *Tagger) InitTagger(path string) {
+func (t *Tagger) InitTagger(path string, skippedTags []string) {
+	t.SkippedTags = skippedTags
 	gitService, err := gitservice.NewGitService(path)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s", path))
 	}
 	t.GitService = gitService
-	t.InitTags()
-}
-
-func (t *Tagger) InitTags() {
-	for _, tagType := range TagTypes {
-		tagType.Init()
-	}
-	t.Tags = append(t.Tags, TagTypes...)
+	t.SetTags([]tags.ITag{
+		&GitOrgTag{},
+		&GitRepoTag{},
+		&GitFileTag{},
+		&GitCommitTag{},
+		&GitModifiersTag{},
+		&GitLastModifiedAtTag{},
+		&GitLastModifiedByTag{},
+	})
 }
 
 func (t *Tagger) initFileMapping(path string) bool {
@@ -86,7 +78,7 @@ func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 	}
 
 	var newTags []tags.ITag
-	for _, tag := range t.Tags {
+	for _, tag := range t.GetTags() {
 		newTag, err := tag.CalculateValue(blame)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("Failed to calculate tag value of tag %v, err: %s", tag.GetKey(), err))

@@ -3,7 +3,6 @@ package simple
 import (
 	"bridgecrewio/yor/src/common"
 	commonStructure "bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"testing"
 
@@ -13,13 +12,8 @@ import (
 func TestSimpleTagger(t *testing.T) {
 	t.Run("test tagger CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
-		tagger := Tagger{
-			Tagger: tagging.Tagger{
-				Tags: []tags.ITag{},
-			},
-			extraTags: []tags.ITag{},
-		}
-		tagger.InitTagger("")
+		tagger := Tagger{}
+		tagger.InitTagger("", nil)
 
 		extraTags := []tags.ITag{
 			&tags.Tag{
@@ -31,7 +25,7 @@ func TestSimpleTagger(t *testing.T) {
 				Value: "custom",
 			},
 		}
-		tagger.InitExtraTags(extraTags)
+		tagger.SetTags(extraTags)
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,

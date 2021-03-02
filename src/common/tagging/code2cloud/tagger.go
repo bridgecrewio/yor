@@ -12,14 +12,17 @@ type Tagger struct {
 	traceTag YorTraceTag
 }
 
-func (t *Tagger) InitTagger(_ string) {
-	t.traceTag.Init()
+func (t *Tagger) InitTagger(_ string, skippedTags []string) {
+	t.SkippedTags = skippedTags
+	t.SetTags([]tags.ITag{&YorTraceTag{}})
 }
 
 func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
-	tag, err := t.traceTag.CalculateValue(struct{}{})
-	if err != nil {
-		logger.Error("Failed to create yor trace tag for block", block.GetResourceID())
+	if len(t.GetTags()) > 0 {
+		tag, err := t.GetTags()[0].CalculateValue(struct{}{})
+		if err != nil {
+			logger.Error("Failed to create yor trace tag for block", block.GetResourceID())
+		}
+		block.AddNewTags([]tags.ITag{tag})
 	}
-	block.AddNewTags([]tags.ITag{tag})
 }

@@ -11,7 +11,7 @@ func TestCliArgParsing(t *testing.T) {
 		options := Options{
 			Directory:      "",
 			Tag:            "",
-			SkipTags:       []string{},
+			SkipTags:       nil,
 			CustomTaggers:  nil,
 			SkipDirs:       nil,
 			Output:         "",
@@ -25,7 +25,7 @@ func TestCliArgParsing(t *testing.T) {
 		options := Options{
 			Directory:      "some/dir",
 			Tag:            "",
-			SkipTags:       []string{},
+			SkipTags:       nil,
 			CustomTaggers:  nil,
 			SkipDirs:       nil,
 			Output:         "cli",
@@ -39,7 +39,7 @@ func TestCliArgParsing(t *testing.T) {
 		options := Options{
 			Directory:      "some/dir",
 			Tag:            "",
-			SkipTags:       []string{},
+			SkipTags:       nil,
 			CustomTaggers:  nil,
 			SkipDirs:       nil,
 			Output:         "junitxml",

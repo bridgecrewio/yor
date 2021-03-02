@@ -156,8 +156,8 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		}
 		gitTagger := &gittag.Tagger{GitService: gitService}
 		c2cTagger := &code2cloud.Tagger{}
-		gitTagger.InitTagger(rootDir)
-		c2cTagger.InitTagger("")
+		gitTagger.InitTagger(rootDir, nil)
+		c2cTagger.InitTagger("", nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
