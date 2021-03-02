@@ -139,7 +139,7 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
 
-		expectedAddedLines := len(mockGitTagger.Tags)*2 + 2
+		expectedAddedLines := len(mockGitTagger.GetTags())*2 + 2
 		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
@@ -214,8 +214,9 @@ func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.
 		gitService.BlameByFile[filePath] = &blame
 	}
 
-	gitTagger := gittag.Tagger{GitService: gitService}
-	gitTagger.InitTags()
-
+	gitTagger := gittag.Tagger{}
+	wd, _ := os.Getwd()
+	gitTagger.InitTagger(wd, nil)
+	gitTagger.GitService = gitService
 	return &gitTagger
 }
