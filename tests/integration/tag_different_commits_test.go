@@ -66,7 +66,7 @@ func TestMultipleCommits(t *testing.T) {
 			ExtraTags: "{}",
 		})
 		panicIfErr(err)
-		reportService, err := yorRunner.TagDirectory(dir)
+		reportService, err := yorRunner.TagDirectory()
 		panicIfErr(err)
 		reportService.CreateReport()
 		report := reportService.GetReport()
@@ -115,7 +115,7 @@ func TestMultipleCommits(t *testing.T) {
 		})
 		panicIfErr(err)
 		time.Sleep(2 * time.Second)
-		reportService, err = yorRunner2.TagDirectory(dir)
+		reportService, err = yorRunner2.TagDirectory()
 		panicIfErr(err)
 		reportService.CreateReport()
 		report2 := reportService.GetReport()

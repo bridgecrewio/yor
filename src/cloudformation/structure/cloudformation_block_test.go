@@ -4,6 +4,7 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"sort"
 	"testing"
 
 	"github.com/awslabs/goformation/v4"
@@ -73,6 +74,13 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 
 		currentRawBlock := b.RawBlock.(*ec2.Volume)
 		currentTags := currentRawBlock.Tags
+		sort.Slice(expectedMergedTags, func(i, j int) bool {
+			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
+		})
+
+		sort.Slice(currentTags, func(i, j int) bool {
+			return currentTags[i].Key > currentTags[j].Key
+		})
 
 		assert.Equal(t, len(expectedMergedTags), len(currentTags))
 		for i, expectedTag := range expectedMergedTags {

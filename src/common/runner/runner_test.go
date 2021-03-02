@@ -5,10 +5,12 @@ import (
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
+	"bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -124,7 +126,7 @@ func Test_TagCFNDir(t *testing.T) {
 			t.Error(err)
 		}
 		runner.taggers[0] = mockGitTagger
-		_, err = runner.TagDirectory(options.Directory)
+		_, err = runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
 		}
@@ -145,6 +147,60 @@ func Test_TagCFNDir(t *testing.T) {
 			{A: 0, B: 0, Size: 13}, {A: 13, B: 29, Size: 2}, {A: 15, B: 31, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
+	})
+}
+
+func TestRunnerInternals(t *testing.T) {
+	t.Run("Test isFileSkipped", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform"
+		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
+		_ = runner.Init(&common.Options{
+			Directory: rootDir,
+			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
+			ExtraTags: "{}",
+		})
+
+		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerrraformParser{}, path)
+				if isFileSkipped {
+					shouldSkip := false
+					skippedIndex := -1
+					for i, skipped := range skippedFiles {
+						if skipped == path {
+							shouldSkip = true
+							skippedIndex = i
+						}
+					}
+					if shouldSkip {
+						skippedFiles = append(skippedFiles[:skippedIndex], skippedFiles[skippedIndex+1:]...)
+					} else {
+						assert.Fail(t, fmt.Sprintf("Should not have skipped %v", path))
+					}
+				}
+			}
+			return nil
+		})
+
+		assert.Equal(t, 0, len(skippedFiles), "Some files were not skipped")
+	})
+
+	t.Run("Test skip entire dir", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform"
+		output := utils.CaptureOutput(func() {
+			_ = runner.Init(&common.Options{
+				Directory: rootDir,
+				SkipDirs: []string{
+					"../../../tests/terraform/mixed",
+					"../../../tests/terraform/resources/tagged/",
+					"../../../tests/terraform",
+				},
+				ExtraTags: "{}",
+			})
+		})
+		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")
 	})
 }
 
