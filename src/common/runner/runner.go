@@ -55,6 +55,10 @@ func (r *Runner) Init(commands *common.Options) error {
 	r.dir = commands.Directory
 	r.skipTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
+
+	if common.InSlice(r.skipDirs, r.dir) {
+		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
+	}
 	return nil
 }
 

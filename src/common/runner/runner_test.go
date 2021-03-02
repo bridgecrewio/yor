@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
+	"bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"io/ioutil"
@@ -183,6 +184,23 @@ func TestRunnerInternals(t *testing.T) {
 		})
 
 		assert.Equal(t, 0, len(skippedFiles), "Some files were not skipped")
+	})
+
+	t.Run("Test skip entire dir", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform"
+		output := utils.CaptureOutput(func() {
+			_ = runner.Init(&common.Options{
+				Directory: rootDir,
+				SkipDirs: []string{
+					"../../../tests/terraform/mixed",
+					"../../../tests/terraform/resources/tagged/",
+					"../../../tests/terraform",
+				},
+				ExtraTags: "{}",
+			})
+		})
+		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")
 	})
 }
 
