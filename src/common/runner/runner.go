@@ -27,21 +27,21 @@ type Runner struct {
 	reportingService  *reports.ReportService
 	dir               string
 	skipDirs          []string
-	skipTags          []string
+	skippedTags       []string
 }
 
 func (r *Runner) Init(commands *common.Options) error {
 	dir := commands.Directory
 	r.taggers = append(r.taggers, &gittag.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
 	for _, tagger := range r.taggers {
-		tagger.InitTagger(dir)
-		if val, ok := tagger.(*simple.Tagger); ok {
+		tagger.InitTagger(dir, commands.SkipTags)
+		if simpleTagger, ok := tagger.(*simple.Tagger); ok {
 			extraTags, err := loadExternalTags(commands.CustomTaggers)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 			} else {
 				extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
-				val.InitExtraTags(extraTags)
+				simpleTagger.SetTags(extraTags)
 			}
 		}
 	}
@@ -53,7 +53,7 @@ func (r *Runner) Init(commands *common.Options) error {
 	r.changeAccumulator = reports.TagChangeAccumulatorInstance
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
-	r.skipTags = commands.SkipTags
+	r.skippedTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
 
 	if common.InSlice(r.skipDirs, r.dir) {

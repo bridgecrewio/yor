@@ -4,10 +4,9 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	commonStructure "bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/go-git/go-git/v5"
@@ -22,14 +21,11 @@ func TestGitTagger(t *testing.T) {
 		gitService := &gitservice.GitService{
 			BlameByFile: map[string]*git.BlameResult{path: blame},
 		}
-		tagger := Tagger{
-			Tagger: tagging.Tagger{
-				Tags: []tags.ITag{},
-			},
-			GitService: gitService,
-		}
+		tagger := Tagger{}
 
-		tagger.InitTags()
+		wd, _ := os.Getwd()
+		tagger.InitTagger(wd, nil)
+		tagger.GitService = gitService
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
@@ -38,7 +34,7 @@ func TestGitTagger(t *testing.T) {
 		}
 
 		tagger.CreateTagsForBlock(block)
-		assert.Equal(t, len(block.NewTags), len(TagTypes))
+		assert.Equal(t, 7, len(block.NewTags))
 	})
 }
 

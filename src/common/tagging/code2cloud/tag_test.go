@@ -3,7 +3,6 @@ package code2cloud
 import (
 	"bridgecrewio/yor/src/common"
 	commonStructure "bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"regexp"
 	"testing"
@@ -41,12 +40,8 @@ func IsValidUUID(uuid string) bool {
 func TestCode2CloudTagger(t *testing.T) {
 	t.Run("test tagger CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
-		tagger := Tagger{
-			Tagger: tagging.Tagger{
-				Tags: []tags.ITag{},
-			},
-		}
-		tagger.InitTagger("")
+		tagger := Tagger{}
+		tagger.InitTagger("", nil)
 
 		block := &MockTestBlock{
 			Block: commonStructure.Block{

@@ -72,16 +72,14 @@ Using command line flags you can specify to run only named tags (allow list) or 
 those listed (deny list).
 
 ```sh
-./yor tag -d . --tag yor_trace
-## Run only yor_trace
-
 ./yor tag -d . --skip-tags yor_trace
 ## Run all but yor_trace
 
+./yor tag -d . --skip-tags yor_trace,git_modifiers
+## Run all but yor_trace and git_modifiers
+
 ./yor tag -d . --skip-tags git*
 ## Run all tags except tags with specified patterns
-
-./yor tag -d . --skip-tag
 ```
 
 ### Skipping directories
