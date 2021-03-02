@@ -61,7 +61,7 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
-		err = yorRunner.Init(&common.Options{
+		err = yorRunner.Init(&common.TagOptions{
 			Directory: dir,
 			ExtraTags: "{}",
 		})
@@ -109,7 +109,7 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on both resources
 		yorRunner2 := runner.Runner{}
-		err = yorRunner2.Init(&common.Options{
+		err = yorRunner2.Init(&common.TagOptions{
 			Directory: dir,
 			ExtraTags: "{}",
 		})
