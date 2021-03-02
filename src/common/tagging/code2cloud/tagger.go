@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"fmt"
 )
 
 type Tagger struct {
@@ -18,11 +19,13 @@ func (t *Tagger) InitTagger(_ string, skippedTags []string) {
 }
 
 func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
-	if len(t.GetTags()) > 0 {
-		tag, err := t.GetTags()[0].CalculateValue(struct{}{})
+	var newTags []tags.ITag
+	for _, tag := range t.GetTags() {
+		tagVal, err := tag.CalculateValue(struct{}{})
 		if err != nil {
-			logger.Error("Failed to create yor trace tag for block", block.GetResourceID())
+			logger.Error(fmt.Sprintf("Failed to create %v tag for block %v", tag.GetKey(), block.GetResourceID()))
 		}
-		block.AddNewTags([]tags.ITag{tag})
+		newTags = append(newTags, tagVal)
 	}
+	block.AddNewTags(newTags)
 }

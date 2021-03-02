@@ -35,13 +35,13 @@ func (r *Runner) Init(commands *common.Options) error {
 	r.taggers = append(r.taggers, &gittag.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
 	for _, tagger := range r.taggers {
 		tagger.InitTagger(dir, commands.SkipTags)
-		if val, ok := tagger.(*simple.Tagger); ok {
+		if simpleTagger, ok := tagger.(*simple.Tagger); ok {
 			extraTags, err := loadExternalTags(commands.CustomTaggers)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 			} else {
 				extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
-				val.SetTags(extraTags)
+				simpleTagger.SetTags(extraTags)
 			}
 		}
 	}
