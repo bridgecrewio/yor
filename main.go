@@ -56,7 +56,7 @@ func run(options *common.Options) error {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	reportService, err := yorRunner.TagDirectory(options.Directory)
+	reportService, err := yorRunner.TagDirectory()
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -84,10 +84,10 @@ func printReport(reportService *reports.ReportService, options *common.Options) 
 func addTagFlags(flag *pflag.FlagSet, commands *common.Options) {
 	flag.StringVarP(&commands.Directory, "directory", "d", "", "directory to tag")
 	flag.StringVarP(&commands.Tag, "tag", "t", "", "run yor only with the specified tag")
-	flag.StringVarP(&commands.SkipTag, "skip-tag", "s", "", "run yor without ths specified tag")
+	flag.StringSliceVarP(&commands.SkipTags, "skip-tags", "s", []string{}, "run yor without ths specified tag")
 	flag.StringVarP(&commands.Output, "output", "o", "cli", "set output format")
 	flag.StringVar(&commands.OutputJSONFile, "output-json-file", "", "json file path for output")
 	flag.StringSliceVarP(&commands.CustomTaggers, "custom-taggers", "c", []string{}, "paths to custom taggers plugins")
 	flag.StringVarP(&commands.ExtraTags, "extra-tags", "e", "{}", "json dictionary format of extra tags to add to all taggable resources")
-	flag.StringSliceVar(&commands.SkipConfigurationPaths, "skip-configuration-paths", []string{}, "configuration paths to skip")
+	flag.StringSliceVar(&commands.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
 }

@@ -25,6 +25,9 @@ type Runner struct {
 	parsers           []structure.IParser
 	changeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
+	dir               string
+	skipDirs          []string
+	skipTags          []string
 }
 
 func (r *Runner) Init(commands *common.Options) error {
@@ -49,12 +52,15 @@ func (r *Runner) Init(commands *common.Options) error {
 
 	r.changeAccumulator = reports.TagChangeAccumulatorInstance
 	r.reportingService = reports.ReportServiceInst
+	r.dir = commands.Directory
+	r.skipTags = commands.SkipTags
+	r.skipDirs = commands.SkipDirs
 	return nil
 }
 
-func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
+func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	var files []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(r.dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Error("Failed to scan dir", path)
 		}
@@ -64,7 +70,7 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 		return nil
 	})
 	if err != nil {
-		logger.Error("Failed to run Walk() on root dir", dir)
+		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
 	for _, file := range files {
@@ -76,7 +82,8 @@ func (r *Runner) TagDirectory(dir string) (*reports.ReportService, error) {
 
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
-		if isFileSkipped(parser, file) {
+		if r.isFileSkipped(parser, file) {
+			logger.Info("Skipping", file)
 			continue
 		}
 		blocks, err := parser.ParseFile(file)
@@ -174,7 +181,13 @@ func loadExternalTags(customTags []string) ([]tags.ITag, error) {
 	return extraTags, nil
 }
 
-func isFileSkipped(p structure.IParser, file string) bool {
+func (r *Runner) isFileSkipped(p structure.IParser, file string) bool {
+	for _, sp := range r.skipDirs {
+		if strings.HasPrefix(file, sp) {
+			return true
+		}
+	}
+
 	matchingSuffix := false
 	for _, suffix := range p.GetAllowedFileTypes() {
 		if strings.HasSuffix(file, suffix) {

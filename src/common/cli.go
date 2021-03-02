@@ -12,14 +12,14 @@ import (
 var allowedOutputTypes = []string{"cli", "json"}
 
 type Options struct {
-	Directory              string
-	Tag                    string
-	SkipTag                string
-	CustomTaggers          []string
-	SkipConfigurationPaths []string
-	Output                 string `validate:"output"`
-	OutputJSONFile         string
-	ExtraTags              string `validate:"extraTags"`
+	Directory      string
+	Tag            string
+	SkipTags       []string
+	CustomTaggers  []string
+	SkipDirs       []string
+	Output         string `validate:"output"`
+	OutputJSONFile string
+	ExtraTags      string `validate:"extraTags"`
 }
 
 func (o *Options) Validate() {
