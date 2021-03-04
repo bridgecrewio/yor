@@ -1,6 +1,7 @@
 package runner
 
 import (
+	cloudformationStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/structure"
@@ -61,20 +62,26 @@ func Test_loadExternalTags(t *testing.T) {
 	t.Run("load taggers plugins", func(t *testing.T) {
 		pluginDir := "../../../tests/yor_plugins/tagger_example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
-		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
+		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_taggers.so %s/*.go\n", pluginDir, pluginDir)
 		_, gotTaggers, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return
 		}
 		assert.Equal(t, 1, len(gotTaggers))
+		tagger := gotTaggers[0]
+		tagger.InitTagger("some-path", nil)
 		taggerTags := gotTaggers[0].GetTags()
 		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
 		tag := taggerTags[0]
 		assert.Equal(t, "bc_dir", tag.GetKey())
-		tagVal, _ := tag.CalculateValue(&structure.Block{FilePath: "some/path/to/tf.tf"})
+		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "some/path/to/tf.tf"}})
 		assert.Equal(t, "bc_dir", tagVal.GetKey())
-		assert.Equal(t, "some/path/to", tagVal)
+		assert.Equal(t, "some/path/to", tagVal.GetValue())
+
+		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: structure.Block{FilePath: "some/cf/path/to/tf.tf"}})
+		assert.Equal(t, "bc_dir", tagVal.GetKey())
+		assert.Equal(t, "some/cf/path/to", tagVal.GetValue())
 	})
 }
 
