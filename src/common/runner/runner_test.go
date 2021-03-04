@@ -3,6 +3,7 @@ package runner
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
@@ -69,7 +70,11 @@ func Test_loadExternalTags(t *testing.T) {
 		assert.Equal(t, 1, len(gotTaggers))
 		taggerTags := gotTaggers[0].GetTags()
 		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
-		assert.Equal(t, "bc_dir", taggerTags[0].GetKey())
+		tag := taggerTags[0]
+		assert.Equal(t, "bc_dir", tag.GetKey())
+		tagVal, _ := tag.CalculateValue(&structure.Block{FilePath: "some/path/to/tf.tf"})
+		assert.Equal(t, "bc_dir", tagVal.GetKey())
+		assert.Equal(t, "some/path/to", tagVal)
 	})
 }
 
