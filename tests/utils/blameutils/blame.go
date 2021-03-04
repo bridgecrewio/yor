@@ -93,9 +93,9 @@ func CreateMockBlame(textBytes []byte) git.BlameResult {
 			Hash:   plumbing.NewHash("bana"),
 		},
 		{
-			Author: "checkov@gmail.com",
+			Author: "foo@gmail.com",
 			Date:   getTime("2020-04-08 19:19:02"),
-			Hash:   plumbing.NewHash("checkov"),
+			Hash:   plumbing.NewHash("foo"),
 		},
 	}
 

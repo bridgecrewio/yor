@@ -46,6 +46,9 @@ git_modifiers = "schosterbarak/baraks" # These are extracted from the emails, ev
 - [Disclaimer](#disclaimer)
 - [Support](#support)
 
+More Docs:
+- [Customizing Yor](CUSTOMIZE.md)
+
 ## Getting Started
 
 ### Installation
@@ -64,6 +67,13 @@ brew install yor
 
 ```sh
 ./yor tag --directory terraform/
+```
+
+Using docker:
+```sh
+docker pull bridgecrew/yor
+
+docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
 ### Skipping tags 
@@ -106,37 +116,6 @@ Be mindful that the skipped path should include the root dir path. See example b
 
 ./yor tag -d . --output cli --output-json-file result.json
 # will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
-```
-
-### Loading External Tags Using Plugins
-
-#### Prerequisites
-
-An example can be found in `tests/yor_plugins/example`
-
-1. Create tags implementing the `ITag` interface.
-2. If you wish to override an existing tag, make the tag's method `GetPriority()` return a positive number. Otherwise, return `0` or a negative number.
-3. Create a file located in package `main` that exposes a variable `ExtraTags` - array containing pointers to all tags implemented.
-4. Run command `go build -gcflags="all=-N -l" -buildmode=plugin -o <plugin-dir>/extra_tags.so <plugin-dir>/*.go`
-
-```go
-package main
-
-var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
-```
-
-#### Running yor
-
-```sh
-./yor tag --custom-tagger tests/yor_plugins/example
-# run yor with custom tags located in tests/yor_plugins/example
-```
-
-Using docker:
-```sh
-docker pull bridgecrew/yor
-
-docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
 

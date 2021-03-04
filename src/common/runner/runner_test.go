@@ -1,8 +1,10 @@
 package runner
 
 import (
+	cloudformationStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
@@ -24,16 +26,16 @@ import (
 )
 
 func Test_loadExternalTags(t *testing.T) {
-	t.Run("load local plugins", func(t *testing.T) {
+	t.Run("load tags plugins", func(t *testing.T) {
 		pluginDir := "../../../tests/yor_plugins/example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
 		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
-		gotTags, err := loadExternalTags([]string{pluginDir})
+		gotTags, _, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
-			t.Errorf("loadExternalTags() error = %v", err)
+			t.Errorf("loadExternalResources() error = %v", err)
 			return
 		}
-		expectedTags := map[string]string{"yor_checkov": "checkov", "git_owner": "bana"}
+		expectedTags := map[string]string{"yor_foo": "foo", "git_owner": "bana"}
 		assert.Equal(t, len(expectedTags), len(gotTags))
 		now := time.Now()
 		yesterday := now.AddDate(0, 0, -1)
@@ -49,12 +51,37 @@ func Test_loadExternalTags(t *testing.T) {
 				Hash: plumbing.NewHash("1")}}}
 		for _, tag := range gotTags {
 			tag.Init()
-			tag, err := tag.CalculateValue(&gitBlame)
+			tagVal, err := tag.CalculateValue(&gitBlame)
 			print(err)
-			key := tag.GetKey()
-			value := tag.GetValue()
+			key := tagVal.GetKey()
+			value := tagVal.GetValue()
 			assert.Equal(t, expectedTags[key], value)
 		}
+	})
+
+	t.Run("load taggers plugins", func(t *testing.T) {
+		pluginDir := "../../../tests/yor_plugins/tagger_example"
+		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
+		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_taggers.so %s/*.go\n", pluginDir, pluginDir)
+		_, gotTaggers, err := loadExternalResources([]string{pluginDir})
+		if err != nil {
+			t.Errorf("loadExternalResources() error = %v", err)
+			return
+		}
+		assert.Equal(t, 1, len(gotTaggers))
+		tagger := gotTaggers[0]
+		tagger.InitTagger("src", nil)
+		taggerTags := gotTaggers[0].GetTags()
+		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
+		tag := taggerTags[0]
+		assert.Equal(t, "custom_owner", tag.GetKey())
+		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "src/auth/index.js"}})
+		assert.Equal(t, "custom_owner", tagVal.GetKey())
+		assert.Equal(t, "team-infra@company.com", tagVal.GetValue())
+
+		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: structure.Block{FilePath: "src/some/path"}})
+		assert.Equal(t, "custom_owner", tagVal.GetKey())
+		assert.Equal(t, "team-it@company.com", tagVal.GetValue())
 	})
 }
 

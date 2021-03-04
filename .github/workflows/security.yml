@@ -1,4 +1,4 @@
-name: Go
+name: security
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  tests:
+  gosec:
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
