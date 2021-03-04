@@ -15,8 +15,10 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Prepare external plugin test
-        run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
+      - name: Prepare external plugin tests
+        run: |
+          go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
+          go build -buildmode=plugin -o tests/yor_plugins/tagger_example/extra_taggers.so tests/yor_plugins/tagger_example/*.go
       - name: Test
         run: go build -v && go test ./src/...
   linter:

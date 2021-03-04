@@ -21,8 +21,10 @@ jobs:
           tf_actions_version: 0.14.5
           tf_actions_subcommand: "init"
           tf_actions_working_dir: "tests/terraform/resources"
-      - name: Prepare external plugin test
-        run: "go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go"
+      - name: Prepare external plugin tests
+        run: |
+          go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
+          go build -buildmode=plugin -o tests/yor_plugins/tagger_example/extra_taggers.so tests/yor_plugins/tagger_example/*.go
       - name: Test
         run: |
           go get github.com/jpoles1/gopherbadger
