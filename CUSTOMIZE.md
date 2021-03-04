@@ -61,7 +61,7 @@ See example in [tests/yor_plugins/example](tests/yor_plugins/example)
     var ExtraTaggers = []interface{}{&CustomTagger{}}
     ```
 
-See example in [tests/yor_plugins/tagger_example](tests/yor_plugins/tag_group_example)
+See example in [tests/yor_plugins/tag_group_example](tests/yor_plugins/tag_group_example)
 
 ## Running yor with the external tags / taggers
 
