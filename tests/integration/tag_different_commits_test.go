@@ -58,7 +58,7 @@ func TestMultipleCommits(t *testing.T) {
 				When:  time.Now().AddDate(0, 0, -2),
 			},
 		})
-		time.Sleep(time.Second)
+		time.Sleep(2 * time.Second)
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
 		err = yorRunner.Init(&common.Options{
@@ -82,7 +82,6 @@ func TestMultipleCommits(t *testing.T) {
 		}
 
 		// commit the added tags
-		time.Sleep(time.Second)
 		commit2 := commitFile(worktree, tfFileName, &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  "Bana2",
@@ -90,6 +89,7 @@ func TestMultipleCommits(t *testing.T) {
 				When:  time.Now().AddDate(0, 0, -2),
 			},
 		})
+		time.Sleep(2 * time.Second)
 
 		// append to the file the second resource
 		f, err := os.OpenFile(tfFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -100,7 +100,6 @@ func TestMultipleCommits(t *testing.T) {
 		}
 
 		// commit the second resource
-		time.Sleep(time.Second)
 		commit3 := commitFile(worktree, tfFileName, &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  "Bana3",
