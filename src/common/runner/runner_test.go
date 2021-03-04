@@ -29,7 +29,7 @@ func Test_loadExternalTags(t *testing.T) {
 		pluginDir := "../../../tests/yor_plugins/example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
 		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
-		gotTags, err := loadExternalResources([]string{pluginDir})
+		gotTags, _, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return
@@ -62,7 +62,7 @@ func Test_loadExternalTags(t *testing.T) {
 		pluginDir := "../../../tests/yor_plugins/tagger_example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
 		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
-		gotTags, err := loadExternalResources([]string{pluginDir})
+		gotTags, _, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return

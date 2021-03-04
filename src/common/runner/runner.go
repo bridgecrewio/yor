@@ -32,17 +32,17 @@ type Runner struct {
 
 func (r *Runner) Init(commands *common.Options) error {
 	dir := commands.Directory
+	extraTags, extraTaggers, err := loadExternalResources(commands.CustomTagging)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
+	}
 	r.taggers = append(r.taggers, &gittag.Tagger{}, &simple.Tagger{}, &code2cloud.Tagger{})
+	r.taggers = append(r.taggers, extraTaggers...)
 	for _, tagger := range r.taggers {
 		tagger.InitTagger(dir, commands.SkipTags)
 		if simpleTagger, ok := tagger.(*simple.Tagger); ok {
-			extraTags, err := loadExternalResources(commands.CustomTagging)
-			if err != nil {
-				logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
-			} else {
-				extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
-				simpleTagger.SetTags(extraTags)
-			}
+			extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
+			simpleTagger.SetTags(extraTags)
 		}
 	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{})
@@ -131,7 +131,7 @@ func createCmdTags(extraTagsStr string) []tags.ITag {
 	return extraTags
 }
 
-func loadExternalResources(externalPaths []string) ([]tags.ITag, error) {
+func loadExternalResources(externalPaths []string) ([]tags.ITag, []tagging.ITagger, error) {
 	var extraTags []tags.ITag
 	var extraTaggers []tagging.ITagger
 	var plugins []string
@@ -148,38 +148,41 @@ func loadExternalResources(externalPaths []string) ([]tags.ITag, error) {
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		for _, pluginPath := range plugins {
 			plug, err := plugin.Open(pluginPath)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			iPtrs, err := extractExternalResources(plug, "ExtraTags")
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			for _, iTag := range iPtrs {
 				tag, ok := iTag.(tags.ITag)
 				if !ok {
-					return nil, fmt.Errorf("unexpected type from module symbol")
+					return nil, nil, fmt.Errorf("unexpected type from module symbol")
 				}
 				extraTags = append(extraTags, tag)
 			}
 			iPtrs, err = extractExternalResources(plug, "ExtraTaggers")
+			if err != nil {
+				return nil, nil, err
+			}
 			for _, iTagger := range iPtrs {
 				if tagger, ok := iTagger.(tagging.ITagger); ok {
 					extraTaggers = append(extraTaggers, tagger)
 				} else {
-					return nil, fmt.Errorf("unexpected type from module symbol ExtraTaggers")
+					return nil, nil, fmt.Errorf("unexpected type from module symbol ExtraTaggers")
 				}
 			}
 		}
 	}
 
-	return extraTags, nil
+	return extraTags, extraTaggers, nil
 }
 
 func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}, error) {
