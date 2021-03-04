@@ -61,8 +61,10 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
+		tagGroups := []string{"git", "simple", "code2cloud"}
 		err = yorRunner.Init(&common.TagOptions{
 			Directory: dir,
+			TagGroups: tagGroups,
 		})
 		panicIfErr(err)
 		reportService, err := yorRunner.TagDirectory()
@@ -110,6 +112,7 @@ func TestMultipleCommits(t *testing.T) {
 		yorRunner2 := runner.Runner{}
 		err = yorRunner2.Init(&common.TagOptions{
 			Directory: dir,
+			TagGroups: tagGroups,
 		})
 		panicIfErr(err)
 		time.Sleep(2 * time.Second)

@@ -175,6 +175,26 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
+
+	t.Run("Filter tag groups", func(t *testing.T) {
+		runner := Runner{}
+		allTagGroups := getTagGroupNames()
+		_ = runner.Init(&common.TagOptions{
+			Directory: "../../../tests/cloudformation/resources/ebs",
+			TagGroups: allTagGroups[:len(allTagGroups)-1],
+		})
+
+		tg := runner.tagGroups
+		assert.Equal(t, len(allTagGroups)-1, len(tg))
+	})
+}
+
+func getTagGroupNames() []string {
+	var groupNames []string
+	for _, val := range common.TagGroupNames {
+		groupNames = append(groupNames, string(val))
+	}
+	return groupNames
 }
 
 func TestRunnerInternals(t *testing.T) {
@@ -185,6 +205,7 @@ func TestRunnerInternals(t *testing.T) {
 		_ = runner.Init(&common.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
+			TagGroups: getTagGroupNames(),
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
@@ -223,6 +244,7 @@ func TestRunnerInternals(t *testing.T) {
 					"../../../tests/terraform/resources/tagged/",
 					"../../../tests/terraform",
 				},
+				TagGroups: getTagGroupNames(),
 			})
 		})
 		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")

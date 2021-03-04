@@ -7,7 +7,7 @@ import (
 )
 
 func TestCliArgParsing(t *testing.T) {
-	t.Run("Test CLI argument parsing - valid output", func(t *testing.T) {
+	t.Run("Test tag argument parsing - valid output", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            "",
@@ -20,7 +20,7 @@ func TestCliArgParsing(t *testing.T) {
 		assert.NotPanics(t, options.Validate)
 	})
 
-	t.Run("Test CLI argument parsing - invalid output", func(t *testing.T) {
+	t.Run("Test tag argument parsing - invalid output", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            "",
@@ -29,6 +29,34 @@ func TestCliArgParsing(t *testing.T) {
 			SkipDirs:       nil,
 			Output:         "junitxml",
 			OutputJSONFile: "",
+		}
+		assert.Panics(t, options.Validate)
+	})
+
+	t.Run("Test tag argument parsing - valid tag groups", func(t *testing.T) {
+		options := TagOptions{
+			Directory:      "some/dir",
+			Tag:            "",
+			SkipTags:       nil,
+			CustomTagging:  nil,
+			SkipDirs:       nil,
+			Output:         "cli",
+			OutputJSONFile: "",
+			TagGroups:      []string{"git", "code2cloud"},
+		}
+		assert.NotPanics(t, options.Validate)
+	})
+
+	t.Run("Test tag argument parsing - invalid tag groups", func(t *testing.T) {
+		options := TagOptions{
+			Directory:      "some/dir",
+			Tag:            "",
+			SkipTags:       nil,
+			CustomTagging:  nil,
+			SkipDirs:       nil,
+			Output:         "junitxml",
+			OutputJSONFile: "",
+			TagGroups:      []string{"git", "custom"},
 		}
 		assert.Panics(t, options.Validate)
 	})

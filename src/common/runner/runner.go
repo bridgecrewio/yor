@@ -35,7 +35,16 @@ func (r *Runner) Init(commands *common.TagOptions) error {
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 	}
-	r.tagGroups = append(r.tagGroups, &gittag.TagGroup{}, &simple.TagGroup{}, &code2cloud.TagGroup{})
+	for _, group := range commands.TagGroups {
+		switch common.TagGroupName(group) {
+		case common.Code2Cloud:
+			r.tagGroups = append(r.tagGroups, &code2cloud.TagGroup{})
+		case common.SimpleTagGroupName:
+			r.tagGroups = append(r.tagGroups, &simple.TagGroup{})
+		case common.GitTagGroupName:
+			r.tagGroups = append(r.tagGroups, &gittag.TagGroup{})
+		}
+	}
 	r.tagGroups = append(r.tagGroups, extraTagGroups...)
 	for _, tagGroup := range r.tagGroups {
 		tagGroup.InitTagGroup(dir, commands.SkipTags)

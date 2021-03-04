@@ -28,6 +28,7 @@ type TagOptions struct {
 	SkipDirs       []string
 	Output         string `validate:"output"`
 	OutputJSONFile string
+	TagGroups      []string `validate:"tagGroupNames"`
 }
 
 type ListTagsOptions struct {
@@ -36,6 +37,7 @@ type ListTagsOptions struct {
 
 func (o *TagOptions) Validate() {
 	_ = validator.SetValidationFunc("output", validateOutput)
+	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
