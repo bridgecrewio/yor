@@ -133,6 +133,7 @@ func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
 		options := common.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
+			TagGroups: getTagGroupNames(),
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
