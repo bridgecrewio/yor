@@ -8,13 +8,14 @@ import (
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
 	"fmt"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/stretchr/testify/assert"
 )
 
 func failIfErr(t *testing.T, err error) {

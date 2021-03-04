@@ -8,9 +8,10 @@ import (
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing"
 	"io/ioutil"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/pmezard/go-difflib/difflib"

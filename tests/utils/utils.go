@@ -2,12 +2,13 @@ package utils
 
 import (
 	"bytes"
-	"github.com/go-git/go-git/v5"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/go-git/go-git/v5"
 )
 
 const TerragoatURL = "https://github.com/bridgecrewio/terragoat.git"
