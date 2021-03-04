@@ -12,7 +12,6 @@ import (
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,7 +29,7 @@ type Runner struct {
 	skippedTags       []string
 }
 
-func (r *Runner) Init(commands *common.Options) error {
+func (r *Runner) Init(commands *common.TagOptions) error {
 	dir := commands.Directory
 	extraTags, extraTagGroups, err := loadExternalResources(commands.CustomTagging)
 	if err != nil {
@@ -41,7 +40,6 @@ func (r *Runner) Init(commands *common.Options) error {
 	for _, tagGroup := range r.tagGroups {
 		tagGroup.InitTagGroup(dir, commands.SkipTags)
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
-			extraTags = append(extraTags, createCmdTags(commands.ExtraTags)...)
 			simpleTagGroup.SetTags(extraTags)
 		}
 	}
@@ -113,22 +111,6 @@ func (r *Runner) TagFile(file string) {
 		}
 	}
 
-}
-
-func createCmdTags(extraTagsStr string) []tags.ITag {
-	var extraTagsFromArgs map[string]string
-	if err := json.Unmarshal([]byte(extraTagsStr), &extraTagsFromArgs); err != nil {
-		logger.Error(fmt.Sprintf("failed to parse extra tags: %s", err))
-	}
-	extraTags := make([]tags.ITag, len(extraTagsFromArgs))
-	index := 0
-	for key := range extraTagsFromArgs {
-		newTag := tags.Init(key, extraTagsFromArgs[key])
-		extraTags[index] = newTag
-		index++
-	}
-
-	return extraTags
 }
 
 func loadExternalResources(externalPaths []string) ([]tags.ITag, []tagging.ITagGroup, error) {

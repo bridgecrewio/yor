@@ -7,22 +7,8 @@ import (
 )
 
 func TestCliArgParsing(t *testing.T) {
-	t.Run("Test CLI argument parsing", func(t *testing.T) {
-		options := Options{
-			Directory:      "",
-			Tag:            "",
-			SkipTags:       nil,
-			CustomTagging:  nil,
-			SkipDirs:       nil,
-			Output:         "",
-			OutputJSONFile: "",
-			ExtraTags:      "",
-		}
-		assert.Panics(t, options.Validate)
-	})
-
 	t.Run("Test CLI argument parsing - valid output", func(t *testing.T) {
-		options := Options{
+		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            "",
 			SkipTags:       nil,
@@ -30,13 +16,12 @@ func TestCliArgParsing(t *testing.T) {
 			SkipDirs:       nil,
 			Output:         "cli",
 			OutputJSONFile: "",
-			ExtraTags:      "{}",
 		}
 		assert.NotPanics(t, options.Validate)
 	})
 
 	t.Run("Test CLI argument parsing - invalid output", func(t *testing.T) {
-		options := Options{
+		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            "",
 			SkipTags:       nil,
@@ -44,8 +29,21 @@ func TestCliArgParsing(t *testing.T) {
 			SkipDirs:       nil,
 			Output:         "junitxml",
 			OutputJSONFile: "",
-			ExtraTags:      "{}",
 		}
 		assert.Panics(t, options.Validate)
+	})
+
+	t.Run("Test CLI argument parsing - list-tags - invalid output", func(t *testing.T) {
+		options := ListTagsOptions{
+			TagGroups: []string{"custom"},
+		}
+		assert.Panics(t, options.Validate)
+	})
+
+	t.Run("Test CLI argument parsing - list-tags - valid output", func(t *testing.T) {
+		options := ListTagsOptions{
+			TagGroups: []string{"simple", "git"},
+		}
+		assert.NotPanics(t, options.Validate)
 	})
 }

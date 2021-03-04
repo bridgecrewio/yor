@@ -131,9 +131,8 @@ func Test_E2E(t *testing.T) {
 
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
-		options := common.Options{
+		options := common.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
-			ExtraTags: "{}",
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
@@ -183,10 +182,9 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
-		_ = runner.Init(&common.Options{
+		_ = runner.Init(&common.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
-			ExtraTags: "{}",
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
@@ -218,14 +216,13 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		output := utils.CaptureOutput(func() {
-			_ = runner.Init(&common.Options{
+			_ = runner.Init(&common.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{
 					"../../../tests/terraform/mixed",
 					"../../../tests/terraform/resources/tagged/",
 					"../../../tests/terraform",
 				},
-				ExtraTags: "{}",
 			})
 		})
 		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")
