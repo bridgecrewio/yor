@@ -1,4 +1,4 @@
-package main
+package code2cloud
 
 import (
 	"bridgecrewio/yor/src/common/logger"
@@ -8,20 +8,20 @@ import (
 	"fmt"
 )
 
-type OrgTagger struct {
-	tagging.Tagger
+type TagGroup struct {
+	tagging.TagGroup
+	traceTag YorTraceTag
 }
 
-func (d *OrgTagger) InitTagger(_ string, skippedTags []string) {
-	// If skipped tags isn't passed in, the skip mechanism will not work
-	d.SkippedTags = skippedTags
-	d.SetTags([]tags.ITag{&DirTag{}})
+func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
+	t.SkippedTags = skippedTags
+	t.SetTags([]tags.ITag{&YorTraceTag{}})
 }
 
-func (d *OrgTagger) CreateTagsForBlock(block structure.IBlock) {
+func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	var newTags []tags.ITag
-	for _, tag := range d.GetTags() {
-		tagVal, err := tag.CalculateValue(block)
+	for _, tag := range t.GetTags() {
+		tagVal, err := tag.CalculateValue(struct{}{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("Failed to create %v tag for block %v", tag.GetKey(), block.GetResourceID()))
 		}

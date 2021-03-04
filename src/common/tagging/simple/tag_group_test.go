@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSimpleTagger(t *testing.T) {
-	t.Run("test tagger CreateTagsForBlock", func(t *testing.T) {
+func TestSimpleTagGroup(t *testing.T) {
+	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
-		tagger := Tagger{}
-		tagger.InitTagger("", nil)
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil)
 
 		extraTags := []tags.ITag{
 			&tags.Tag{
@@ -25,7 +25,7 @@ func TestSimpleTagger(t *testing.T) {
 				Value: "custom",
 			},
 		}
-		tagger.SetTags(extraTags)
+		tagGroup.SetTags(extraTags)
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
@@ -33,7 +33,7 @@ func TestSimpleTagger(t *testing.T) {
 			},
 		}
 
-		tagger.CreateTagsForBlock(block)
+		tagGroup.CreateTagsForBlock(block)
 		assert.Equal(t, len(block.NewTags), len(extraTags))
 	})
 }

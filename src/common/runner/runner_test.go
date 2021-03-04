@@ -59,21 +59,21 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 	})
 
-	t.Run("load taggers plugins", func(t *testing.T) {
-		pluginDir := "../../../tests/yor_plugins/tagger_example"
+	t.Run("load tagGroups plugins", func(t *testing.T) {
+		pluginDir := "../../../tests/yor_plugins/tag_group_example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
-		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_taggers.so %s/*.go\n", pluginDir, pluginDir)
-		_, gotTaggers, err := loadExternalResources([]string{pluginDir})
+		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tag_groups.so %s/*.go\n", pluginDir, pluginDir)
+		_, gotTagGroups, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return
 		}
-		assert.Equal(t, 1, len(gotTaggers))
-		tagger := gotTaggers[0]
-		tagger.InitTagger("src", nil)
-		taggerTags := gotTaggers[0].GetTags()
-		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
-		tag := taggerTags[0]
+		assert.Equal(t, 1, len(gotTagGroups))
+		group := gotTagGroups[0]
+		group.InitTagGroup("src", nil)
+		groupTags := gotTagGroups[0].GetTags()
+		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
+		tag := groupTags[0]
 		assert.Equal(t, "custom_owner", tag.GetKey())
 		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "src/auth/index.js"}})
 		assert.Equal(t, "custom_owner", tagVal.GetKey())
@@ -102,7 +102,7 @@ func Test_E2E(t *testing.T) {
 			t.Errorf(fmt.Sprintf("Failed to read file %s because %s", filePath, err))
 		}
 		rootDir := "../../../tests/terraform/resources/taggedkms/modified"
-		gitTagger := initMockGitTagger(rootDir, map[string]string{filePath: "../../../tests/terraform/resources/taggedkms/origin_kms.tf"})
+		gitTagGroup := initMockGitTagGroup(rootDir, map[string]string{filePath: "../../../tests/terraform/resources/taggedkms/origin_kms.tf"})
 		terraformParser := terraformStructure.TerrraformParser{}
 		terraformParser.Init(rootDir, nil)
 
@@ -112,7 +112,7 @@ func Test_E2E(t *testing.T) {
 		}
 		for _, block := range blocks {
 			if block.IsBlockTaggable() {
-				gitTagger.CreateTagsForBlock(block)
+				gitTagGroup.CreateTagsForBlock(block)
 			}
 		}
 
@@ -147,13 +147,13 @@ func Test_TagCFNDir(t *testing.T) {
 			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
 		}()
 
-		mockGitTagger := initMockGitTagger(options.Directory, map[string]string{filePath: filePath})
+		mockGitTagGroup := initMockGitTagGroup(options.Directory, map[string]string{filePath: filePath})
 		runner := Runner{}
 		err = runner.Init(&options)
 		if err != nil {
 			t.Error(err)
 		}
-		runner.taggers[0] = mockGitTagger
+		runner.tagGroups[0] = mockGitTagGroup
 		_, err = runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -166,7 +166,7 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
 
-		expectedAddedLines := len(mockGitTagger.GetTags())*2 + 2
+		expectedAddedLines := len(mockGitTagGroup.GetTags())*2 + 2
 		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
@@ -232,7 +232,7 @@ func TestRunnerInternals(t *testing.T) {
 	})
 }
 
-func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.Tagger {
+func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
 	gitService, _ := gitservice.NewGitService(rootDir)
 
 	for filePath := range filesToBlames {
@@ -241,9 +241,9 @@ func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.
 		gitService.BlameByFile[filePath] = &blame
 	}
 
-	gitTagger := gittag.Tagger{}
+	gitTagGroup := gittag.TagGroup{}
 	wd, _ := os.Getwd()
-	gitTagger.InitTagger(wd, nil)
-	gitTagger.GitService = gitService
-	return &gitTagger
+	gitTagGroup.InitTagGroup(wd, nil)
+	gitTagGroup.GitService = gitService
+	return &gitTagGroup
 }

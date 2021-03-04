@@ -9,24 +9,24 @@ import (
 	"strings"
 )
 
-type Tagger struct {
+type TagGroup struct {
 	tags        []tags.ITag
 	SkippedTags []string
 }
 
 var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
-type ITagger interface {
-	InitTagger(path string, skippedTags []string)
+type ITagGroup interface {
+	InitTagGroup(path string, skippedTags []string)
 	CreateTagsForBlock(block structure.IBlock)
 	GetTags() []tags.ITag
 }
 
-func (t *Tagger) GetSkippedDirs() []string {
+func (t *TagGroup) GetSkippedDirs() []string {
 	return IgnoredDirs
 }
 
-func (t *Tagger) SetTags(tags []tags.ITag) {
+func (t *TagGroup) SetTags(tags []tags.ITag) {
 	for _, tag := range tags {
 		tag.Init()
 		if !t.IsTagSkipped(tag) {
@@ -35,11 +35,11 @@ func (t *Tagger) SetTags(tags []tags.ITag) {
 	}
 }
 
-func (t *Tagger) GetTags() []tags.ITag {
+func (t *TagGroup) GetTags() []tags.ITag {
 	return t.tags
 }
 
-func (t *Tagger) IsTagSkipped(tag tags.ITag) bool {
+func (t *TagGroup) IsTagSkipped(tag tags.ITag) bool {
 	for _, st := range t.SkippedTags {
 		stRegex := strings.ReplaceAll(st, "*", ".*")
 		if match, err := regexp.Match(stRegex, []byte(tag.GetKey())); match || err != nil {
