@@ -30,7 +30,7 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 }
 
 func TestMultipleCommits(t *testing.T) {
-	t.Run("Test terragoat tagging", func(t *testing.T) {
+	t.Run("Test tagging over multiple commits", func(t *testing.T) {
 		// read two resource files to be added to a new file we create
 		part1Text, err := ioutil.ReadFile("./resources/commits_file_1.tf")
 		panicIfErr(err)
@@ -58,7 +58,7 @@ func TestMultipleCommits(t *testing.T) {
 				When:  time.Now().AddDate(0, 0, -2),
 			},
 		})
-
+		time.Sleep(time.Second)
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
 		err = yorRunner.Init(&common.Options{
@@ -82,6 +82,7 @@ func TestMultipleCommits(t *testing.T) {
 		}
 
 		// commit the added tags
+		time.Sleep(time.Second)
 		commit2 := commitFile(worktree, tfFileName, &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  "Bana2",
@@ -99,6 +100,7 @@ func TestMultipleCommits(t *testing.T) {
 		}
 
 		// commit the second resource
+		time.Sleep(time.Second)
 		commit3 := commitFile(worktree, tfFileName, &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  "Bana3",
