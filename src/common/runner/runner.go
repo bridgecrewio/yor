@@ -36,7 +36,7 @@ func (r *Runner) Init(commands *common.Options) error {
 	for _, tagger := range r.taggers {
 		tagger.InitTagger(dir, commands.SkipTags)
 		if simpleTagger, ok := tagger.(*simple.Tagger); ok {
-			extraTags, err := loadExternalTags(commands.CustomTaggers)
+			extraTags, err := loadExternalResources(commands.CustomTagging)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 			} else {
@@ -131,14 +131,14 @@ func createCmdTags(extraTagsStr string) []tags.ITag {
 	return extraTags
 }
 
-func loadExternalTags(customTags []string) ([]tags.ITag, error) {
+func loadExternalResources(externalPaths []string) ([]tags.ITag, error) {
 	var extraTags []tags.ITag
+	var extraTaggers []tagging.ITagger
 	var plugins []string
 
-	for _, customTagsPath := range customTags {
-
-		// find all .so files under the given customTags
-		err := filepath.Walk(customTagsPath, func(path string, info os.FileInfo, err error) error {
+	for _, path := range externalPaths {
+		// find all .so files under the given externalPaths
+		err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
@@ -157,32 +157,45 @@ func loadExternalTags(customTags []string) ([]tags.ITag, error) {
 				return nil, err
 			}
 
-			// extract the symbol "ExtraTags" from the plugin file
-			symExtraTags, err := plug.Lookup("ExtraTags")
+			iPtrs, err := extractExternalResources(plug, "ExtraTags")
 			if err != nil {
-				logger.Warning(err.Error())
-				continue
+				return nil, err
 			}
-
-			// convert ExtraTags to its actual type, *[]interface{}
-			var iTagsPtr *[]interface{}
-			iTagsPtr, ok := symExtraTags.(*[]interface{})
-			if !ok {
-				return nil, fmt.Errorf("unexpected type from module symbol")
-			}
-
-			iTags := *iTagsPtr
-			for _, iTag := range iTags {
+			for _, iTag := range iPtrs {
 				tag, ok := iTag.(tags.ITag)
 				if !ok {
 					return nil, fmt.Errorf("unexpected type from module symbol")
 				}
 				extraTags = append(extraTags, tag)
 			}
+			iPtrs, err = extractExternalResources(plug, "ExtraTaggers")
+			for _, iTagger := range iPtrs {
+				if tagger, ok := iTagger.(tagging.ITagger); ok {
+					extraTaggers = append(extraTaggers, tagger)
+				} else {
+					return nil, fmt.Errorf("unexpected type from module symbol ExtraTaggers")
+				}
+			}
 		}
 	}
 
 	return extraTags, nil
+}
+
+func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}, error) {
+	symExtraTags, err := plug.Lookup(symbol)
+	if err != nil {
+		return nil, nil
+	}
+	logger.Info("Found values for the symbol:", symbol)
+	// convert to its actual type, *[]interface{}
+	var iArrPtr *[]interface{}
+	iArrPtr, ok := symExtraTags.(*[]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected type from module symbol")
+	}
+
+	return *iArrPtr, nil
 }
 
 func (r *Runner) isFileSkipped(p structure.IParser, file string) bool {

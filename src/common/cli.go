@@ -15,7 +15,7 @@ type Options struct {
 	Directory      string
 	Tag            string
 	SkipTags       []string
-	CustomTaggers  []string
+	CustomTagging  []string
 	SkipDirs       []string
 	Output         string `validate:"output"`
 	OutputJSONFile string
