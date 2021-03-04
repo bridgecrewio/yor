@@ -19,6 +19,7 @@ var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 type ITagger interface {
 	InitTagger(path string, skippedTags []string)
 	CreateTagsForBlock(block structure.IBlock)
+	GetTags() []tags.ITag
 }
 
 func (t *Tagger) GetSkippedDirs() []string {
