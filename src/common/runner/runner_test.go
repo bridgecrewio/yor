@@ -3,7 +3,6 @@ package runner
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
@@ -62,20 +61,15 @@ func Test_loadExternalTags(t *testing.T) {
 		pluginDir := "../../../tests/yor_plugins/tagger_example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
 		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tags.so %s/*.go\n", pluginDir, pluginDir)
-		gotTags, _, err := loadExternalResources([]string{pluginDir})
+		_, gotTaggers, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return
 		}
-		expectedTags := map[string]string{"bc_dir": "tests/yor_plugins/tagger_example"}
-		assert.Equal(t, len(expectedTags), len(gotTags))
-		for _, tag := range gotTags {
-			tag.Init()
-			tagVal, _ := tag.CalculateValue(&structure.Block{FilePath: "some/path/to/file.tf"})
-			key := tagVal.GetKey()
-			value := tagVal.GetValue()
-			assert.Equal(t, expectedTags[key], value)
-		}
+		assert.Equal(t, 1, len(gotTaggers))
+		taggerTags := gotTaggers[0].GetTags()
+		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
+		assert.Equal(t, "bc_dir", taggerTags[0].GetKey())
 	})
 }
 
