@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"strings"
 )
 
 type DirTag struct {
@@ -13,7 +14,7 @@ type DirTag struct {
 }
 
 func (d *DirTag) Init() {
-	d.Key = "bc_dir"
+	d.Key = "custom_owner"
 }
 
 func (d *DirTag) CalculateValue(block interface{}) (tags.ITag, error) {
@@ -23,6 +24,17 @@ func (d *DirTag) CalculateValue(block interface{}) (tags.ITag, error) {
 	}
 
 	dir := filepath.Dir(blockVal.GetFilePath())
+	var owner string
+	switch {
+	case strings.HasPrefix(dir, "src/auth"):
+		owner = "team-infra@company.com"
+	case strings.HasPrefix(dir, "data/"):
+		owner = "team-data@company.com"
+	case strings.HasPrefix(dir, "jenkins"):
+		owner = "team-ops@company.com"
+	default:
+		owner = "team-it@company.com"
+	}
 
-	return &tags.Tag{Key: d.Key, Value: dir}, nil
+	return &tags.Tag{Key: d.Key, Value: owner}, nil
 }

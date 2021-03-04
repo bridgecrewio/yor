@@ -70,18 +70,18 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(gotTaggers))
 		tagger := gotTaggers[0]
-		tagger.InitTagger("some-path", nil)
+		tagger.InitTagger("src", nil)
 		taggerTags := gotTaggers[0].GetTags()
 		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
 		tag := taggerTags[0]
-		assert.Equal(t, "bc_dir", tag.GetKey())
-		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "some/path/to/tf.tf"}})
-		assert.Equal(t, "bc_dir", tagVal.GetKey())
-		assert.Equal(t, "some/path/to", tagVal.GetValue())
+		assert.Equal(t, "custom_owner", tag.GetKey())
+		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "src/auth/index.js"}})
+		assert.Equal(t, "custom_owner", tagVal.GetKey())
+		assert.Equal(t, "team-infra@company.com", tagVal.GetValue())
 
-		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: structure.Block{FilePath: "some/cf/path/to/tf.tf"}})
-		assert.Equal(t, "bc_dir", tagVal.GetKey())
-		assert.Equal(t, "some/cf/path/to", tagVal.GetValue())
+		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: structure.Block{FilePath: "src/some/path"}})
+		assert.Equal(t, "custom_owner", tagVal.GetKey())
+		assert.Equal(t, "team-it@company.com", tagVal.GetValue())
 	})
 }
 

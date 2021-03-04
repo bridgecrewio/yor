@@ -1,3 +1,3 @@
 package main
 
-var ExtraTaggers = []interface{}{&DirTagger{}}
+var ExtraTaggers = []interface{}{&OrgTagger{}}

@@ -8,17 +8,17 @@ import (
 	"fmt"
 )
 
-type DirTagger struct {
+type OrgTagger struct {
 	tagging.Tagger
 }
 
-func (d *DirTagger) InitTagger(_ string, skippedTags []string) {
+func (d *OrgTagger) InitTagger(_ string, skippedTags []string) {
 	// If skipped tags isn't passed in, the skip mechanism will not work
 	d.SkippedTags = skippedTags
 	d.SetTags([]tags.ITag{&DirTag{}})
 }
 
-func (d *DirTagger) CreateTagsForBlock(block structure.IBlock) {
+func (d *OrgTagger) CreateTagsForBlock(block structure.IBlock) {
 	var newTags []tags.ITag
 	for _, tag := range d.GetTags() {
 		tagVal, err := tag.CalculateValue(block)
