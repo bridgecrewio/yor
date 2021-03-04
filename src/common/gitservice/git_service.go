@@ -4,6 +4,7 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -13,12 +14,13 @@ import (
 )
 
 type GitService struct {
-	rootDir      string
-	repository   *git.Repository
-	remoteURL    string
-	organization string
-	repoName     string
-	BlameByFile  map[string]*git.BlameResult
+	rootDir          string
+	repository       *git.Repository
+	remoteURL        string
+	organization     string
+	repoName         string
+	BlameByFile      map[string]*git.BlameResult
+	currentUserEmail string
 }
 
 func NewGitService(rootDir string) (*GitService, error) {
@@ -47,6 +49,7 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	err = gitService.setOrgAndName()
+	gitService.currentUserEmail = GetGitUserEmail()
 
 	return &gitService, err
 }
@@ -88,7 +91,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines common.Lines) (
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	blame, ok := g.BlameByFile[filePath]
 	if ok {
-		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
+		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
 	}
 
 	var err error
@@ -99,7 +102,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines common.Lines) (
 
 	g.BlameByFile[filePath] = blame
 
-	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName), nil
+	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
 }
 
 func (g *GitService) GetOrganization() string {
@@ -135,4 +138,12 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	g.BlameByFile[filePath] = blame
 
 	return blame, nil
+}
+
+func GetGitUserEmail() string {
+	email, err := exec.Command("git", "config", "user.email").Output()
+	if err != nil {
+		logger.Warning(fmt.Sprintf("unable to get current git user email: %s", err))
+	}
+	return strings.Replace(string(email), "\n", "", -1)
 }

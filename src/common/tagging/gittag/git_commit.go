@@ -7,6 +7,8 @@ import (
 	"reflect"
 )
 
+const CommitUnavailable = "N/A"
+
 type GitCommitTag struct {
 	tags.Tag
 }
@@ -22,8 +24,8 @@ func (t *GitCommitTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 
 	latestCommit := gitBlame.GetLatestCommit()
-	if latestCommit == nil {
-		return nil, fmt.Errorf("latest commit is unavailable")
+	if latestCommit == nil || latestCommit.Hash.IsZero() {
+		return &tags.Tag{Key: t.Key, Value: CommitUnavailable}, nil
 	}
 	return &tags.Tag{Key: t.Key, Value: latestCommit.Hash.String()}, nil
 }

@@ -2,11 +2,15 @@ package utils
 
 import (
 	"bytes"
+	"github.com/go-git/go-git/v5"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
 )
+
+const TerragoatURL = "https://github.com/bridgecrewio/terragoat.git"
 
 func CaptureOutput(f func()) string {
 	reader, writer, err := os.Pipe()
@@ -36,4 +40,22 @@ func CaptureOutput(f func()) string {
 	f()
 	writer.Close()
 	return <-out
+}
+
+func CloneRepo(repoPath string) string {
+	dir, err := ioutil.TempDir("", "temp-repo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Clones the repository into the given dir, just as a normal git clone does
+	_, err = git.PlainClone(dir, false, &git.CloneOptions{
+		URL: repoPath,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir
 }
