@@ -86,7 +86,7 @@ func TestMultipleCommits(t *testing.T) {
 			Author: &object.Signature{
 				Name:  "Bana2",
 				Email: "Bana2@gmail.com",
-				When:  time.Now().AddDate(0, 0, -2),
+				When:  time.Now().AddDate(0, 0, -1),
 			},
 		})
 		time.Sleep(2 * time.Second)
@@ -104,7 +104,7 @@ func TestMultipleCommits(t *testing.T) {
 			Author: &object.Signature{
 				Name:  "Bana3",
 				Email: "Bana3@gmail.com",
-				When:  time.Now().AddDate(0, 0, -2),
+				When:  time.Now(),
 			},
 		})
 
