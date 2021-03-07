@@ -9,6 +9,9 @@ import (
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
+	"time"
+
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/pmezard/go-difflib/difflib"
@@ -72,10 +75,7 @@ func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 		logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", block.GetFilePath()))
 		return
 	}
-	shouldTag := t.updateBlameForOriginLines(block, blame)
-	if !shouldTag {
-		return
-	}
+	t.updateBlameForOriginLines(block, blame)
 
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
@@ -163,23 +163,23 @@ func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult)
 	t.fileLinesMapper[path] = mapper
 }
 
-func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) bool {
+func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) {
 	gitBlameLines := blame.BlamesByLine
 	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
 	fileMapping := t.fileLinesMapper[block.GetFilePath()].originToGit
 
-	shouldTag := true
 	for blockLine := blockLines.Start; blockLine <= blockLines.End; blockLine++ {
 		if fileMapping[blockLine] == -1 {
-			logger.Warning(fmt.Sprintf("unable to tag block in file %s (lines %d-%d) because it contains uncomitted changes", blame.FilePath, blockLines.Start, blockLines.End))
-			shouldTag = false
-			break
+			newBlameByLines[blockLine] = &git.Line{
+				Author: blame.GitUserEmail,
+				Date:   time.Now().UTC(),
+				Hash:   plumbing.ZeroHash,
+			}
 		} else {
 			newBlameByLines[blockLine] = gitBlameLines[fileMapping[blockLine]]
 		}
 	}
 
 	blame.BlamesByLine = newBlameByLines
-	return shouldTag
 }

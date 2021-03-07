@@ -10,7 +10,6 @@ import (
 
 type Tagger struct {
 	tagging.Tagger
-	traceTag YorTraceTag
 }
 
 func (t *Tagger) InitTagger(_ string, skippedTags []string) {
