@@ -37,11 +37,11 @@ func IsValidUUID(uuid string) bool {
 	return r.MatchString(uuid)
 }
 
-func TestCode2CloudTagger(t *testing.T) {
-	t.Run("test tagger CreateTagsForBlock", func(t *testing.T) {
+func TestCode2CloudTagGroup(t *testing.T) {
+	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
-		tagger := Tagger{}
-		tagger.InitTagger("", nil)
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil)
 
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
@@ -50,7 +50,7 @@ func TestCode2CloudTagger(t *testing.T) {
 			},
 		}
 
-		tagger.CreateTagsForBlock(block)
+		tagGroup.CreateTagsForBlock(block)
 		assert.Equal(t, 1, len(block.NewTags))
 	})
 }

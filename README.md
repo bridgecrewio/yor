@@ -63,12 +63,31 @@ brew install yor
 
 ### Usage
 
-* Tag an entire directory
-
-```sh
-./yor tag --directory terraform/
-```
-
+Yor supports the following commands:
+1. `list-tag-groups` - list the groups of tags that are built into yor
+   ```sh
+   ./yor list-tag-groups
+   ```
+2. `list-tags` - list all the tags yor has built in. This will print each tag key
+and the relevant group the tag belongs to.
+   ```sh
+    ./yor list-tags
+    # List all the tags built into yor
+   ./yor list-tags --tag-groups git
+    # List all the tags built into yor under the tag group git
+    ```
+3. `tag` - apply the built in tags and any [custom](CUSTOMIZE.md) tags on a directory
+   ```sh
+    ./yor tag --directory terraform/
+    # Apply all the tags in yor on the directory tree terraform/
+   
+    ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
+    # Apply all the tags in yor except the tags git_last_modified_by and yor_trace
+   
+    ./yor tag --tag-group git --directory terraform/
+    # Apply only the tags under the git tag group
+    ```
+   
 Using docker:
 ```sh
 docker pull bridgecrew/yor

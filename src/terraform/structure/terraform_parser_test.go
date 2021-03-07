@@ -154,10 +154,10 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 				Lines: blameLines,
 			}},
 		}
-		gitTagger := &gittag.Tagger{GitService: gitService}
-		c2cTagger := &code2cloud.Tagger{}
-		gitTagger.InitTagger(rootDir, nil)
-		c2cTagger.InitTagger("", nil)
+		tagGroup := &gittag.TagGroup{GitService: gitService}
+		c2cTagGroup := &code2cloud.TagGroup{}
+		tagGroup.InitTagGroup(rootDir, nil)
+		c2cTagGroup.InitTagGroup("", nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
@@ -171,8 +171,8 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 
 		for _, block := range parsedBlocks {
 			if block.IsBlockTaggable() {
-				gitTagger.CreateTagsForBlock(block)
-				c2cTagger.CreateTagsForBlock(block)
+				tagGroup.CreateTagsForBlock(block)
+				c2cTagGroup.CreateTagsForBlock(block)
 			}
 		}
 

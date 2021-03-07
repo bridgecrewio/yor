@@ -59,21 +59,21 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 	})
 
-	t.Run("load taggers plugins", func(t *testing.T) {
-		pluginDir := "../../../tests/yor_plugins/tagger_example"
+	t.Run("load tagGroups plugins", func(t *testing.T) {
+		pluginDir := "../../../tests/yor_plugins/tag_group_example"
 		fmt.Printf("please make sure you have .so file in %s. if not, run the following command: \n", pluginDir)
-		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_taggers.so %s/*.go\n", pluginDir, pluginDir)
-		_, gotTaggers, err := loadExternalResources([]string{pluginDir})
+		fmt.Printf("go build -gcflags=\"all=-N -l\" -buildmode=plugin -o %s/extra_tag_groups.so %s/*.go\n", pluginDir, pluginDir)
+		_, gotTagGroups, err := loadExternalResources([]string{pluginDir})
 		if err != nil {
 			t.Errorf("loadExternalResources() error = %v", err)
 			return
 		}
-		assert.Equal(t, 1, len(gotTaggers))
-		tagger := gotTaggers[0]
-		tagger.InitTagger("src", nil)
-		taggerTags := gotTaggers[0].GetTags()
-		assert.Equal(t, 1, len(gotTaggers[0].GetTags()))
-		tag := taggerTags[0]
+		assert.Equal(t, 1, len(gotTagGroups))
+		group := gotTagGroups[0]
+		group.InitTagGroup("src", nil)
+		groupTags := gotTagGroups[0].GetTags()
+		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
+		tag := groupTags[0]
 		assert.Equal(t, "custom_owner", tag.GetKey())
 		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "src/auth/index.js"}})
 		assert.Equal(t, "custom_owner", tagVal.GetKey())
@@ -87,9 +87,9 @@ func Test_loadExternalTags(t *testing.T) {
 
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
-		options := common.Options{
+		options := common.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
-			ExtraTags: "{}",
+			TagGroups: getTagGroupNames(),
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
@@ -103,13 +103,13 @@ func Test_TagCFNDir(t *testing.T) {
 			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
 		}()
 
-		mockGitTagger := initMockGitTagger(options.Directory, map[string]string{filePath: filePath})
+		mockGitTagGroup := initMockGitTagGroup(options.Directory, map[string]string{filePath: filePath})
 		runner := Runner{}
 		err = runner.Init(&options)
 		if err != nil {
 			t.Error(err)
 		}
-		runner.taggers[0] = mockGitTagger
+		runner.tagGroups[0] = mockGitTagGroup
 		_, err = runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -122,7 +122,7 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
 
-		expectedAddedLines := len(mockGitTagger.GetTags())*2 + 2
+		expectedAddedLines := len(mockGitTagGroup.GetTags())*2 + 2
 		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
@@ -132,6 +132,26 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
+
+	t.Run("Filter tag groups", func(t *testing.T) {
+		runner := Runner{}
+		allTagGroups := getTagGroupNames()
+		_ = runner.Init(&common.TagOptions{
+			Directory: "../../../tests/cloudformation/resources/ebs",
+			TagGroups: allTagGroups[:len(allTagGroups)-1],
+		})
+
+		tg := runner.tagGroups
+		assert.Equal(t, len(allTagGroups)-1, len(tg))
+	})
+}
+
+func getTagGroupNames() []string {
+	var groupNames []string
+	for _, val := range common.TagGroupNames {
+		groupNames = append(groupNames, string(val))
+	}
+	return groupNames
 }
 
 func TestRunnerInternals(t *testing.T) {
@@ -139,10 +159,10 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
-		_ = runner.Init(&common.Options{
+		_ = runner.Init(&common.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
-			ExtraTags: "{}",
+			TagGroups: getTagGroupNames(),
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
@@ -174,21 +194,21 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		output := utils.CaptureOutput(func() {
-			_ = runner.Init(&common.Options{
+			_ = runner.Init(&common.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{
 					"../../../tests/terraform/mixed",
 					"../../../tests/terraform/resources/tagged/",
 					"../../../tests/terraform",
 				},
-				ExtraTags: "{}",
+				TagGroups: getTagGroupNames(),
 			})
 		})
 		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")
 	})
 }
 
-func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.Tagger {
+func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
 	gitService, _ := gitservice.NewGitService(rootDir)
 
 	for filePath := range filesToBlames {
@@ -197,9 +217,9 @@ func initMockGitTagger(rootDir string, filesToBlames map[string]string) *gittag.
 		gitService.BlameByFile[filePath] = &blame
 	}
 
-	gitTagger := gittag.Tagger{}
+	gitTagGroup := gittag.TagGroup{}
 	wd, _ := os.Getwd()
-	gitTagger.InitTagger(wd, nil)
-	gitTagger.GitService = gitService
-	return &gitTagger
+	gitTagGroup.InitTagGroup(wd, nil)
+	gitTagGroup.GitService = gitService
+	return &gitTagGroup
 }
