@@ -63,7 +63,7 @@ brew install yor
 
 ### Usage
 
-Yor supports 3 commands:
+Yor supports the following commands:
 1. `list-tag-groups` - list the groups of tags that are built into yor
    ```sh
    ./yor list-tag-groups
