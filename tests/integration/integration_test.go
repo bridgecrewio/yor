@@ -60,6 +60,7 @@ func TestMultipleCommits(t *testing.T) {
 		yorRunner := runner.Runner{}
 		err = yorRunner.Init(&common.TagOptions{
 			Directory: dir,
+			TagGroups: getTagGroups(),
 		})
 		failIfErr(t, err)
 		reportService, err := yorRunner.TagDirectory()
@@ -110,6 +111,7 @@ func TestMultipleCommits(t *testing.T) {
 		yorRunner2 := runner.Runner{}
 		err = yorRunner2.Init(&common.TagOptions{
 			Directory: dir,
+			TagGroups: getTagGroups(),
 		})
 		failIfErr(t, err)
 		time.Sleep(2 * time.Second)
@@ -249,6 +251,7 @@ func tagDirectory(t *testing.T, path string) {
 	yorRunner := runner.Runner{}
 	err := yorRunner.Init(&common.TagOptions{
 		Directory: path,
+		TagGroups: getTagGroups(),
 	})
 	failIfErr(t, err)
 	_, err = yorRunner.TagDirectory()
@@ -265,4 +268,11 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 		panic(err)
 	}
 	return commit
+}
+
+func getTagGroups() (res []string) {
+	for _, tgn := range common.TagGroupNames {
+		res = append(res, string(tgn))
+	}
+	return
 }
