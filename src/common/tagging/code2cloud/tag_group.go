@@ -10,7 +10,6 @@ import (
 
 type TagGroup struct {
 	tagging.TagGroup
-	traceTag YorTraceTag
 }
 
 func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
