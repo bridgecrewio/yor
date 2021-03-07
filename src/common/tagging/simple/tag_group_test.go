@@ -5,6 +5,7 @@ import (
 	commonStructure "bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,6 +46,9 @@ func TestSimpleTagGroup(t *testing.T) {
 		getTags := tagGroup.GetTags()
 
 		expected := []tags.Tag{{Key: "foo", Value: "bar"}, {Key: "foo2", Value: "bar2"}}
+		sort.Slice(getTags, func(i, j int) bool {
+			return getTags[i].GetKey() < getTags[j].GetKey()
+		})
 
 		assert.Equal(t, 2, len(getTags))
 		for i, expectedTag := range expected {
