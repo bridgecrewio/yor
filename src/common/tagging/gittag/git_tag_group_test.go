@@ -13,19 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGitTagger(t *testing.T) {
+func TestGitTagGroup(t *testing.T) {
 	path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
 	blame := blameutils.SetupBlameResults(t, path, 3)
 
-	t.Run("test git tagger CreateTagsForBlock", func(t *testing.T) {
+	t.Run("test git tagGroup CreateTagsForBlock", func(t *testing.T) {
 		gitService := &gitservice.GitService{
 			BlameByFile: map[string]*git.BlameResult{path: blame},
 		}
-		tagger := Tagger{}
+		tagGroup := TagGroup{}
 
 		wd, _ := os.Getwd()
-		tagger.InitTagger(wd, nil)
-		tagger.GitService = gitService
+		tagGroup.InitTagGroup(wd, nil)
+		tagGroup.GitService = gitService
 		block := &MockTestBlock{
 			Block: commonStructure.Block{
 				FilePath:   path,
@@ -33,31 +33,31 @@ func TestGitTagger(t *testing.T) {
 			},
 		}
 
-		tagger.CreateTagsForBlock(block)
+		tagGroup.CreateTagsForBlock(block)
 		assert.Equal(t, 7, len(block.NewTags))
 	})
 }
 
-func TestGitTagger_mapOriginFileToGitFile(t *testing.T) {
+func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 	t.Run("map tagged kms", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingTagged
-		gitTagger := Tagger{}
+		gittagGroup := TagGroup{}
 		filePath := "../../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
 		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
-		gitTagger.mapOriginFileToGitFile(filePath, &blame)
-		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)
-		assert.Equal(t, expectedMapping["gitToOrigin"], gitTagger.fileLinesMapper[filePath].gitToOrigin)
+		gittagGroup.mapOriginFileToGitFile(filePath, &blame)
+		assert.Equal(t, expectedMapping["originToGit"], gittagGroup.fileLinesMapper[filePath].originToGit)
+		assert.Equal(t, expectedMapping["gitToOrigin"], gittagGroup.fileLinesMapper[filePath].gitToOrigin)
 	})
 	t.Run("map kms with deleted lines", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
-		gitTagger := Tagger{}
+		gittagGroup := TagGroup{}
 		filePath := "../../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
 		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
-		gitTagger.mapOriginFileToGitFile(filePath, &blame)
-		assert.Equal(t, expectedMapping["originToGit"], gitTagger.fileLinesMapper[filePath].originToGit)
-		assert.Equal(t, expectedMapping["gitToOrigin"], gitTagger.fileLinesMapper[filePath].gitToOrigin)
+		gittagGroup.mapOriginFileToGitFile(filePath, &blame)
+		assert.Equal(t, expectedMapping["originToGit"], gittagGroup.fileLinesMapper[filePath].originToGit)
+		assert.Equal(t, expectedMapping["gitToOrigin"], gittagGroup.fileLinesMapper[filePath].gitToOrigin)
 	})
 }
 

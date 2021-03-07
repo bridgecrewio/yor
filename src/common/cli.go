@@ -2,7 +2,6 @@ package common
 
 import (
 	"bridgecrewio/yor/src/common/logger"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -11,7 +10,17 @@ import (
 
 var allowedOutputTypes = []string{"cli", "json"}
 
-type Options struct {
+type TagGroupName string
+
+const (
+	SimpleTagGroupName TagGroupName = "simple"
+	GitTagGroupName    TagGroupName = "git"
+	Code2Cloud         TagGroupName = "code2cloud"
+)
+
+var TagGroupNames = []TagGroupName{SimpleTagGroupName, GitTagGroupName, Code2Cloud}
+
+type TagOptions struct {
 	Directory      string
 	Tag            string
 	SkipTags       []string
@@ -19,29 +28,40 @@ type Options struct {
 	SkipDirs       []string
 	Output         string `validate:"output"`
 	OutputJSONFile string
-	ExtraTags      string `validate:"extraTags"`
+	TagGroups      []string `validate:"tagGroupNames"`
 }
 
-func (o *Options) Validate() {
-	_ = validator.SetValidationFunc("extraTags", validateExtraTags)
+type ListTagsOptions struct {
+	TagGroups []string `validate:"tagGroupNames"`
+}
+
+func (o *TagOptions) Validate() {
 	_ = validator.SetValidationFunc("output", validateOutput)
+	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
 }
 
-func validateExtraTags(v interface{}, _ string) error {
-	val, ok := v.(string)
-	if !ok {
-		return validator.ErrUnsupported
+func (l *ListTagsOptions) Validate() {
+	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
+	if err := validator.Validate(l); err != nil {
+		logger.Error(err.Error())
 	}
+}
 
-	var extraTagMap map[string]string
-	if err := json.Unmarshal([]byte(val), &extraTagMap); err != nil {
-		return fmt.Errorf("failed to parse extra tags: %s", err)
+func validateTagGroupNames(v interface{}, _ string) error {
+	val, ok := v.([]string)
+	if ok {
+		for _, gn := range val {
+			groupName := TagGroupName(gn)
+			if !InSlice(TagGroupNames, groupName) {
+				return fmt.Errorf("tag group %s is not one of the supported tag groups. supported groups: %v", gn, TagGroupNames)
+			}
+		}
+		return nil
 	}
-
-	return nil
+	return fmt.Errorf("unsupported tag group names [%s]. supported types: %s", val, TagGroupNames)
 }
 
 func validateOutput(v interface{}, _ string) error {

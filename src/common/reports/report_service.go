@@ -3,6 +3,7 @@ package reports
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/tagging/tags"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -206,4 +207,22 @@ func (r *ReportService) PrintJSONToStdout() {
 		logger.Error("couldn't parse report to JSON")
 	}
 	fmt.Println(string(jr))
+}
+
+func (r *ReportService) PrintTagGroupTags(tagsByGroup map[string][]tags.ITag) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Group", "Tag Key"})
+	table.SetRowLine(true)
+	table.SetRowSeparator("-")
+	for group, groupTags := range tagsByGroup {
+		if len(groupTags) > 0 {
+			for _, tag := range groupTags {
+				table.Append([]string{group, tag.GetKey()})
+			}
+		} else {
+			table.Append([]string{group, ""})
+		}
+	}
+	table.SetAutoMergeCellsByColumnIndex([]int{0})
+	table.Render()
 }

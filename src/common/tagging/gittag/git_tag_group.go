@@ -17,8 +17,8 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-type Tagger struct {
-	tagging.Tagger
+type TagGroup struct {
+	tagging.TagGroup
 	GitService      *gitservice.GitService
 	fileLinesMapper map[string]fileLineMapper
 }
@@ -28,7 +28,7 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-func (t *Tagger) InitTagger(path string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	gitService, err := gitservice.NewGitService(path)
 	if err != nil {
@@ -46,7 +46,7 @@ func (t *Tagger) InitTagger(path string, skippedTags []string) {
 	})
 }
 
-func (t *Tagger) initFileMapping(path string) bool {
+func (t *TagGroup) initFileMapping(path string) bool {
 	fileBlame, err := t.GitService.GetFileBlame(path)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Unable to get git blame for file %s: %s", path, err))
@@ -58,7 +58,7 @@ func (t *Tagger) initFileMapping(path string) bool {
 	return true
 }
 
-func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
+func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	if _, ok := t.fileLinesMapper[block.GetFilePath()]; !ok {
 		t.initFileMapping(block.GetFilePath())
 	}
@@ -89,7 +89,7 @@ func (t *Tagger) CreateTagsForBlock(block structure.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *Tagger) getBlockLinesInGit(block structure.IBlock) common.Lines {
+func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) common.Lines {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
 	originStart := blockLines.Start
@@ -113,7 +113,7 @@ func (t *Tagger) getBlockLinesInGit(block structure.IBlock) common.Lines {
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
-func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) {
+func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) {
 	if t.fileLinesMapper == nil {
 		t.fileLinesMapper = make(map[string]fileLineMapper)
 	}
@@ -163,7 +163,7 @@ func (t *Tagger) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult)
 	t.fileLinesMapper[path] = mapper
 }
 
-func (t *Tagger) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) {
+func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) {
 	gitBlameLines := blame.BlamesByLine
 	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
