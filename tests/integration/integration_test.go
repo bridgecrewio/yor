@@ -35,7 +35,9 @@ func TestMultipleCommits(t *testing.T) {
 		// init temp directory and file, and write the first text to it
 		dir, err := ioutil.TempDir("", "commits")
 		failIfErr(t, err)
-		defer os.RemoveAll(dir)
+		defer func() {
+			_ = os.RemoveAll(dir)
+		}()
 		tfFileName := "main.tf"
 		tfFilePath := path.Join(dir, tfFileName)
 		err = ioutil.WriteFile(tfFilePath, part1Text, 0644)
@@ -56,9 +58,8 @@ func TestMultipleCommits(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
-		err = yorRunner.Init(&common.Options{
+		err = yorRunner.Init(&common.TagOptions{
 			Directory: dir,
-			ExtraTags: "{}",
 		})
 		failIfErr(t, err)
 		reportService, err := yorRunner.TagDirectory()
@@ -89,7 +90,9 @@ func TestMultipleCommits(t *testing.T) {
 		// append to the file the second resource
 		f, err := os.OpenFile(tfFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		failIfErr(t, err)
-		defer f.Close()
+		defer func() {
+			_ = f.Close()
+		}()
 		if _, err = f.Write(part2Text); err != nil {
 			panic(err)
 		}
@@ -105,9 +108,8 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on both resources
 		yorRunner2 := runner.Runner{}
-		err = yorRunner2.Init(&common.Options{
+		err = yorRunner2.Init(&common.TagOptions{
 			Directory: dir,
-			ExtraTags: "{}",
 		})
 		failIfErr(t, err)
 		time.Sleep(2 * time.Second)
@@ -182,8 +184,8 @@ func TestTagUncommittedResults(t *testing.T) {
 		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
 		outputPath := "./result_uncommitted.json"
 		defer func() {
-			os.RemoveAll(terragoatPath)
-			os.RemoveAll(outputPath)
+			_ = os.RemoveAll(terragoatPath)
+			_ = os.RemoveAll(outputPath)
 		}()
 
 		terragoatAWSDirectory := path.Join(terragoatPath, "terraform/aws")
@@ -245,9 +247,8 @@ func failIfErr(t *testing.T, err error) {
 
 func tagDirectory(t *testing.T, path string) {
 	yorRunner := runner.Runner{}
-	err := yorRunner.Init(&common.Options{
+	err := yorRunner.Init(&common.TagOptions{
 		Directory: path,
-		ExtraTags: "{}",
 	})
 	failIfErr(t, err)
 	_, err = yorRunner.TagDirectory()
