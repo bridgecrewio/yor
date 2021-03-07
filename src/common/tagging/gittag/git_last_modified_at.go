@@ -26,3 +26,7 @@ func (t *GitLastModifiedAtTag) CalculateValue(data interface{}) (tags.ITag, erro
 	}
 	return &tags.Tag{Key: t.Key, Value: latestCommit.Date.UTC().Format("2006-01-02 15:04:05")}, nil
 }
+
+func (t *GitLastModifiedAtTag) GetDescription() string {
+	return "The last time this resource's configuration was modified"
+}

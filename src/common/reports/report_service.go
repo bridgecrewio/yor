@@ -211,16 +211,16 @@ func (r *ReportService) PrintJSONToStdout() {
 
 func (r *ReportService) PrintTagGroupTags(tagsByGroup map[string][]tags.ITag) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Group", "Tag Key"})
+	table.SetHeader([]string{"Group", "Tag Key", "Description"})
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
 	for group, groupTags := range tagsByGroup {
 		if len(groupTags) > 0 {
 			for _, tag := range groupTags {
-				table.Append([]string{group, tag.GetKey()})
+				table.Append([]string{group, tag.GetKey(), tag.GetDescription()})
 			}
 		} else {
-			table.Append([]string{group, ""})
+			table.Append([]string{group, "", ""})
 		}
 	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
