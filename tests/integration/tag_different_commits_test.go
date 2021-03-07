@@ -38,7 +38,7 @@ func TestMultipleCommits(t *testing.T) {
 		panicIfErr(err)
 
 		// init temp directory and file, and write the first text to it
-		dir, err := ioutil.TempDir("", "temp-repo")
+		dir, err := ioutil.TempDir("", "commits")
 		panicIfErr(err)
 		defer os.RemoveAll(dir)
 		tfFileName := "main.tf"
