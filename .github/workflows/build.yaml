@@ -68,6 +68,7 @@ jobs:
           path: 'terragoat'
       - name: Run yor
         run: |
+          git config --local user.email "action@github.com"
           ./yor tag -d terragoat -o json --output-json-file result.json
           go test ./tests/integration/...
   create-release:

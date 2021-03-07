@@ -188,22 +188,15 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				break
 			}
 		}
-		updated := parsedBlock.CalculateTagsDiff().Updated
-		var yorTagTypesKeys []string
-		for _, updatedTags := range updated {
-			yorTagTypesKeys = append(yorTagTypesKeys, updatedTags.Key)
-		}
 		var replacedTags []tags.ITag
 		k := 0
 		for _, tag := range mergedTags {
 			tagReplaced := false
 			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
-			if common.InSlice(yorTagTypesKeys, tag.GetKey()) || common.InSlice(yorTagTypesKeys, strippedTagKey) {
-				for _, rawTagsToken := range rawTagsTokens {
-					if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
-						replacedTags = append(replacedTags, tag)
-						tagReplaced = true
-					}
+			for _, rawTagsToken := range rawTagsTokens {
+				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+					replacedTags = append(replacedTags, tag)
+					tagReplaced = true
 				}
 			}
 			if !tagReplaced {
