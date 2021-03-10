@@ -26,3 +26,7 @@ func (t *FooTag) GetValue() string {
 func (t *FooTag) GetPriority() int {
 	return 1
 }
+
+func (t *FooTag) GetDescription() string {
+	return "Foo bar"
+}

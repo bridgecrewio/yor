@@ -22,3 +22,7 @@ func (t *YorTraceTag) CalculateValue(_ interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: uuidv4.String()}, nil
 }
+
+func (t *YorTraceTag) GetDescription() string {
+	return "A UUID tag that allows easily finding the root IaC config of the resource"
+}

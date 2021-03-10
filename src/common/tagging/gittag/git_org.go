@@ -22,3 +22,7 @@ func (t *GitOrgTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: gitBlame.GitOrg}, nil
 }
+
+func (t *GitOrgTag) GetDescription() string {
+	return "The entity which owns the repository where this resource is provisioned in IaC"
+}

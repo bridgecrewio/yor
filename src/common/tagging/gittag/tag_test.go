@@ -4,6 +4,7 @@ import (
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/tests/utils/blameutils"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,6 +59,18 @@ func TestTagCreation(t *testing.T) {
 		valueTag := EvaluateTag(t, &tag, blame)
 		assert.Equal(t, "git_modifiers", valueTag.GetKey())
 		assert.Equal(t, "jonjozwiak/schosterbarak", valueTag.GetValue())
+	})
+
+	t.Run("Tag description tests", func(t *testing.T) {
+		tag := tags.Tag{}
+		defaultDescription := tag.GetDescription()
+		cwd, _ := os.Getwd()
+		g := TagGroup{}
+		g.InitTagGroup(cwd, nil)
+		for _, tag := range g.GetTags() {
+			assert.NotEqual(t, defaultDescription, tag.GetDescription())
+			assert.NotEqual(t, "", tag.GetDescription())
+		}
 	})
 
 }
