@@ -22,3 +22,7 @@ func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {
 	}
 	return &tags.Tag{Key: t.Key, Value: gitBlame.FilePath}, nil
 }
+
+func (t *GitFileTag) GetDescription() string {
+	return "The file (including path) in the repository where this resource is provisioned in IaC"
+}

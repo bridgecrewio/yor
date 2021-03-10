@@ -12,6 +12,10 @@ type GitOwnerTag struct {
 	Value string
 }
 
+func (t *GitOwnerTag) GetDescription() string {
+	return "Tag that marks the organizational owner of the resource"
+}
+
 func (t *GitOwnerTag) Init() {
 	t.Key = "git_owner"
 }

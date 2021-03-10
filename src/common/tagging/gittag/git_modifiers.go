@@ -36,3 +36,7 @@ func (t *GitModifiersTag) CalculateValue(data interface{}) (tags.ITag, error) {
 
 	return &tags.Tag{Key: t.Key, Value: strings.Join(modifyingUsers, "/")}, nil
 }
+
+func (t *GitModifiersTag) GetDescription() string {
+	return "The users who modified this resource"
+}

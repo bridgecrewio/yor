@@ -18,6 +18,7 @@ type ITag interface {
 	GetKey() string
 	GetValue() string
 	GetPriority() int
+	GetDescription() string
 }
 
 type TagDiff struct {
@@ -41,6 +42,10 @@ func (t *Tag) GetPriority() int {
 
 func (t *Tag) CalculateValue(_ interface{}) (ITag, error) {
 	return t, nil
+}
+
+func (t *Tag) GetDescription() string {
+	return "Abstract tag class"
 }
 
 func (t *Tag) GetKey() string {

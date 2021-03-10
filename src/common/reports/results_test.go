@@ -154,6 +154,35 @@ func TestResultsGeneration(t *testing.T) {
 		matched, _ = regexp.Match("[|\\s]+[a-z./]+[|\\s]+[a-z\\d._]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+.*?[a-z\\d._:\\-]+[|\\s]+[a-z\\d-]+[|\\s]+", []byte(lines[4]))
 		assert.True(t, matched)
 	})
+
+	t.Run("Test list-tags result", func(t *testing.T) {
+		grt := &gittag.GitRepoTag{}
+		grt.Init()
+
+		got := &gittag.GitOrgTag{}
+		got.Init()
+
+		ytt := &code2cloud.YorTraceTag{}
+		ytt.Init()
+
+		o := utils.CaptureOutput(func() {
+			ReportServiceInst.PrintTagGroupTags(map[string][]tags.ITag{
+				"git": {
+					grt,
+					got,
+				},
+				"code2cloud": {
+					ytt,
+				},
+			})
+		})
+
+		lines := strings.Split(o, "\n")
+		match, _ := regexp.Match(".*\\bGROUP\\b.*\\bTAG KEY\\b.*\\bDESCRIPTION\\b.*", []byte(lines[1]))
+		assert.True(t, match)
+		match, _ = regexp.Match(".*\\b(code2cloud|git)\\b.*\\b(yor_trace|git_.*?)\\b.*\\b[A-Za-z .]+\\b", []byte(lines[3]))
+		assert.True(t, match)
+	})
 }
 
 func setupAccumulator() *TagChangeAccumulator {
