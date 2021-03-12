@@ -113,13 +113,18 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		if block.Type() != "resource" {
 			continue
 		}
+		blockId := strings.Join(block.Labels(), ".")
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
-			logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
+			if strings.HasPrefix(err.Error(), "resource belongs to skipped provider") {
+				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockId, strings.Split(blockId, "_")[0]))
+			} else {
+				logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
+			}
 			continue
 		}
 		if terraformBlock == nil {
-			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", block.Labels()))
+			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", blockId))
 			continue
 		}
 		terraformBlock.Init(filePath, block)
@@ -288,11 +293,16 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	if hclBlock.Type() == "resource" {
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
+		if common.InSlice(SkippedProviders, providerName) {
+			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
+		}
 		client := p.getClient(providerName)
 		if client == nil {
 			return nil, fmt.Errorf("could not find client of %s", providerName)
 		}
+		logger.MuteLogging()
 		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
+		logger.UnmuteLogging()
 		if err != nil {
 			return nil, err
 		}
@@ -496,6 +506,10 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 }
 
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
+	if common.InSlice(SkippedProviders, providerName) {
+		return nil
+	}
+
 	hclLogger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
 		Level:  hclog.Error,

@@ -185,6 +185,7 @@ func TestTagUncommittedResults(t *testing.T) {
 	t.Run("Test terragoat tagging", func(t *testing.T) {
 		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
 		outputPath := "./result_uncommitted.json"
+		gs, _ := gitservice.NewGitService(terragoatPath + "/terraform/aws")
 		defer func() {
 			_ = os.RemoveAll(terragoatPath)
 			_ = os.RemoveAll(outputPath)
@@ -221,7 +222,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		expectedTagsValues := map[string]string{
 			"Name":                 "${local.resource_prefix.value}-rds",
 			"Environment":          "local.resource_prefix.value",
-			"git_last_modified_by": gitservice.GetGitUserEmail(),
+			"git_last_modified_by": gs.GetGitUserEmail(),
 			"git_commit":           gittag.CommitUnavailable,
 			"git_file":             strings.TrimPrefix(dbAppFile, terragoatPath+"/"),
 		}

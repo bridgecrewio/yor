@@ -19,6 +19,8 @@ import (
 
 const PluginsOutputDir = ".plugins"
 
+var SkippedProviders = []string{"null", "random", "tls"}
+
 type TerraformModule struct {
 	tfModule            *tfconfig.Module
 	rootDir             string
@@ -50,7 +52,7 @@ func (t *TerraformModule) InitProvider() {
 		Ui:                    &cli.MockUi{},
 	}
 	for provider, constraints := range providers {
-		if provider == "null" || provider == "random" {
+		if common.InSlice(SkippedProviders, provider) {
 			continue
 		}
 		if providerExists(t.ProvidersInstallDir, provider) {
