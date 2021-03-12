@@ -49,7 +49,7 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	err = gitService.setOrgAndName()
-	gitService.currentUserEmail = gitService.GetGitUserEmail()
+	gitService.currentUserEmail = GetGitUserEmail()
 
 	return &gitService, err
 }
@@ -140,9 +140,8 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	return blame, nil
 }
 
-func (g *GitService) GetGitUserEmail() string {
+func GetGitUserEmail() string {
 	cmd := exec.Command("git", "config", "user.email")
-	cmd.Dir = g.rootDir
 	email, err := cmd.Output()
 	if err != nil {
 		logger.Warning(fmt.Sprintf("unable to get current git user email: %s", err))
