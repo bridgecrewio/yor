@@ -113,18 +113,18 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		if block.Type() != "resource" {
 			continue
 		}
-		blockId := strings.Join(block.Labels(), ".")
+		blockID := strings.Join(block.Labels(), ".")
 		terraformBlock, err := p.parseBlock(block)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "resource belongs to skipped provider") {
-				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockId, strings.Split(blockId, "_")[0]))
+				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockID, strings.Split(blockID, "_")[0]))
 			} else {
 				logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
 			}
 			continue
 		}
 		if terraformBlock == nil {
-			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", blockId))
+			logger.Warning(fmt.Sprintf("Found a malformed block according to block scheme %v", blockID))
 			continue
 		}
 		terraformBlock.Init(filePath, block)
