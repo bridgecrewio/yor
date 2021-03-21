@@ -12,6 +12,7 @@ import (
 
 func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, resourcesLinesRange common.Lines, tagsAttributeName string) error {
 	// read file bytes
+	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
@@ -58,7 +59,7 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 	allLines = append(allLines, originLines[resourcesLinesRange.End:]...)
 	linesText := strings.Join(allLines, "\n")
 
-	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0644)
+	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 
 	return err
 }
