@@ -144,7 +144,7 @@ func GetGitUserEmail() string {
 	cmd := exec.Command("git", "config", "user.email")
 	email, err := cmd.Output()
 	if err != nil {
-		logger.Warning(fmt.Sprintf("unable to get current git user email: %s", err))
+		logger.Debug(fmt.Sprintf("unable to get current git user email: %s", err))
 		return ""
 	}
 	return strings.ReplaceAll(string(email), "\n", "")
