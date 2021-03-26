@@ -2,5 +2,5 @@
   name: Yor
   description: Yoooor
   language: golang
-  entry: yor
+  entry: echo
   types: [terraform]
