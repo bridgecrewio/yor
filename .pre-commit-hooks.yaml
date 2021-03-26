@@ -1,0 +1,6 @@
+- id: yor
+  name: Yor
+  description: Yoooor
+  language: golang
+  entry: echo
+  types: [terraform]
