@@ -2,6 +2,6 @@
   name: yor
   description: Yor gets your tagging done.
   language: golang
-  entry: yor
+  entry: yor tag -d
   types: [terraform]
 
