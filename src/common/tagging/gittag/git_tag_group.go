@@ -8,12 +8,11 @@ import (
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
+	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/pmezard/go-difflib/difflib"
 	"io/ioutil"
 	"time"
-
-	"github.com/go-git/go-git/v5"
-	"github.com/pmezard/go-difflib/difflib"
 )
 
 type TagGroup struct {
