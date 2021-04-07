@@ -72,12 +72,12 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 				errorType := args[1]
 				if _, ok := strErrorTypes[errorType]; ok {
 					log.Println(strArgs)
-					os.Exit(1)
 
 				}
 			} else {
-				log.Panic(strArgs)
+				log.Println(strArgs)
 			}
+			os.Exit(1)
 		}
 	}
 }
