@@ -72,7 +72,6 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 				errorType := args[1]
 				if _, ok := strErrorTypes[errorType]; ok {
 					log.Println(strArgs)
-
 				}
 			} else {
 				log.Println(strArgs)
