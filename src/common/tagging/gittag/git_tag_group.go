@@ -8,10 +8,10 @@ import (
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
-	"io/ioutil"
-	"time"
-
 	"github.com/go-git/go-git/v5/plumbing"
+	"io/ioutil"
+	"os"
+	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/pmezard/go-difflib/difflib"
@@ -32,7 +32,8 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	gitService, err := gitservice.NewGitService(path)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s", path))
+		logger.Warning(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path))
+		os.Exit(1)
 	}
 	t.GitService = gitService
 	t.SetTags([]tags.ITag{
