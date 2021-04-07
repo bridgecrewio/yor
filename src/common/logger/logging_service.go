@@ -16,6 +16,7 @@ type loggingService struct {
 }
 
 type LogLevel int
+type ErrorType int
 
 const (
 	DEBUG LogLevel = iota
@@ -24,11 +25,19 @@ const (
 	ERROR
 )
 
+const (
+	SILENT ErrorType = iota
+)
+
 var strLogLevels = map[LogLevel]string{
 	DEBUG:   "DEBUG",
 	INFO:    "INFO",
 	WARNING: "WARNING",
 	ERROR:   "ERROR",
+}
+
+var strErrorTypes = map[string]ErrorType{
+	"SILENT": SILENT,
 }
 
 var Logger loggingService
@@ -45,7 +54,13 @@ func init() {
 
 func (e *loggingService) log(logLevel LogLevel, args ...string) {
 	if logLevel >= e.logLevel {
-		strArgs := strings.Join(args, " ")
+		var strArgs string
+		if len(args) == 2 {
+			strArgs = strings.Join([]string{args[0]}, " ")
+
+		} else {
+			strArgs = strings.Join(args, " ")
+		}
 		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
 		case DEBUG, INFO, WARNING:
@@ -53,7 +68,16 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 				log.Println(strArgs)
 			}
 		case ERROR:
-			log.Panic(strArgs)
+			if len(args) == 2 {
+				errorType := args[1]
+				if _, ok := strErrorTypes[errorType]; ok {
+					log.Println(strArgs)
+					os.Exit(1)
+
+				}
+			} else {
+				log.Panic(strArgs)
+			}
 		}
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5/plumbing"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -32,8 +31,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	gitService, err := gitservice.NewGitService(path)
 	if err != nil {
-		logger.Warning(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path))
-		os.Exit(1)
+		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path), "SILENT")
 	}
 	t.GitService = gitService
 	t.SetTags([]tags.ITag{
