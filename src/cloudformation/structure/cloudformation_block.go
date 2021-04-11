@@ -10,8 +10,9 @@ import (
 
 type CloudformationBlock struct {
 	structure.Block
-	lines common.Lines
-	name  string
+	lines    common.Lines
+	name     string
+	tagLines common.Lines
 }
 
 func (b *CloudformationBlock) GetResourceID() string {
@@ -43,4 +44,12 @@ func (b *CloudformationBlock) UpdateTags() {
 
 	// set the tags attribute with the new tags
 	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(cfnMergedTags))
+}
+
+func (b *CloudformationBlock) GetTagsLines() common.Lines {
+	return b.lines
+}
+
+func (b *CloudformationBlock) GetSeparator() string {
+	return "/n"
 }

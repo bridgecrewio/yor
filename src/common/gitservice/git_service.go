@@ -21,6 +21,7 @@ type GitService struct {
 	repoName         string
 	BlameByFile      map[string]*git.BlameResult
 	currentUserEmail string
+	latestCommitHash string
 }
 
 func NewGitService(rootDir string) (*GitService, error) {
@@ -91,7 +92,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines common.Lines) (
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	blame, ok := g.BlameByFile[filePath]
 	if ok {
-		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
+		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail, g.latestCommitHash), nil
 	}
 
 	var err error
@@ -102,7 +103,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines common.Lines) (
 
 	g.BlameByFile[filePath] = blame
 
-	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
+	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail, g.latestCommitHash), nil
 }
 
 func (g *GitService) GetOrganization() string {
@@ -126,6 +127,7 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository HEAD for file %s because of error %s", filePath, err)
 	}
+	g.latestCommitHash = head.Hash().String()
 	selectedCommit, err = g.repository.CommitObject(head.Hash())
 	if err != nil {
 		return nil, fmt.Errorf("failed to find commit %s ", head.Hash().String())

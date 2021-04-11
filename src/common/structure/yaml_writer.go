@@ -23,7 +23,7 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 	resourcesLines := make([]string, 0)
 	for _, resourceBlock := range blocks {
 		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock())
-		newResourceTagLineRange := findTagsLinesYAML(newResourceLines, tagsAttributeName)
+		newResourceTagLineRange := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
 		oldResourceLinesRange := resourceBlock.GetLines()
 		oldResourceLines := originLines[oldResourceLinesRange.Start-1 : oldResourceLinesRange.End]
@@ -34,7 +34,7 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 			continue
 		}
 
-		oldResourceTagLines := findTagsLinesYAML(oldResourceLines, tagsAttributeName)
+		oldResourceTagLines := FindTagsLinesYAML(oldResourceLines, tagsAttributeName)
 		// if the resource don't contain Tags entry - create it
 		if oldResourceTagLines.Start == -1 || oldResourceTagLines.End == -1 {
 			// get the indentation of the property under the resource name
@@ -73,7 +73,7 @@ func getYAMLLines(rawBlock interface{}) []string {
 	return textLines
 }
 
-func findTagsLinesYAML(textLines []string, tagsAttributeName string) common.Lines {
+func FindTagsLinesYAML(textLines []string, tagsAttributeName string) common.Lines {
 	tagsLines := common.Lines{Start: -1, End: len(textLines) - 1}
 	indent := ""
 	for i, line := range textLines {

@@ -1,7 +1,7 @@
 package integration
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/runner"
@@ -58,7 +58,7 @@ func TestMultipleCommits(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
-		err = yorRunner.Init(&common.TagOptions{
+		err = yorRunner.Init(&cli.TagOptions{
 			Directory: dir,
 			TagGroups: getTagGroups(),
 		})
@@ -109,7 +109,7 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on both resources
 		yorRunner2 := runner.Runner{}
-		err = yorRunner2.Init(&common.TagOptions{
+		err = yorRunner2.Init(&cli.TagOptions{
 			Directory: dir,
 			TagGroups: getTagGroups(),
 		})
@@ -249,7 +249,7 @@ func failIfErr(t *testing.T, err error) {
 
 func tagDirectory(t *testing.T, path string) {
 	yorRunner := runner.Runner{}
-	err := yorRunner.Init(&common.TagOptions{
+	err := yorRunner.Init(&cli.TagOptions{
 		Directory: path,
 		TagGroups: getTagGroups(),
 	})
@@ -271,7 +271,7 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 }
 
 func getTagGroups() (res []string) {
-	for _, tgn := range common.TagGroupNames {
+	for _, tgn := range cli.TagGroupNames {
 		res = append(res, string(tgn))
 	}
 	return

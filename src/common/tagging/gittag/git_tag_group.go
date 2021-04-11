@@ -9,6 +9,8 @@ import (
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
@@ -35,7 +37,11 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s", path))
 	}
 	t.GitService = gitService
-	t.SetTags([]tags.ITag{
+	t.SetTags(t.GetDefaultTags())
+}
+
+func (t *TagGroup) GetDefaultTags() []tags.ITag {
+	return []tags.ITag{
 		&GitOrgTag{},
 		&GitRepoTag{},
 		&GitFileTag{},
@@ -43,7 +49,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 		&GitModifiersTag{},
 		&GitLastModifiedAtTag{},
 		&GitLastModifiedByTag{},
-	})
+	}
 }
 
 func (t *TagGroup) initFileMapping(path string) bool {
@@ -76,7 +82,9 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 		return
 	}
 	t.updateBlameForOriginLines(block, blame)
-
+	if !t.hasNonYorChanges(blame, block) {
+		return
+	}
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
 		newTag, err := tag.CalculateValue(blame)
@@ -182,4 +190,32 @@ func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gits
 	}
 
 	blame.BlamesByLine = newBlameByLines
+}
+
+func (t *TagGroup) hasNonYorChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
+	allTagsKeysStr := os.Getenv("TAG_KEYS")
+	allTagsKeys := strings.Split(allTagsKeysStr, ",")
+	tagsLines := block.GetTagsLines()
+	for lineNum, line := range blame.BlamesByLine {
+		if line.Hash.String() != blame.LatestCommit {
+			continue
+		}
+		if lineNum < tagsLines.Start || lineNum > tagsLines.End {
+			return true
+		}
+		existingTags := block.GetExistingTags()
+		for _, tag := range existingTags {
+			for _, linePart := range strings.Split(line.Text, block.GetSeparator()) {
+				trimmedLinePart := strings.TrimSpace(linePart)
+				if trimmedLinePart == tag.GetKey() || trimmedLinePart == tag.GetValue() {
+					if !common.InSlice(allTagsKeys, tag.GetKey()) {
+						return true
+					}
+					break
+				}
+			}
+		}
+	}
+
+	return false
 }

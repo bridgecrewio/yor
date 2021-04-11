@@ -20,6 +20,7 @@ type ITagGroup interface {
 	InitTagGroup(path string, skippedTags []string)
 	CreateTagsForBlock(block structure.IBlock)
 	GetTags() []tags.ITag
+	GetDefaultTags() []tags.ITag
 }
 
 func (t *TagGroup) GetSkippedDirs() []string {

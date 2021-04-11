@@ -3,14 +3,14 @@ package runner
 import (
 	cfnStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/tagging/utils"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
 	"os"
@@ -29,21 +29,15 @@ type Runner struct {
 	skippedTags       []string
 }
 
-func (r *Runner) Init(commands *common.TagOptions) error {
+func (r *Runner) Init(commands *cli.TagOptions) error {
 	dir := commands.Directory
 	extraTags, extraTagGroups, err := loadExternalResources(commands.CustomTagging)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 	}
 	for _, group := range commands.TagGroups {
-		switch common.TagGroupName(group) {
-		case common.Code2Cloud:
-			r.tagGroups = append(r.tagGroups, &code2cloud.TagGroup{})
-		case common.SimpleTagGroupName:
-			r.tagGroups = append(r.tagGroups, &simple.TagGroup{})
-		case common.GitTagGroupName:
-			r.tagGroups = append(r.tagGroups, &gittag.TagGroup{})
-		}
+		tagGroup := utils.TagGroupsByName(utils.TagGroupName(group))
+		r.tagGroups = append(r.tagGroups, tagGroup)
 	}
 	r.tagGroups = append(r.tagGroups, extraTagGroups...)
 	for _, tagGroup := range r.tagGroups {

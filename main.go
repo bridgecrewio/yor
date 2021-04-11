@@ -2,14 +2,13 @@ package main
 
 import (
 	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/runner"
 	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/tagging/utils"
 	"fmt"
 	"os"
 	"strings"
@@ -19,7 +18,9 @@ import (
 )
 
 func main() {
-	tagOptions := &common.TagOptions{}
+	allTagsKeys := utils.ListAllTagsKeys()
+	_ = os.Setenv("TAG_KEYS", strings.Join(allTagsKeys, ","))
+	tagOptions := &cli.TagOptions{}
 	cmd := &cobra.Command{
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -49,7 +50,7 @@ func main() {
 	}
 	addTagFlags(tagCmd.Flags(), tagOptions)
 
-	listTagsOptions := &common.ListTagsOptions{}
+	listTagsOptions := &cli.ListTagsOptions{}
 	listTagsCmd := &cobra.Command{
 		Use:           "list-tags",
 		SilenceErrors: true,
@@ -80,24 +81,18 @@ func main() {
 }
 
 func listTagGroups() error {
-	for _, tagGroup := range common.TagGroupNames {
+	for _, tagGroup := range utils.GetAllTagGroupsNames() {
 		fmt.Println(tagGroup)
 	}
 	return nil
 }
 
-func listTags(options *common.ListTagsOptions) error {
+func listTags(options *cli.ListTagsOptions) error {
 	var tagGroup tagging.ITagGroup
 	tagsByGroup := make(map[string][]tags.ITag)
 	for _, group := range options.TagGroups {
-		switch common.TagGroupName(group) {
-		case common.GitTagGroupName:
-			tagGroup = &gittag.TagGroup{}
-		case common.SimpleTagGroupName:
-			tagGroup = &simple.TagGroup{}
-		case common.Code2Cloud:
-			tagGroup = &code2cloud.TagGroup{}
-		default:
+		tagGroup = utils.TagGroupsByName(utils.TagGroupName(group))
+		if tagGroup == nil {
 			return fmt.Errorf("tag group %v is not supported", group)
 		}
 		tagGroup.InitTagGroup("", nil)
@@ -107,7 +102,7 @@ func listTags(options *common.ListTagsOptions) error {
 	return nil
 }
 
-func run(options *common.TagOptions) error {
+func run(options *cli.TagOptions) error {
 	yorRunner := new(runner.Runner)
 	err := yorRunner.Init(options)
 	if err != nil {
@@ -122,7 +117,7 @@ func run(options *common.TagOptions) error {
 	return nil
 }
 
-func printReport(reportService *reports.ReportService, options *common.TagOptions) {
+func printReport(reportService *reports.ReportService, options *cli.TagOptions) {
 	reportService.CreateReport()
 
 	if options.OutputJSONFile != "" {
@@ -138,7 +133,7 @@ func printReport(reportService *reports.ReportService, options *common.TagOption
 	}
 }
 
-func addTagFlags(flag *pflag.FlagSet, options *common.TagOptions) {
+func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
 	flag.StringVarP(&options.Directory, "directory", "d", "", "directory to tag")
 	flag.StringVarP(&options.Tag, "tag", "t", "", "run yor only with the specified tag")
 	flag.StringSliceVarP(&options.SkipTags, "skip-tags", "s", []string{}, "run yor without ths specified tag")
@@ -146,9 +141,10 @@ func addTagFlags(flag *pflag.FlagSet, options *common.TagOptions) {
 	flag.StringVar(&options.OutputJSONFile, "output-json-file", "", "json file path for output")
 	flag.StringSliceVarP(&options.CustomTagging, "custom-tagging", "c", []string{}, "paths to custom tag groups and tags plugins")
 	flag.StringSliceVar(&options.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
-	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", []string{"simple", "git", "code2cloud"}, "Narrow down results to the matching tag groups")
+	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
 }
 
-func addListTagsFlags(flag *pflag.FlagSet, options *common.ListTagsOptions) {
-	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", []string{"simple", "git", "code2cloud"}, "Narrow down results to the matching tag groups")
+func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {
+	//flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", []string{"simple", "git", "code2cloud"}, "Narrow down results to the matching tag groups")
+	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
 }

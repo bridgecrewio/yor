@@ -63,12 +63,14 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 	parsedBlocks := make([]structure.IBlock, 0)
 	for resourceName := range template.Resources {
 		resource := template.Resources[resourceName]
-		isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
 		var existingTags []tags.ITag
+		lines := resourceNamesToLines[resourceName]
+		isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
+		tagsLines := common.Lines{Start: -1, End: -1}
 		if isTaggable {
+			tagsLines = p.getTagsLines(filePath, lines)
 			existingTags = p.GetExistingTags(tagsValue)
 		}
-		lines := resourceNamesToLines[resourceName]
 		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 
@@ -80,8 +82,9 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 				IsTaggable:        isTaggable,
 				TagsAttributeName: TagsAttributeName,
 			},
-			lines: *lines,
-			name:  resourceName,
+			lines:    *lines,
+			name:     resourceName,
+			tagLines: tagsLines,
 		}
 		parsedBlocks = append(parsedBlocks, cfnBlock)
 	}
@@ -202,4 +205,34 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	}
 
 	return resourceToLines
+}
+
+func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *common.Lines) common.Lines {
+	nonFoundLines := common.Lines{Start: -1, End: -1}
+	switch common.GetFileFormat(filePath) {
+	case "yaml":
+		file, err := os.Open(filePath)
+		if err != nil {
+			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
+			return nonFoundLines
+		}
+		scanner := bufio.NewScanner(file)
+		defer file.Close()
+		resourceLinesText := make([]string, 0)
+		// iterate file line by line
+		lineCounter := 0
+		for scanner.Scan() {
+			if lineCounter > resourceLinesRange.End {
+				break
+			}
+			if lineCounter >= resourceLinesRange.Start && lineCounter <= resourceLinesRange.End {
+				resourceLinesText = append(resourceLinesText, scanner.Text())
+			}
+			lineCounter++
+		}
+		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
+		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
+	default:
+		return common.Lines{Start: -1, End: -1}
+	}
 }

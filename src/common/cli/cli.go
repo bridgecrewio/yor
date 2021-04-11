@@ -1,7 +1,9 @@
-package common
+package cli
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/tagging/utils"
 	"fmt"
 	"strings"
 
@@ -9,16 +11,6 @@ import (
 )
 
 var allowedOutputTypes = []string{"cli", "json"}
-
-type TagGroupName string
-
-const (
-	SimpleTagGroupName TagGroupName = "simple"
-	GitTagGroupName    TagGroupName = "git"
-	Code2Cloud         TagGroupName = "code2cloud"
-)
-
-var TagGroupNames = []TagGroupName{SimpleTagGroupName, GitTagGroupName, Code2Cloud}
 
 type TagOptions struct {
 	Directory      string
@@ -51,17 +43,17 @@ func (l *ListTagsOptions) Validate() {
 }
 
 func validateTagGroupNames(v interface{}, _ string) error {
+	tagGroupsNames := utils.GetAllTagGroupsNames()
 	val, ok := v.([]string)
 	if ok {
 		for _, gn := range val {
-			groupName := TagGroupName(gn)
-			if !InSlice(TagGroupNames, groupName) {
-				return fmt.Errorf("tag group %s is not one of the supported tag groups. supported groups: %v", gn, TagGroupNames)
+			if !common.InSlice(tagGroupsNames, gn) {
+				return fmt.Errorf("tag group %s is not one of the supported tag groups. supported groups: %v", gn, tagGroupsNames)
 			}
 		}
 		return nil
 	}
-	return fmt.Errorf("unsupported tag group names [%s]. supported types: %s", val, TagGroupNames)
+	return fmt.Errorf("unsupported tag group names [%s]. supported types: %s", val, tagGroupsNames)
 }
 
 func validateOutput(v interface{}, _ string) error {
@@ -70,7 +62,7 @@ func validateOutput(v interface{}, _ string) error {
 		return validator.ErrUnsupported
 	}
 
-	if val != "" && !InSlice(allowedOutputTypes, strings.ToLower(val)) {
+	if val != "" && !common.InSlice(allowedOutputTypes, strings.ToLower(val)) {
 		return fmt.Errorf("unsupported output type [%s]. allowed types: %s", val, allowedOutputTypes)
 	}
 

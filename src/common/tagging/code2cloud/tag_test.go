@@ -72,3 +72,11 @@ func (b *MockTestBlock) GetResourceID() string {
 func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
 	return common.Lines{Start: 1, End: 3}
 }
+
+func (b *MockTestBlock) GetTagsLines() common.Lines {
+	return common.Lines{Start: -1, End: -1}
+}
+
+func (b *MockTestBlock) GetSeparator() string {
+	return ""
+}

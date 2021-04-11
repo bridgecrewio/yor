@@ -32,6 +32,8 @@ type IBlock interface {
 	CalculateTagsDiff() *TagDiff
 	IsBlockTaggable() bool
 	GetResourceID() string
+	GetTagsLines() common.Lines
+	GetSeparator() string
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
