@@ -141,7 +141,9 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		return nil
 	}
 	scanner := bufio.NewScanner(file)
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	// deep copy TemplateSections to allow modifying it safely
 	templateSections := make([]string, len(TemplateSections))
