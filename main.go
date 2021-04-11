@@ -145,6 +145,5 @@ func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
 }
 
 func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {
-	//flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", []string{"simple", "git", "code2cloud"}, "Narrow down results to the matching tag groups")
 	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
 }

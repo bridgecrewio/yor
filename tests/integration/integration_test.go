@@ -6,6 +6,7 @@ import (
 	"bridgecrewio/yor/src/common/reports"
 	"bridgecrewio/yor/src/common/runner"
 	"bridgecrewio/yor/src/common/tagging/gittag"
+	tagUtils "bridgecrewio/yor/src/common/tagging/utils"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
 	"encoding/json"
@@ -271,8 +272,8 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 }
 
 func getTagGroups() (res []string) {
-	for _, tgn := range cli.TagGroupNames {
-		res = append(res, string(tgn))
+	for _, tgn := range tagUtils.GetAllTagGroupsNames() {
+		res = append(res, tgn)
 	}
 	return
 }
