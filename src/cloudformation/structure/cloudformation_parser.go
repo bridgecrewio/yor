@@ -41,57 +41,60 @@ func (p *CloudformationParser) GetAllowedFileTypes() []string {
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.Open(filePath)
-	if err != nil {
+	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template: %s", err))
 	}
 
 	resourceNames := make([]string, 0)
-	for resourceName := range template.Resources {
-		resourceNames = append(resourceNames, resourceName)
-	}
-
-	var resourceNamesToLines map[string]*common.Lines
-	switch common.GetFileFormat(filePath) {
-	case "yaml":
-		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
-	default:
-		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
-	}
-
-	minResourceLine := math.MaxInt8
-	maxResourceLine := 0
-	parsedBlocks := make([]structure.IBlock, 0)
-	for resourceName := range template.Resources {
-		resource := template.Resources[resourceName]
-		var existingTags []tags.ITag
-		lines := resourceNamesToLines[resourceName]
-		isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-		tagsLines := common.Lines{Start: -1, End: -1}
-		if isTaggable {
-			tagsLines = p.getTagsLines(filePath, lines)
-			existingTags = p.GetExistingTags(tagsValue)
+	if template != nil {
+		for resourceName := range template.Resources {
+			resourceNames = append(resourceNames, resourceName)
 		}
-		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
-		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 
-		cfnBlock := &CloudformationBlock{
-			Block: structure.Block{
-				FilePath:          filePath,
-				ExitingTags:       existingTags,
-				RawBlock:          resource,
-				IsTaggable:        isTaggable,
-				TagsAttributeName: TagsAttributeName,
-			},
-			lines:    *lines,
-			name:     resourceName,
-			tagLines: tagsLines,
+		var resourceNamesToLines map[string]*common.Lines
+		switch common.GetFileFormat(filePath) {
+		case "yaml":
+			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+		default:
+			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
 		}
-		parsedBlocks = append(parsedBlocks, cfnBlock)
+
+		minResourceLine := math.MaxInt8
+		maxResourceLine := 0
+		parsedBlocks := make([]structure.IBlock, 0)
+		for resourceName := range template.Resources {
+			resource := template.Resources[resourceName]
+			var existingTags []tags.ITag
+			lines := resourceNamesToLines[resourceName]
+			isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
+			tagsLines := common.Lines{Start: -1, End: -1}
+			if isTaggable {
+				tagsLines = p.getTagsLines(filePath, lines)
+				existingTags = p.GetExistingTags(tagsValue)
+			}
+			minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
+			maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
+
+			cfnBlock := &CloudformationBlock{
+				Block: structure.Block{
+					FilePath:          filePath,
+					ExitingTags:       existingTags,
+					RawBlock:          resource,
+					IsTaggable:        isTaggable,
+					TagsAttributeName: TagsAttributeName,
+				},
+				lines:    *lines,
+				name:     resourceName,
+				tagLines: tagsLines,
+			}
+			parsedBlocks = append(parsedBlocks, cfnBlock)
+		}
+
+		p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+
+		return parsedBlocks, nil
 	}
-
-	p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
-
-	return parsedBlocks, nil
+	return nil, err
 }
 
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
@@ -134,14 +137,16 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
 	}
-
+	// #nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return nil
 	}
 	scanner := bufio.NewScanner(file)
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	// deep copy TemplateSections to allow modifying it safely
 	templateSections := make([]string, len(TemplateSections))

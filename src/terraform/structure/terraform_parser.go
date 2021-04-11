@@ -85,6 +85,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// read file bytes
+	// #nosec G304
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
@@ -137,6 +138,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	// read file bytes
+	// #nosec G304
 	src, err := ioutil.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
@@ -165,7 +167,8 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 			}
 		}
 	}
-	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	// #nosec G304
+	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}

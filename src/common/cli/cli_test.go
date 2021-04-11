@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,20 +19,18 @@ func TestCliArgParsing(t *testing.T) {
 			Output:         "cli",
 			OutputJSONFile: "",
 		}
-		assert.NotPanics(t, options.Validate)
+		// Expect the validation to pass without throwing errors
+		options.Validate()
 	})
 
 	t.Run("Test tag argument parsing - invalid output", func(t *testing.T) {
-		options := TagOptions{
-			Directory:      "some/dir",
-			Tag:            "",
-			SkipTags:       nil,
-			CustomTagging:  nil,
-			SkipDirs:       nil,
-			Output:         "junitxml",
-			OutputJSONFile: "",
+		cmd := exec.Command(os.Args[0], "-test.run=TestOutputCrasher")
+		cmd.Env = append(cmd.Env, "UT_CRASH=RUN")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
 		}
-		assert.Panics(t, options.Validate)
+		assert.Fail(t, "Should have failed already")
 	})
 
 	t.Run("Test tag argument parsing - valid tag groups", func(t *testing.T) {
@@ -44,10 +44,41 @@ func TestCliArgParsing(t *testing.T) {
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "code2cloud"},
 		}
-		assert.NotPanics(t, options.Validate)
+		// Expect the validation to pass without throwing errors
+		options.Validate()
 	})
 
 	t.Run("Test tag argument parsing - invalid tag groups", func(t *testing.T) {
+		cmd := exec.Command(os.Args[0], "-test.run=TestOutputCrasher")
+		cmd.Env = append(cmd.Env, "UT_CRASH=RUN")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
+		}
+		assert.Fail(t, "Should have failed already")
+	})
+
+	t.Run("Test CLI argument parsing - list-tags - invalid output", func(t *testing.T) {
+		cmd := exec.Command(os.Args[0], "-test.run=TestOutputCrasher")
+		cmd.Env = append(cmd.Env, "UT_CRASH=RUN")
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			return
+		}
+		assert.Fail(t, "Should have failed already")
+	})
+
+	t.Run("Test CLI argument parsing - list-tags - valid output", func(t *testing.T) {
+		options := ListTagsOptions{
+			TagGroups: []string{"simple", "git"},
+		}
+		// Expect the validation to pass without throwing errors
+		options.Validate()
+	})
+}
+
+func TestOutputCrasher(t *testing.T) {
+	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            "",
@@ -58,20 +89,31 @@ func TestCliArgParsing(t *testing.T) {
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
 		}
-		assert.Panics(t, options.Validate)
-	})
+		options.Validate()
+	}
+}
 
-	t.Run("Test CLI argument parsing - list-tags - invalid output", func(t *testing.T) {
+func TestTagGroupCrasher(t *testing.T) {
+	if os.Getenv("UT_CRASH") == "RUN" {
+		options := TagOptions{
+			Directory:      "some/dir",
+			Tag:            "",
+			SkipTags:       nil,
+			CustomTagging:  nil,
+			SkipDirs:       nil,
+			Output:         "cli",
+			OutputJSONFile: "",
+			TagGroups:      []string{"git", "custom"},
+		}
+		options.Validate()
+	}
+}
+
+func TestListTagsGroupCrasher(t *testing.T) {
+	if os.Getenv("UT_CRASH") == "RUN" {
 		options := ListTagsOptions{
 			TagGroups: []string{"custom"},
 		}
-		assert.Panics(t, options.Validate)
-	})
-
-	t.Run("Test CLI argument parsing - list-tags - valid output", func(t *testing.T) {
-		options := ListTagsOptions{
-			TagGroups: []string{"simple", "git"},
-		}
-		assert.NotPanics(t, options.Validate)
-	})
+		options.Validate()
+	}
 }

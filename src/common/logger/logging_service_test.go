@@ -44,9 +44,6 @@ func TestLogger(t *testing.T) {
 	t.Run("Test logger ERROR logLevel setting", func(t *testing.T) {
 		Logger.SetLogLevel("ERROR")
 		assert.Equal(t, ERROR, Logger.logLevel)
-		assert.Panics(t, func() {
-			Error("Test error")
-		})
 	})
 
 	t.Run("Test logger not logging due to logLevel - DEBUG", func(t *testing.T) {
@@ -79,13 +76,5 @@ func TestLogger(t *testing.T) {
 		result = utils.CaptureOutput(func() { Debug(debugMsg) })
 		assert.True(t, strings.Contains(result, debugMsg))
 		Logger.SetLogLevel("WARNING")
-	})
-
-	t.Run("Expect panic on mute when error", func(t *testing.T) {
-		MuteLogging()
-		assert.Panics(t, func() {
-			Error("Should panic")
-		})
-		UnmuteLogging()
 	})
 }
