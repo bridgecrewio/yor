@@ -134,14 +134,16 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
 	}
-
+	// #nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return nil
 	}
 	scanner := bufio.NewScanner(file)
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	// deep copy TemplateSections to allow modifying it safely
 	templateSections := make([]string, len(TemplateSections))
