@@ -216,7 +216,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 	nonFoundLines := common.Lines{Start: -1, End: -1}
 	switch common.GetFileFormat(filePath) {
 	case "yaml":
-		//nosec G304
+		//#nosec G304
 		file, err := os.Open(filePath)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
