@@ -195,7 +195,7 @@ func (r *ReportService) PrintJSONToFile(file string) {
 		logger.Warning("Failed to create report as JSON")
 	}
 
-	err = ioutil.WriteFile(file, jr, 0644)
+	err = ioutil.WriteFile(file, jr, 0600)
 	if err != nil {
 		logger.Warning("Failed to write to JSON file", err.Error())
 	}

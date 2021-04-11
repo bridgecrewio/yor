@@ -39,7 +39,7 @@ func CaptureOutput(f func()) string {
 	}()
 	wg.Wait()
 	f()
-	writer.Close()
+	_ = writer.Close()
 	return <-out
 }
 

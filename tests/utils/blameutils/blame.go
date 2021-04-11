@@ -101,6 +101,7 @@ func CreateMockBlame(textBytes []byte) git.BlameResult {
 
 	blameLines := make([]*git.Line, 0)
 	for _, textLine := range textLines {
+		// #nosec G404 - random int is used only for tests
 		randomIndex := rand.Intn(len(possibleLines))
 		selectedLine := possibleLines[randomIndex]
 		newLine := git.Line{
