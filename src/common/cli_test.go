@@ -101,7 +101,7 @@ func TestTagGroupCrasher(t *testing.T) {
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "junitxml",
+			Output:         "cli",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
 		}
