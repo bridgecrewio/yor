@@ -4,6 +4,9 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -143,8 +146,11 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 }
 
 func GetGitUserEmail() string {
+	log.SetOutput(ioutil.Discard)
 	cmd := exec.Command("git", "config", "user.email")
 	email, err := cmd.Output()
+	stdout := os.Stdout
+	log.SetOutput(stdout)
 	if err != nil {
 		logger.Debug(fmt.Sprintf("unable to get current git user email: %s", err))
 		return ""
