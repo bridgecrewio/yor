@@ -95,7 +95,26 @@ docker pull bridgecrew/yor
 docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
-### Skipping tags 
+Using pre-commit:
+
+Add a hook:
+
+```yaml
+  - repo: git://github.com/bridgecrewio/yor
+    rev: 0.0.44
+    hooks:
+      - id: yor
+        name: yor
+        entry: yor tag -d
+        args: ["example/examplea"]
+        language: golang
+        types: [terraform]
+        pass_filenames: false
+```
+
+To your **.pre-commit-config.yaml** and change the args and version number.
+
+### Skipping tags
 
 Using command line flags you can specify to run only named tags (allow list) or run all tags except 
 those listed (deny list).

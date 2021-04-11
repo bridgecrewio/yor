@@ -41,54 +41,57 @@ func (p *CloudformationParser) GetAllowedFileTypes() []string {
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.Open(filePath)
-	if err != nil {
+	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template: %s", err))
 	}
 
 	resourceNames := make([]string, 0)
-	for resourceName := range template.Resources {
-		resourceNames = append(resourceNames, resourceName)
-	}
-
-	var resourceNamesToLines map[string]*common.Lines
-	switch common.GetFileFormat(filePath) {
-	case "yaml":
-		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
-	default:
-		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
-	}
-
-	minResourceLine := math.MaxInt8
-	maxResourceLine := 0
-	parsedBlocks := make([]structure.IBlock, 0)
-	for resourceName := range template.Resources {
-		resource := template.Resources[resourceName]
-		isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-		var existingTags []tags.ITag
-		if isTaggable {
-			existingTags = p.GetExistingTags(tagsValue)
+	if template != nil {
+		for resourceName := range template.Resources {
+			resourceNames = append(resourceNames, resourceName)
 		}
-		lines := resourceNamesToLines[resourceName]
-		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
-		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 
-		cfnBlock := &CloudformationBlock{
-			Block: structure.Block{
-				FilePath:          filePath,
-				ExitingTags:       existingTags,
-				RawBlock:          resource,
-				IsTaggable:        isTaggable,
-				TagsAttributeName: TagsAttributeName,
-			},
-			lines: *lines,
-			name:  resourceName,
+		var resourceNamesToLines map[string]*common.Lines
+		switch common.GetFileFormat(filePath) {
+		case "yaml":
+			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+		default:
+			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
 		}
-		parsedBlocks = append(parsedBlocks, cfnBlock)
+
+		minResourceLine := math.MaxInt8
+		maxResourceLine := 0
+		parsedBlocks := make([]structure.IBlock, 0)
+		for resourceName := range template.Resources {
+			resource := template.Resources[resourceName]
+			isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
+			var existingTags []tags.ITag
+			if isTaggable {
+				existingTags = p.GetExistingTags(tagsValue)
+			}
+			lines := resourceNamesToLines[resourceName]
+			minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
+			maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
+
+			cfnBlock := &CloudformationBlock{
+				Block: structure.Block{
+					FilePath:          filePath,
+					ExitingTags:       existingTags,
+					RawBlock:          resource,
+					IsTaggable:        isTaggable,
+					TagsAttributeName: TagsAttributeName,
+				},
+				lines: *lines,
+				name:  resourceName,
+			}
+			parsedBlocks = append(parsedBlocks, cfnBlock)
+		}
+
+		p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+
+		return parsedBlocks, nil
 	}
-
-	p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
-
-	return parsedBlocks, nil
+	return nil, err
 }
 
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
