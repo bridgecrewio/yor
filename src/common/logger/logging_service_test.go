@@ -77,12 +77,4 @@ func TestLogger(t *testing.T) {
 		assert.True(t, strings.Contains(result, debugMsg))
 		Logger.SetLogLevel("WARNING")
 	})
-
-	t.Run("Expect panic on mute when error", func(t *testing.T) {
-		MuteLogging()
-		assert.Panics(t, func() {
-			Error("Should panic")
-		})
-		UnmuteLogging()
-	})
 }
