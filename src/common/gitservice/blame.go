@@ -15,7 +15,6 @@ type GitBlame struct {
 	BlamesByLine  map[int]*git.Line
 	FilePath      string
 	GitUserEmail  string
-	LatestCommit  string
 }
 
 func NewGitBlame(filePath string, lines common.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {

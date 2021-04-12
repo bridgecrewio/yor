@@ -45,16 +45,3 @@ func GetAllTagGroupsNames() []string {
 
 	return tagGroupNames
 }
-
-func ListAllTagsKeys() []string {
-	allTagsKeys := make([]string, 0)
-	for _, tagGroup := range tagGroupsByName {
-		defaultTags := tagGroup.GetDefaultTags()
-		for _, tag := range defaultTags {
-			tag.Init()
-			allTagsKeys = append(allTagsKeys, tag.GetKey())
-		}
-	}
-
-	return allTagsKeys
-}
