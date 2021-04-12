@@ -36,11 +36,13 @@ func NewGitBlame(filePath string, lines common.Lines, blameResult *git.BlameResu
 func (g *GitBlame) GetLatestCommit() (latestCommit *git.Line) {
 	latestDate := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 	for _, v := range g.BlamesByLine {
-		if v != nil {
-			if latestDate.Before(v.Date) {
-				latestDate = v.Date
-				latestCommit = v
-			}
+		if v == nil {
+			// This line was added/edited but not committed yet, so latest commit is nil
+			return nil
+		}
+		if latestDate.Before(v.Date) {
+			latestDate = v.Date
+			latestCommit = v
 		}
 	}
 	return
