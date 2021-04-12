@@ -47,7 +47,7 @@ func (b *CloudformationBlock) UpdateTags() {
 }
 
 func (b *CloudformationBlock) GetTagsLines() common.Lines {
-	return b.lines
+	return b.tagLines
 }
 
 func (b *CloudformationBlock) GetSeparator() string {
