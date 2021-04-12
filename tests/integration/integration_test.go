@@ -222,7 +222,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		expectedTagsValues := map[string]string{
 			"Name":                 "${local.resource_prefix.value}-rds",
 			"Environment":          "local.resource_prefix.value",
-			"git_last_modified_by": gitservice.GetGitUserEmail(),
+			"git_last_modified_by": "nimrodkor@gmail.com",
 			"git_commit":           "d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0",
 			"git_file":             strings.TrimPrefix(dbAppFile, terragoatPath+"/"),
 		}
