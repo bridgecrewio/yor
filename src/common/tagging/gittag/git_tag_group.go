@@ -194,6 +194,9 @@ func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.
 	tagsLines := block.GetTagsLines()
 	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
 	for lineNum, line := range blame.BlamesByLine {
+		if line == nil {
+			continue
+		}
 		if line.Hash.String() == blame.GetLatestCommit().Hash.String() &&
 			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) {
 			return true

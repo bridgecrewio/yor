@@ -23,9 +23,14 @@ var tagGroupsByName = map[TagGroupName]tagging.ITagGroup{
 }
 
 func TagGroupsByName(name TagGroupName) tagging.ITagGroup {
-	tagGroup, ok := tagGroupsByName[name]
-	if !ok {
-		return nil
+	var tagGroup tagging.ITagGroup
+	switch name {
+	case SimpleTagGroupName:
+		tagGroup = &simple.TagGroup{}
+	case GitTagGroupName:
+		tagGroup = &gittag.TagGroup{}
+	case Code2Cloud:
+		tagGroup = &code2cloud.TagGroup{}
 	}
 
 	return tagGroup
