@@ -18,8 +18,6 @@ import (
 )
 
 func main() {
-	allTagsKeys := utils.ListAllTagsKeys()
-	_ = os.Setenv("TAG_KEYS", strings.Join(allTagsKeys, ","))
 	tagOptions := &cli.TagOptions{}
 	cmd := &cobra.Command{
 		SilenceUsage:  true,

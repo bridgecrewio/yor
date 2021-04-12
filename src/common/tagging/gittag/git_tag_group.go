@@ -9,8 +9,6 @@ import (
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
@@ -82,7 +80,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 		return
 	}
 	t.updateBlameForOriginLines(block, blame)
-	if !t.hasNonYorChanges(blame, block) {
+	if !t.hasNonTagChanges(blame, block) {
 		return
 	}
 	var newTags []tags.ITag
@@ -192,28 +190,13 @@ func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gits
 	blame.BlamesByLine = newBlameByLines
 }
 
-func (t *TagGroup) hasNonYorChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
-	allTagsKeysStr := os.Getenv("TAG_KEYS")
-	allTagsKeys := strings.Split(allTagsKeysStr, ",")
+func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
 	tagsLines := block.GetTagsLines()
+	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
 	for lineNum, line := range blame.BlamesByLine {
-		if line.Hash.String() != blame.LatestCommit {
-			continue
-		}
-		if lineNum < tagsLines.Start || lineNum > tagsLines.End {
+		if line.Hash.String() == blame.GetLatestCommit().Hash.String() &&
+			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) {
 			return true
-		}
-		existingTags := block.GetExistingTags()
-		for _, tag := range existingTags {
-			for _, linePart := range strings.Split(line.Text, block.GetSeparator()) {
-				trimmedLinePart := strings.TrimSpace(linePart)
-				if trimmedLinePart == tag.GetKey() || trimmedLinePart == tag.GetValue() {
-					if !common.InSlice(allTagsKeys, tag.GetKey()) {
-						return true
-					}
-					break
-				}
-			}
 		}
 	}
 
