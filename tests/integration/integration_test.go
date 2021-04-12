@@ -271,9 +271,6 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 	return commit
 }
 
-func getTagGroups() (res []string) {
-	for _, tgn := range tagUtils.GetAllTagGroupsNames() {
-		res = append(res, tgn)
-	}
-	return
+func getTagGroups() []string {
+	return tagUtils.GetAllTagGroupsNames()
 }
