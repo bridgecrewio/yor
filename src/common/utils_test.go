@@ -108,12 +108,12 @@ func TestGetFileFormat(t *testing.T) {
 		},
 		{
 			name: "template-yaml",
-			args: args{filePath: currentDir + "../../tests/cloudformation/resources/extensions/ebs.template"},
+			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs.template"},
 			want: "yaml",
 		},
 		{
 			name: "template-json",
-			args: args{filePath: currentDir + "../../tests/cloudformation/resources/extensions/ebs2.template"},
+			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs2.template"},
 			want: "json",
 		},
 	}
