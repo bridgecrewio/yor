@@ -66,7 +66,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 			resource := template.Resources[resourceName]
 			lines := resourceNamesToLines[resourceName]
 			isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-			var tagsLines common.Lines
+			tagsLines := common.Lines{Start: -1, End: -1}
 			var existingTags []tags.ITag
 			if isTaggable {
 				tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsValue)
@@ -97,10 +97,8 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 }
 
 func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *common.Lines, tagsValue reflect.Value) (common.Lines, []tags.ITag) {
-	var existingTags []tags.ITag
-	tagsLines := common.Lines{Start: -1, End: -1}
-	tagsLines = p.getTagsLines(filePath, lines)
-	existingTags = p.GetExistingTags(tagsValue)
+	tagsLines := p.getTagsLines(filePath, lines)
+	existingTags := p.GetExistingTags(tagsValue)
 	return tagsLines, existingTags
 }
 
