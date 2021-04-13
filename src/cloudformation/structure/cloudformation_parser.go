@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/awslabs/goformation/v4"
-	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
+	goformationtags "github.com/awslabs/goformation/v4/cloudformation/tags"
 
 	"reflect"
 )
@@ -35,8 +35,8 @@ func (p *CloudformationParser) GetSkippedDirs() []string {
 	return []string{}
 }
 
-func (p *CloudformationParser) GetAllowedFileTypes() []string {
-	return []string{".yaml", "yml"}
+func (p *CloudformationParser) GetSupportedFileExtensions() []string {
+	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension}
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -53,7 +53,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 
 		var resourceNamesToLines map[string]*common.Lines
 		switch common.GetFileFormat(filePath) {
-		case "yaml", "yml":
+		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
@@ -103,9 +103,9 @@ func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *commo
 }
 
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
-	existingTags := make([]goformation_tags.Tag, 0)
+	existingTags := make([]goformationtags.Tag, 0)
 	if tagsValue.Kind() == reflect.Slice {
-		existingTags = tagsValue.Interface().([]goformation_tags.Tag)
+		existingTags = tagsValue.Interface().([]goformationtags.Tag)
 	}
 
 	iTags := make([]tags.ITag, 0)
@@ -220,7 +220,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *common.Lines) common.Lines {
 	nonFoundLines := common.Lines{Start: -1, End: -1}
 	switch common.GetFileFormat(filePath) {
-	case "yaml":
+	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		//#nosec G304
 		file, err := os.Open(filePath)
 		if err != nil {

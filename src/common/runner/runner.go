@@ -194,7 +194,7 @@ func (r *Runner) isFileSkipped(p structure.IParser, file string) bool {
 	}
 
 	matchingSuffix := false
-	for _, suffix := range p.GetAllowedFileTypes() {
+	for _, suffix := range p.GetSupportedFileExtensions() {
 		if strings.HasSuffix(file, suffix) {
 			matchingSuffix = true
 		}
