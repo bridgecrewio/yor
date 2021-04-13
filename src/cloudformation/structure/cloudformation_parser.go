@@ -36,7 +36,7 @@ func (p *CloudformationParser) GetSkippedDirs() []string {
 }
 
 func (p *CloudformationParser) GetAllowedFileTypes() []string {
-	return []string{".yaml"}
+	return []string{".yaml", "yml"}
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -53,7 +53,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 
 		var resourceNamesToLines map[string]*common.Lines
 		switch common.GetFileFormat(filePath) {
-		case "yaml":
+		case "yaml", "yml":
 			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
@@ -64,13 +64,12 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		parsedBlocks := make([]structure.IBlock, 0)
 		for resourceName := range template.Resources {
 			resource := template.Resources[resourceName]
-			var existingTags []tags.ITag
 			lines := resourceNamesToLines[resourceName]
 			isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-			tagsLines := common.Lines{Start: -1, End: -1}
+			var tagsLines common.Lines
+			var existingTags []tags.ITag
 			if isTaggable {
-				tagsLines = p.getTagsLines(filePath, lines)
-				existingTags = p.GetExistingTags(tagsValue)
+				tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsValue)
 			}
 			minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 			maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
@@ -95,6 +94,14 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		return parsedBlocks, nil
 	}
 	return nil, err
+}
+
+func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *common.Lines, tagsValue reflect.Value) (common.Lines, []tags.ITag) {
+	var existingTags []tags.ITag
+	tagsLines := common.Lines{Start: -1, End: -1}
+	tagsLines = p.getTagsLines(filePath, lines)
+	existingTags = p.GetExistingTags(tagsValue)
+	return tagsLines, existingTags
 }
 
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
