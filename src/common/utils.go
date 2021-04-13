@@ -81,6 +81,7 @@ func GetFileFormat(filePath string) string {
 		return ""
 	}
 	if strings.HasSuffix(filePath, CFTFileType.Extension) {
+		// #nosec G304 - file is from user
 		content, _ := ioutil.ReadFile(filePath)
 		if strings.HasPrefix(string(content), "{") {
 			return JSONFileType.FileFormat
