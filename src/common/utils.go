@@ -1,6 +1,7 @@
 package common
 
 import (
+	"io/ioutil"
 	"reflect"
 	"strings"
 )
@@ -78,6 +79,14 @@ func GetFileFormat(filePath string) string {
 	splitByDot := strings.Split(filePath, ".")
 	if len(splitByDot) < 2 {
 		return ""
+	}
+	if strings.HasSuffix(filePath, CFTFileType.Extension) {
+		// #nosec G304 - file is from user
+		content, _ := ioutil.ReadFile(filePath)
+		if strings.HasPrefix(string(content), "{") {
+			return JSONFileType.FileFormat
+		}
+		return YamlFileType.FileFormat
 	}
 	return splitByDot[len(splitByDot)-1]
 }

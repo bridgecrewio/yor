@@ -5,5 +5,5 @@ type IParser interface {
 	ParseFile(filePath string) ([]IBlock, error)
 	WriteFile(readFilePath string, blocks []IBlock, writeFilePath string) error
 	GetSkippedDirs() []string
-	GetAllowedFileTypes() []string
+	GetSupportedFileExtensions() []string
 }

@@ -1,6 +1,7 @@
 package common
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -14,6 +15,8 @@ var struct1Instance = struct1{
 	Public:  "Public",
 	private: "private",
 }
+
+var currentDir, _ = os.Getwd()
 
 func TestStructContainsProperty(t *testing.T) {
 	type args struct {
@@ -84,6 +87,11 @@ func TestGetFileFormat(t *testing.T) {
 			want: "yaml",
 		},
 		{
+			name: "yml",
+			args: args{filePath: "dir/file.yml"},
+			want: "yml",
+		},
+		{
 			name: "json",
 			args: args{filePath: "dir/file.json"},
 			want: "json",
@@ -97,6 +105,16 @@ func TestGetFileFormat(t *testing.T) {
 			name: "empty string",
 			args: args{filePath: ""},
 			want: "",
+		},
+		{
+			name: "template-yaml",
+			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs.template"},
+			want: "yaml",
+		},
+		{
+			name: "template-json",
+			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs2.template"},
+			want: "json",
 		},
 	}
 	for _, tt := range tests {

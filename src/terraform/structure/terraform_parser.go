@@ -49,8 +49,8 @@ func (p *TerrraformParser) GetSkippedDirs() []string {
 	return ignoredDirs
 }
 
-func (p *TerrraformParser) GetAllowedFileTypes() []string {
-	return []string{".tf"}
+func (p *TerrraformParser) GetSupportedFileExtensions() []string {
+	return []string{common.TfFileType.Extension}
 }
 
 func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {

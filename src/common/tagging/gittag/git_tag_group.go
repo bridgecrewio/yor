@@ -8,11 +8,13 @@ import (
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pmezard/go-difflib/difflib"
 	"io/ioutil"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/pmezard/go-difflib/difflib"
 )
 
 type TagGroup struct {
@@ -33,7 +35,11 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path), "SILENT")
 	}
 	t.GitService = gitService
-	t.SetTags([]tags.ITag{
+	t.SetTags(t.GetDefaultTags())
+}
+
+func (t *TagGroup) GetDefaultTags() []tags.ITag {
+	return []tags.ITag{
 		&GitOrgTag{},
 		&GitRepoTag{},
 		&GitFileTag{},
@@ -41,7 +47,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 		&GitModifiersTag{},
 		&GitLastModifiedAtTag{},
 		&GitLastModifiedByTag{},
-	})
+	}
 }
 
 func (t *TagGroup) initFileMapping(path string) bool {
@@ -74,7 +80,9 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 		return
 	}
 	t.updateBlameForOriginLines(block, blame)
-
+	if !t.hasNonTagChanges(blame, block) {
+		return
+	}
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
 		newTag, err := tag.CalculateValue(blame)
@@ -180,4 +188,17 @@ func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gits
 	}
 
 	blame.BlamesByLine = newBlameByLines
+}
+
+func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
+	tagsLines := block.GetTagsLines()
+	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
+	for lineNum, line := range blame.BlamesByLine {
+		if line.Hash.String() == blame.GetLatestCommit().Hash.String() &&
+			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) {
+			return true
+		}
+	}
+
+	return false
 }

@@ -30,6 +30,10 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 	}
 }
 
+func (t *TagGroup) GetDefaultTags() []tags.ITag {
+	return []tags.ITag{}
+}
+
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
