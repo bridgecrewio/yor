@@ -3,9 +3,11 @@ package runner
 import (
 	cloudformationStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
+	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
 	"bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
@@ -87,9 +89,9 @@ func Test_loadExternalTags(t *testing.T) {
 
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
-		options := common.TagOptions{
+		options := cli.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
-			TagGroups: getTagGroupNames(),
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
@@ -122,21 +124,21 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
 
-		expectedAddedLines := len(mockGitTagGroup.GetTags())*2 + 2
+		expectedAddedLines := len(mockGitTagGroup.GetTags()) * 2
 		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 13}, {A: 13, B: 29, Size: 2}, {A: 15, B: 31, Size: 0},
+			{A: 0, B: 0, Size: 13}, {A: 13, B: 27, Size: 2}, {A: 15, B: 29, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
 
 	t.Run("Filter tag groups", func(t *testing.T) {
 		runner := Runner{}
-		allTagGroups := getTagGroupNames()
-		_ = runner.Init(&common.TagOptions{
+		allTagGroups := taggingUtils.GetAllTagGroupsNames()
+		_ = runner.Init(&cli.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
 			TagGroups: allTagGroups[:len(allTagGroups)-1],
 		})
@@ -146,23 +148,15 @@ func Test_TagCFNDir(t *testing.T) {
 	})
 }
 
-func getTagGroupNames() []string {
-	var groupNames []string
-	for _, val := range common.TagGroupNames {
-		groupNames = append(groupNames, string(val))
-	}
-	return groupNames
-}
-
 func TestRunnerInternals(t *testing.T) {
 	t.Run("Test isFileSkipped", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
-		_ = runner.Init(&common.TagOptions{
+		_ = runner.Init(&cli.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
-			TagGroups: getTagGroupNames(),
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
@@ -194,14 +188,14 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		output := utils.CaptureOutput(func() {
-			_ = runner.Init(&common.TagOptions{
+			_ = runner.Init(&cli.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{
 					"../../../tests/terraform/mixed",
 					"../../../tests/terraform/resources/tagged/",
 					"../../../tests/terraform",
 				},
-				TagGroups: getTagGroupNames(),
+				TagGroups: taggingUtils.GetAllTagGroupsNames(),
 			})
 		})
 		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")

@@ -12,10 +12,16 @@ type OrgTagGroup struct {
 	tagging.TagGroup
 }
 
+func (d *OrgTagGroup) GetDefaultTags() []tags.ITag {
+	return []tags.ITag{
+		&DirTag{},
+	}
+}
+
 func (d *OrgTagGroup) InitTagGroup(_ string, skippedTags []string) {
 	// If skipped tags isn't passed in, the skip mechanism will not work
 	d.SkippedTags = skippedTags
-	d.SetTags([]tags.ITag{&DirTag{}})
+	d.SetTags(d.GetDefaultTags())
 }
 
 func (d *OrgTagGroup) CreateTagsForBlock(block structure.IBlock) {

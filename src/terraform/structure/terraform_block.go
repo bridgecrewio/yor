@@ -41,3 +41,15 @@ func (b *TerraformBlock) GetLines(getContentLinesOnly ...bool) common.Lines {
 
 	return common.Lines{Start: r.Start.Line, End: endOfLastAttribute}
 }
+
+func (b *TerraformBlock) GetTagsLines() common.Lines {
+	for _, attr := range b.HclSyntaxBlock.Body.Attributes {
+		if attr.Name == b.TagsAttributeName {
+			return common.Lines{Start: attr.SrcRange.Start.Line, End: attr.SrcRange.End.Line}
+		}
+	}
+	return common.Lines{Start: -1, End: -1}
+}
+func (b *TerraformBlock) GetSeparator() string {
+	return "="
+}

@@ -17,6 +17,12 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 	t.SetTags([]tags.ITag{&YorTraceTag{}})
 }
 
+func (t *TagGroup) GetDefaultTags() []tags.ITag {
+	return []tags.ITag{
+		&YorTraceTag{},
+	}
+}
+
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
