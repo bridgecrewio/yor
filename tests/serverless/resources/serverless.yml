@@ -1,0 +1,32 @@
+service: my-sls-service
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: us-east-1
+  tags:
+    GLOBAL_TAG1: foo
+    GLOBAL_TAG2: bar
+  stackTags:
+    RESOURCE_TAG1: foo
+    RESOURCE_TAG2: bar
+  functions:
+    myFunction:
+      name: myFunction
+      handler: myFunction.handler
+      tags:
+        TAG1_FUNC: Func Tag Value
+        TAG2_FUNC: Func Tag2 Value
+
+resources: # CloudFormation template syntax
+  Resources:
+    S3BucketPublicRead:
+      Type: AWS::S3::Bucket
+      Properties:
+        Tags:
+          TAG1_CFN: CFN Tag Value
+          TAG2_CFN: CFN Tag2 Value
+          AccessControl: Private
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
