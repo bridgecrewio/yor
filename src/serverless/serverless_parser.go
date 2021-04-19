@@ -73,8 +73,42 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 	}
 	cfnStackTagsResource := p.template.Provider.CFNTags
-	providerTags := p.template.Provider.ProviderTags
 	functions := p.template.Provider.Functions
+	fmt.Println(functions, cfnStackTagsResource)
+	value := reflect.ValueOf(functions)
+	resourceNames := make([]string, 0)
+
+	if value.Kind() == reflect.Map {
+		for _, funcNameRef := range value.MapKeys() {
+			funcName := funcNameRef.Elem().String()
+			resourceNames = append(resourceNames, funcName)
+			funcRange := value.MapIndex(funcNameRef).Elem().MapKeys()
+			for _, keyRef := range funcRange {
+				key := keyRef.Elem().String()
+				val := value.MapIndex(funcNameRef).Elem().MapKeys()
+				fmt.Println(funcName, key, val)
+				switch key {
+				case "tags":
+					tagsRange := value.MapIndex(funcNameRef).Elem().MapIndex(keyRef).Elem()
+					for _, tagKeyRef := range tagsRange.MapKeys() {
+						tagKey := tagKeyRef.Elem().String()
+						tagValue := tagsRange.MapIndex(tagKeyRef).Elem().String()
+						fmt.Println(tagKey, tagValue)
+					}
+				}
+			}
+		}
+	}
+	var resourceNamesToLines map[string]*common.Lines
+	switch common.GetFileFormat(filePath) {
+	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
+		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+	default:
+		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
+	}
+	fmt.Println(resourceNamesToLines)
+
+	return nil, nil
 	// TODO
 	//resourceNames := make([]string, 0)
 	//if template != nil {
