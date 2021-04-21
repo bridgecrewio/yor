@@ -14,8 +14,14 @@ provider:
       name: myFunction
       handler: myFunction.handler
       tags:
-        TAG1_FUNC: Func Tag Value
-        TAG2_FUNC: Func Tag2 Value
+        TAG1_FUNC: Func1 Tag Value
+        TAG2_FUNC: Func1 Tag2 Value
+    myFunction2:
+      name: myFunction2
+      handler: myFunction2.handler
+      tags:
+        TAG1_FUNC: Func2 Tag Value
+        TAG2_FUNC: Func2 Tag2 Value
 
 resources: # CloudFormation template syntax
   Resources:

@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/awslabs/goformation/v4/cloudformation"
+	"io"
 	"os"
 	"strings"
 
@@ -77,53 +78,49 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	fmt.Println(functions, cfnStackTagsResource)
 	value := reflect.ValueOf(functions)
 	resourceNames := make([]string, 0)
-
+	var resourceNamesToLines map[string]*common.Lines
+	fmt.Println(resourceNamesToLines)
 	if value.Kind() == reflect.Map {
 		for _, funcNameRef := range value.MapKeys() {
 			funcName := funcNameRef.Elem().String()
 			resourceNames = append(resourceNames, funcName)
+		}
+		switch common.GetFileFormat(filePath) {
+		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
+			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+		default:
+			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
+		}
+		for _, funcNameRef := range value.MapKeys() {
+			var existingTags []tags.ITag
+			funcName := funcNameRef.Elem().String()
 			funcRange := value.MapIndex(funcNameRef).Elem().MapKeys()
 			for _, keyRef := range funcRange {
 				key := keyRef.Elem().String()
 				val := value.MapIndex(funcNameRef).Elem().MapKeys()
 				fmt.Println(funcName, key, val)
+				lines := resourceNamesToLines[funcName]
+				tagsLines := common.Lines{Start: -1, End: -1}
+				fmt.Println(lines, tagsLines, existingTags)
 				switch key {
 				case "tags":
 					tagsRange := value.MapIndex(funcNameRef).Elem().MapIndex(keyRef).Elem()
 					for _, tagKeyRef := range tagsRange.MapKeys() {
 						tagKey := tagKeyRef.Elem().String()
 						tagValue := tagsRange.MapIndex(tagKeyRef).Elem().String()
+						iTag := &tags.Tag{Key: tagKey, Value: tagValue}
+						existingTags = append(existingTags, iTag)
+						tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsRange.MapIndex(tagKeyRef).Elem())
 						fmt.Println(tagKey, tagValue)
 					}
 				}
 			}
 		}
+
 	}
-	var resourceNamesToLines map[string]*common.Lines
-	switch common.GetFileFormat(filePath) {
-	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
-	default:
-		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
-	}
-	fmt.Println(resourceNamesToLines)
 
 	return nil, nil
-	// TODO
-	//resourceNames := make([]string, 0)
-	//if template != nil {
-	//	for resourceName := range template.Resources {
-	//		resourceNames = append(resourceNames, resourceName)
-	//	}
-	//
-	//	var resourceNamesToLines map[string]*common.Lines
-	//	switch common.GetFileFormat(filePath) {
-	//	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-	//		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
-	//	default:
-	//		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
-	//	}
-	//
+
 	//	minResourceLine := math.MaxInt8
 	//	maxResourceLine := 0
 	//	parsedBlocks := make([]structure.IBlock, 0)
@@ -223,7 +220,8 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	templateSections := make([]string, len(TemplateSections))
 	copy(templateSections, TemplateSections)
 
-	readResources := false
+	readFunctions := false
+	functionsSectionlineIndentation := -1
 	lineCounter := 0
 	latestResourceName := ""
 	// iterate file line by line
@@ -236,14 +234,26 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		for i, templateSectionName := range templateSections {
 			if strings.Contains(line, templateSectionName) {
 				foundSectionIndex = i
-				readResources = templateSectionName == "Resources"
-				break
+				if !readFunctions {
+					readFunctions = templateSectionName == "functions"
+				}
+				if readFunctions {
+					functionsSectionlineIndentation = len(line) - len(strings.TrimSpace(line))
+				}
 			}
 		}
+		if readFunctions {
+			for _, resourceName := range resourceNames {
+				if strings.Contains(line, resourceName) {
+					latestResourceName = resourceName
+				}
+			}
+		}
+
 		if foundSectionIndex >= 0 {
 			// if this is a section line, check if we're done reading resources, otherwise remove the section name
 
-			if !readResources && latestResourceName != "" {
+			if !readFunctions && latestResourceName != "" {
 				// if we already read all the resources set the end line of the last resource and stop iterating the file
 				resourceToLines[latestResourceName].End = lineCounter - 1
 				break
@@ -252,34 +262,63 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 			templateSections = append(templateSections[:foundSectionIndex], templateSections[foundSectionIndex+1:]...)
 			continue
 		}
+	}
+	latestResourceName = ""
+	funcLineIndentation := -1
+	scanner = bufio.NewScanner(file)
+	file.Seek(0, io.SeekStart)
+	lineCounter = 0
+	doneFunctions := false
+	for scanner.Scan() {
+		if !doneFunctions {
 
-		if readResources {
-			foundResourceIndex := -1
-			for i, resourceName := range resourceNames {
-				if strings.Contains(line, resourceName) {
-					if latestResourceName != "" {
-						// set the end line of the previous resource
-						resourceToLines[latestResourceName].End = lineCounter - 1
+			lineCounter++
+			line := scanner.Text()
+			sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
+			lineIndentation := len(line) - len(strings.TrimSpace(line))
+			for _, resourceName := range resourceNames {
+				if readFunctions {
+					if sanitizedLine == resourceName {
+						funcLineIndentation = lineIndentation
+						if latestResourceName != "" {
+							// set the end line of the previous resource
+							resourceToLines[latestResourceName].End = lineCounter - 1
+						}
+						resourceToLines[resourceName].Start = lineCounter
+						latestResourceName = resourceName
 					}
+					if latestResourceName != "" {
 
-					foundResourceIndex = i
-					resourceToLines[resourceName].Start = lineCounter
-					latestResourceName = resourceName
-					break
+						switch lineIndentation {
+
+						case int(funcLineIndentation):
+							if resourceToLines[latestResourceName].End == -1 || common.InSlice(resourceNames, sanitizedLine) {
+								resourceToLines[latestResourceName].End = lineCounter
+								if sanitizedLine != latestResourceName {
+									latestResourceName = sanitizedLine
+								}
+							}
+							break
+						case int(functionsSectionlineIndentation):
+							// End functions sections
+							resourceToLines[latestResourceName].End = lineCounter
+							break
+						default:
+							if lineIndentation <= int(functionsSectionlineIndentation) {
+								resourceToLines[latestResourceName].End = lineCounter
+								doneFunctions = true
+								break
+							}
+						}
+					}
 				}
 			}
-			if foundResourceIndex >= 0 {
-				// remove found resource name to avoid searching for it once it was found
-				resourceNames = append(resourceNames[:foundResourceIndex], resourceNames[foundResourceIndex+1:]...)
-				continue
+			if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
+				// in case we reached the end of the file without setting the end line of the last resource
+				resourceToLines[latestResourceName].End = lineCounter
 			}
 		}
 	}
-	if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
-		// in case we reached the end of the file without setting the end line of the last resource
-		resourceToLines[latestResourceName].End = lineCounter
-	}
-
 	return resourceToLines
 }
 
