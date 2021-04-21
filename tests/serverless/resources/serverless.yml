@@ -11,11 +11,11 @@ provider:
     RESOURCE_TAG2: bar
   functions:
     myFunction:
-      name: myFunction
       handler: myFunction.handler
       tags:
         TAG1_FUNC: Func1 Tag Value
         TAG2_FUNC: Func1 Tag2 Value
+      name: myFunction
     myFunction2:
       name: myFunction2
       handler: myFunction2.handler

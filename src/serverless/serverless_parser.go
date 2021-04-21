@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"github.com/awslabs/goformation/v4/cloudformation"
 	"io"
+	"math"
 	"os"
 	"strings"
 
-	goformationtags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 
@@ -60,6 +60,7 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 }
 
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+	parsedBlocks := make([]structure.IBlock, 0)
 	template, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
@@ -79,7 +80,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	value := reflect.ValueOf(functions)
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*common.Lines
-	fmt.Println(resourceNamesToLines)
 	if value.Kind() == reflect.Map {
 		for _, funcNameRef := range value.MapKeys() {
 			funcName := funcNameRef.Elem().String()
@@ -91,6 +91,9 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
 		}
+		minResourceLine := math.MaxInt8
+		maxResourceLine := 0
+
 		for _, funcNameRef := range value.MapKeys() {
 			var existingTags []tags.ITag
 			funcName := funcNameRef.Elem().String()
@@ -100,83 +103,47 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 				val := value.MapIndex(funcNameRef).Elem().MapKeys()
 				fmt.Println(funcName, key, val)
 				lines := resourceNamesToLines[funcName]
-				tagsLines := common.Lines{Start: -1, End: -1}
-				fmt.Println(lines, tagsLines, existingTags)
+				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
+				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 				switch key {
-				case "tags":
+				case ProviderTagsAttributeName:
+					tagValueRef := reflect.Value{}
 					tagsRange := value.MapIndex(funcNameRef).Elem().MapIndex(keyRef).Elem()
 					for _, tagKeyRef := range tagsRange.MapKeys() {
 						tagKey := tagKeyRef.Elem().String()
-						tagValue := tagsRange.MapIndex(tagKeyRef).Elem().String()
-						iTag := &tags.Tag{Key: tagKey, Value: tagValue}
-						existingTags = append(existingTags, iTag)
-						tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsRange.MapIndex(tagKeyRef).Elem())
-						fmt.Println(tagKey, tagValue)
+						tagValueRef = tagsRange.MapIndex(tagKeyRef).Elem()
+						tagValue := tagValueRef.String()
+						existingTags = append(existingTags, &tags.Tag{
+							Key:   tagKey,
+							Value: tagValue,
+						})
 					}
+					tagsLines := p.extractLines(filePath, lines, resourceNames)
+					slsBlock := &ServerlessBlock{
+						Block: structure.Block{
+							FilePath:          filePath,
+							ExitingTags:       existingTags,
+							RawBlock:          value.MapIndex(funcNameRef),
+							IsTaggable:        true,
+							TagsAttributeName: ProviderTagsAttributeName,
+						},
+						lines:    *lines,
+						name:     funcName,
+						tagLines: tagsLines,
+					}
+					parsedBlocks = append(parsedBlocks, slsBlock)
 				}
+
+				p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
 			}
 		}
-
 	}
-
-	return nil, nil
-
-	//	minResourceLine := math.MaxInt8
-	//	maxResourceLine := 0
-	//	parsedBlocks := make([]structure.IBlock, 0)
-	//	for resourceName := range template.Resources {
-	//		resource := template.Resources[resourceName]
-	//		lines := resourceNamesToLines[resourceName]
-	//		isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-	//		tagsLines := common.Lines{Start: -1, End: -1}
-	//		var existingTags []tags.ITag
-	//		if isTaggable {
-	//			tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsValue)
-	//		}
-	//		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
-	//		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
-	//
-	//		cfnBlock := &ServerlessBlock{
-	//			Block: structure.Block{
-	//				FilePath:          filePath,
-	//				ExitingTags:       existingTags,
-	//				RawBlock:          resource,
-	//				IsTaggable:        isTaggable,
-	//				TagsAttributeName: TagsAttributeName,
-	//			},
-	//			lines:    *lines,
-	//			name:     resourceName,
-	//			tagLines: tagsLines,
-	//		}
-	//		parsedBlocks = append(parsedBlocks, cfnBlock)
-	//	}
-	//
-	//	p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
-	//
-	//	return parsedBlocks, nil
-	//}
-	return nil, err
+	return parsedBlocks, nil
 }
 
-func (p *ServerlessParser) extractTagsAndLines(filePath string, lines *common.Lines, tagsValue reflect.Value) (common.Lines, []tags.ITag) {
-	tagsLines := p.getTagsLines(filePath, lines)
-	existingTags := p.GetExistingTags(tagsValue)
-	return tagsLines, existingTags
-}
-
-func (p *ServerlessParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
-	existingTags := make([]goformationtags.Tag, 0)
-	if tagsValue.Kind() == reflect.Slice {
-		existingTags = tagsValue.Interface().([]goformationtags.Tag)
-	}
-
-	iTags := make([]tags.ITag, 0)
-	for _, goformationTag := range existingTags {
-		tag := &tags.Tag{Key: goformationTag.Key, Value: goformationTag.Value}
-		iTags = append(iTags, tag)
-	}
-
-	return iTags
+func (p *ServerlessParser) extractLines(filePath string, lines *common.Lines, resourceNames []string) common.Lines {
+	tagsLines := p.getTagsLines(filePath, lines, resourceNames)
+	return tagsLines
 }
 
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -230,15 +197,13 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		line := scanner.Text()
 
 		// make sure we look for resources names only under the Resources section
-		foundSectionIndex := -1
-		for i, templateSectionName := range templateSections {
+		for _, templateSectionName := range templateSections {
 			if strings.Contains(line, templateSectionName) {
-				foundSectionIndex = i
 				if !readFunctions {
 					readFunctions = templateSectionName == "functions"
 				}
 				if readFunctions {
-					functionsSectionlineIndentation = len(line) - len(strings.TrimSpace(line))
+					functionsSectionlineIndentation = len(common.ExtractIndentationOfLine(line))
 				}
 			}
 		}
@@ -250,17 +215,10 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 			}
 		}
 
-		if foundSectionIndex >= 0 {
-			// if this is a section line, check if we're done reading resources, otherwise remove the section name
-
-			if !readFunctions && latestResourceName != "" {
-				// if we already read all the resources set the end line of the last resource and stop iterating the file
-				resourceToLines[latestResourceName].End = lineCounter - 1
-				break
-			}
-			// remove found section to avoid searching for it once it was found
-			templateSections = append(templateSections[:foundSectionIndex], templateSections[foundSectionIndex+1:]...)
-			continue
+		if !readFunctions && latestResourceName != "" {
+			// if we already read all the resources set the end line of the last resource and stop iterating the file
+			resourceToLines[latestResourceName].End = lineCounter - 1
+			break
 		}
 	}
 	latestResourceName = ""
@@ -275,7 +233,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 			lineCounter++
 			line := scanner.Text()
 			sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
-			lineIndentation := len(line) - len(strings.TrimSpace(line))
+			lineIndentation := len(common.ExtractIndentationOfLine(line))
 			for _, resourceName := range resourceNames {
 				if readFunctions {
 					if sanitizedLine == resourceName {
@@ -288,12 +246,10 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 						latestResourceName = resourceName
 					}
 					if latestResourceName != "" {
-
 						switch lineIndentation {
-
 						case int(funcLineIndentation):
 							if resourceToLines[latestResourceName].End == -1 || common.InSlice(resourceNames, sanitizedLine) {
-								resourceToLines[latestResourceName].End = lineCounter
+								resourceToLines[latestResourceName].End = lineCounter - 1
 								if sanitizedLine != latestResourceName {
 									latestResourceName = sanitizedLine
 								}
@@ -305,7 +261,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 							break
 						default:
 							if lineIndentation <= int(functionsSectionlineIndentation) {
-								resourceToLines[latestResourceName].End = lineCounter
+								resourceToLines[latestResourceName].End = lineCounter - 1
 								doneFunctions = true
 								break
 							}
@@ -321,8 +277,12 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	}
 	return resourceToLines
 }
+func isLineFunctionDefinition(line string, resourceNames []string) bool {
+	sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
+	return common.InSlice(resourceNames, sanitizedLine)
+}
 
-func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *common.Lines) common.Lines {
+func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *common.Lines, resourceNames []string) common.Lines {
 	nonFoundLines := common.Lines{Start: -1, End: -1}
 	switch common.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
@@ -339,17 +299,27 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *com
 		resourceLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
+		funcIndentLevel := -1
 		for scanner.Scan() {
+			line := scanner.Text()
+			lineIndent := len(common.ExtractIndentationOfLine(line))
+			if lineCounter == resourceLinesRange.Start-1 {
+				funcIndentLevel = lineIndent
+			}
 			if lineCounter > resourceLinesRange.End {
 				break
 			}
-			if lineCounter >= resourceLinesRange.Start && lineCounter <= resourceLinesRange.End {
-				resourceLinesText = append(resourceLinesText, scanner.Text())
+			if isLineFunctionDefinition(line, resourceNames) && lineCounter > resourceLinesRange.Start-1 {
+				break
+			}
+			if lineCounter >= resourceLinesRange.Start && lineCounter <= resourceLinesRange.End && (lineIndent > funcIndentLevel) {
+				resourceLinesText = append(resourceLinesText, line)
 			}
 			lineCounter++
 		}
 		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, ProviderTagsAttributeName)
-		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
+		numTags := linesInResource.End - linesInResource.Start
+		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
 	default:
 		return common.Lines{Start: -1, End: -1}
 	}
