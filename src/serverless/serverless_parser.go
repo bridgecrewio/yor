@@ -19,7 +19,7 @@ import (
 	"reflect"
 )
 
-const ProviderTagsAttributeName = "tags"
+const FunctionTagsAttributeName = "tags"
 const StackTagsAttributeName = "stackTags"
 
 var TemplateSections = []string{"service", "provider", "tags", "stackTags", "resources", "functions", "region", "Resources"}
@@ -106,7 +106,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 				switch key {
-				case ProviderTagsAttributeName:
+				case FunctionTagsAttributeName:
 					tagValueRef := reflect.Value{}
 					tagsRange := value.MapIndex(funcNameRef).Elem().MapIndex(keyRef).Elem()
 					for _, tagKeyRef := range tagsRange.MapKeys() {
@@ -119,13 +119,14 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 						})
 					}
 					tagsLines := p.extractLines(filePath, lines, resourceNames)
+					rawBlock := value.MapIndex(funcNameRef).Elem()
 					slsBlock := &ServerlessBlock{
 						Block: structure.Block{
 							FilePath:          filePath,
 							ExitingTags:       existingTags,
-							RawBlock:          value.MapIndex(funcNameRef),
+							RawBlock:          rawBlock,
 							IsTaggable:        true,
-							TagsAttributeName: ProviderTagsAttributeName,
+							TagsAttributeName: FunctionTagsAttributeName,
 						},
 						lines:    *lines,
 						name:     funcName,
@@ -158,7 +159,7 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 			}
 			serverlessBlock.UpdateTags()
 		}
-		return structure.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.fileToResourcesLines[readFilePath], ProviderTagsAttributeName)
+		return structure.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.fileToResourcesLines[readFilePath], FunctionTagsAttributeName)
 
 	default:
 		logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
@@ -317,7 +318,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *com
 			}
 			lineCounter++
 		}
-		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, ProviderTagsAttributeName)
+		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
 		numTags := linesInResource.End - linesInResource.Start
 		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
 	default:

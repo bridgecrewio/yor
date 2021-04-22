@@ -3,9 +3,9 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
+	"fmt"
+	"go.opencensus.io/tag"
 	"reflect"
-
-	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )
 
 type ServerlessBlock struct {
@@ -34,16 +34,45 @@ func (b *ServerlessBlock) UpdateTags() {
 	}
 
 	mergedTags := b.MergeTags()
-	slsMergedTags := make([]goformation_tags.Tag, 0)
+	slsMergedTags := make([]tag.Tag, 0)
 	for _, t := range mergedTags {
-		slsMergedTags = append(slsMergedTags, goformation_tags.Tag{
-			Key:   t.GetKey(),
+		key, _ := tag.NewKey(t.GetKey())
+		slsTag := tag.Tag{
+			Key:   key,
 			Value: t.GetValue(),
-		})
-	}
+		}
 
-	// set the tags attribute with the new tags
-	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(slsMergedTags))
+		slsMergedTags = append(slsMergedTags, slsTag)
+	}
+	slsMergedTagsValue := make([]reflect.Value, 0)
+	for _, mergedTag := range slsMergedTags {
+		slsMergedTagsValue = append(slsMergedTagsValue, reflect.ValueOf(map[string]string{mergedTag.Key.Name(): mergedTag.Value}))
+	}
+	for numField := 0; numField < reflect.ValueOf(b.RawBlock).NumField(); numField++ {
+		field := reflect.ValueOf(b.RawBlock).Field(numField).Elem()
+		if field.Kind() == reflect.Struct {
+			for numSubField := 0; numSubField < reflect.ValueOf(field).NumField(); numSubField++ {
+				subField := field.Field(numSubField)
+				fmt.Println(subField.Elem().Kind())
+			}
+		}
+		fmt.Println(field)
+		//if field == b.TagsAttributeName {
+		//	fmt.Println(1)
+		//	//blockValue.Set(reflect.ValueOf(slsMergedTagsValue))
+		//	break
+		//}
+	}
+	for _, blockValue := range reflect.ValueOf(b.RawBlock).MapKeys() {
+		if blockValue.Elem().String() == b.TagsAttributeName {
+			for _, a := range blockValue.Elem().MapKeys() {
+				fmt.Println(a)
+			}
+		}
+	}
+	//set the tags attribute with the new tags
+	reflect.ValueOf(b.RawBlock).SetMapIndex(reflect.ValueOf(b.TagsAttributeName), reflect.ValueOf(slsMergedTagsValue))
+	fmt.Println(b)
 }
 
 func (b *ServerlessBlock) GetTagsLines() common.Lines {
