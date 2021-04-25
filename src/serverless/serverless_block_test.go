@@ -4,8 +4,9 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	"fmt"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -53,7 +54,6 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 		expectedMergedTags := []tags.ITag{
 			&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"}, &tags.Tag{Key: "TAG2_FUNC", Value: "Func2 Tag Value"}, &tags.Tag{Key: "yor_trace", Value: "yor_trace"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
-		fmt.Println(expectedMergedTags)
 		absFilePath, _ := filepath.Abs(strings.Join([]string{parser.rootDir, "serverless.yml"}, "/"))
 		template, err := parser.ParseFile(absFilePath)
 		if err != nil {
@@ -77,21 +77,23 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 
 		b.UpdateTags()
 
-		//currentRawBlock := b.RawBlock.(*ec2.Volume)
-		//currentTags := currentRawBlock.Tags
-		//sort.Slice(expectedMergedTags, func(i, j int) bool {
-		//	return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
-		//})
-		//
-		//sort.Slice(currentTags, func(i, j int) bool {
-		//	return currentTags[i].Key > currentTags[j].Key
-		//})
-		//
-		//assert.Equal(t, len(expectedMergedTags), len(currentTags))
-		//for i, expectedTag := range expectedMergedTags {
-		//	assert.Equal(t, expectedTag.GetKey(), currentTags[i].Key)
-		//	assert.Equal(t, expectedTag.GetValue(), currentTags[i].Value)
-		//}
+		currentRawBlock := b.RawBlock.(reflect.Value)
+		var tagAttributeName interface{} = b.TagsAttributeName
+		currentTags := currentRawBlock.MapIndex(reflect.ValueOf(tagAttributeName))
+		currentTagsKeysVals := currentTags.Interface().(reflect.Value)
+		sort.Slice(expectedMergedTags, func(i, j int) bool {
+			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
+		})
+
+		assert.Equal(t, len(expectedMergedTags), len(currentTagsKeysVals.MapKeys()))
+		for _, currentTagsKey := range currentTagsKeysVals.MapKeys() {
+			for j, expectedMergedTag := range expectedMergedTags {
+				if expectedMergedTag.GetKey() == currentTagsKey.Elem().String() {
+					assert.Equal(t, expectedMergedTags[j].GetKey(), currentTagsKey.Elem().String())
+					assert.Equal(t, expectedMergedTags[j].GetValue(), currentTagsKeysVals.MapIndex(currentTagsKey).Elem().String())
+				}
+			}
+		}
 
 	})
 }

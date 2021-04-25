@@ -3,7 +3,6 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
-	"fmt"
 	"go.opencensus.io/tag"
 	"reflect"
 )
@@ -44,35 +43,16 @@ func (b *ServerlessBlock) UpdateTags() {
 
 		slsMergedTags = append(slsMergedTags, slsTag)
 	}
-	slsMergedTagsValue := make([]reflect.Value, 0)
+	slsMergedTagsValue := make(map[reflect.Value]reflect.Value, 0)
 	for _, mergedTag := range slsMergedTags {
-		slsMergedTagsValue = append(slsMergedTagsValue, reflect.ValueOf(map[string]string{mergedTag.Key.Name(): mergedTag.Value}))
+		slsMergedTagsValue[reflect.ValueOf(mergedTag.Key.Name())] = reflect.ValueOf(mergedTag.Value)
 	}
-	for numField := 0; numField < reflect.ValueOf(b.RawBlock).NumField(); numField++ {
-		field := reflect.ValueOf(b.RawBlock).Field(numField).Elem()
-		if field.Kind() == reflect.Struct {
-			for numSubField := 0; numSubField < reflect.ValueOf(field).NumField(); numSubField++ {
-				subField := field.Field(numSubField)
-				fmt.Println(subField.Elem().Kind())
-			}
-		}
-		fmt.Println(field)
-		//if field == b.TagsAttributeName {
-		//	fmt.Println(1)
-		//	//blockValue.Set(reflect.ValueOf(slsMergedTagsValue))
-		//	break
-		//}
+	var someMap map[interface{}]interface{}
+	tagsValueRef := reflect.MakeMap(reflect.TypeOf(someMap))
+	for i, mapKey := range slsMergedTags {
+		tagsValueRef.SetMapIndex(reflect.ValueOf(mapKey.Key.Name()), reflect.ValueOf(slsMergedTags[i].Value))
 	}
-	for _, blockValue := range reflect.ValueOf(b.RawBlock).MapKeys() {
-		if blockValue.Elem().String() == b.TagsAttributeName {
-			for _, a := range blockValue.Elem().MapKeys() {
-				fmt.Println(a)
-			}
-		}
-	}
-	//set the tags attribute with the new tags
-	reflect.ValueOf(b.RawBlock).SetMapIndex(reflect.ValueOf(b.TagsAttributeName), reflect.ValueOf(slsMergedTagsValue))
-	fmt.Println(b)
+	b.RawBlock.(reflect.Value).SetMapIndex(reflect.ValueOf(b.TagsAttributeName), reflect.ValueOf(tagsValueRef))
 }
 
 func (b *ServerlessBlock) GetTagsLines() common.Lines {
