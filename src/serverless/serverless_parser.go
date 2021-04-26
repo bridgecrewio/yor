@@ -169,6 +169,7 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 
 func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
 	resourceToLines := make(map[string]*common.Lines)
+	computedResources := make(map[string]bool, 0)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
@@ -219,6 +220,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		if !readFunctions && latestResourceName != "" {
 			// if we already read all the resources set the end line of the last resource and stop iterating the file
 			resourceToLines[latestResourceName].End = lineCounter - 1
+			computedResources[latestResourceName] = true
 			break
 		}
 	}
@@ -229,8 +231,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	lineCounter = 0
 	doneFunctions := false
 	for scanner.Scan() {
-		if !doneFunctions {
-
+		if !doneFunctions || len(computedResources) < len(resourceNames) {
 			lineCounter++
 			line := scanner.Text()
 			sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
@@ -242,6 +243,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 						if latestResourceName != "" {
 							// set the end line of the previous resource
 							resourceToLines[latestResourceName].End = lineCounter - 1
+							computedResources[latestResourceName] = true
 						}
 						resourceToLines[resourceName].Start = lineCounter
 						latestResourceName = resourceName
@@ -252,6 +254,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 							if resourceToLines[latestResourceName].End == -1 || common.InSlice(resourceNames, sanitizedLine) {
 								resourceToLines[latestResourceName].End = lineCounter - 1
 								if sanitizedLine != latestResourceName {
+									computedResources[latestResourceName] = true
 									latestResourceName = sanitizedLine
 								}
 							}
@@ -259,10 +262,12 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 						case int(functionsSectionlineIndentation):
 							// End functions sections
 							resourceToLines[latestResourceName].End = lineCounter
+							computedResources[latestResourceName] = true
 							break
 						default:
-							if lineIndentation <= int(functionsSectionlineIndentation) {
+							if lineIndentation <= int(functionsSectionlineIndentation) && line != "" {
 								resourceToLines[latestResourceName].End = lineCounter - 1
+								computedResources[latestResourceName] = true
 								doneFunctions = true
 								break
 							}
@@ -273,6 +278,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 			if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
 				// in case we reached the end of the file without setting the end line of the last resource
 				resourceToLines[latestResourceName].End = lineCounter
+				computedResources[latestResourceName] = true
 			}
 		}
 	}

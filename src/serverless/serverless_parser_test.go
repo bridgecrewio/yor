@@ -2,31 +2,32 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCloudformationParser_ParseFile(t *testing.T) {
-	t.Run("parse ebs file", func(t *testing.T) {
-		directory := "../../../tests/cloudformation/resources/ebs"
-		cfnParser := ServerlessParser{}
-		cfnParser.Init(directory, nil)
-		cfnBlocks, err := cfnParser.ParseFile(directory + "/ebs.yaml")
+func TestServerlessParser_ParseFile(t *testing.T) {
+	t.Run("parse serverless file", func(t *testing.T) {
+		directory := "../../tests/serverless/resources"
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.rootDir, "serverless.yml"}, "/"))
+		slsBlocks, err := slsParser.ParseFile(slsFilepath)
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
 		}
-		assert.Equal(t, 1, len(cfnBlocks))
-		newVolumeBlock := cfnBlocks[0]
-		assert.Equal(t, common.Lines{Start: 4, End: 14}, newVolumeBlock.GetLines())
-		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
+		assert.Equal(t, 2, len(slsBlocks))
+		func1Block := slsBlocks[0]
+		assert.Equal(t, common.Lines{Start: 13, End: 18}, func1Block.GetLines())
+		assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
-		existingTag := newVolumeBlock.GetExistingTags()[0]
-		assert.Equal(t, "MyTag", existingTag.GetKey())
-		assert.Equal(t, "TagValue", existingTag.GetValue())
-		assert.Equal(t, 4, cfnParser.fileToResourcesLines[directory+"/ebs.yaml"].Start)
-		assert.Equal(t, 14, cfnParser.fileToResourcesLines[directory+"/ebs.yaml"].End)
+		existingTag := func1Block.GetExistingTags()[0]
+		assert.Equal(t, "TAG1_FUNC", existingTag.GetKey())
+		assert.Equal(t, "Func1 Tag Value", existingTag.GetValue())
 	})
 
 }
@@ -44,25 +45,44 @@ func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[st
 
 func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test single resource", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
-		resourcesNames := []string{"NewVolume"}
-		expected := map[string]*common.Lines{
-			"NewVolume": {Start: 4, End: 14},
+		directory := "../../tests/serverless/resources"
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
 		}
-		actual := MapResourcesLineYAML(filePath, resourcesNames)
-		compareLines(t, expected, actual)
+		assert.Equal(t, 2, len(slsBlocks))
+		func1Block := slsBlocks[0]
+		expected := map[string]*common.Lines{
+			"myFunction": {Start: 13, End: 18},
+		}
+		func1Lines := func1Block.GetLines()
+		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines})
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.yaml"
-		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
-		expected := map[string]*common.Lines{
-			"EC2InstanceResource0":       {Start: 3, End: 6},
-			"EC2InstanceResource1":       {Start: 7, End: 16},
-			"EC2LaunchTemplateResource0": {Start: 17, End: 21},
-			"EC2LaunchTemplateResource1": {Start: 22, End: 32},
+		directory := "../../tests/serverless/resources"
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		func1Block := slsBlocks[0]
+		func1Lines := func1Block.GetLines()
+
+		func2Block := slsBlocks[1]
+		func2Lines := func2Block.GetLines()
+
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
 		}
-		actual := MapResourcesLineYAML(filePath, resourcesNames)
-		compareLines(t, expected, actual)
+		expected := map[string]*common.Lines{
+			"myFunction":  {Start: 13, End: 18},
+			"myFunction2": {Start: 19, End: 25},
+		}
+		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
 }
