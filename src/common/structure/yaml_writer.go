@@ -5,7 +5,6 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"io/ioutil"
-	"reflect"
 	"strings"
 
 	"github.com/sanathkr/yaml"
@@ -24,7 +23,7 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 
 	resourcesLines := make([]string, 0)
 	for _, resourceBlock := range blocks {
-		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock(), tagsAttributeName)
+		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
 		newResourceTagLineRange := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
 		oldResourceLinesRange := resourceBlock.GetLines()
@@ -50,10 +49,10 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 
 		oldTagsIndent := common.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start+1])
 
-		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...)                                                                       // add all the resource's line before the tags
-		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])                                                       // add the 'Tags:' line
-		resourcesLines = append(resourcesLines, common.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)...) // add tags
-		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End+1:]...)                                                                       // add rest of resource lines
+		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...)                                                                     // add all the resource's line before the tags
+		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])                                                     // add the 'Tags:' line
+		resourcesLines = append(resourcesLines, common.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
+		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End+1:]...)                                                                     // add rest of resource lines
 	}
 
 	allLines := append(originLines[:resourcesLinesRange.Start-1], resourcesLines...)
@@ -64,40 +63,47 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 
 	return err
 }
-func reflectValueToMap(rawMap reflect.Value, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
-	for _, mapKeyRef := range rawMap.MapKeys() {
-		mapKey := mapKeyRef.Elem().String()
-		mapValue := rawMap.MapIndex(mapKeyRef)
-		if mapKey == tagsAttributeName {
-			fmt.Println(1)
-		} else {
-			switch mapValue.Elem().Kind() {
-			case reflect.String:
-				(*currResourceMap)[mapKey] = mapValue.Elem().String()
-				break
-			case reflect.Int:
-				(*currResourceMap)[mapKey] = mapValue.Elem().Int()
-				break
+func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
+	switch rawMap.(type) {
+	case map[interface{}]interface{}:
+		rawMapCasted := rawMap.(map[interface{}]interface{})
+		for mapKey, mapValue := range rawMapCasted {
+			mapKeyString := mapKey.(string)
+			if mapKey == tagsAttributeName {
+				currResourceMap = reflectValueToMap(mapValue.(map[string]string), currResourceMap, tagsAttributeName)
+			} else {
+				switch mapValue.(type) {
+				case string:
+					(*currResourceMap)[mapKeyString] = mapValue.(string)
+					break
+				case int:
+					(*currResourceMap)[mapKeyString] = mapValue.(int)
+					break
+				case bool:
+					(*currResourceMap)[mapKeyString] = mapValue.(bool)
+					break
+				}
 			}
 		}
+		break
+	case map[string]string:
+		if _, ok := (*currResourceMap)[tagsAttributeName]; !ok {
+			(*currResourceMap)[tagsAttributeName] = make(map[string]string)
+		}
+		rawMapCasted := rawMap.(map[string]string)
+		for mapKey, mapValue := range rawMapCasted {
+			(*currResourceMap)[tagsAttributeName].(map[string]string)[mapKey] = mapValue
+		}
+		break
 	}
 	return currResourceMap
 }
 
-func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
+func getYAMLLines(rawBlock map[interface{}]interface{}, tagsAttributeName string) []string {
 	var textLines []string
-	var yamlBytes []byte
-	var err error
-	switch rawBlock.(type) {
-	case reflect.Value:
-		newResourceMapTemp := make(map[string]interface{}, 0)
-		newResourceMap := reflectValueToMap(rawBlock.(reflect.Value), &newResourceMapTemp, tagsAttributeName)
-		yamlBytes, err = yaml.Marshal(newResourceMap)
-		break
-	default:
-		yamlBytes, err = yaml.Marshal(rawBlock)
-
-	}
+	tempTagsMap := make(map[string]interface{})
+	castedRawBlock := reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
+	yamlBytes, err := yaml.Marshal(castedRawBlock)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to marshal resource to yaml: %s", err))
 	}

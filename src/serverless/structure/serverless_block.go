@@ -4,7 +4,6 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/structure"
 	"go.opencensus.io/tag"
-	"reflect"
 )
 
 type ServerlessBlock struct {
@@ -41,16 +40,11 @@ func (b *ServerlessBlock) UpdateTags() {
 
 		slsMergedTags = append(slsMergedTags, slsTag)
 	}
-	slsMergedTagsValue := make(map[reflect.Value]reflect.Value, 0)
+	slsMergedTagsValue := make(map[string]string, 0)
 	for _, mergedTag := range slsMergedTags {
-		slsMergedTagsValue[reflect.ValueOf(mergedTag.Key.Name())] = reflect.ValueOf(mergedTag.Value)
+		slsMergedTagsValue[mergedTag.Key.Name()] = mergedTag.Value
 	}
-	var someMap map[interface{}]interface{}
-	tagsValueRef := reflect.MakeMap(reflect.TypeOf(someMap))
-	for i, mapKey := range slsMergedTags {
-		tagsValueRef.SetMapIndex(reflect.ValueOf(mapKey.Key.Name()), reflect.ValueOf(slsMergedTags[i].Value))
-	}
-	b.RawBlock.(reflect.Value).SetMapIndex(reflect.ValueOf(b.TagsAttributeName), reflect.ValueOf(tagsValueRef))
+	b.RawBlock.(map[interface{}]interface{})[b.TagsAttributeName] = slsMergedTagsValue
 }
 
 func (b *ServerlessBlock) GetTagsLines() common.Lines {

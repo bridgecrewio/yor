@@ -15,8 +15,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-
-	"reflect"
 )
 
 const FunctionTagsAttributeName = "tags"
@@ -76,64 +74,53 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	}
 	//cfnStackTagsResource := p.template.Provider.CFNTags
 	functions := p.template.Provider.Functions
-	value := reflect.ValueOf(functions)
+	functionsMap := functions.(map[interface{}]interface{})
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*common.Lines
-	if value.Kind() == reflect.Map {
-		for _, funcNameRef := range value.MapKeys() {
-			funcName := funcNameRef.Elem().String()
-			resourceNames = append(resourceNames, funcName)
-		}
-		switch common.GetFileFormat(filePath) {
-		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
-		default:
-			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
-		}
-		minResourceLine := math.MaxInt8
-		maxResourceLine := 0
-
-		for _, funcNameRef := range value.MapKeys() {
-			var existingTags []tags.ITag
-			funcName := funcNameRef.Elem().String()
-			funcRange := value.MapIndex(funcNameRef).Elem().MapKeys()
-			for _, keyRef := range funcRange {
-				key := keyRef.Elem().String()
-				lines := resourceNamesToLines[funcName]
+	for funcName, _ := range functionsMap {
+		resourceNames = append(resourceNames, funcName.(string))
+	}
+	switch common.GetFileFormat(filePath) {
+	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
+		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+	default:
+		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
+	}
+	minResourceLine := math.MaxInt8
+	maxResourceLine := 0
+	for _, funcName := range resourceNames {
+		var existingTags []tags.ITag
+		funcRange := functionsMap[funcName].(map[interface{}]interface{})
+		for key, val := range funcRange {
+			lines := resourceNamesToLines[funcName]
+			switch key {
+			case FunctionTagsAttributeName:
+				funcTags := val.(map[interface{}]interface{})
+				for tagKey, tagValue := range funcTags {
+					existingTags = append(existingTags, &tags.Tag{
+						Key:   tagKey.(string),
+						Value: tagValue.(string),
+					})
+				}
+				tagsLines := p.extractLines(filePath, lines, resourceNames)
+				rawBlock := funcRange
 				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
-				switch key {
-				case FunctionTagsAttributeName:
-					tagValueRef := reflect.Value{}
-					tagsRange := value.MapIndex(funcNameRef).Elem().MapIndex(keyRef).Elem()
-					for _, tagKeyRef := range tagsRange.MapKeys() {
-						tagKey := tagKeyRef.Elem().String()
-						tagValueRef = tagsRange.MapIndex(tagKeyRef).Elem()
-						tagValue := tagValueRef.String()
-						existingTags = append(existingTags, &tags.Tag{
-							Key:   tagKey,
-							Value: tagValue,
-						})
-					}
-					tagsLines := p.extractLines(filePath, lines, resourceNames)
-					rawBlock := value.MapIndex(funcNameRef).Elem()
-					slsBlock := &ServerlessBlock{
-						Block: structure.Block{
-							FilePath:          filePath,
-							ExitingTags:       existingTags,
-							RawBlock:          rawBlock,
-							IsTaggable:        true,
-							TagsAttributeName: FunctionTagsAttributeName,
-							Lines:             *lines,
-							TagLines:          tagsLines,
-						},
-						name: funcName,
-					}
-					parsedBlocks = append(parsedBlocks, slsBlock)
+				slsBlock := &ServerlessBlock{
+					Block: structure.Block{
+						FilePath:          filePath,
+						ExitingTags:       existingTags,
+						RawBlock:          rawBlock,
+						IsTaggable:        true,
+						TagsAttributeName: FunctionTagsAttributeName,
+						Lines:             *lines,
+						TagLines:          tagsLines,
+					},
+					name: funcName,
 				}
-
-				p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+				parsedBlocks = append(parsedBlocks, slsBlock)
 			}
+			p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
 		}
 	}
 	return parsedBlocks, nil
