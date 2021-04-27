@@ -113,7 +113,7 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) common.Line
 		if strings.Contains(line, tagsAttributeName+":") {
 			tagsLines.Start = i + 1
 			indent = common.ExtractIndentationOfLine(line)
-		} else if common.ExtractIndentationOfLine(line) <= indent && tagsLines.Start >= 0 || i == len(textLines)-1 {
+		} else if common.ExtractIndentationOfLine(line) <= indent && (tagsLines.Start >= 0 || i == len(textLines)-1) {
 			tagsLines.End = i
 			return tagsLines
 		}

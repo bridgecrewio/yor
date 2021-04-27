@@ -9,9 +9,7 @@ import (
 
 type ServerlessBlock struct {
 	structure.Block
-	lines    common.Lines
-	name     string
-	tagLines common.Lines
+	name string
 }
 
 func (b *ServerlessBlock) GetResourceID() string {
@@ -24,7 +22,7 @@ func (b *ServerlessBlock) Init(filePath string, rawBlock interface{}) {
 }
 
 func (b *ServerlessBlock) GetLines(_ ...bool) common.Lines {
-	return b.lines
+	return b.Block.Lines
 }
 
 func (b *ServerlessBlock) UpdateTags() {
@@ -56,7 +54,7 @@ func (b *ServerlessBlock) UpdateTags() {
 }
 
 func (b *ServerlessBlock) GetTagsLines() common.Lines {
-	return b.tagLines
+	return b.Block.TagLines
 }
 
 func (b *ServerlessBlock) GetSeparator() string {

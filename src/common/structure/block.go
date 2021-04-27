@@ -12,6 +12,8 @@ type Block struct {
 	RawBlock          interface{}
 	IsTaggable        bool
 	TagsAttributeName string
+	Lines             common.Lines
+	TagLines          common.Lines
 }
 
 type TagDiff struct {
