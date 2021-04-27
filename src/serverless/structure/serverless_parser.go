@@ -124,10 +124,10 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 							RawBlock:          rawBlock,
 							IsTaggable:        true,
 							TagsAttributeName: FunctionTagsAttributeName,
+							Lines:             *lines,
+							TagLines:          tagsLines,
 						},
-						lines:    *lines,
-						name:     funcName,
-						tagLines: tagsLines,
+						name: funcName,
 					}
 					parsedBlocks = append(parsedBlocks, slsBlock)
 				}
