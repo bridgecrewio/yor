@@ -11,6 +11,7 @@ import (
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/src/common/tagging/utils"
+	slsStructure "bridgecrewio/yor/src/serverless/structure"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
 	"os"
@@ -46,7 +47,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 			simpleTagGroup.SetTags(extraTags)
 		}
 	}
-	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{})
+	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{}, &slsStructure.ServerlessParser{})
 	for _, parser := range r.parsers {
 		parser.Init(dir, nil)
 	}

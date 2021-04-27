@@ -74,9 +74,8 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		logger.Error(fmt.Sprintf("There was an error processing the serverless template: %s", err), "SILENT")
 
 	}
-	cfnStackTagsResource := p.template.Provider.CFNTags
+	//cfnStackTagsResource := p.template.Provider.CFNTags
 	functions := p.template.Provider.Functions
-	fmt.Println(functions, cfnStackTagsResource)
 	value := reflect.ValueOf(functions)
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*common.Lines
@@ -100,8 +99,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 			funcRange := value.MapIndex(funcNameRef).Elem().MapKeys()
 			for _, keyRef := range funcRange {
 				key := keyRef.Elem().String()
-				val := value.MapIndex(funcNameRef).Elem().MapKeys()
-				fmt.Println(funcName, key, val)
 				lines := resourceNamesToLines[funcName]
 				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
@@ -150,7 +147,7 @@ func (p *ServerlessParser) extractLines(filePath string, lines *common.Lines, re
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	fileFormat := common.GetFileFormat(readFilePath)
 	switch fileFormat {
-	case common.YamlFileType.Extension, common.YmlFileType.Extension:
+	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		for _, block := range blocks {
 			serverlessBlock, ok := block.(*ServerlessBlock)
 			if !ok {

@@ -5,6 +5,7 @@ import (
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 
 	"github.com/sanathkr/yaml"
@@ -23,7 +24,7 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 
 	resourcesLines := make([]string, 0)
 	for _, resourceBlock := range blocks {
-		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock())
+		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock(), tagsAttributeName)
 		newResourceTagLineRange := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
 		oldResourceLinesRange := resourceBlock.GetLines()
@@ -63,13 +64,44 @@ func WriteYAMLFile(readFilePath string, blocks []IBlock, writeFilePath string, r
 
 	return err
 }
+func reflectValueToMap(rawMap reflect.Value, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
+	for _, mapKeyRef := range rawMap.MapKeys() {
+		mapKey := mapKeyRef.Elem().String()
+		mapValue := rawMap.MapIndex(mapKeyRef)
+		if mapKey == tagsAttributeName {
+			fmt.Println(1)
+		} else {
+			switch mapValue.Elem().Kind() {
+			case reflect.String:
+				(*currResourceMap)[mapKey] = mapValue.Elem().String()
+				break
+			case reflect.Int:
+				(*currResourceMap)[mapKey] = mapValue.Elem().Int()
+				break
+			}
+		}
+	}
+	return currResourceMap
+}
 
-func getYAMLLines(rawBlock interface{}) []string {
-	yamlBytes, err := yaml.Marshal(rawBlock)
+func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
+	var textLines []string
+	var yamlBytes []byte
+	var err error
+	switch rawBlock.(type) {
+	case reflect.Value:
+		newResourceMapTemp := make(map[string]interface{}, 0)
+		newResourceMap := reflectValueToMap(rawBlock.(reflect.Value), &newResourceMapTemp, tagsAttributeName)
+		yamlBytes, err = yaml.Marshal(newResourceMap)
+		break
+	default:
+		yamlBytes, err = yaml.Marshal(rawBlock)
+
+	}
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to marshal resource to yaml: %s", err))
 	}
-	textLines := common.GetLinesFromBytes(yamlBytes)
+	textLines = common.GetLinesFromBytes(yamlBytes)
 
 	return textLines
 }
