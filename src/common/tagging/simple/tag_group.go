@@ -1,8 +1,8 @@
 package simple
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"encoding/json"
@@ -34,7 +34,7 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 	return []tags.ITag{}
 }
 
-func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
+func (t *TagGroup) CreateTagsForBlock(block common.IBlock) {
 	var newTags []tags.ITag
 	for _, tag := range t.GetTags() {
 		tagVal, err := tag.CalculateValue(struct{}{})

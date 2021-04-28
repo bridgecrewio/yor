@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
@@ -24,7 +24,7 @@ func (d *OrgTagGroup) InitTagGroup(_ string, skippedTags []string) {
 	d.SetTags(d.GetDefaultTags())
 }
 
-func (d *OrgTagGroup) CreateTagsForBlock(block structure.IBlock) {
+func (d *OrgTagGroup) CreateTagsForBlock(block common.IBlock) {
 	var newTags []tags.ITag
 	for _, tag := range d.GetTags() {
 		tagVal, err := tag.CalculateValue(block)

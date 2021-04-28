@@ -2,8 +2,8 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/utils"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -26,7 +26,7 @@ func TestServerlessBlock_MergeSLSTags(t *testing.T) {
 			&tags.Tag{Key: "sls_tag_1", Value: "1"}, &tags.Tag{Key: "sls_tag_2", Value: "2"}, &tags.Tag{Key: "yor_trace", Value: "should not change"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
 		b := &ServerlessBlock{
-			Block: structure.Block{
+			Block: common.Block{
 				ExitingTags: existingTags,
 				NewTags:     newTags,
 			},
@@ -64,7 +64,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 		resource := template
 
 		b := &ServerlessBlock{
-			Block: structure.Block{
+			Block: common.Block{
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
 				RawBlock:          resource[0].GetRawBlock(),
@@ -72,7 +72,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 				TagsAttributeName: "tags",
 			},
 			name:  resourceName,
-			lines: common.Lines{Start: 4, End: 14},
+			lines: utils.Lines{Start: 4, End: 14},
 		}
 
 		b.UpdateTags()

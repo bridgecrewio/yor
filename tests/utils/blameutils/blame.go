@@ -1,8 +1,8 @@
 package blameutils
 
 import (
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/utils"
 	"math/rand"
 	"testing"
 	"time"
@@ -79,7 +79,7 @@ func ExtractDate(dateStr string) (time.Time, error) {
 }
 
 func CreateMockBlame(textBytes []byte) git.BlameResult {
-	textLines := common.GetLinesFromBytes(textBytes)
+	textLines := utils.GetLinesFromBytes(textBytes)
 	layout = "2006-01-02 15:04:05"
 	possibleLines := []*git.Line{
 		{

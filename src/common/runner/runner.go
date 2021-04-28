@@ -6,11 +6,11 @@ import (
 	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/reports"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/src/common/tagging/utils"
+	utils2 "bridgecrewio/yor/src/common/utils"
 	slsStructure "bridgecrewio/yor/src/serverless/structure"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
@@ -22,7 +22,7 @@ import (
 
 type Runner struct {
 	tagGroups         []tagging.ITagGroup
-	parsers           []structure.IParser
+	parsers           []common.IParser
 	changeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
 	dir               string
@@ -58,7 +58,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 	r.skippedTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
 
-	if common.InSlice(r.skipDirs, r.dir) {
+	if utils2.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	return nil
@@ -187,7 +187,7 @@ func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}
 	return *iArrPtr, nil
 }
 
-func (r *Runner) isFileSkipped(p structure.IParser, file string) bool {
+func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 	for _, sp := range r.skipDirs {
 		if strings.HasPrefix(file, sp) {
 			return true

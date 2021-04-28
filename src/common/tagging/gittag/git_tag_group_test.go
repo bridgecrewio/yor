@@ -3,7 +3,7 @@ package gittag
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
-	commonStructure "bridgecrewio/yor/src/common/structure"
+	"bridgecrewio/yor/src/common/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"io/ioutil"
 	"os"
@@ -27,7 +27,7 @@ func TestGitTagGroup(t *testing.T) {
 		tagGroup.InitTagGroup(wd, nil)
 		tagGroup.GitService = gitService
 		block := &MockTestBlock{
-			Block: commonStructure.Block{
+			Block: common.Block{
 				FilePath:   path,
 				IsTaggable: true,
 			},
@@ -71,7 +71,7 @@ var ExpectedFileMappingDeleted = map[string]map[int]int{
 }
 
 type MockTestBlock struct {
-	commonStructure.Block
+	common.Block
 }
 
 func (b *MockTestBlock) Init(_ string, _ interface{}) {}
@@ -84,12 +84,12 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
-	return common.Lines{Start: 1, End: 3}
+func (b *MockTestBlock) GetLines(_ ...bool) utils.Lines {
+	return utils.Lines{Start: 1, End: 3}
 }
 
-func (b *MockTestBlock) GetTagsLines() common.Lines {
-	return common.Lines{Start: -1, End: -1}
+func (b *MockTestBlock) GetTagsLines() utils.Lines {
+	return utils.Lines{Start: -1, End: -1}
 }
 
 func (b *MockTestBlock) GetSeparator() string {

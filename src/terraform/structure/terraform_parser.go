@@ -3,8 +3,8 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -83,7 +83,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
-func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+func (p *TerrraformParser) ParseFile(filePath string) ([]common.IBlock, error) {
 	// read file bytes
 	// #nosec G304
 	src, err := ioutil.ReadFile(filePath)
@@ -109,7 +109,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
 	rawBlocks := hclFile.Body().Blocks()
-	parsedBlocks := make([]structure.IBlock, 0)
+	parsedBlocks := make([]common.IBlock, 0)
 	for i, block := range rawBlocks {
 		if block.Type() != "resource" {
 			continue
@@ -136,7 +136,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	return parsedBlocks, nil
 }
 
-func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
+func (p *TerrraformParser) WriteFile(readFilePath string, blocks []common.IBlock, writeFilePath string) error {
 	// read file bytes
 	// #nosec G304
 	src, err := ioutil.ReadFile(readFilePath)
@@ -182,7 +182,7 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	return nil
 }
 
-func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock structure.IBlock) {
+func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock common.IBlock) {
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
@@ -296,7 +296,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	if hclBlock.Type() == "resource" {
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
-		if common.InSlice(SkippedProviders, providerName) {
+		if utils.InSlice(SkippedProviders, providerName) {
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
 		}
 		client := p.getClient(providerName)
@@ -327,7 +327,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	}
 
 	terraformBlock := TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			ExitingTags:       existingTags,
 			IsTaggable:        isTaggable,
 			TagsAttributeName: tagsAttributeName,
@@ -462,7 +462,7 @@ func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.To
 	startIndex := 0
 	hasEq := false
 	for i, token := range tokens {
-		if common.InSlice(separatorTokens, token.Type) {
+		if utils.InSlice(separatorTokens, token.Type) {
 			if hasEq {
 				tagPairs = append(tagPairs, tokens[startIndex:i])
 			}
@@ -509,7 +509,7 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 }
 
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
-	if common.InSlice(SkippedProviders, providerName) {
+	if utils.InSlice(SkippedProviders, providerName) {
 		return nil
 	}
 

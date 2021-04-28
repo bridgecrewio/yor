@@ -25,8 +25,8 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		existingTag := newVolumeBlock.GetExistingTags()[0]
 		assert.Equal(t, "MyTag", existingTag.GetKey())
 		assert.Equal(t, "TagValue", existingTag.GetValue())
-		assert.Equal(t, 4, cfnParser.fileToResourcesLines[directory+"/ebs.yaml"].Start)
-		assert.Equal(t, 14, cfnParser.fileToResourcesLines[directory+"/ebs.yaml"].End)
+		assert.Equal(t, 4, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
+		assert.Equal(t, 14, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
 	})
 
 }

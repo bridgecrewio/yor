@@ -2,17 +2,16 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
 	"go.opencensus.io/tag"
 )
 
 type ServerlessBlock struct {
-	structure.Block
-	name string
+	common.Block
+	Name string
 }
 
 func (b *ServerlessBlock) GetResourceID() string {
-	return b.name
+	return b.Name
 }
 
 func (b *ServerlessBlock) Init(filePath string, rawBlock interface{}) {

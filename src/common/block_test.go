@@ -1,4 +1,4 @@
-package structure
+package common
 
 import (
 	"bridgecrewio/yor/src/common/tagging/tags"

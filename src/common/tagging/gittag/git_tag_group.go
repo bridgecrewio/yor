@@ -4,9 +4,9 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/utils"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -62,7 +62,7 @@ func (t *TagGroup) initFileMapping(path string) bool {
 	return true
 }
 
-func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
+func (t *TagGroup) CreateTagsForBlock(block common.IBlock) {
 	if _, ok := t.fileLinesMapper[block.GetFilePath()]; !ok {
 		t.initFileMapping(block.GetFilePath())
 	}
@@ -95,7 +95,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) common.Lines {
+func (t *TagGroup) getBlockLinesInGit(block common.IBlock) utils.Lines {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
 	originStart := blockLines.Start
@@ -115,7 +115,7 @@ func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) common.Lines {
 		originEnd--
 	}
 
-	return common.Lines{Start: gitStart, End: gitEnd}
+	return utils.Lines{Start: gitStart, End: gitEnd}
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
@@ -138,7 +138,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		return
 	}
 
-	originLines := common.GetLinesFromBytes(originFileText)
+	originLines := utils.GetLinesFromBytes(originFileText)
 
 	matcher := difflib.NewMatcher(originLines, gitLines)
 	matches := matcher.GetMatchingBlocks()
@@ -169,7 +169,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 	t.fileLinesMapper[path] = mapper
 }
 
-func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) {
+func (t *TagGroup) updateBlameForOriginLines(block common.IBlock, blame *gitservice.GitBlame) {
 	gitBlameLines := blame.BlamesByLine
 	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
@@ -190,7 +190,7 @@ func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gits
 	blame.BlamesByLine = newBlameByLines
 }
 
-func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
+func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block common.IBlock) bool {
 	tagsLines := block.GetTagsLines()
 	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
 	for lineNum, line := range blame.BlamesByLine {

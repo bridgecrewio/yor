@@ -1,8 +1,8 @@
 package tagging
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"regexp"
@@ -18,7 +18,7 @@ var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
 type ITagGroup interface {
 	InitTagGroup(path string, skippedTags []string)
-	CreateTagsForBlock(block structure.IBlock)
+	CreateTagsForBlock(block common.IBlock)
 	GetTags() []tags.ITag
 	GetDefaultTags() []tags.ITag
 }

@@ -3,8 +3,9 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/types"
+	"bridgecrewio/yor/src/common/utils"
 	"bufio"
 	"fmt"
 	"github.com/awslabs/goformation/v4/cloudformation"
@@ -38,15 +39,14 @@ type ServerlessTemplate struct {
 }
 
 type ServerlessParser struct {
-	rootDir              string
-	fileToResourcesLines map[string]common.Lines
-	template             *ServerlessTemplate
+	YamlParser types.YamlParser
+	Template   *ServerlessTemplate
 }
 
 func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
-	p.rootDir = rootDir
-	p.fileToResourcesLines = make(map[string]common.Lines)
-	p.template = &ServerlessTemplate{}
+	p.YamlParser.RootDir = rootDir
+	p.YamlParser.FileToResourcesLines = make(map[string]types.Lines)
+	p.Template = &ServerlessTemplate{}
 }
 
 func (p *ServerlessParser) GetSkippedDirs() []string {
@@ -57,13 +57,13 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension}
 }
 
-func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	parsedBlocks := make([]structure.IBlock, 0)
+func (p *ServerlessParser) ParseFile(filePath string) ([]common.IBlock, error) {
+	parsedBlocks := make([]common.IBlock, 0)
 	template, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
 	}
-	err = yaml.Unmarshal([]byte(template), p.template)
+	err = yaml.Unmarshal(template, p.Template)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Unmarshal: %s", err), "SILENT")
 	}
@@ -73,18 +73,18 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 	}
 	//cfnStackTagsResource := p.template.Provider.CFNTags
-	functions := p.template.Provider.Functions
+	functions := p.Template.Provider.Functions
 	functionsMap := functions.(map[interface{}]interface{})
 	resourceNames := make([]string, 0)
-	var resourceNamesToLines map[string]*common.Lines
+	var resourceNamesToLines map[string]*types.Lines
 	for funcName, _ := range functionsMap {
 		resourceNames = append(resourceNames, funcName.(string))
 	}
-	switch common.GetFileFormat(filePath) {
+	switch utils.GetFileFormat(filePath) {
 	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 		resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
 	default:
-		return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
+		return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 	}
 	minResourceLine := math.MaxInt8
 	maxResourceLine := 0
@@ -107,7 +107,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 				slsBlock := &ServerlessBlock{
-					Block: structure.Block{
+					Block: common.Block{
 						FilePath:          filePath,
 						ExitingTags:       existingTags,
 						RawBlock:          rawBlock,
@@ -120,43 +120,31 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 				}
 				parsedBlocks = append(parsedBlocks, slsBlock)
 			}
-			p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+			p.YamlParser.FileToResourcesLines[filePath] = types.Lines{Start: minResourceLine, End: maxResourceLine}
 		}
 	}
 	return parsedBlocks, nil
 }
 
-func (p *ServerlessParser) extractLines(filePath string, lines *common.Lines, resourceNames []string) common.Lines {
+func (p *ServerlessParser) extractLines(filePath string, lines *types.Lines, resourceNames []string) types.Lines {
 	tagsLines := p.getTagsLines(filePath, lines, resourceNames)
 	return tagsLines
 }
 
-func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	fileFormat := common.GetFileFormat(readFilePath)
-	switch fileFormat {
-	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		for _, block := range blocks {
-			serverlessBlock, ok := block.(*ServerlessBlock)
-			if !ok {
-				logger.Warning("failed to convert block to ServerlessBlock")
-				continue
-			}
-			serverlessBlock.UpdateTags()
-		}
-		return structure.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.fileToResourcesLines[readFilePath], FunctionTagsAttributeName)
-
-	default:
-		logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
-		return nil
+func (p *ServerlessParser) WriteFile(readFilePath string, blocks []common.IBlock, writeFilePath string) error {
+	err := utils.EncodeBlocksToYaml(p, readFilePath, blocks, writeFilePath)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to encode %s", readFilePath))
 	}
+	return utils.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath], FunctionTagsAttributeName)
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
-	resourceToLines := make(map[string]*common.Lines)
+func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*types.Lines {
+	resourceToLines := make(map[string]*types.Lines)
 	computedResources := make(map[string]bool, 0)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
-		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
+		resourceToLines[resourceName] = &types.Lines{Start: -1, End: -1}
 	}
 	// #nosec G304
 	file, err := os.Open(filePath)
@@ -182,14 +170,13 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 		lineCounter++
 		line := scanner.Text()
 
-		// make sure we look for resources names only under the Resources section
 		for _, templateSectionName := range templateSections {
 			if strings.Contains(line, templateSectionName) {
 				if !readFunctions {
 					readFunctions = templateSectionName == "functions"
 				}
 				if readFunctions {
-					functionsSectionlineIndentation = len(common.ExtractIndentationOfLine(line))
+					functionsSectionlineIndentation = len(utils.ExtractIndentationOfLine(line))
 				}
 			}
 		}
@@ -219,7 +206,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 			lineCounter++
 			line := scanner.Text()
 			sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
-			lineIndentation := len(common.ExtractIndentationOfLine(line))
+			lineIndentation := len(utils.ExtractIndentationOfLine(line))
 			for _, resourceName := range resourceNames {
 				if readFunctions {
 					if sanitizedLine == resourceName {
@@ -235,7 +222,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 					if latestResourceName != "" {
 						switch lineIndentation {
 						case int(funcLineIndentation):
-							if resourceToLines[latestResourceName].End == -1 || common.InSlice(resourceNames, sanitizedLine) {
+							if resourceToLines[latestResourceName].End == -1 || utils.InSlice(resourceNames, sanitizedLine) {
 								resourceToLines[latestResourceName].End = lineCounter - 1
 								if sanitizedLine != latestResourceName {
 									computedResources[latestResourceName] = true
@@ -270,12 +257,12 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 }
 func isLineFunctionDefinition(line string, resourceNames []string) bool {
 	sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
-	return common.InSlice(resourceNames, sanitizedLine)
+	return utils.InSlice(resourceNames, sanitizedLine)
 }
 
-func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *common.Lines, resourceNames []string) common.Lines {
-	nonFoundLines := common.Lines{Start: -1, End: -1}
-	switch common.GetFileFormat(filePath) {
+func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *types.Lines, resourceNames []string) types.Lines {
+	nonFoundLines := types.Lines{Start: -1, End: -1}
+	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		//#nosec G304
 		file, err := os.Open(filePath)
@@ -293,7 +280,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *com
 		funcIndentLevel := -1
 		for scanner.Scan() {
 			line := scanner.Text()
-			lineIndent := len(common.ExtractIndentationOfLine(line))
+			lineIndent := len(utils.ExtractIndentationOfLine(line))
 			if lineCounter == resourceLinesRange.Start-1 {
 				funcIndentLevel = lineIndent
 			}
@@ -308,10 +295,10 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *com
 			}
 			lineCounter++
 		}
-		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
+		linesInResource := utils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
 		numTags := linesInResource.End - linesInResource.Start
-		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
+		return types.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
 	default:
-		return common.Lines{Start: -1, End: -1}
+		return types.Lines{Start: -1, End: -1}
 	}
 }

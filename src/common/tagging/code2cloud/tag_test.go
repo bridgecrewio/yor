@@ -2,8 +2,8 @@ package code2cloud
 
 import (
 	"bridgecrewio/yor/src/common"
-	commonStructure "bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
+	"bridgecrewio/yor/src/common/utils"
 	"regexp"
 	"testing"
 
@@ -44,7 +44,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 		tagGroup.InitTagGroup("", nil)
 
 		block := &MockTestBlock{
-			Block: commonStructure.Block{
+			Block: common.Block{
 				FilePath:   path,
 				IsTaggable: true,
 			},
@@ -56,7 +56,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 }
 
 type MockTestBlock struct {
-	commonStructure.Block
+	common.Block
 }
 
 func (b *MockTestBlock) Init(_ string, _ interface{}) {}
@@ -69,12 +69,12 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
-	return common.Lines{Start: 1, End: 3}
+func (b *MockTestBlock) GetLines(_ ...bool) utils.Lines {
+	return utils.Lines{Start: 1, End: 3}
 }
 
-func (b *MockTestBlock) GetTagsLines() common.Lines {
-	return common.Lines{Start: -1, End: -1}
+func (b *MockTestBlock) GetTagsLines() utils.Lines {
+	return utils.Lines{Start: -1, End: -1}
 }
 
 func (b *MockTestBlock) GetSeparator() string {

@@ -1,7 +1,7 @@
 package gitservice
 
 import (
-	"bridgecrewio/yor/src/common"
+	utils2 "bridgecrewio/yor/src/common/utils"
 	"bridgecrewio/yor/tests/utils"
 	"os"
 	"path/filepath"
@@ -61,7 +61,7 @@ func TestNewGitService(t *testing.T) {
 		}()
 		gitService, _ := NewGitService(terragoatPath)
 
-		blame, _ := gitService.GetBlameForFileLines("terraform/aws/s3.tf", common.Lines{Start: 1, End: 13})
+		blame, _ := gitService.GetBlameForFileLines("terraform/aws/s3.tf", utils2.Lines{Start: 1, End: 13})
 		commit := blame.GetLatestCommit()
 		assert.Equal(t, 13, len(blame.BlamesByLine))
 		assert.Equal(t, "d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0", commit.Hash.String())

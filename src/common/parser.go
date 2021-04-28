@@ -1,4 +1,4 @@
-package structure
+package common
 
 type IParser interface {
 	Init(rootDir string, args map[string]string)

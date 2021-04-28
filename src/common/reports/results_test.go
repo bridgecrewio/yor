@@ -2,7 +2,6 @@ package reports
 
 import (
 	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/tags"
@@ -188,7 +187,7 @@ func TestResultsGeneration(t *testing.T) {
 func setupAccumulator() *TagChangeAccumulator {
 	accumulator := TagChangeAccumulatorInstance
 	accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			FilePath:    "/module/regional/mock.tf",
 			ExitingTags: nil,
 			NewTags: []tags.ITag{
@@ -232,7 +231,7 @@ func setupAccumulator() *TagChangeAccumulator {
 		},
 	})
 	accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			FilePath: "/module/regional/mock.tf",
 			ExitingTags: []tags.ITag{
 				&code2cloud.YorTraceTag{
@@ -325,7 +324,7 @@ func setupAccumulator() *TagChangeAccumulator {
 		},
 	})
 	accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			FilePath:    "/eks.tf",
 			ExitingTags: nil,
 			NewTags: []tags.ITag{
@@ -369,7 +368,7 @@ func setupAccumulator() *TagChangeAccumulator {
 		},
 	})
 	accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			FilePath: "/iam.tf",
 			ExitingTags: []tags.ITag{
 				&code2cloud.YorTraceTag{
@@ -456,7 +455,7 @@ func setupAccumulator() *TagChangeAccumulator {
 		},
 	})
 	accumulator.AccumulateChanges(&tfStructure.TerraformBlock{
-		Block: structure.Block{
+		Block: common.Block{
 			FilePath: "/iam.tf",
 			ExitingTags: []tags.ITag{
 				&code2cloud.YorTraceTag{

@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/tagging/utils"
+	utils2 "bridgecrewio/yor/src/common/utils"
 	"fmt"
 	"strings"
 
@@ -47,7 +47,7 @@ func validateTagGroupNames(v interface{}, _ string) error {
 	val, ok := v.([]string)
 	if ok {
 		for _, gn := range val {
-			if !common.InSlice(tagGroupsNames, gn) {
+			if !utils2.InSlice(tagGroupsNames, gn) {
 				return fmt.Errorf("tag group %s is not one of the supported tag groups. supported groups: %v", gn, tagGroupsNames)
 			}
 		}
@@ -62,7 +62,7 @@ func validateOutput(v interface{}, _ string) error {
 		return validator.ErrUnsupported
 	}
 
-	if val != "" && !common.InSlice(allowedOutputTypes, strings.ToLower(val)) {
+	if val != "" && !utils2.InSlice(allowedOutputTypes, strings.ToLower(val)) {
 		return fmt.Errorf("unsupported output type [%s]. allowed types: %s", val, allowedOutputTypes)
 	}
 

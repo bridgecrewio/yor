@@ -2,21 +2,17 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
+	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"reflect"
-
-	goformation_tags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )
 
 type CloudformationBlock struct {
-	structure.Block
-	lines    common.Lines
-	name     string
-	tagLines common.Lines
+	common.Block
+	Name string
 }
 
 func (b *CloudformationBlock) GetResourceID() string {
-	return b.name
+	return b.Name
 }
 
 func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
@@ -25,7 +21,7 @@ func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
 }
 
 func (b *CloudformationBlock) GetLines(_ ...bool) common.Lines {
-	return b.lines
+	return b.Lines
 }
 
 func (b *CloudformationBlock) UpdateTags() {
@@ -34,9 +30,9 @@ func (b *CloudformationBlock) UpdateTags() {
 	}
 
 	mergedTags := b.MergeTags()
-	cfnMergedTags := make([]goformation_tags.Tag, 0)
+	cfnMergedTags := make([]goformationTags.Tag, 0)
 	for _, t := range mergedTags {
-		cfnMergedTags = append(cfnMergedTags, goformation_tags.Tag{
+		cfnMergedTags = append(cfnMergedTags, goformationTags.Tag{
 			Key:   t.GetKey(),
 			Value: t.GetValue(),
 		})
@@ -47,7 +43,7 @@ func (b *CloudformationBlock) UpdateTags() {
 }
 
 func (b *CloudformationBlock) GetTagsLines() common.Lines {
-	return b.tagLines
+	return b.TagLines
 }
 
 func (b *CloudformationBlock) GetSeparator() string {

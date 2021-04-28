@@ -1,4 +1,4 @@
-package common
+package utils
 
 import (
 	"os"
@@ -10,6 +10,8 @@ type struct1 struct {
 	Public  string
 	private string
 }
+
+var parser YamlParser
 
 var struct1Instance = struct1{
 	Public:  "Public",
@@ -56,7 +58,7 @@ func TestStructContainsProperty(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotReflectValue := StructContainsProperty(tt.args.s, tt.args.property)
+			got, gotReflectValue := parser.StructContainsProperty(tt.args.s, tt.args.property)
 			if got != tt.want {
 				t.Errorf("StructContainsProperty() got = %v, want %v", got, tt.want)
 			}
@@ -213,7 +215,7 @@ func TestInSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InSlice(tt.args.slice, tt.args.elem); got != tt.want {
+			if got := parser.InSlice(tt.args.slice, tt.args.elem); got != tt.want {
 				t.Errorf("InSlice() = %v, want %v", got, tt.want)
 			}
 		})
