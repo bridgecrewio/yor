@@ -10,18 +10,14 @@ type YamlParser struct {
 }
 
 func InSlice(slice interface{}, elem interface{}) bool {
-	return InSlice(slice, elem)
-}
-
-func (p *YamlParser) InSlice(slice interface{}, elem interface{}) bool {
-	for _, e := range p.convertToInterfaceSlice(slice) {
-		if p.getKind(e) != p.getKind(elem) {
+	for _, e := range convertToInterfaceSlice(slice) {
+		if getKind(e) != getKind(elem) {
 			continue
 		}
-		if p.getKind(e) == reflect.Slice {
+		if getKind(e) == reflect.Slice {
 			inSlice := true
-			for _, subElem := range p.convertToInterfaceSlice(elem) {
-				inSlice = inSlice && p.InSlice(e, subElem)
+			for _, subElem := range convertToInterfaceSlice(elem) {
+				inSlice = inSlice && InSlice(e, subElem)
 				if !inSlice {
 					break
 				}
@@ -35,6 +31,10 @@ func (p *YamlParser) InSlice(slice interface{}, elem interface{}) bool {
 	}
 
 	return false
+}
+
+func (p *YamlParser) InSlice(slice interface{}, elem interface{}) bool {
+	return InSlice(slice, elem)
 }
 
 func getKind(val interface{}) reflect.Kind {

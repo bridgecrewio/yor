@@ -78,22 +78,21 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 
 		currentRawBlock := b.RawBlock
 		var tagsAttributeName string = b.TagsAttributeName
-		currentTags := currentRawBlock
-		currentTagsKeysVals := currentTags
-		fmt.Println(currentTagsKeysVals, tagsAttributeName)
+		currentTags := currentRawBlock.(map[interface{}]interface{})[b.TagsAttributeName]
+		fmt.Println(currentTags, tagsAttributeName)
 		sort.Slice(expectedMergedTags, func(i, j int) bool {
 			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
 		})
 
-		//assert.Equal(t, len(expectedMergedTags), len(currentTagsKeysVals)
-		//for _, currentTagsKey := range currentTagsKeysVals.MapKeys() {
-		//	for j, expectedMergedTag := range expectedMergedTags {
-		//		if expectedMergedTag.GetKey() == currentTagsKey.Elem().String() {
-		//			assert.Equal(t, expectedMergedTags[j].GetKey(), currentTagsKey.Elem().String())
-		//			assert.Equal(t, expectedMergedTags[j].GetValue(), currentTagsKeysVals.MapIndex(currentTagsKey).Elem().String())
-		//		}
-		//	}
-		//}
+		assert.Equal(t, len(expectedMergedTags), len(currentTags.(map[string]string)))
+		for currentTagKey, currentTagVals := range currentTags.(map[string]string) {
+			for j, expectedMergedTag := range expectedMergedTags {
+				if expectedMergedTag.GetKey() == currentTagKey {
+					assert.Equal(t, expectedMergedTags[j].GetKey(), currentTagKey)
+					assert.Equal(t, expectedMergedTags[j].GetValue(), currentTagVals)
+				}
+			}
+		}
 
 	})
 }
