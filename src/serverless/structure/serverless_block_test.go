@@ -3,7 +3,6 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/utils"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -54,7 +53,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 		expectedMergedTags := []tags.ITag{
 			&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"}, &tags.Tag{Key: "TAG2_FUNC", Value: "Func2 Tag Value"}, &tags.Tag{Key: "yor_trace", Value: "yor_trace"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
-		absFilePath, _ := filepath.Abs(strings.Join([]string{parser.rootDir, "serverless.yml"}, "/"))
+		absFilePath, _ := filepath.Abs(strings.Join([]string{parser.YamlParser.RootDir, "serverless.yml"}, "/"))
 		template, err := parser.ParseFile(absFilePath)
 		if err != nil {
 			t.Errorf("There was an error processing the cloudformation template: %s", err)
@@ -70,9 +69,9 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 				RawBlock:          resource[0].GetRawBlock(),
 				IsTaggable:        true,
 				TagsAttributeName: "tags",
+				Lines:             common.Lines{Start: 4, End: 14},
 			},
-			name:  resourceName,
-			lines: utils.Lines{Start: 4, End: 14},
+			Name: resourceName,
 		}
 
 		b.UpdateTags()

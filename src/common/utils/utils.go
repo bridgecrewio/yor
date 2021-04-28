@@ -1,13 +1,35 @@
 package utils
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/types"
 	"reflect"
 )
 
 type YamlParser struct {
-	RootDir              string
-	FileToResourcesLines map[string]common.Lines
+	types.YamlParser
+}
+
+func InSlice(slice interface{}, elem interface{}) bool {
+	for _, e := range convertToInterfaceSlice(slice) {
+		if getKind(e) != getKind(elem) {
+			continue
+		}
+		if getKind(e) == reflect.Slice {
+			inSlice := true
+			for _, subElem := range convertToInterfaceSlice(elem) {
+				inSlice = inSlice && InSlice(e, subElem)
+				if !inSlice {
+					break
+				}
+			}
+			if inSlice {
+				return true
+			}
+		} else if e == elem {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *YamlParser) InSlice(slice interface{}, elem interface{}) bool {
@@ -34,12 +56,16 @@ func (p *YamlParser) InSlice(slice interface{}, elem interface{}) bool {
 	return false
 }
 
-func (p *YamlParser) getKind(val interface{}) reflect.Kind {
+func getKind(val interface{}) reflect.Kind {
 	s := reflect.ValueOf(val)
 	return s.Kind()
 }
 
-func (p *YamlParser) convertToInterfaceSlice(origin interface{}) []interface{} {
+func (p *YamlParser) getKind(val interface{}) reflect.Kind {
+	return getKind(val)
+}
+
+func convertToInterfaceSlice(origin interface{}) []interface{} {
 	s := reflect.ValueOf(origin)
 	if s.Kind() != reflect.Slice {
 		return make([]interface{}, 0)
@@ -52,6 +78,10 @@ func (p *YamlParser) convertToInterfaceSlice(origin interface{}) []interface{} {
 	}
 
 	return ret
+}
+
+func (p *YamlParser) convertToInterfaceSlice(origin interface{}) []interface{} {
+	return convertToInterfaceSlice(origin)
 }
 
 func (p *YamlParser) StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {

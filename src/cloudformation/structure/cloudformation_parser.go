@@ -47,8 +47,10 @@ const TagsAttributeName = "Tags"
 var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Description", "Metadata", "Parameters", "Mappings", "Conditions", "Outputs", "Resources"}
 
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
-	p.RootDir = rootDir
-	p.FileToResourcesLines = make(map[string]common.Lines)
+	p.YamlParser = &types.YamlParser{
+		RootDir:              rootDir,
+		FileToResourcesLines: make(map[string]common.Lines),
+	}
 }
 
 func (p *CloudformationParser) GetSkippedDirs() []string {
@@ -138,7 +140,7 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 }
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []common.IBlock, writeFilePath string) error {
-	err := utils.EncodeBlocksToYaml(p, readFilePath, blocks, writeFilePath)
+	err := utils.EncodeBlocksToYaml(readFilePath, blocks, writeFilePath, TagsAttributeName, p.YamlParser.FileToResourcesLines[readFilePath])
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to encode %s", readFilePath))
 	}

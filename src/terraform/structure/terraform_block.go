@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/utils"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -11,6 +10,10 @@ import (
 type TerraformBlock struct {
 	common.Block
 	HclSyntaxBlock *hclsyntax.Block
+}
+
+func (b *TerraformBlock) UpdateTags() {
+	return
 }
 
 func (b *TerraformBlock) GetResourceID() string {
@@ -26,10 +29,10 @@ func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
 	b.HclSyntaxBlock = hclSyntaxBlock
 }
 
-func (b *TerraformBlock) GetLines(getContentLinesOnly ...bool) utils.Lines {
+func (b *TerraformBlock) GetLines(getContentLinesOnly ...bool) common.Lines {
 	r := b.HclSyntaxBlock.Body.Range()
 	if len(getContentLinesOnly) == 0 || !getContentLinesOnly[0] {
-		return utils.Lines{Start: r.Start.Line, End: r.End.Line}
+		return common.Lines{Start: r.Start.Line, End: r.End.Line}
 	}
 
 	endOfLastAttribute := r.Start.Line
@@ -39,16 +42,16 @@ func (b *TerraformBlock) GetLines(getContentLinesOnly ...bool) utils.Lines {
 		}
 	}
 
-	return utils.Lines{Start: r.Start.Line, End: endOfLastAttribute}
+	return common.Lines{Start: r.Start.Line, End: endOfLastAttribute}
 }
 
-func (b *TerraformBlock) GetTagsLines() utils.Lines {
+func (b *TerraformBlock) GetTagsLines() common.Lines {
 	for _, attr := range b.HclSyntaxBlock.Body.Attributes {
 		if attr.Name == b.TagsAttributeName {
-			return utils.Lines{Start: attr.SrcRange.Start.Line, End: attr.SrcRange.End.Line}
+			return common.Lines{Start: attr.SrcRange.Start.Line, End: attr.SrcRange.End.Line}
 		}
 	}
-	return utils.Lines{Start: -1, End: -1}
+	return common.Lines{Start: -1, End: -1}
 }
 func (b *TerraformBlock) GetSeparator() string {
 	return "="

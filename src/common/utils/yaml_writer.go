@@ -1,11 +1,8 @@
 package utils
 
 import (
-	cfnStructure "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/types"
-	slsStructure "bridgecrewio/yor/src/serverless/structure"
 	"fmt"
 	"github.com/sanathkr/yaml"
 	"io/ioutil"
@@ -65,6 +62,7 @@ func WriteYAMLFile(readFilePath string, blocks []common.IBlock, writeFilePath st
 
 	return err
 }
+
 func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
 	switch rawMap.(type) {
 	case map[interface{}]interface{}:
@@ -172,32 +170,14 @@ func IndentLines(textLines []string, indent string) []string {
 	return textLines
 }
 
-func EncodeBlocksToYaml(parser interface{}, readFilePath string, blocks []common.IBlock, writeFilePath string) error {
+func EncodeBlocksToYaml(readFilePath string, blocks []common.IBlock, writeFilePath string, tagsAttributeName string, resourceLines common.Lines) []common.IBlock {
 	fileFormat := GetFileFormat(readFilePath)
-	var concreteParser interface{}
 	switch fileFormat {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		for _, block := range blocks {
-			switch parser.(type) {
-			case cfnStructure.CloudformationBlock:
-				block, ok := block.(*cfnStructure.CloudformationBlock)
-				if !ok {
-					logger.Warning("failed to convert block to ServerlessBlock")
-					continue
-				}
-				block.UpdateTags()
-				break
-			case slsStructure.ServerlessBlock:
-				block, ok := block.(*slsStructure.ServerlessBlock)
-				if !ok {
-					logger.Warning("failed to convert block to ServerlessBlock")
-					continue
-				}
-				block.UpdateTags()
-			}
+			block.UpdateTags()
 		}
-		return WriteYAMLFile(readFilePath, blocks, writeFilePath, concreteParser.(types.YamlParser).FileToResourcesLines[readFilePath], slsStructure.FunctionTagsAttributeName)
-
+		return blocks
 	default:
 		logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
 		return nil

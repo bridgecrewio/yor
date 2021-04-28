@@ -95,7 +95,7 @@ func (t *TagGroup) CreateTagsForBlock(block common.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *TagGroup) getBlockLinesInGit(block common.IBlock) utils.Lines {
+func (t *TagGroup) getBlockLinesInGit(block common.IBlock) common.Lines {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
 	originStart := blockLines.Start
@@ -115,7 +115,7 @@ func (t *TagGroup) getBlockLinesInGit(block common.IBlock) utils.Lines {
 		originEnd--
 	}
 
-	return utils.Lines{Start: gitStart, End: gitEnd}
+	return common.Lines{Start: gitStart, End: gitEnd}
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
