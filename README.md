@@ -57,7 +57,8 @@ More Docs:
 On MacOS
 
 ```sh
-brew install yor
+brew tap bridgecrewio/formulae
+brew install bridgecrewio/formulae/yor
 ```
 
 
