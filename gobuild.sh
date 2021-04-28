@@ -3,6 +3,7 @@
 set -eux
 
 export GOPATH="$(pwd)/.gobuild"
+
 SRCDIR="${GOPATH}/src/github.com/bridgecrewio/yor"
 
 [ -d ${GOPATH} ] && rm -rf ${GOPATH}
