@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/utils"
+	"bridgecrewio/yor/src/common"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -14,7 +14,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		directory := "../../tests/serverless/resources"
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
-		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.rootDir, "serverless.yml"}, "/"))
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.YamlParser.RootDir, "serverless.yml"}, "/"))
 		slsBlocks, err := slsParser.ParseFile(slsFilepath)
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
@@ -22,7 +22,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
-		assert.Equal(t, utils.Lines{Start: 13, End: 18}, func1Block.GetLines())
+		assert.Equal(t, common.Lines{Start: 13, End: 18}, func1Block.GetLines())
 		assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
 		existingTag := func1Block.GetExistingTags()[0]
@@ -32,7 +32,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 
 }
 
-func compareLines(t *testing.T, expected map[string]*utils.Lines, actual map[string]*utils.Lines) {
+func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[string]*common.Lines) {
 	for resourceName := range expected {
 		actualLines := actual[resourceName]
 		if actualLines == nil {
@@ -56,11 +56,11 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
-		expected := map[string]*utils.Lines{
+		expected := map[string]*common.Lines{
 			"myFunction": {Start: 13, End: 18},
 		}
 		func1Lines := func1Block.GetLines()
-		compareLines(t, expected, map[string]*utils.Lines{"myFunction": &func1Lines})
+		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines})
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
@@ -79,10 +79,10 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			t.Errorf("ParseFile() error = %v", err)
 			return
 		}
-		expected := map[string]*utils.Lines{
+		expected := map[string]*common.Lines{
 			"myFunction":  {Start: 13, End: 18},
 			"myFunction2": {Start: 19, End: 25},
 		}
-		compareLines(t, expected, map[string]*utils.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
+		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
 }
