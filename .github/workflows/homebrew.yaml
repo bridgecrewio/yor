@@ -1,10 +1,7 @@
 name: Homebrew
 
 on:
-  release:
-    types:
-      - created
-      - published
+  release
 
 jobs:
   formula:
