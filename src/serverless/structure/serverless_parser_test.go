@@ -2,7 +2,6 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/types"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,18 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-type struct1 struct {
-	Public  string
-	private string
-}
-
-var struct1Instance = struct1{
-	Public:  "Public",
-	private: "private",
-}
-
-var parser types.YamlParser
 
 func TestServerlessParser_ParseFile(t *testing.T) {
 	t.Run("parse serverless file", func(t *testing.T) {
