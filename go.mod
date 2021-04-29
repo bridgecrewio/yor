@@ -24,4 +24,4 @@ require (
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 )
 
-replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.29
+replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
