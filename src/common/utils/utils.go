@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/types"
+	"bufio"
+	"fmt"
+	"os"
 	"reflect"
 )
 
@@ -75,4 +80,18 @@ func (p *YamlParser) StructContainsProperty(s interface{}, property string) (boo
 	}
 
 	return true, field
+}
+
+func GetFileScanner(filePath string, nonFoundLines *common.Lines) (*bufio.Scanner, *common.Lines) {
+	//#nosec G304
+	file, err := os.Open(filePath)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
+		return nil, nonFoundLines
+	}
+	scanner := bufio.NewScanner(file)
+	defer func() {
+		_ = file.Close()
+	}()
+	return scanner, nonFoundLines
 }

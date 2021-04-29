@@ -259,16 +259,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *com
 	nonFoundLines := common.Lines{Start: -1, End: -1}
 	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		//#nosec G304
-		file, err := os.Open(filePath)
-		if err != nil {
-			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-			return nonFoundLines
-		}
-		scanner := bufio.NewScanner(file)
-		defer func() {
-			_ = file.Close()
-		}()
+		scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		resourceLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
