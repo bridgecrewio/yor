@@ -65,8 +65,9 @@ func WriteYAMLFile(readFilePath string, blocks []common.IBlock, writeFilePath st
 }
 
 func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
-	switch rawMap.(type) {
+	switch t := rawMap.(type) {
 	case map[interface{}]interface{}:
+		fmt.Println(t)
 		rawMapCasted := rawMap.(map[interface{}]interface{})
 		for mapKey, mapValue := range rawMapCasted {
 			mapKeyString := mapKey.(string)

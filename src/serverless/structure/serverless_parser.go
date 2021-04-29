@@ -195,7 +195,10 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	latestResourceName = ""
 	funcLineIndentation := -1
 	scanner = bufio.NewScanner(file)
-	file.Seek(0, io.SeekStart)
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	lineCounter = 0
 	doneFunctions := false
 	for scanner.Scan() {
