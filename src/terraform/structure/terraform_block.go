@@ -2,9 +2,8 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	"strings"
-
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"strings"
 )
 
 type TerraformBlock struct {
@@ -13,7 +12,6 @@ type TerraformBlock struct {
 }
 
 func (b *TerraformBlock) UpdateTags() {
-	return
 }
 
 func (b *TerraformBlock) GetResourceID() string {

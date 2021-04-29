@@ -74,7 +74,6 @@ type MockTestBlock struct {
 }
 
 func (b *MockTestBlock) UpdateTags() {
-	return
 }
 
 func (b *MockTestBlock) Init(_ string, _ interface{}) {}

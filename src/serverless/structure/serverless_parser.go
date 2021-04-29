@@ -71,7 +71,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]common.IBlock, error) {
 		logger.Error(fmt.Sprintf("There was an error processing the serverless template: %s", err), "SILENT")
 
 	}
-	//cfnStackTagsResource := p.template.Provider.CFNTags
+	// cfnStackTagsResource := p.template.Provider.CFNTags
 	functions := p.Template.Provider.Functions
 	functionsMap := functions.(map[interface{}]interface{})
 	resourceNames := make([]string, 0)
