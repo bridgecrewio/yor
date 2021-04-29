@@ -9,13 +9,12 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/awslabs/goformation/v4/cloudformation"
+	"gopkg.in/yaml.v2"
 	"io"
+	"io/ioutil"
 	"math"
 	"os"
 	"strings"
-
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 const FunctionTagsAttributeName = "tags"
@@ -77,7 +76,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]common.IBlock, error) {
 	functionsMap := functions.(map[interface{}]interface{})
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*common.Lines
-	for funcName, _ := range functionsMap {
+	for funcName := range functionsMap {
 		resourceNames = append(resourceNames, funcName.(string))
 	}
 	switch utils.GetFileFormat(filePath) {
@@ -93,8 +92,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]common.IBlock, error) {
 		funcRange := functionsMap[funcName].(map[interface{}]interface{})
 		for key, val := range funcRange {
 			lines := resourceNamesToLines[funcName]
-			switch key {
-			case FunctionTagsAttributeName:
+			if key == FunctionTagsAttributeName {
 				funcTags := val.(map[interface{}]interface{})
 				for tagKey, tagValue := range funcTags {
 					existingTags = append(existingTags, &tags.Tag{
@@ -119,8 +117,8 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]common.IBlock, error) {
 					Name: funcName,
 				}
 				parsedBlocks = append(parsedBlocks, slsBlock)
+				p.YamlParser.FileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
 			}
-			p.YamlParser.FileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
 		}
 	}
 	return parsedBlocks, nil
@@ -138,7 +136,7 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []common.IBlock
 
 func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
 	resourceToLines := make(map[string]*common.Lines)
-	computedResources := make(map[string]bool, 0)
+	computedResources := make(map[string]bool)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
@@ -221,7 +219,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 					}
 					if latestResourceName != "" {
 						switch lineIndentation {
-						case int(funcLineIndentation):
+						case funcLineIndentation:
 							if resourceToLines[latestResourceName].End == -1 || utils.InSlice(resourceNames, sanitizedLine) {
 								resourceToLines[latestResourceName].End = lineCounter - 1
 								if sanitizedLine != latestResourceName {
@@ -229,18 +227,15 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 									latestResourceName = sanitizedLine
 								}
 							}
-							break
-						case int(functionsSectionlineIndentation):
+						case functionsSectionlineIndentation:
 							// End functions sections
 							resourceToLines[latestResourceName].End = lineCounter
 							computedResources[latestResourceName] = true
-							break
 						default:
-							if lineIndentation <= int(functionsSectionlineIndentation) && line != "" {
+							if lineIndentation <= functionsSectionlineIndentation && line != "" {
 								resourceToLines[latestResourceName].End = lineCounter - 1
 								computedResources[latestResourceName] = true
 								doneFunctions = true
-								break
 							}
 						}
 					}

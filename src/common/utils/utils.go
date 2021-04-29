@@ -42,10 +42,6 @@ func getKind(val interface{}) reflect.Kind {
 	return s.Kind()
 }
 
-func (p *YamlParser) getKind(val interface{}) reflect.Kind {
-	return getKind(val)
-}
-
 func convertToInterfaceSlice(origin interface{}) []interface{} {
 	s := reflect.ValueOf(origin)
 	if s.Kind() != reflect.Slice {
@@ -59,10 +55,6 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 	}
 
 	return ret
-}
-
-func (p *YamlParser) convertToInterfaceSlice(origin interface{}) []interface{} {
-	return convertToInterfaceSlice(origin)
 }
 
 func (p *YamlParser) StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {

@@ -13,7 +13,15 @@ import (
 func TestServerlessParser_ParseFile(t *testing.T) {
 	t.Run("parse serverless file", func(t *testing.T) {
 		path, err := os.Getwd()
-		os.Chdir(path)
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
+		}
+		err = os.Chdir(path)
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
+		}
 		directory := "../../../tests/serverless/resources"
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)

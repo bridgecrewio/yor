@@ -39,7 +39,7 @@ func (b *ServerlessBlock) UpdateTags() {
 
 		slsMergedTags = append(slsMergedTags, slsTag)
 	}
-	slsMergedTagsValue := make(map[string]string, 0)
+	slsMergedTagsValue := make(map[string]string)
 	for _, mergedTag := range slsMergedTags {
 		slsMergedTagsValue[mergedTag.Key.Name()] = mergedTag.Value
 	}
