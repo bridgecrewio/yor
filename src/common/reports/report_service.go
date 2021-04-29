@@ -73,7 +73,7 @@ func (r *ReportService) CreateReport() *Report {
 	}
 	r.report.NewResourceTags = []TagRecord{}
 	for _, block := range changesAccumulator.NewBlockTraces {
-		for _, tag := range block.MergeTags() {
+		for _, tag := range block.GetNewTags() {
 			r.report.NewResourceTags = append(r.report.NewResourceTags, TagRecord{
 				File:         block.GetFilePath(),
 				ResourceID:   block.GetResourceID(),
