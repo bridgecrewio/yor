@@ -46,7 +46,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
-		assert.Equal(t, structure.Lines{Start: 13, End: 18}, func1Block.GetLines())
+		assert.Equal(t, structure.Lines{Start: 14, End: 19}, func1Block.GetLines())
 		assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
 		existingTag := func1Block.GetExistingTags()[0]
@@ -81,7 +81,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
 		expected := map[string]*structure.Lines{
-			"myFunction": {Start: 13, End: 18},
+			"myFunction": {Start: 14, End: 19},
 		}
 		func1Lines := func1Block.GetLines()
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
@@ -111,8 +111,8 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			return
 		}
 		expected := map[string]*structure.Lines{
-			"myFunction":  {Start: 13, End: 18},
-			"myFunction2": {Start: 19, End: 25},
+			"myFunction":  {Start: 14, End: 19},
+			"myFunction2": {Start: 20, End: 26},
 		}
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
