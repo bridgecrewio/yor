@@ -1,9 +1,11 @@
 package utils
 
 import (
+	structure3 "bridgecrewio/yor/src/cloudformation/structure"
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
+	structure2 "bridgecrewio/yor/src/serverless/structure"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -170,7 +172,14 @@ func EncodeBlocksToYaml(readFilePath string, blocks []structure.IBlock, writeFil
 	switch fileFormat {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		for _, block := range blocks {
-			block.UpdateTags()
+			switch block.(type) {
+			case *structure2.ServerlessBlock:
+				slsBlock := block.(*structure2.ServerlessBlock)
+				slsBlock.UpdateTags()
+			case *structure3.CloudformationBlock:
+				cfnBlock := block.(*structure3.CloudformationBlock)
+				cfnBlock.UpdateTags()
+			}
 		}
 		return blocks
 	default:
