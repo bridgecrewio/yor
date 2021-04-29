@@ -79,11 +79,18 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
+		var func1Block, func2Block *ServerlessBlock
 		slsBlocks, err := slsParser.ParseFile(slsFilepath)
-		func1Block := slsBlocks[0]
-		func1Lines := func1Block.GetLines()
+		for _, block := range slsBlocks {
+			castedBlock := block.(*ServerlessBlock)
+			if castedBlock.Name == "myFunction" {
+				func1Block = castedBlock
+			} else {
+				func2Block = castedBlock
+			}
 
-		func2Block := slsBlocks[1]
+		}
+		func1Lines := func1Block.GetLines()
 		func2Lines := func2Block.GetLines()
 
 		if err != nil {
