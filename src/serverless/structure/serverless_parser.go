@@ -7,6 +7,7 @@ import (
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/src/common/types"
 	"bridgecrewio/yor/src/common/utils"
+	yamlUtils "bridgecrewio/yor/src/common/yaml"
 	"bufio"
 	"fmt"
 	"io"
@@ -133,8 +134,8 @@ func (p *ServerlessParser) extractLines(filePath string, lines *structure.Lines,
 }
 
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	updatedBlocks := utils.EncodeBlocksToYaml(readFilePath, blocks, writeFilePath, FunctionTagsAttributeName, p.YamlParser.FileToResourcesLines[readFilePath])
-	return utils.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath], FunctionTagsAttributeName)
+	updatedBlocks := yamlUtils.EncodeBlocksToYaml(readFilePath, blocks)
+	return yamlUtils.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath], FunctionTagsAttributeName)
 }
 
 func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*structure.Lines {
@@ -284,7 +285,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 			}
 			lineCounter++
 		}
-		linesInResource := utils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
+		linesInResource := yamlUtils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
 		numTags := linesInResource.End - linesInResource.Start
 		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
 	default:

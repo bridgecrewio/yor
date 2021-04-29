@@ -12,9 +12,6 @@ type TerraformBlock struct {
 	HclSyntaxBlock *hclsyntax.Block
 }
 
-func (b *TerraformBlock) UpdateTags() {
-}
-
 func (b *TerraformBlock) GetResourceID() string {
 	return strings.Join(b.HclSyntaxBlock.Labels, ".")
 }

@@ -1,12 +1,16 @@
 package utils
 
 import (
+	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"bridgecrewio/yor/src/common/structure"
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 )
 
 func InSlice(slice interface{}, elem interface{}) bool {
@@ -65,4 +69,47 @@ func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*bufio.Sca
 		_ = file.Close()
 	}()
 	return scanner, nonFoundLines
+}
+
+func GetFileFormat(filePath string) string {
+	splitByDot := strings.Split(filePath, ".")
+	if len(splitByDot) < 2 {
+		return ""
+	}
+	if strings.HasSuffix(filePath, common.CFTFileType.Extension) {
+		absFilePath, _ := filepath.Abs(filePath)
+		// #nosec G304 - file is from user
+		content, _ := ioutil.ReadFile(absFilePath)
+		if strings.HasPrefix(string(content), "{") {
+			return common.JSONFileType.FileFormat
+		}
+		return common.YamlFileType.FileFormat
+	}
+	return splitByDot[len(splitByDot)-1]
+}
+
+func GetLinesFromBytes(bytes []byte) []string {
+	return strings.Split(string(bytes), "\n")
+}
+
+func ExtractIndentationOfLine(textLine string) string {
+	indent := ""
+	for _, c := range textLine {
+		if c != ' ' {
+			break
+		}
+		indent += " "
+	}
+
+	return indent
+}
+
+func IndentLines(textLines []string, indent string) []string {
+	originIndent := ExtractIndentationOfLine(textLines[0])
+	for i, originLine := range textLines {
+		noLeadingWhitespace := originLine[len(originIndent):]
+		textLines[i] = indent + noLeadingWhitespace
+	}
+
+	return textLines
 }

@@ -2,77 +2,10 @@ package utils
 
 import (
 	"os"
-	"reflect"
 	"testing"
 )
 
-type struct1 struct {
-	Public  string
-	private string
-}
-
-var parser YamlParser
-
-var struct1Instance = struct1{
-	Public:  "Public",
-	private: "private",
-}
-
 var currentDir, _ = os.Getwd()
-
-func TestStructContainsProperty(t *testing.T) {
-	type args struct {
-		s        interface{}
-		property string
-	}
-	tests := []struct {
-		name      string
-		args      args
-		want      bool
-		wantValue reflect.Value
-	}{
-		{
-			name:      "Public attribute",
-			args:      args{s: struct1Instance, property: "Public"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.Public),
-		},
-		{
-			name:      "Private attribute",
-			args:      args{s: struct1Instance, property: "private"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.private),
-		},
-		{
-			name:      "No such attribute",
-			args:      args{s: struct1Instance, property: "protected"},
-			want:      false,
-			wantValue: reflect.ValueOf(nil),
-		},
-		{
-			name:      "Pointer to struct",
-			args:      args{s: &struct1Instance, property: "Public"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.Public),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotReflectValue := parser.StructContainsProperty(tt.args.s, tt.args.property)
-			if got != tt.want {
-				t.Errorf("StructContainsProperty() got = %v, want %v", got, tt.want)
-			}
-			if gotReflectValue.Kind() == reflect.String {
-				gotValue := gotReflectValue.String()
-				if !reflect.DeepEqual(gotValue, tt.wantValue.String()) {
-					t.Errorf("StructContainsProperty() gotReflectValue = %v, want %v", gotReflectValue, tt.wantValue)
-				}
-			} else if !reflect.DeepEqual(gotReflectValue, tt.wantValue) {
-				t.Errorf("StructContainsProperty() gotReflectValue = %v, want %v", gotReflectValue, tt.wantValue)
-			}
-		})
-	}
-}
 
 func TestGetFileFormat(t *testing.T) {
 	type args struct {
@@ -215,7 +148,7 @@ func TestInSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parser.InSlice(tt.args.slice, tt.args.elem); got != tt.want {
+			if got := InSlice(tt.args.slice, tt.args.elem); got != tt.want {
 				t.Errorf("InSlice() = %v, want %v", got, tt.want)
 			}
 		})

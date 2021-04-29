@@ -7,6 +7,7 @@ import (
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/src/common/types"
 	"bridgecrewio/yor/src/common/utils"
+	"bridgecrewio/yor/src/common/yaml"
 	"bufio"
 	"fmt"
 	"math"
@@ -141,11 +142,11 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 }
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	err := utils.EncodeBlocksToYaml(readFilePath, blocks, writeFilePath, TagsAttributeName, p.YamlParser.FileToResourcesLines[readFilePath])
+	err := yaml.EncodeBlocksToYaml(readFilePath, blocks)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to encode %s", readFilePath))
 	}
-	return utils.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName)
+	return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName)
 }
 
 func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*structure.Lines {
@@ -246,7 +247,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			}
 			lineCounter++
 		}
-		linesInResource := utils.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
+		linesInResource := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
 		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
 	default:
 		return structure.Lines{Start: -1, End: -1}
