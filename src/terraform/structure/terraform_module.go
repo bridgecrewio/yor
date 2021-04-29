@@ -60,13 +60,6 @@ func (t *TerraformModule) InitProvider() {
 		}
 		pty := addrs.NewLegacyProvider(provider)
 		logger.MuteLogging()
-		//if provider == "google" {
-		//	setGoogleVersion, err := discovery.ConstraintStr("3.65.0").Parse()
-		//	if err != nil {
-		//		logger.Error(fmt.Sprintf("failed to parse google version str because of errors %s", err))
-		//	}
-		//	constraints.Versions.Append(setGoogleVersion)
-		//}
 		_, diagnostics, err := providerInstaller.Get(pty, constraints.Versions)
 		logger.UnmuteLogging()
 		if diagnostics != nil && diagnostics.HasErrors() {
