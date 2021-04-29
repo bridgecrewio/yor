@@ -3,7 +3,6 @@ package simple
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/utils"
 	"os"
 	"sort"
 	"testing"
@@ -62,6 +61,10 @@ type MockTestBlock struct {
 	common.Block
 }
 
+func (b *MockTestBlock) UpdateTags() {
+	return
+}
+
 func (b *MockTestBlock) Init(_ string, _ interface{}) {}
 
 func (b *MockTestBlock) String() string {
@@ -72,12 +75,12 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines(_ ...bool) utils.Lines {
-	return utils.Lines{Start: 1, End: 3}
+func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
+	return common.Lines{Start: 1, End: 3}
 }
 
-func (b *MockTestBlock) GetTagsLines() utils.Lines {
-	return utils.Lines{Start: -1, End: -1}
+func (b *MockTestBlock) GetTagsLines() common.Lines {
+	return common.Lines{Start: -1, End: -1}
 }
 
 func (b *MockTestBlock) GetSeparator() string {

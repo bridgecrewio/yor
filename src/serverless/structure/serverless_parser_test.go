@@ -2,6 +2,7 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,7 +12,9 @@ import (
 
 func TestServerlessParser_ParseFile(t *testing.T) {
 	t.Run("parse serverless file", func(t *testing.T) {
-		directory := "../../tests/serverless/resources"
+		path, err := os.Getwd()
+		os.Chdir(path)
+		directory := "../../../tests/serverless/resources"
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.YamlParser.RootDir, "serverless.yml"}, "/"))
@@ -45,7 +48,7 @@ func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[st
 
 func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test single resource", func(t *testing.T) {
-		directory := "../../tests/serverless/resources"
+		directory := "../../../tests/serverless/resources"
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
@@ -64,7 +67,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
-		directory := "../../tests/serverless/resources"
+		directory := "../../../tests/serverless/resources"
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
