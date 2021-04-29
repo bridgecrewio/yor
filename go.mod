@@ -26,4 +26,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.29
+replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
