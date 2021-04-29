@@ -2,8 +2,9 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
-	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"reflect"
+
+	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )
 
 type CloudformationBlock struct {

@@ -8,13 +8,14 @@ import (
 	"bridgecrewio/yor/src/common/utils"
 	"bufio"
 	"fmt"
-	"github.com/awslabs/goformation/v4/cloudformation"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"math"
 	"os"
 	"strings"
+
+	"github.com/awslabs/goformation/v4/cloudformation"
+	"gopkg.in/yaml.v2"
 )
 
 const FunctionTagsAttributeName = "tags"

@@ -2,6 +2,7 @@ package types
 
 import (
 	"bridgecrewio/yor/src/common"
+
 	"github.com/awslabs/goformation/v4/cloudformation"
 )
 

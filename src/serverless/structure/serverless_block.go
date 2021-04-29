@@ -2,6 +2,7 @@ package structure
 
 import (
 	"bridgecrewio/yor/src/common"
+
 	"go.opencensus.io/tag"
 )
 

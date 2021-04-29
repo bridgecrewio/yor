@@ -4,10 +4,11 @@ import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
 	"fmt"
-	"github.com/sanathkr/yaml"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+
+	"github.com/sanathkr/yaml"
 )
 
 func WriteYAMLFile(readFilePath string, blocks []common.IBlock, writeFilePath string, resourcesLinesRange common.Lines, tagsAttributeName string) error {
