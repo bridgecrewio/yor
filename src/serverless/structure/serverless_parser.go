@@ -60,6 +60,7 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
+	// #nosec G304 - file is from user
 	template, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))

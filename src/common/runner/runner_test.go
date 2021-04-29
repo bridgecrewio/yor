@@ -7,9 +7,9 @@ import (
 	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
-	utils2 "bridgecrewio/yor/src/common/utils"
+	"bridgecrewio/yor/src/common/utils"
 	terraformStructure "bridgecrewio/yor/src/terraform/structure"
-	"bridgecrewio/yor/tests/utils"
+	testingUtils "bridgecrewio/yor/tests/utils"
 	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"io/ioutil"
@@ -99,7 +99,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		originFileLines := utils2.GetLinesFromBytes(originFileBytes)
+		originFileLines := utils.GetLinesFromBytes(originFileBytes)
 
 		defer func() {
 			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
@@ -122,7 +122,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		editedFileLines := utils2.GetLinesFromBytes(editedFileBytes)
+		editedFileLines := utils.GetLinesFromBytes(editedFileBytes)
 
 		expectedAddedLines := len(mockGitTagGroup.GetTags()) * 2
 		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
@@ -187,7 +187,7 @@ func TestRunnerInternals(t *testing.T) {
 	t.Run("Test skip entire dir", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
-		output := utils.CaptureOutput(func() {
+		output := testingUtils.CaptureOutput(func() {
 			_ = runner.Init(&cli.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{

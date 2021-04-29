@@ -40,7 +40,6 @@ type IBlock interface {
 	GetResourceID() string
 	GetTagsLines() Lines
 	GetSeparator() string
-	UpdateTags()
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {

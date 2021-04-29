@@ -9,8 +9,8 @@ import (
 	"bridgecrewio/yor/src/common/tagging"
 	"bridgecrewio/yor/src/common/tagging/simple"
 	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/tagging/utils"
-	utils2 "bridgecrewio/yor/src/common/utils"
+	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
+	"bridgecrewio/yor/src/common/utils"
 	slsStructure "bridgecrewio/yor/src/serverless/structure"
 	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
@@ -37,7 +37,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 	}
 	for _, group := range commands.TagGroups {
-		tagGroup := utils.TagGroupsByName(utils.TagGroupName(group))
+		tagGroup := taggingUtils.TagGroupsByName(taggingUtils.TagGroupName(group))
 		r.tagGroups = append(r.tagGroups, tagGroup)
 	}
 	r.tagGroups = append(r.tagGroups, extraTagGroups...)
@@ -58,7 +58,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 	r.skippedTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
 
-	if utils2.InSlice(r.skipDirs, r.dir) {
+	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	return nil
