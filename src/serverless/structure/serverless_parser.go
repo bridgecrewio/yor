@@ -33,11 +33,11 @@ type ServerlessTemplate struct {
 		Region       string            `yaml:"region"`
 		ProviderTags map[string]string `yaml:"tags"`
 		CFNTags      map[string]string `yaml:"stackTags"`
-		Functions    interface{}       `yaml:"functions"`
-		Resources    struct {
-			Resources *cloudformation.Template `yaml:"Resources"`
-		} `yaml:"resources"`
 	} `yaml:"provider"`
+	Functions interface{} `yaml:"functions"`
+	Resources struct {
+		Resources *cloudformation.Template `yaml:"Resources"`
+	} `yaml:"resources"`
 }
 
 type ServerlessParser struct {
@@ -70,13 +70,16 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	if err != nil {
 		logger.Error(fmt.Sprintf("Unmarshal: %s", err), "SILENT")
 	}
+	if p.Template.Functions == nil && p.Template.Resources.Resources == nil {
+		return parsedBlocks, nil
+	}
 
 	if err != nil || template == nil {
 		logger.Error(fmt.Sprintf("There was an error processing the serverless template: %s", err), "SILENT")
 
 	}
 	// cfnStackTagsResource := p.template.Provider.CFNTags
-	functions := p.Template.Provider.Functions
+	functions := p.Template.Functions
 	functionsMap := functions.(map[interface{}]interface{})
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*structure.Lines
@@ -104,7 +107,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 						Value: tagValue.(string),
 					})
 				}
-				tagsLines := p.extractLines(filePath, lines, resourceNames)
+				tagsLines := p.getTagsLines(filePath, lines, resourceNames)
 				rawBlock := funcRange
 				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
@@ -126,11 +129,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		}
 	}
 	return parsedBlocks, nil
-}
-
-func (p *ServerlessParser) extractLines(filePath string, lines *structure.Lines, resourceNames []string) structure.Lines {
-	tagsLines := p.getTagsLines(filePath, lines, resourceNames)
-	return tagsLines
 }
 
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
