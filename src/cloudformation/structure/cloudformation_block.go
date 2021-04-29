@@ -1,14 +1,14 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 	"reflect"
 
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )
 
 type CloudformationBlock struct {
-	common.Block
+	structure.Block
 	Name string
 }
 
@@ -21,7 +21,7 @@ func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
 	b.FilePath = filePath
 }
 
-func (b *CloudformationBlock) GetLines(_ ...bool) common.Lines {
+func (b *CloudformationBlock) GetLines(_ ...bool) structure.Lines {
 	return b.Lines
 }
 
@@ -43,7 +43,7 @@ func (b *CloudformationBlock) UpdateTags() {
 	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(cfnMergedTags))
 }
 
-func (b *CloudformationBlock) GetTagsLines() common.Lines {
+func (b *CloudformationBlock) GetTagsLines() structure.Lines {
 	return b.TagLines
 }
 

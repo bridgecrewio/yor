@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +33,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
-		assert.Equal(t, common.Lines{Start: 13, End: 18}, func1Block.GetLines())
+		assert.Equal(t, structure.Lines{Start: 13, End: 18}, func1Block.GetLines())
 		assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
 		existingTag := func1Block.GetExistingTags()[0]
@@ -43,7 +43,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 
 }
 
-func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[string]*common.Lines) {
+func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {
 	for resourceName := range expected {
 		actualLines := actual[resourceName]
 		if actualLines == nil {
@@ -67,11 +67,11 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		func1Block := slsBlocks[0]
-		expected := map[string]*common.Lines{
+		expected := map[string]*structure.Lines{
 			"myFunction": {Start: 13, End: 18},
 		}
 		func1Lines := func1Block.GetLines()
-		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines})
+		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
@@ -97,10 +97,10 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			t.Errorf("ParseFile() error = %v", err)
 			return
 		}
-		expected := map[string]*common.Lines{
+		expected := map[string]*structure.Lines{
 			"myFunction":  {Start: 13, End: 18},
 			"myFunction2": {Start: 19, End: 25},
 		}
-		compareLines(t, expected, map[string]*common.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
+		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
 }

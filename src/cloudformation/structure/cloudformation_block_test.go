@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"sort"
 	"testing"
@@ -24,7 +24,7 @@ func TestCloudformationBlock_MergeCFNTags(t *testing.T) {
 			&tags.Tag{Key: "cfn_tag_1", Value: "1"}, &tags.Tag{Key: "cfn_tag_2", Value: "2"}, &tags.Tag{Key: "yor_trace", Value: "should not change"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
 		b := &CloudformationBlock{
-			Block: common.Block{
+			Block: structure.Block{
 				ExitingTags: existingTags,
 				NewTags:     newTags,
 			},
@@ -58,13 +58,13 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 		resource := template.Resources[resourceName]
 
 		b := &CloudformationBlock{
-			Block: common.Block{
+			Block: structure.Block{
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
 				RawBlock:          resource,
 				IsTaggable:        true,
 				TagsAttributeName: "Tags",
-				Lines:             common.Lines{Start: 4, End: 14},
+				Lines:             structure.Lines{Start: 4, End: 14},
 			},
 			Name: resourceName,
 		}

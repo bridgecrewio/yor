@@ -1,18 +1,18 @@
 package types
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 
 	"github.com/awslabs/goformation/v4/cloudformation"
 )
 
 type Block struct {
-	common.Block
+	structure.Block
 }
 
 type YamlParser struct {
 	RootDir              string
-	FileToResourcesLines map[string]common.Lines
+	FileToResourcesLines map[string]structure.Lines
 }
 
 type ServerlessTemplate struct {

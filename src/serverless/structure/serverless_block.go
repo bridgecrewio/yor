@@ -1,13 +1,13 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 
 	"go.opencensus.io/tag"
 )
 
 type ServerlessBlock struct {
-	common.Block
+	structure.Block
 	Name string
 }
 
@@ -20,7 +20,7 @@ func (b *ServerlessBlock) Init(filePath string, rawBlock interface{}) {
 	b.FilePath = filePath
 }
 
-func (b *ServerlessBlock) GetLines(_ ...bool) common.Lines {
+func (b *ServerlessBlock) GetLines(_ ...bool) structure.Lines {
 	return b.Block.Lines
 }
 
@@ -47,7 +47,7 @@ func (b *ServerlessBlock) UpdateTags() {
 	b.RawBlock.(map[interface{}]interface{})[b.TagsAttributeName] = slsMergedTagsValue
 }
 
-func (b *ServerlessBlock) GetTagsLines() common.Lines {
+func (b *ServerlessBlock) GetTagsLines() structure.Lines {
 	return b.Block.TagLines
 }
 

@@ -3,6 +3,7 @@ package utils
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/structure"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -11,7 +12,7 @@ import (
 	"github.com/sanathkr/yaml"
 )
 
-func WriteYAMLFile(readFilePath string, blocks []common.IBlock, writeFilePath string, resourcesLinesRange common.Lines, tagsAttributeName string) error {
+func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, resourcesLinesRange structure.Lines, tagsAttributeName string) error {
 	// read file bytes
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
@@ -105,8 +106,8 @@ func getYAMLLines(rawBlock map[interface{}]interface{}, tagsAttributeName string
 	return textLines
 }
 
-func FindTagsLinesYAML(textLines []string, tagsAttributeName string) common.Lines {
-	tagsLines := common.Lines{Start: -1, End: len(textLines) - 1}
+func FindTagsLinesYAML(textLines []string, tagsAttributeName string) structure.Lines {
+	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
 	indent := ""
 	for i, line := range textLines {
 		if strings.Contains(line, tagsAttributeName+":") {
@@ -164,7 +165,7 @@ func IndentLines(textLines []string, indent string) []string {
 	return textLines
 }
 
-func EncodeBlocksToYaml(readFilePath string, blocks []common.IBlock, writeFilePath string, tagsAttributeName string, resourceLines common.Lines) []common.IBlock {
+func EncodeBlocksToYaml(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourceLines structure.Lines) []structure.IBlock {
 	fileFormat := GetFileFormat(readFilePath)
 	switch fileFormat {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:

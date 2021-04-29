@@ -2,9 +2,9 @@ package runner
 
 import (
 	cloudformationStructure "bridgecrewio/yor/src/cloudformation/structure"
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/cli"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
 	utils2 "bridgecrewio/yor/src/common/utils"
@@ -77,11 +77,11 @@ func Test_loadExternalTags(t *testing.T) {
 		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
 		tag := groupTags[0]
 		assert.Equal(t, "custom_owner", tag.GetKey())
-		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: common.Block{FilePath: "src/auth/index.js"}})
+		tagVal, _ := tag.CalculateValue(&terraformStructure.TerraformBlock{Block: structure.Block{FilePath: "src/auth/index.js"}})
 		assert.Equal(t, "custom_owner", tagVal.GetKey())
 		assert.Equal(t, "team-infra@company.com", tagVal.GetValue())
 
-		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: common.Block{FilePath: "src/some/path"}})
+		tagVal, _ = tag.CalculateValue(&cloudformationStructure.CloudformationBlock{Block: structure.Block{FilePath: "src/some/path"}})
 		assert.Equal(t, "custom_owner", tagVal.GetKey())
 		assert.Equal(t, "team-it@company.com", tagVal.GetValue())
 	})

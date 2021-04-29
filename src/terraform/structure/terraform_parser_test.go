@@ -1,8 +1,8 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/gitservice"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/code2cloud"
 	"bridgecrewio/yor/src/common/tagging/gittag"
 	"bridgecrewio/yor/src/common/tagging/tags"
@@ -32,7 +32,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {"Name": "${local.resource_prefix.value}-eks-subnet2", "kubernetes.io/cluster/${local.eks_name.value}": "shared"},
 		}
 
-		expectedLines := map[string]common.Lines{
+		expectedLines := map[string]structure.Lines{
 			"iam_policy_eks": {Start: 10, End: 19},
 			"iam_for_eks":    {Start: 21, End: 24},
 			"policy_attachment-AmazonEKSClusterPolicy": {Start: 26, End: 29},

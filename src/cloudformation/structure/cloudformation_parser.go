@@ -3,6 +3,7 @@ package structure
 import (
 	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"bridgecrewio/yor/src/common/types"
 	"bridgecrewio/yor/src/common/utils"
@@ -49,7 +50,7 @@ var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Descri
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser = &types.YamlParser{
 		RootDir:              rootDir,
-		FileToResourcesLines: make(map[string]common.Lines),
+		FileToResourcesLines: make(map[string]structure.Lines),
 	}
 }
 
@@ -61,7 +62,7 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension}
 }
 
-func (p *CloudformationParser) ParseFile(filePath string) ([]common.IBlock, error) {
+func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.Open(filePath)
 	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template: %s", err))
@@ -73,7 +74,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]common.IBlock, erro
 			resourceNames = append(resourceNames, resourceName)
 		}
 
-		var resourceNamesToLines map[string]*common.Lines
+		var resourceNamesToLines map[string]*structure.Lines
 		switch utils.GetFileFormat(filePath) {
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
@@ -83,12 +84,12 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]common.IBlock, erro
 
 		minResourceLine := math.MaxInt8
 		maxResourceLine := 0
-		parsedBlocks := make([]common.IBlock, 0)
+		parsedBlocks := make([]structure.IBlock, 0)
 		for resourceName := range template.Resources {
 			resource := template.Resources[resourceName]
 			lines := resourceNamesToLines[resourceName]
 			isTaggable, tagsValue := p.StructContainsProperty(resource, TagsAttributeName)
-			tagsLines := common.Lines{Start: -1, End: -1}
+			tagsLines := structure.Lines{Start: -1, End: -1}
 			var existingTags []tags.ITag
 			if isTaggable {
 				tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsValue)
@@ -97,7 +98,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]common.IBlock, erro
 			maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 
 			cfnBlock := &CloudformationBlock{
-				Block: common.Block{
+				Block: structure.Block{
 					FilePath:          filePath,
 					ExitingTags:       existingTags,
 					RawBlock:          resource,
@@ -111,14 +112,14 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]common.IBlock, erro
 			parsedBlocks = append(parsedBlocks, cfnBlock)
 		}
 
-		p.FileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+		p.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
 
 		return parsedBlocks, nil
 	}
 	return nil, err
 }
 
-func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *common.Lines, tagsValue reflect.Value) (common.Lines, []tags.ITag) {
+func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *structure.Lines, tagsValue reflect.Value) (structure.Lines, []tags.ITag) {
 	tagsLines := p.getTagsLines(filePath, lines)
 	existingTags := p.GetExistingTags(tagsValue)
 	return tagsLines, existingTags
@@ -139,7 +140,7 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 	return iTags
 }
 
-func (p *CloudformationParser) WriteFile(readFilePath string, blocks []common.IBlock, writeFilePath string) error {
+func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	err := utils.EncodeBlocksToYaml(readFilePath, blocks, writeFilePath, TagsAttributeName, p.YamlParser.FileToResourcesLines[readFilePath])
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to encode %s", readFilePath))
@@ -147,11 +148,11 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []common.IB
 	return utils.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName)
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
-	resourceToLines := make(map[string]*common.Lines)
+func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*structure.Lines {
+	resourceToLines := make(map[string]*structure.Lines)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
-		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
+		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
 	}
 	// #nosec G304
 	file, err := os.Open(filePath)
@@ -228,8 +229,8 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	return resourceToLines
 }
 
-func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *common.Lines) common.Lines {
-	nonFoundLines := common.Lines{Start: -1, End: -1}
+func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines) structure.Lines {
+	nonFoundLines := structure.Lines{Start: -1, End: -1}
 	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
@@ -246,8 +247,8 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			lineCounter++
 		}
 		linesInResource := utils.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
-		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
+		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
 	default:
-		return common.Lines{Start: -1, End: -1}
+		return structure.Lines{Start: -1, End: -1}
 	}
 }

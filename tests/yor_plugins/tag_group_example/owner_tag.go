@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"path/filepath"
@@ -18,7 +18,7 @@ func (d *DirTag) Init() {
 }
 
 func (d *DirTag) CalculateValue(block interface{}) (tags.ITag, error) {
-	blockVal, ok := block.(common.IBlock)
+	blockVal, ok := block.(structure.IBlock)
 	if !ok {
 		return nil, fmt.Errorf("failed to convert data to IBlock, which is required to calculte tag value. Type of data: %s", reflect.TypeOf(block))
 	}

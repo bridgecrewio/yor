@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
+	"bridgecrewio/yor/src/common/structure"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +19,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(cfnBlocks))
 		newVolumeBlock := cfnBlocks[0]
-		assert.Equal(t, common.Lines{Start: 4, End: 14}, newVolumeBlock.GetLines())
+		assert.Equal(t, structure.Lines{Start: 4, End: 14}, newVolumeBlock.GetLines())
 		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
 
 		existingTag := newVolumeBlock.GetExistingTags()[0]
@@ -31,7 +31,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 
 }
 
-func compareLines(t *testing.T, expected map[string]*common.Lines, actual map[string]*common.Lines) {
+func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {
 	for resourceName := range expected {
 		actualLines := actual[resourceName]
 		if actualLines == nil {
@@ -46,7 +46,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test single resource", func(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
 		resourcesNames := []string{"NewVolume"}
-		expected := map[string]*common.Lines{
+		expected := map[string]*structure.Lines{
 			"NewVolume": {Start: 4, End: 14},
 		}
 		actual := MapResourcesLineYAML(filePath, resourcesNames)
@@ -56,7 +56,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test multiple resources", func(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.yaml"
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
-		expected := map[string]*common.Lines{
+		expected := map[string]*structure.Lines{
 			"EC2InstanceResource0":       {Start: 3, End: 6},
 			"EC2InstanceResource1":       {Start: 7, End: 16},
 			"EC2LaunchTemplateResource0": {Start: 17, End: 21},

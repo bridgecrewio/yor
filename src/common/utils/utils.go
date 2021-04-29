@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"bridgecrewio/yor/src/common"
 	"bridgecrewio/yor/src/common/logger"
+	"bridgecrewio/yor/src/common/structure"
 	"bridgecrewio/yor/src/common/types"
 	"bufio"
 	"fmt"
@@ -82,7 +82,7 @@ func (p *YamlParser) StructContainsProperty(s interface{}, property string) (boo
 	return true, field
 }
 
-func GetFileScanner(filePath string, nonFoundLines *common.Lines) (*bufio.Scanner, *common.Lines) {
+func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*bufio.Scanner, *structure.Lines) {
 	//#nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
