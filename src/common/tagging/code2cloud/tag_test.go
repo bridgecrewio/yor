@@ -1,11 +1,12 @@
 package code2cloud
 
 import (
-	"bridgecrewio/yor/src/common"
-	commonStructure "bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"regexp"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common"
+	commonStructure "github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/stretchr/testify/assert"
 )

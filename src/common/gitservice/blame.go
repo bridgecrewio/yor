@@ -1,10 +1,11 @@
 package gitservice
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
 
 	"github.com/go-git/go-git/v5"
 )

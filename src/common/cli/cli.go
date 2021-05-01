@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/tagging/utils"
 	"fmt"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/tagging/utils"
 
 	"gopkg.in/validator.v2"
 )

@@ -1,11 +1,12 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
 
 	"github.com/sanathkr/yaml"
 )

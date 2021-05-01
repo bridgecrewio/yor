@@ -1,6 +1,6 @@
 package main
 
-import "bridgecrewio/yor/src/common/tagging/tags"
+import "github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 type FooTag struct {
 	Key   string

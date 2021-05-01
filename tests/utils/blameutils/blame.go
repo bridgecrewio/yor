@@ -1,11 +1,12 @@
 package blameutils
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/gitservice"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/gitservice"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"

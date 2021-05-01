@@ -1,10 +1,11 @@
 package logger
 
 import (
-	"bridgecrewio/yor/tests/utils"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/bridgecrewio/yor/tests/utils"
 
 	"github.com/stretchr/testify/assert"
 )

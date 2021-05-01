@@ -1,7 +1,7 @@
 package reports
 
 import (
-	"bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/structure"
 )
 
 type TagChangeAccumulator struct {

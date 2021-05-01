@@ -1,8 +1,9 @@
 package code2cloud
 
 import (
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
+
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/google/uuid"
 )

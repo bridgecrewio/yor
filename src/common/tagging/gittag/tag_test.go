@@ -1,11 +1,12 @@
 package gittag
 
 import (
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/tests/utils/blameutils"
 	"os"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
 	"github.com/stretchr/testify/assert"
 )
