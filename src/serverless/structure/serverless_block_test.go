@@ -1,13 +1,14 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/stretchr/testify/assert"
 )

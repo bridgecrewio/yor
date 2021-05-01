@@ -1,6 +1,6 @@
 package common
 
-import "bridgecrewio/yor/src/common/structure"
+import "github.com/bridgecrewio/yor/src/common/structure"
 
 type IParser interface {
 	Init(rootDir string, args map[string]string)

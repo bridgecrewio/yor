@@ -1,12 +1,13 @@
 package gittag
 
 import (
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/tests/utils/blameutils"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"

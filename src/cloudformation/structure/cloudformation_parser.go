@@ -1,18 +1,19 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/types"
-	"bridgecrewio/yor/src/common/utils"
-	"bridgecrewio/yor/src/common/yaml"
 	"bufio"
 	"fmt"
 	"math"
 	"os"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/types"
+	"github.com/bridgecrewio/yor/src/common/utils"
+	"github.com/bridgecrewio/yor/src/common/yaml"
 
 	"github.com/awslabs/goformation/v4"
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"

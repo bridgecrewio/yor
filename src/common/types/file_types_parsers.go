@@ -1,7 +1,7 @@
 package types
 
 import (
-	"bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/structure"
 )
 
 type YamlParser struct {

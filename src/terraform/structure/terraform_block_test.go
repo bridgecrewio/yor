@@ -1,11 +1,12 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/stretchr/testify/assert"
 )

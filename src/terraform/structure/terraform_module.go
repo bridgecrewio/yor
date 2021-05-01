@@ -1,13 +1,14 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/utils"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"

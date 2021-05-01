@@ -1,8 +1,9 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/structure"
 	"reflect"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
 
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 )

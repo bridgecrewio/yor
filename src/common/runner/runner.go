@@ -1,23 +1,24 @@
 package runner
 
 import (
-	cfnStructure "bridgecrewio/yor/src/cloudformation/structure"
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/cli"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/reports"
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/simple"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
-	"bridgecrewio/yor/src/common/utils"
-	slsStructure "bridgecrewio/yor/src/serverless/structure"
-	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
 	"os"
 	"path/filepath"
 	"plugin"
 	"strings"
+
+	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/reports"
+	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
+	"github.com/bridgecrewio/yor/src/common/utils"
+	slsStructure "github.com/bridgecrewio/yor/src/serverless/structure"
+	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 )
 
 type Runner struct {

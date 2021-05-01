@@ -1,13 +1,14 @@
 package yaml
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/utils"
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/sanathkr/yaml"
 )

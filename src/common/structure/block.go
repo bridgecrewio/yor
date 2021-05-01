@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
 type Lines struct {

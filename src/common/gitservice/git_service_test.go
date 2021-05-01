@@ -1,11 +1,12 @@
 package gitservice
 
 import (
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/tests/utils"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/tests/utils"
 
 	"github.com/stretchr/testify/assert"
 )

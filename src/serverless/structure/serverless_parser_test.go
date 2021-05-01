@@ -1,11 +1,12 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/structure"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
 
 	"github.com/stretchr/testify/assert"
 )

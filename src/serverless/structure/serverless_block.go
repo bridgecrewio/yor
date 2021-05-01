@@ -1,7 +1,7 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/structure"
 
 	"go.opencensus.io/tag"
 )

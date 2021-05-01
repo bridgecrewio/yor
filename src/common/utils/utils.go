@@ -1,9 +1,6 @@
 package utils
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"bufio"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +8,10 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
 )
 
 func InSlice(slice interface{}, elem interface{}) bool {

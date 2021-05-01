@@ -1,9 +1,9 @@
 package gitservice
 
 import (
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
 	"fmt"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
 	"io/ioutil"
 	"log"
 	"os"
@@ -67,7 +67,7 @@ func (g *GitService) setOrgAndName() error {
 	for _, remote := range remotes {
 		if remote.Config().Name == "origin" {
 			g.remoteURL = remote.Config().URLs[0]
-			// get endpoint structured like '/bridgecrewio/yor.git
+			// get endpoint structured like '/github.com/bridgecrewio/yor.git
 			endpoint, err := transport.NewEndpoint(g.remoteURL)
 			if err != nil {
 				return err
