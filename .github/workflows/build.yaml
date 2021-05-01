@@ -118,6 +118,8 @@ jobs:
           tag_name: ${{ steps.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - name: Update go reportcard
+        uses: creekorful/goreportcard-action@v1.0
   linux-windows-matrix:
     needs:
       - create-release
@@ -167,3 +169,4 @@ jobs:
           formula: yor.rb
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+

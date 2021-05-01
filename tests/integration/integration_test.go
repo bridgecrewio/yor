@@ -1,14 +1,6 @@
 package integration
 
 import (
-	"bridgecrewio/yor/src/common/cli"
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/reports"
-	"bridgecrewio/yor/src/common/runner"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	tagUtils "bridgecrewio/yor/src/common/tagging/utils"
-	terraformStructure "bridgecrewio/yor/src/terraform/structure"
-	"bridgecrewio/yor/tests/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -17,6 +9,15 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/reports"
+	"github.com/bridgecrewio/yor/src/common/runner"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	tagUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
+	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
+	"github.com/bridgecrewio/yor/tests/utils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"

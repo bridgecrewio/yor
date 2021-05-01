@@ -1,14 +1,15 @@
 package reports
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/olekukonko/tablewriter"
 )
