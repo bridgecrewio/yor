@@ -1,10 +1,11 @@
 package gittag
 
 import (
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"reflect"
+
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
 type GitRepoTag struct {

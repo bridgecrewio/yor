@@ -1,16 +1,6 @@
 package runner
 
 import (
-	cloudformationStructure "bridgecrewio/yor/src/cloudformation/structure"
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/cli"
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	taggingUtils "bridgecrewio/yor/src/common/tagging/utils"
-	terraformStructure "bridgecrewio/yor/src/terraform/structure"
-	"bridgecrewio/yor/tests/utils"
-	"bridgecrewio/yor/tests/utils/blameutils"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,6 +8,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
+	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
+	"github.com/bridgecrewio/yor/tests/utils"
+	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
 	"github.com/pmezard/go-difflib/difflib"
 

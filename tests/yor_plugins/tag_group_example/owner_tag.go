@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
 type DirTag struct {

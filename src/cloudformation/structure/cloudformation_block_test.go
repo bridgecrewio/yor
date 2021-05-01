@@ -1,11 +1,12 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"sort"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/awslabs/goformation/v4"
 	"github.com/awslabs/goformation/v4/cloudformation/ec2"

@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	"bridgecrewio/yor/src/common/tagging/simple"
 	"sort"
+
+	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 )
 
 type TagGroupName string

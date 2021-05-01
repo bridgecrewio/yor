@@ -1,15 +1,16 @@
 package gittag
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/go-git/go-git/v5/plumbing"
 

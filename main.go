@@ -1,17 +1,18 @@
 package main
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/cli"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/reports"
-	"bridgecrewio/yor/src/common/runner"
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/tagging/utils"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/reports"
+	"github.com/bridgecrewio/yor/src/common/runner"
+	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/tagging/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

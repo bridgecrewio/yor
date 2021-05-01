@@ -1,8 +1,9 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common"
 
 	"github.com/stretchr/testify/assert"
 )

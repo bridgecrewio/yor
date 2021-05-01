@@ -1,9 +1,10 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/structure"
 
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 )

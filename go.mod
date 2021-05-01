@@ -1,4 +1,4 @@
-module bridgecrewio/yor
+module github.com/bridgecrewio/yor
 
 go 1.13
 
