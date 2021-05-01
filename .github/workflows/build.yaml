@@ -169,3 +169,4 @@ jobs:
           formula: yor.rb
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+
