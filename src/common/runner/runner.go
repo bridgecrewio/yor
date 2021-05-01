@@ -1,22 +1,23 @@
 package runner
 
 import (
-	cfnStructure "bridgecrewio/yor/src/cloudformation/structure"
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/cli"
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/reports"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging"
-	"bridgecrewio/yor/src/common/tagging/simple"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	"bridgecrewio/yor/src/common/tagging/utils"
-	tfStructure "bridgecrewio/yor/src/terraform/structure"
 	"fmt"
 	"os"
 	"path/filepath"
 	"plugin"
 	"strings"
+
+	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/reports"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/tagging/utils"
+	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 )
 
 type Runner struct {

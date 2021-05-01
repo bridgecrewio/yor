@@ -1,12 +1,13 @@
 package tagging
 
 import (
-	"bridgecrewio/yor/src/common/logger"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
 type TagGroup struct {

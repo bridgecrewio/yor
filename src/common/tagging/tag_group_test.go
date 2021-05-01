@@ -1,8 +1,9 @@
 package tagging
 
 import (
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/stretchr/testify/assert"
 )

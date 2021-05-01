@@ -1,16 +1,17 @@
 package structure
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"

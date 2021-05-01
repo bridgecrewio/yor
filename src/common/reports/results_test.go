@@ -1,13 +1,6 @@
 package reports
 
 import (
-	"bridgecrewio/yor/src/common"
-	"bridgecrewio/yor/src/common/structure"
-	"bridgecrewio/yor/src/common/tagging/code2cloud"
-	"bridgecrewio/yor/src/common/tagging/gittag"
-	"bridgecrewio/yor/src/common/tagging/tags"
-	tfStructure "bridgecrewio/yor/src/terraform/structure"
-	"bridgecrewio/yor/tests/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +8,14 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
+	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
+	"github.com/bridgecrewio/yor/tests/utils"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"

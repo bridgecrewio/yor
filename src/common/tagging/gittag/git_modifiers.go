@@ -1,12 +1,13 @@
 package gittag
 
 import (
-	"bridgecrewio/yor/src/common/gitservice"
-	"bridgecrewio/yor/src/common/tagging/tags"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
 type GitModifiersTag struct {
