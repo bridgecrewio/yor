@@ -66,13 +66,19 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			t.Errorf("ParseFile() error = %v", err)
 			return
 		}
-		assert.Equal(t, 2, len(slsBlocks))
-		func1Block := slsBlocks[0]
-		expected := map[string]*structure.Lines{
-			"myFunction": {Start: 14, End: 19},
+		var func1Block *ServerlessBlock
+		for _, block := range slsBlocks {
+			castedBlock := block.(*ServerlessBlock)
+			if castedBlock.Name == "myFunction" {
+				func1Block = castedBlock
+			}
+			assert.Equal(t, 2, len(slsBlocks))
+			expected := map[string]*structure.Lines{
+				"myFunction": {Start: 14, End: 19},
+			}
+			func1Lines := func1Block.GetLines()
+			compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
 		}
-		func1Lines := func1Block.GetLines()
-		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
