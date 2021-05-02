@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/awslabs/goformation/v4/cloudformation"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -16,8 +17,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/types"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	yamlUtils "github.com/bridgecrewio/yor/src/common/yaml"
-
-	"github.com/awslabs/goformation/v4/cloudformation"
 	"gopkg.in/yaml.v2"
 )
 
@@ -62,6 +61,10 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
+	fileFormat := utils.GetFileFormat(filePath)
+	if !strings.Contains(filePath, fmt.Sprintf("serverless.%s", fileFormat)) {
+		return nil, nil
+	}
 	// #nosec G304 - file is from user
 	template, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -260,7 +263,8 @@ func isLineFunctionDefinition(line string, resourceNames []string) bool {
 
 func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines, resourceNames []string) structure.Lines {
 	nonFoundLines := structure.Lines{Start: -1, End: -1}
-	switch utils.GetFileFormat(filePath) {
+	fileFormat := utils.GetFileFormat(filePath)
+	switch fileFormat {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		resourceLinesText := make([]string, 0)
