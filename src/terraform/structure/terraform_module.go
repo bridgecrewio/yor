@@ -18,7 +18,7 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-const PluginsOutputDir = ".plugins"
+const PluginsOutputDir = ".yor_plugins"
 
 var SkippedProviders = []string{"null", "random", "tls"}
 
