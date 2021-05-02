@@ -80,6 +80,7 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	}
 
 	for _, file := range files {
+		logger.Info("Tagging %v\n", file)
 		r.TagFile(file)
 	}
 
