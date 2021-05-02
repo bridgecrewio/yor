@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -66,7 +65,6 @@ func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*os.File, 
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return file, nil, nonFoundLines
 	}
-	file.Seek(0, io.SeekStart)
 	scanner := bufio.NewScanner(file)
 	return file, scanner, nonFoundLines
 }

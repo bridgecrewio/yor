@@ -29,9 +29,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
 		var newResourceLines []string
-		switch rawBlock.(type) {
+		switch rawBlockCasted := rawBlock.(type) {
 		case cloudformation.Resource:
-			newResourceLines = getYAMLLines(rawBlock.(cloudformation.Resource), tagsAttributeName)
+			newResourceLines = getYAMLLines(rawBlockCasted, tagsAttributeName)
 		case map[interface{}]interface{}:
 			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
 		}
@@ -104,14 +104,11 @@ func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface
 
 func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	var textLines []string
-	var castedRawBlock interface{}
+	var castedRawBlock = rawBlock
 	tempTagsMap := make(map[string]interface{})
 	switch rawBlock.(type) {
 	case map[interface{}]interface{}:
 		castedRawBlock = reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
-		break
-	default:
-		castedRawBlock = rawBlock
 	}
 	yamlBytes, err := yaml.Marshal(castedRawBlock)
 	if err != nil {
