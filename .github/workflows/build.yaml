@@ -169,4 +169,10 @@ jobs:
           formula: yor.rb
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
-
+  update-bridgecrew-projects:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: update on yor release
+        run: |
+          curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-action/dispatches --data '{"event_type": "build"}'
