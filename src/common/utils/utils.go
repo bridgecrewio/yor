@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -58,18 +59,16 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 	return ret
 }
 
-func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*bufio.Scanner, *structure.Lines) {
+func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*os.File, *bufio.Scanner, *structure.Lines) {
 	//#nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return nil, nonFoundLines
+		return file, nil, nonFoundLines
 	}
+	file.Seek(0, io.SeekStart)
 	scanner := bufio.NewScanner(file)
-	defer func() {
-		_ = file.Close()
-	}()
-	return scanner, nonFoundLines
+	return file, scanner, nonFoundLines
 }
 
 func GetFileFormat(filePath string) string {
@@ -106,10 +105,13 @@ func ExtractIndentationOfLine(textLine string) string {
 }
 
 func IndentLines(textLines []string, indent string) []string {
-	originIndent := ExtractIndentationOfLine(textLines[0])
 	for i, originLine := range textLines {
-		noLeadingWhitespace := originLine[len(originIndent):]
-		textLines[i] = indent + noLeadingWhitespace
+		noLeadingWhitespace := strings.TrimLeft(originLine, "\t \n")
+		if strings.Contains(originLine, "- Key") {
+			textLines[i] = strings.Replace(indent, " ", "", 2) + noLeadingWhitespace
+		} else {
+			textLines[i] = indent + noLeadingWhitespace
+		}
 	}
 
 	return textLines

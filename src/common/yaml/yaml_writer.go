@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/awslabs/goformation/v4/cloudformation"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -26,7 +27,14 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 
 	resourcesLines := make([]string, 0)
 	for _, resourceBlock := range blocks {
-		newResourceLines := getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
+		rawBlock := resourceBlock.GetRawBlock()
+		var newResourceLines []string
+		switch rawBlock.(type) {
+		case cloudformation.Resource:
+			newResourceLines = getYAMLLines(rawBlock.(cloudformation.Resource), tagsAttributeName)
+		case map[interface{}]interface{}:
+			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
+		}
 		newResourceTagLineRange := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
 		oldResourceLinesRange := resourceBlock.GetLines()
@@ -50,7 +58,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			continue
 		}
 
-		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start+1])
+		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start])
 
 		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...)                                                                    // add all the resource's line before the tags
 		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])                                                    // add the 'Tags:' line
@@ -94,14 +102,22 @@ func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface
 	return currResourceMap
 }
 
-func getYAMLLines(rawBlock map[interface{}]interface{}, tagsAttributeName string) []string {
+func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	var textLines []string
+	var castedRawBlock interface{}
 	tempTagsMap := make(map[string]interface{})
-	castedRawBlock := reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
+	switch rawBlock.(type) {
+	case map[interface{}]interface{}:
+		castedRawBlock = reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
+		break
+	default:
+		castedRawBlock = rawBlock
+	}
 	yamlBytes, err := yaml.Marshal(castedRawBlock)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to marshal resource to yaml: %s", err))
 	}
+
 	textLines = utils.GetLinesFromBytes(yamlBytes)
 
 	return textLines
@@ -109,13 +125,15 @@ func getYAMLLines(rawBlock map[interface{}]interface{}, tagsAttributeName string
 
 func FindTagsLinesYAML(textLines []string, tagsAttributeName string) structure.Lines {
 	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
-	indent := ""
+	var lineIndent string
+	var tagsIndent string
 	for i, line := range textLines {
+		lineIndent = utils.ExtractIndentationOfLine(line)
 		if strings.Contains(line, tagsAttributeName+":") {
 			tagsLines.Start = i + 1
-			indent = utils.ExtractIndentationOfLine(line)
-		} else if line <= indent && (tagsLines.Start >= 0 || i == len(textLines)-1) {
-			tagsLines.End = i
+			tagsIndent = utils.ExtractIndentationOfLine(line)
+		} else if lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1) {
+			tagsLines.End = i - 1
 			return tagsLines
 		}
 	}

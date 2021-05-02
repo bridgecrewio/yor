@@ -262,7 +262,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 	nonFoundLines := structure.Lines{Start: -1, End: -1}
 	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
+		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		resourceLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
@@ -286,6 +286,9 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 		}
 		linesInResource := yamlUtils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
 		numTags := linesInResource.End - linesInResource.Start
+		defer func() {
+			_ = file.Close()
+		}()
 		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: resourceLinesRange.End - numTags + 1}
 	default:
 		return structure.Lines{Start: -1, End: -1}
