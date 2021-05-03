@@ -3,9 +3,11 @@ package structure
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/awslabs/goformation/v4/cloudformation"
@@ -61,7 +63,8 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
-	if !strings.Contains(filePath, fmt.Sprintf("serverless.%s", fileFormat)) {
+	fileName := filepath.Base(filePath)
+	if !(fileName == fmt.Sprintf("serverless.%s", fileFormat)) {
 		return nil, nil
 	}
 	// #nosec G304 - file is from user
@@ -98,11 +101,21 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	minResourceLine := math.MaxInt8
 	maxResourceLine := 0
 	for _, funcName := range resourceNames {
-		var existingTags []tags.ITag
+		var rawBlock interface{}
+		var slsBlock *ServerlessBlock
+		tagsExist := false
+		var existingTags = make([]tags.ITag, 0)
+		tagsLines := structure.Lines{Start: -1, End: -1}
 		funcRange := functionsMap[funcName].(map[interface{}]interface{})
+		var lines *structure.Lines
+		rawBlock = funcRange
 		for key, val := range funcRange {
-			lines := resourceNamesToLines[funcName]
+			lines = resourceNamesToLines[funcName]
+			minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
+			maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
 			if key == FunctionTagsAttributeName {
+				tagsLines = p.getTagsLines(filePath, lines, resourceNames)
+				tagsExist = true
 				funcTags := val.(map[interface{}]interface{})
 				for tagKey, tagValue := range funcTags {
 					existingTags = append(existingTags, &tags.Tag{
@@ -110,26 +123,41 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 						Value: tagValue.(string),
 					})
 				}
-				tagsLines := p.getTagsLines(filePath, lines, resourceNames)
-				rawBlock := funcRange
-				minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
-				maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
-				slsBlock := &ServerlessBlock{
-					Block: structure.Block{
-						FilePath:          filePath,
-						ExitingTags:       existingTags,
-						RawBlock:          rawBlock,
-						IsTaggable:        true,
-						TagsAttributeName: FunctionTagsAttributeName,
-						Lines:             *lines,
-						TagLines:          tagsLines,
-					},
-					Name: funcName,
-				}
-				parsedBlocks = append(parsedBlocks, slsBlock)
-				p.YamlParser.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
 			}
 		}
+		if !tagsExist {
+			fmt.Println(1)
+			rawBlock.(map[interface{}]interface{})[FunctionTagsAttributeName] = make([]map[string]string, 0)
+			slsBlock = &ServerlessBlock{
+				Block: structure.Block{
+					FilePath:          filePath,
+					ExitingTags:       existingTags,
+					RawBlock:          rawBlock,
+					IsTaggable:        true,
+					TagsAttributeName: FunctionTagsAttributeName,
+					Lines:             *lines,
+					TagLines:          tagsLines,
+				},
+				Name: funcName,
+			}
+		} else {
+			slsBlock = &ServerlessBlock{
+				Block: structure.Block{
+					FilePath:          filePath,
+					ExitingTags:       existingTags,
+					RawBlock:          rawBlock,
+					IsTaggable:        true,
+					TagsAttributeName: FunctionTagsAttributeName,
+					Lines:             *lines,
+					TagLines:          tagsLines,
+				},
+				Name: funcName,
+			}
+		}
+
+		parsedBlocks = append(parsedBlocks, slsBlock)
+		p.YamlParser.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
+
 	}
 	return parsedBlocks, nil
 }
@@ -188,7 +216,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*s
 			}
 		}
 
-		if !readFunctions && latestResourceName != "" {
+		if readFunctions && latestResourceName != "" {
 			// if we already read all the resources set the end line of the last resource and stop iterating the file
 			resourceToLines[latestResourceName].End = lineCounter - 1
 			computedResources[latestResourceName] = true
@@ -197,17 +225,21 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*s
 	}
 	latestResourceName = ""
 	funcLineIndentation := -1
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	scanner = bufio.NewScanner(file)
 	lineCounter = 0
-	doneFunctions := false
+	readFunctions = false
 	for scanner.Scan() {
-		if !doneFunctions || len(computedResources) < len(resourceNames) {
+		if !readFunctions || len(computedResources) < len(resourceNames) {
 			lineCounter++
 			line := scanner.Text()
 			sanitizedLine := strings.ReplaceAll(strings.TrimSpace(line), ":", "")
 			lineIndentation := len(utils.ExtractIndentationOfLine(line))
 			for _, resourceName := range resourceNames {
-				if readFunctions {
+				if !readFunctions {
 					if sanitizedLine == resourceName {
 						funcLineIndentation = lineIndentation
 						if latestResourceName != "" {
@@ -236,7 +268,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*s
 							if lineIndentation <= functionsSectionlineIndentation && line != "" {
 								resourceToLines[latestResourceName].End = lineCounter - 1
 								computedResources[latestResourceName] = true
-								doneFunctions = true
+								readFunctions = true
 							}
 						}
 					}

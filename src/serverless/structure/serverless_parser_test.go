@@ -23,7 +23,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 			t.Errorf("ParseFile() error = %v", err)
 			return
 		}
-		directory := "../../../tests/serverless/resources"
+		directory := "../../../tests/serverless/resources/tags_exist"
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.YamlParser.RootDir, "serverless.yml"}, "/"))
@@ -57,7 +57,7 @@ func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map
 
 func Test_mapResourcesLineYAML(t *testing.T) {
 	t.Run("test single resource", func(t *testing.T) {
-		directory := "../../../tests/serverless/resources"
+		directory := "../../../tests/serverless/resources/tags_exist"
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
@@ -82,7 +82,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
-		directory := "../../../tests/serverless/resources"
+		directory := "../../../tests/serverless/resources/tags_exist"
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
@@ -109,5 +109,46 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			"myFunction2": {Start: 20, End: 26},
 		}
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
+	})
+
+	t.Run("test multiple resources no tags", func(t *testing.T) {
+		directory := "../../../tests/serverless/resources/no_tags"
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		var func1Block, func2Block *ServerlessBlock
+		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		for _, block := range slsBlocks {
+			castedBlock := block.(*ServerlessBlock)
+			if castedBlock.Name == "myFunction" {
+				func1Block = castedBlock
+			} else {
+				func2Block = castedBlock
+			}
+
+		}
+		func1Lines := func1Block.GetLines()
+		func2Lines := func2Block.GetLines()
+
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
+		}
+		expected := map[string]*structure.Lines{
+			"myFunction":  {Start: 14, End: 16},
+			"myFunction2": {Start: 17, End: 21},
+		}
+		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
+	})
+
+	t.Run("test try parse non serverless file name", func(t *testing.T) {
+		directory := "../../../tests/serverless/resources/non_serverless"
+		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "file.yml"}, "/"))
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		parsedBlocks, _ := slsParser.ParseFile(slsFilepath)
+		if parsedBlocks != nil {
+			t.Fail()
+		}
 	})
 }
