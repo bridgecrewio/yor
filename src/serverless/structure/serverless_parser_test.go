@@ -106,7 +106,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		}
 		expected := map[string]*structure.Lines{
 			"myFunction":  {Start: 14, End: 19},
-			"myFunction2": {Start: 20, End: 26},
+			"myFunction2": {Start: 20, End: 27},
 		}
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
