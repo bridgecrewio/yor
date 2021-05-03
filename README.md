@@ -6,7 +6,7 @@
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
-> Generate an git tags on infrastructure as code using git commit history
+> Generate git tags on infrastructure as code using git commit history
 ![](docs/yor_git_tags.gif)
 
 Cloud service providers allow users to assign metadata to their cloud resources in the form
