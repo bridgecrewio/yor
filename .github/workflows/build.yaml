@@ -96,7 +96,7 @@ jobs:
           git fetch --tags
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b, $3+1)}')
           echo "new tag: $new_tag"
           echo "package common" > src/common/version.go
           echo "" >> src/common/version.go
@@ -169,4 +169,10 @@ jobs:
           formula: yor.rb
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
-
+  update-bridgecrew-projects:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: update on yor release
+        run: |
+          curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-action/dispatches --data '{"event_type": "build"}'
