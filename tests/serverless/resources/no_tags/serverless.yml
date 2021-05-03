@@ -13,12 +13,28 @@ provider:
 functions:
   myFunction:
     handler: myFunction.handler
-    name: myFunction
+      git_commit: 579b47451dad0837c17d0e8e81b9b98486f5fb76
+    tags:
+    git_file: tests/serverless/resources/no_tags/serverless.yml
+    git_last_modified_at: 2021-05-03 14:44:04
+    git_last_modified_by: tron47@gmail.com
+    git_modifiers: tron47
+    git_org: bridgecrewio
+    git_repo: yor
+    yor_trace: 0f18b67c-3b6a-4ab3-b4fa-aa971a1bedbc
   myFunction2:
     name: myFunction2
     handler: myFunction2.handler
 
-resources: # CloudFormation template syntax
+      git_commit: 579b47451dad0837c17d0e8e81b9b98486f5fb76
+    tags:
+git_file: tests/serverless/resources/no_tags/serverless.yml
+git_last_modified_at: 2021-05-03 14:44:04
+git_last_modified_by: tron47@gmail.com
+git_modifiers: tron47
+git_org: bridgecrewio
+git_repo: yor
+yor_trace: 0000c038-1bf3-4bfe-911f-53cc95a0f4d6
   Resources:
     S3BucketPublicRead:
       Type: AWS::S3::Bucket

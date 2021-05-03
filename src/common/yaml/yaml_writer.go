@@ -35,7 +35,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		case map[interface{}]interface{}:
 			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
 		}
-		newResourceTagLineRange := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
+		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
 		oldResourceLinesRange := resourceBlock.GetLines()
 		oldResourceLines := originLines[oldResourceLinesRange.Start-1 : oldResourceLinesRange.End]
@@ -46,7 +46,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			continue
 		}
 
-		oldResourceTagLines := FindTagsLinesYAML(oldResourceLines, tagsAttributeName)
+		oldResourceTagLines, oldTagsExist := FindTagsLinesYAML(oldResourceLines, tagsAttributeName)
 		// if the resource don't contain Tags entry - create it
 		if oldResourceTagLines.Start == -1 || oldResourceTagLines.End == -1 {
 			// get the indentation of the property under the resource name
@@ -60,8 +60,11 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 
 		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start])
 
-		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...)                                                                    // add all the resource's line before the tags
-		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])                                                    // add the 'Tags:' line
+		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...) // add all the resource's line before the tags
+		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
+		if !oldTagsExist {
+			resourcesLines = append(resourcesLines, resourcesIndent+fmt.Sprintf("%s:", tagsAttributeName))
+		}
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
 		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End+1:]...)                                                                    // add rest of resource lines
 	}
@@ -120,22 +123,32 @@ func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	return textLines
 }
 
-func FindTagsLinesYAML(textLines []string, tagsAttributeName string) structure.Lines {
+func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.Lines, bool) {
 	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
+	var prevLine string
 	var lineIndent string
 	var tagsIndent string
+	var tagsExist bool
 	for i, line := range textLines {
 		lineIndent = utils.ExtractIndentationOfLine(line)
 		if strings.Contains(line, tagsAttributeName+":") {
 			tagsLines.Start = i + 1
 			tagsIndent = utils.ExtractIndentationOfLine(line)
+			tagsExist = true
 		} else if lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1) {
 			tagsLines.End = i - 1
-			return tagsLines
+			tagsIndent = utils.ExtractIndentationOfLine(line)
+			return tagsLines, tagsExist
+		} else if i == len(textLines)-1 && !tagsExist {
+			tagsLines.End = i
+			tagsIndent = utils.ExtractIndentationOfLine(prevLine)
 		}
+		prevLine = line
 	}
-
-	return tagsLines
+	if !tagsExist {
+		tagsLines.Start = tagsLines.End
+	}
+	return tagsLines, tagsExist
 }
 
 func EncodeBlocksToYaml(readFilePath string, blocks []structure.IBlock) []structure.IBlock {

@@ -126,7 +126,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 			}
 		}
 		if !tagsExist {
-			fmt.Println(1)
 			rawBlock.(map[interface{}]interface{})[FunctionTagsAttributeName] = make([]map[string]string, 0)
 			slsBlock = &ServerlessBlock{
 				Block: structure.Block{
@@ -315,7 +314,7 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 			}
 			lineCounter++
 		}
-		linesInResource := yamlUtils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
+		linesInResource, _ := yamlUtils.FindTagsLinesYAML(resourceLinesText, FunctionTagsAttributeName)
 		numTags := linesInResource.End - linesInResource.Start
 		defer func() {
 			_ = file.Close()
