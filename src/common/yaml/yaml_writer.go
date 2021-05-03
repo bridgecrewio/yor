@@ -61,10 +61,11 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start])
 
 		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...) // add all the resource's line before the tags
-		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
 		if !oldTagsExist {
+			oldTagsIndent = resourcesIndent
 			resourcesLines = append(resourcesLines, resourcesIndent+fmt.Sprintf("%s:", tagsAttributeName))
 		}
+		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
 		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End+1:]...)                                                                    // add rest of resource lines
 	}
