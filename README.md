@@ -61,7 +61,7 @@ More Docs:
 On MacOS
 
 ```sh
-brew tap bridgecrewio/formulae
+brew tap bridgecrewio/tap
 brew install bridgecrewio/formulae/yor
 ```
 
