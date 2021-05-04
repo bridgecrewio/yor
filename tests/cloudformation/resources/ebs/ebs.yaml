@@ -7,8 +7,8 @@ Resources:
       Size: 100
       Encrypted: true
       #Encrypted: false
-      AvailabilityZone: us-west-2a
       Tags:
         - Key: MyTag
           Value: TagValue
+      AvailabilityZone: us-west-2a
     DeletionPolicy: Snapshot

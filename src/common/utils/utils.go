@@ -102,6 +102,40 @@ func ExtractIndentationOfLine(textLine string) string {
 	return indent
 }
 
+func ReorderByTags(lines []string, tagsAttributeName string) []string {
+	tagsOriginalStartLineInd := -1
+	var processedTags = false
+	var tagsIndent string
+	var sortedLines = make([]string, len(lines))
+	for i, line := range lines {
+		lineIndent := ExtractIndentationOfLine(line)
+		switch {
+		case strings.Contains(line, tagsAttributeName+":"):
+			tagsOriginalStartLineInd = i
+			tagsIndent = lineIndent
+			sortedLines[i] = lines[i]
+			processedTags = true
+		case lineIndent != "" && lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
+			sortedLines[i] = lines[i]
+			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
+			break
+		case i == len(lines)-1 || lineIndent < tagsIndent:
+			sortedLines[i] = lines[i]
+			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
+			break
+		default:
+			sortedLines[i] = lines[i]
+			break
+		}
+		fmt.Println(tagsOriginalStartLineInd, processedTags)
+	}
+	return sortedLines
+}
+
+func CfnTagLine(line string) bool {
+	return strings.Contains(line, "- Key") || strings.Contains(line, "Value")
+}
+
 func IndentLines(textLines []string, indent string) []string {
 	for i, originLine := range textLines {
 		noLeadingWhitespace := strings.TrimLeft(originLine, "\t \n")
@@ -113,6 +147,15 @@ func IndentLines(textLines []string, indent string) []string {
 	}
 
 	return textLines
+}
+
+func insert(a []string, index int, value string) []string {
+	if len(a) == index { // nil or empty slice or after last element
+		return append(a, value)
+	}
+	a = append(a[:index+1], a[index:]...) // index < len(a)
+	a[index] = value
+	return a
 }
 
 func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {

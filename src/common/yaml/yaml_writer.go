@@ -22,7 +22,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
 	originLines := utils.GetLinesFromBytes(originFileSrc)
-
+	originLines = utils.ReorderByTags(originLines, tagsAttributeName)
 	resourcesIndent := utils.ExtractIndentationOfLine(originLines[resourcesLinesRange.Start])
 
 	resourcesLines := make([]string, 0)
@@ -59,7 +59,6 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 
 		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start])
-
 		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...) // add all the resource's line before the tags
 		if !oldTagsExist {
 			oldTagsIndent = resourcesIndent
@@ -67,11 +66,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
-		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End+1:]...)                                                                    // add rest of resource lines
 	}
 
 	allLines := append(originLines[:resourcesLinesRange.Start-1], resourcesLines...)
-	allLines = append(allLines, originLines[resourcesLinesRange.End:]...)
 	linesText := strings.Join(allLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
@@ -120,7 +117,7 @@ func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	}
 
 	textLines = utils.GetLinesFromBytes(yamlBytes)
-
+	textLines = utils.ReorderByTags(textLines, tagsAttributeName)
 	return textLines
 }
 

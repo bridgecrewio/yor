@@ -33,7 +33,13 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 			return
 		}
 		assert.Equal(t, 2, len(slsBlocks))
-		func1Block := slsBlocks[0]
+		var func1Block *ServerlessBlock
+		for _, block := range slsBlocks {
+			castedBlock := block.(*ServerlessBlock)
+			if castedBlock.Name == "myFunction" {
+				func1Block = castedBlock
+			}
+		}
 		assert.Equal(t, structure.Lines{Start: 14, End: 19}, func1Block.GetLines())
 		assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
