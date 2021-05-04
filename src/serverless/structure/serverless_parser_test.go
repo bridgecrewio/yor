@@ -1,12 +1,18 @@
 package structure
 
 import (
+	"bytes"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -156,5 +162,42 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if parsedBlocks != nil {
 			t.Fail()
 		}
+	})
+
+	t.Run("test SLS writing", func(t *testing.T) {
+		directory := "../../../tests/serverless/resources/no_tags"
+		f, err := ioutil.TempFile(directory, "serverless.*.yaml")
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		readFilePath := directory + "/serverless.yml"
+		tagGroup := simple.TagGroup{}
+		extraTags := []tags.ITag{
+			&tags.Tag{
+				Key:   "new_tag",
+				Value: "new_value",
+			},
+		}
+		tagGroup.SetTags(extraTags)
+		tagGroup.InitTagGroup("", []string{})
+		writeFilePath := directory + "/serverless_tagged.yml"
+		slsBlocks, err := slsParser.ParseFile(readFilePath)
+		for _, block := range slsBlocks {
+			utils.CreateTagsForBlock(&tagGroup, block)
+		}
+		if err != nil {
+			t.Fail()
+		}
+		f.Seek(0, io.SeekStart)
+		slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
+		expected, _ := ioutil.ReadFile(writeFilePath)
+		actual, _ := ioutil.ReadFile(f.Name())
+		assert.True(t, bytes.Equal(expected, actual))
+		defer func(name string) {
+			err := os.Remove(name)
+			if err != nil {
+				t.Fail()
+			}
+		}(f.Name())
+
 	})
 }

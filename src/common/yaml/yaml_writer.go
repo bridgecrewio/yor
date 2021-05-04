@@ -69,19 +69,26 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.End:], oldTagsIndent)...)
-
 	}
-	allLines := make([]string, 0)
+	allLines := make([]string, len(originLines))
 	if isCfn {
-		allLines = originLines[:oldResourcesLineRange.Start-1]
+		copy(allLines, originLines[:oldResourcesLineRange.Start-1])
 	} else {
-		allLines = originLines[:oldResourcesLineRange.Start+1]
+		copy(allLines, originLines[:oldResourcesLineRange.Start+1])
 	}
 	allLines = append(allLines, resourcesLines...)
 	if !isCfn {
 		allLines = append(allLines, originLines[resourcesLinesRange.End:]...)
 	}
-	linesText := strings.Join(allLines, "\n")
+	filteredLines := make([]string, 0)
+	for i, line := range allLines {
+		if strings.Trim(line, "\n \t") == "" {
+			continue
+		} else {
+			filteredLines = append(filteredLines, allLines[i])
+		}
+	}
+	linesText := strings.Join(filteredLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 

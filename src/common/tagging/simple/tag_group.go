@@ -9,6 +9,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 )
 
 type TagGroup struct {
@@ -36,13 +37,5 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 }
 
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
-	var newTags []tags.ITag
-	for _, tag := range t.GetTags() {
-		tagVal, err := tag.CalculateValue(struct{}{})
-		if err != nil {
-			logger.Warning("Failed to create extra tag", tag.GetKey())
-		}
-		newTags = append(newTags, tagVal)
-	}
-	block.AddNewTags(newTags)
+	utils.CreateTagsForBlock(t, block)
 }

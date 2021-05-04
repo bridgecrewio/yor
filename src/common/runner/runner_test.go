@@ -112,7 +112,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		runner.tagGroups[0] = mockGitTagGroup
+		runner.TagGroups[0] = mockGitTagGroup
 		_, err = runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -144,7 +144,7 @@ func Test_TagCFNDir(t *testing.T) {
 			TagGroups: allTagGroups[:len(allTagGroups)-1],
 		})
 
-		tg := runner.tagGroups
+		tg := runner.TagGroups
 		assert.Equal(t, len(allTagGroups)-1, len(tg))
 	})
 }
