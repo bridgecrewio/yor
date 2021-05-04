@@ -76,7 +76,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 
 	t.Run("test CFN writing", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
-		f, err := ioutil.TempFile(directory, "temp.*.yaml")
+		f, _ := ioutil.TempFile(directory, "temp.*.yaml")
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
 		readFilePath := directory + "/ebs.yaml"
