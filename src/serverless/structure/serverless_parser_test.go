@@ -195,11 +195,24 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		expectedHandler, _ := os.Open(writeFilePath)
-		actualHandler, _ := os.Open(f.Name())
+		var expectedHandler, actualHandler *os.File
+		expectedAbs, _ := filepath.Abs(writeFilePath)
+		actualAbs, _ := filepath.Abs(f.Name())
+		expectedHandler, err = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
+		actualHandler, err = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
 		defer expectedHandler.Close()
 		defer actualHandler.Close()
-		actualReader := bufio.NewScanner(expectedHandler)
+		_, err = expectedHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		_, err = actualHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		defer expectedHandler.Close()
+		defer actualHandler.Close()
+		actualReader := bufio.NewScanner(actualHandler)
 		expectedReader := bufio.NewScanner(expectedHandler)
 		for actualReader.Scan() && expectedReader.Scan() {
 			actualLine := actualReader.Text()
