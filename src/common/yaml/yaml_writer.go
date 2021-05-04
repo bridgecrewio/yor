@@ -128,11 +128,10 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
 	var prevLine string
 	var lineIndent string
-	var tagsIndent string
 	var tagsExist bool
 	for i, line := range textLines {
 		lineIndent = utils.ExtractIndentationOfLine(line)
-		tagsIndent = lineIndent
+		tagsIndent := lineIndent
 		switch {
 		case strings.Contains(line, tagsAttributeName+":"):
 			tagsLines.Start = i + 1
