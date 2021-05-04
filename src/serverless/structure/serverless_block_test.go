@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -78,9 +77,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 		b.UpdateTags()
 
 		currentRawBlock := b.RawBlock
-		var tagsAttributeName string = b.TagsAttributeName
 		currentTags := currentRawBlock.(map[interface{}]interface{})[b.TagsAttributeName]
-		fmt.Println(currentTags, tagsAttributeName)
 		sort.Slice(expectedMergedTags, func(i, j int) bool {
 			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
 		})

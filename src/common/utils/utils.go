@@ -127,7 +127,6 @@ func ReorderByTags(lines []string, tagsAttributeName string) []string {
 			sortedLines[i] = lines[i]
 			break
 		}
-		fmt.Println(tagsOriginalStartLineInd, processedTags)
 	}
 	return sortedLines
 }

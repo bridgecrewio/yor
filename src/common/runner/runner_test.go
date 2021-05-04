@@ -126,12 +126,12 @@ func Test_TagCFNDir(t *testing.T) {
 		editedFileLines := utils.GetLinesFromBytes(editedFileBytes)
 
 		expectedAddedLines := len(mockGitTagGroup.GetTags()) * 2
-		assert.Equal(t, len(originFileLines)+expectedAddedLines-1, len(editedFileLines))
+		assert.Equal(t, len(originFileLines)+expectedAddedLines+1, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 11}, {A: 13, B: 26, Size: 2}, {A: 15, B: 28, Size: 0},
+			{A: 0, B: 0, Size: 8}, {A: 8, B: 11, Size: 2}, {A: 15, B: 30, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
