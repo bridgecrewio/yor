@@ -13,7 +13,7 @@ import (
 
 func TestNewGitService(t *testing.T) {
 	t.Run("Get correct organization and repo name", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer os.RemoveAll(terragoatPath)
 
 		gitService, err := NewGitService(terragoatPath)
@@ -25,7 +25,7 @@ func TestNewGitService(t *testing.T) {
 	})
 
 	t.Run("Get correct organization and repo name when in non-root dir", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer os.RemoveAll(terragoatPath)
 		gitService, err := NewGitService(terragoatPath + "/aws")
 		if err != nil {
@@ -36,7 +36,7 @@ func TestNewGitService(t *testing.T) {
 	})
 
 	t.Run("Fail if gotten to root dir", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer os.RemoveAll(terragoatPath)
 
 		terragoatPath = filepath.Dir(filepath.Dir(terragoatPath))
@@ -46,7 +46,7 @@ func TestNewGitService(t *testing.T) {
 	})
 
 	t.Run("Fail if gotten to root dir 2", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer os.RemoveAll(terragoatPath)
 
 		terragoatPath = filepath.Dir(filepath.Dir(terragoatPath))
@@ -56,7 +56,7 @@ func TestNewGitService(t *testing.T) {
 	})
 
 	t.Run("Get blame for lines test", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer func() {
 			_ = os.RemoveAll(terragoatPath)
 		}()

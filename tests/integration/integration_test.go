@@ -185,7 +185,7 @@ func TestRunResults(t *testing.T) {
 
 func TestTagUncommittedResults(t *testing.T) {
 	t.Run("Test tagging twice no result second time", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		outputPath := "./result_uncommitted.json"
 		defer func() {
 			_ = os.RemoveAll(terragoatPath)
@@ -242,7 +242,7 @@ func TestTagUncommittedResults(t *testing.T) {
 	})
 
 	t.Run("Test tagging after minor change", func(t *testing.T) {
-		terragoatPath := utils.CloneRepo(utils.TerragoatURL)
+		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		outputPath := "./result_uncommitted.json"
 		defer func() {
 			_ = os.RemoveAll(terragoatPath)

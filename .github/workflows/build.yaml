@@ -66,6 +66,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
+          ref: 063dc2db3bb036160ed39d3705508ee8293a27c8
       - name: Run yor
         run: |
           git config --local user.email "action@github.com"

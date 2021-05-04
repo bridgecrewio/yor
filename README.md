@@ -6,9 +6,7 @@
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
-> Generate git tags on infrastructure as code using git commit history
-![](docs/yor_git_tags.gif)
-
+ 
 Cloud service providers allow users to assign metadata to their cloud resources in the form
 of tags. Each tag is a simple label consisting of a customer-defined key and a value
 that can make it easier to manage, search for, and filter resources. Although there are no
@@ -17,33 +15,27 @@ environment, or other criteria.
 
 Tags can be used for security, cost allocation, automation, console organization, access control, and operations. 
 
-Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code frameworks (Terraform, Cloudformation, Kubernetes, and Serverless Framework) .
+Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code frameworks (Terraform, Cloudformation, and Serverless Framework) .
 By auto-tagging in IaC you will be able to trace any cloud resource from code to cloud. 
 Yor enables version-controlled owner assignment and resource tracing based git history. It also can extend tag enforcement logic by loading external tagging logic into the CI/CD pipeline. 
 
-
 ## Features
+* Simple tagging - tag a directory IaC resource by user input
+* Git tagging - Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) and enables mapping individual resources to specific commits and users.
+* ```yor_trace``` tag enables full attribution between build time and run time resources.
 
-* Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) and enables mapping individual resources to specific commits. It can be run automatically  
-* ```yor_trace``` tag enables full attribution between build time and run time resources. 
-* ```git_*``` tags  connect cloud resources to individual git commits and enable assigning clear ownership between developers and the resources they routinely change.
+## Demo
+> Generate an git tags on infrastructure as code
+![](docs/yor_git_tags.gif)
 
- 
+> Track resource last modifying user from code to cloud
+![](docs/yor_owner.gif)
 
-### Supported tags
+> Track resource identifer from code to cloud
+![](docs/yor_trace.gif)
 
-```
-yor_trace = "842fa55e-c0f8-4f79-a56d-a046a24d8e08"
-git_org = "bridgecrewio"
-git_repo = "terragoat"
-git_file = "README.md" # this is the path from the repo root dir...
-git_commit = "47accf06f13b503f3bab06fed7860e72f7523cac" # This is the latest commit for this resource
-git_last_modified_At = "2020-03-28 21:42:46 +0000 UTC"
-git_last_modified_by = "schosterbarak@gmail.com"
-git_modifiers = "schosterbarak/baraks" # These are extracted from the emails, everything before the @ sign. Can be done for modified_by tag as well
-```
-
-
+> Track resource code block file cloud to code
+![](docs/yor_file.gif)
 
 ## **Table of contents**
 
