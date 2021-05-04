@@ -1,10 +1,11 @@
 package structure
 
 import (
-	"bytes"
+	"bufio"
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -104,9 +105,17 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		expected, _ := ioutil.ReadFile(writeFilePath)
-		actual, _ := ioutil.ReadFile(f.Name())
-		assert.True(t, bytes.Equal(expected, actual))
+		expectedHandler, _ := os.Open(writeFilePath)
+		actualHandler, _ := os.Open(f.Name())
+		defer expectedHandler.Close()
+		defer actualHandler.Close()
+		actualReader := bufio.NewScanner(expectedHandler)
+		expectedReader := bufio.NewScanner(expectedHandler)
+		for actualReader.Scan() && expectedReader.Scan() {
+			actualLine := actualReader.Text()
+			expectedLine := expectedReader.Text()
+			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
+		}
 		defer func(name string) {
 			err := os.Remove(name)
 			if err != nil {
