@@ -25,26 +25,6 @@ type CloudformationParser struct {
 	*types.YamlParser
 }
 
-func (p *CloudformationParser) StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {
-	var field reflect.Value
-	sValue := reflect.ValueOf(s)
-
-	// Check if the passed interface is a pointer
-	if sValue.Type().Kind() != reflect.Ptr {
-		// Create a new type of Iface's Type, so we have a pointer to work with
-		field = sValue.FieldByName(property)
-	} else {
-		// 'dereference' with Elem() and get the field by name
-		field = sValue.Elem().FieldByName(property)
-	}
-
-	if !field.IsValid() {
-		return false, field
-	}
-
-	return true, field
-}
-
 const TagsAttributeName = "Tags"
 
 var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Description", "Metadata", "Parameters", "Mappings", "Conditions", "Outputs", "Resources"}
@@ -90,7 +70,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		for resourceName := range template.Resources {
 			resource := template.Resources[resourceName]
 			lines := resourceNamesToLines[resourceName]
-			isTaggable, tagsValue := p.StructContainsProperty(resource, TagsAttributeName)
+			isTaggable, tagsValue := utils.StructContainsProperty(resource, TagsAttributeName)
 			tagsLines := structure.Lines{Start: -1, End: -1}
 			var existingTags []tags.ITag
 			if isTaggable {

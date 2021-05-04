@@ -114,3 +114,23 @@ func IndentLines(textLines []string, indent string) []string {
 
 	return textLines
 }
+
+func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {
+	var field reflect.Value
+	sValue := reflect.ValueOf(s)
+
+	// Check if the passed interface is a pointer
+	if sValue.Type().Kind() != reflect.Ptr {
+		// Create a new type of Iface's Type, so we have a pointer to work with
+		field = sValue.FieldByName(property)
+	} else {
+		// 'dereference' with Elem() and get the field by name
+		field = sValue.Elem().FieldByName(property)
+	}
+
+	if !field.IsValid() {
+		return false, field
+	}
+
+	return true, field
+}
