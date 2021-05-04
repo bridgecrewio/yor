@@ -124,17 +124,13 @@ func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []strin
 		case !isCfn && lineIndent <= functionsIndent:
 			sortedLines[i] = lines[i]
 			processedTags = false
-			break
 		case lineIndent != "" && lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
 			sortedLines[i] = ""
 			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
-			break
 		case i == len(lines)-1 || lineIndent < tagsIndent:
 			sortedLines[i] = lines[i]
-			break
 		default:
 			sortedLines[i] = lines[i]
-			break
 		}
 	}
 	return sortedLines
