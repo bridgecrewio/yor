@@ -132,18 +132,19 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	var tagsExist bool
 	for i, line := range textLines {
 		lineIndent = utils.ExtractIndentationOfLine(line)
+		tagsIndent = lineIndent
 		switch {
 		case strings.Contains(line, tagsAttributeName+":"):
 			tagsLines.Start = i + 1
-			tagsIndent = utils.ExtractIndentationOfLine(line)
 			tagsExist = true
 		case lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1):
 			tagsLines.End = i - 1
-			tagsIndent = utils.ExtractIndentationOfLine(line)
 			return tagsLines, tagsExist
 		case i == len(textLines)-1 && !tagsExist:
 			tagsLines.End = i
+			tagsLines.Start = tagsLines.End
 			tagsIndent = utils.ExtractIndentationOfLine(prevLine)
+			return tagsLines, tagsExist
 		}
 		prevLine = line
 	}
