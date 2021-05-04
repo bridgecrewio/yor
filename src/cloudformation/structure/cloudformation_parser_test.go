@@ -109,8 +109,8 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		var expectedHandler, actualHandler *os.File
 		expectedAbs, _ := filepath.Abs(writeFilePath)
 		actualAbs, _ := filepath.Abs(f.Name())
-		expectedHandler, err = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
-		actualHandler, err = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
+		expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
+		actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
 		_, err = expectedHandler.Seek(0, io.SeekStart)
 		if err != nil {
 			t.Fail()
