@@ -142,7 +142,7 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 		case i == len(textLines)-1 && !tagsExist:
 			tagsLines.End = i
 			tagsLines.Start = tagsLines.End
-			tagsIndent = utils.ExtractIndentationOfLine(prevLine)
+			tagsIndent = utils.ExtractIndentationOfLine(prevLine) //nolint:gosec
 			return tagsLines, tagsExist
 		}
 		prevLine = line
