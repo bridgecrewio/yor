@@ -110,8 +110,8 @@ func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	var textLines []string
 	var castedRawBlock = rawBlock
 	tempTagsMap := make(map[string]interface{})
-	switch rawBlock.(type) {
-	case map[interface{}]interface{}:
+	_, ok := rawBlock.(map[interface{}]interface{})
+	if ok {
 		castedRawBlock = reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
 	}
 	yamlBytes, err := yaml.Marshal(castedRawBlock)
@@ -132,15 +132,16 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	var tagsExist bool
 	for i, line := range textLines {
 		lineIndent = utils.ExtractIndentationOfLine(line)
-		if strings.Contains(line, tagsAttributeName+":") {
+		switch {
+		case strings.Contains(line, tagsAttributeName+":"):
 			tagsLines.Start = i + 1
 			tagsIndent = utils.ExtractIndentationOfLine(line)
 			tagsExist = true
-		} else if lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1) {
+		case lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1):
 			tagsLines.End = i - 1
 			tagsIndent = utils.ExtractIndentationOfLine(line)
 			return tagsLines, tagsExist
-		} else if i == len(textLines)-1 && !tagsExist {
+		case i == len(textLines)-1 && !tagsExist:
 			tagsLines.End = i
 			tagsIndent = utils.ExtractIndentationOfLine(prevLine)
 		}
