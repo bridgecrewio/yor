@@ -96,8 +96,14 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		f.Seek(0, io.SeekStart)
-		cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
+		if err != nil {
+			t.Fail()
+		}
 		expected, _ := ioutil.ReadFile(writeFilePath)
 		actual, _ := ioutil.ReadFile(f.Name())
 		assert.True(t, bytes.Equal(expected, actual))

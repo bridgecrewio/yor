@@ -166,7 +166,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 
 	t.Run("test SLS writing", func(t *testing.T) {
 		directory := "../../../tests/serverless/resources/no_tags"
-		f, err := ioutil.TempFile(directory, "serverless.*.yaml")
+		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		readFilePath := directory + "/serverless.yml"
@@ -187,8 +187,14 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		f.Seek(0, io.SeekStart)
-		slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
+		if err != nil {
+			t.Fail()
+		}
 		expected, _ := ioutil.ReadFile(writeFilePath)
 		actual, _ := ioutil.ReadFile(f.Name())
 		assert.True(t, bytes.Equal(expected, actual))
