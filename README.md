@@ -33,7 +33,6 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## **Table of contents**
 
 - [Getting Started](#getting-started)
-- [Disclaimer](#disclaimer)
 - [Support](#support)
 - [Customizing Yor](CUSTOMIZE.md)
 
@@ -151,11 +150,6 @@ To maintain our conventions, please run lint on your branch before opening a PR.
 ```sh
 golangci-lint run --fix --skip-dirs tests/yor_plugins
 ```
-
-## Disclaimer
-
-`yor` does not save, publish or share with anyone any identifiable customer information.  
-No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
 
 ## Support
 
