@@ -68,6 +68,8 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
+		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.End:], oldTagsIndent)...)
+
 	}
 
 	allLines := append(originLines[:resourcesLinesRange.Start-1], resourcesLines...)

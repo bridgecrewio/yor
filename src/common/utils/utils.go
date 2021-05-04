@@ -116,7 +116,7 @@ func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []strin
 			processedFunctions = true
 			functionsIndent = lineIndent + "  "
 			sortedLines[i] = lines[i]
-		case strings.Contains(line, tagsAttributeName+":") && (!isCfn && processedFunctions):
+		case strings.Contains(line, tagsAttributeName+":") || (!isCfn && processedFunctions):
 			tagsOriginalStartLineInd = i
 			tagsIndent = lineIndent
 			sortedLines[i] = lines[i]
@@ -124,7 +124,7 @@ func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []strin
 		case !isCfn && lineIndent <= functionsIndent:
 			sortedLines[i] = lines[i]
 			processedTags = false
-		case lineIndent != "" && lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
+		case lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
 			sortedLines[i] = ""
 			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
 		case i == len(lines)-1 || lineIndent < tagsIndent:
