@@ -47,6 +47,8 @@ GitHub Action
     fetch-depth: 0
 - name: Run yor action
   uses: bridgecrewio/yor-action@main
+- name: Commit tag changes
+  uses: stefanzweifel/git-auto-commit-action@v4
 ```
 
 MacOS
