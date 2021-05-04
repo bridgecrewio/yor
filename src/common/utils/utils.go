@@ -102,26 +102,35 @@ func ExtractIndentationOfLine(textLine string) string {
 	return indent
 }
 
-func ReorderByTags(lines []string, tagsAttributeName string) []string {
+func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []string {
 	tagsOriginalStartLineInd := -1
 	var processedTags = false
 	var tagsIndent string
+	var functionsIndent = ""
+	var processedFunctions = false
 	var sortedLines = make([]string, len(lines))
 	for i, line := range lines {
 		lineIndent := ExtractIndentationOfLine(line)
 		switch {
-		case strings.Contains(line, tagsAttributeName+":"):
+		case strings.Contains(line, "functions:"):
+			processedFunctions = true
+			functionsIndent = lineIndent + "  "
+			sortedLines[i] = lines[i]
+		case strings.Contains(line, tagsAttributeName+":") && (!isCfn && processedFunctions):
 			tagsOriginalStartLineInd = i
 			tagsIndent = lineIndent
 			sortedLines[i] = lines[i]
 			processedTags = true
-		case lineIndent != "" && lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
+		case !isCfn && lineIndent <= functionsIndent:
 			sortedLines[i] = lines[i]
+			processedTags = false
+			break
+		case lineIndent != "" && lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
+			sortedLines[i] = ""
 			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
 			break
 		case i == len(lines)-1 || lineIndent < tagsIndent:
 			sortedLines[i] = lines[i]
-			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
 			break
 		default:
 			sortedLines[i] = lines[i]

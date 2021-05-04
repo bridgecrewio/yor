@@ -3,6 +3,7 @@ package yaml
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 
 	"github.com/awslabs/goformation/v4/cloudformation"
@@ -21,8 +22,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
+	isCfn := !strings.Contains(filepath.Base(readFilePath), "serverless")
 	originLines := utils.GetLinesFromBytes(originFileSrc)
-	originLines = utils.ReorderByTags(originLines, tagsAttributeName)
+	originLines = utils.ReorderByTags(originLines, tagsAttributeName, isCfn)
 	resourcesIndent := utils.ExtractIndentationOfLine(originLines[resourcesLinesRange.Start])
 
 	resourcesLines := make([]string, 0)
@@ -31,9 +33,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		var newResourceLines []string
 		switch rawBlockCasted := rawBlock.(type) {
 		case cloudformation.Resource:
-			newResourceLines = getYAMLLines(rawBlockCasted, tagsAttributeName)
+			newResourceLines = getYAMLLines(rawBlockCasted, tagsAttributeName, isCfn)
 		case map[interface{}]interface{}:
-			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName)
+			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName, isCfn)
 		}
 		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 
@@ -103,7 +105,7 @@ func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface
 	return currResourceMap
 }
 
-func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
+func getYAMLLines(rawBlock interface{}, tagsAttributeName string, isCfn bool) []string {
 	var textLines []string
 	var castedRawBlock = rawBlock
 	tempTagsMap := make(map[string]interface{})
@@ -117,7 +119,7 @@ func getYAMLLines(rawBlock interface{}, tagsAttributeName string) []string {
 	}
 
 	textLines = utils.GetLinesFromBytes(yamlBytes)
-	textLines = utils.ReorderByTags(textLines, tagsAttributeName)
+	textLines = utils.ReorderByTags(textLines, tagsAttributeName, isCfn)
 	return textLines
 }
 
