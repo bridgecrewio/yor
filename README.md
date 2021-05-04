@@ -42,8 +42,12 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ### Installation
 GitHub Action
 ```yaml
-- name: Yor GitHub Action
-  uses: bridgecrewio/yor-action@0.2.0
+- name: Checkout repo
+  uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+- name: Run yor action
+  uses: bridgecrewio/yor-action@main
 ```
 
 MacOS
