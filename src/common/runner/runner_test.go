@@ -10,14 +10,14 @@ import (
 	"time"
 
 	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/cli"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
+	"github.com/bridgecrewio/yor/src/common/utils"
 	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
-	"github.com/bridgecrewio/yor/tests/utils"
+	testingUtils "github.com/bridgecrewio/yor/tests/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
 	"github.com/pmezard/go-difflib/difflib"
@@ -100,7 +100,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		originFileLines := common.GetLinesFromBytes(originFileBytes)
+		originFileLines := utils.GetLinesFromBytes(originFileBytes)
 
 		defer func() {
 			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
@@ -123,15 +123,15 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		editedFileLines := common.GetLinesFromBytes(editedFileBytes)
+		editedFileLines := utils.GetLinesFromBytes(editedFileBytes)
 
 		expectedAddedLines := len(mockGitTagGroup.GetTags()) * 2
-		assert.Equal(t, len(originFileLines)+expectedAddedLines, len(editedFileLines))
+		assert.Equal(t, len(originFileLines)+expectedAddedLines+2, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 13}, {A: 13, B: 27, Size: 2}, {A: 15, B: 29, Size: 0},
+			{A: 0, B: 0, Size: 8}, {A: 8, B: 11, Size: 2}, {A: 15, B: 31, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
@@ -188,7 +188,7 @@ func TestRunnerInternals(t *testing.T) {
 	t.Run("Test skip entire dir", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
-		output := utils.CaptureOutput(func() {
+		output := testingUtils.CaptureOutput(func() {
 			_ = runner.Init(&cli.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{

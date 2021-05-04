@@ -3,33 +3,37 @@ package structure
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"strings"
 
+	"github.com/awslabs/goformation/v4"
+	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-
-	"github.com/awslabs/goformation/v4"
-	goformationtags "github.com/awslabs/goformation/v4/cloudformation/tags"
+	"github.com/bridgecrewio/yor/src/common/types"
+	"github.com/bridgecrewio/yor/src/common/utils"
+	"github.com/bridgecrewio/yor/src/common/yaml"
 
 	"reflect"
 )
+
+type CloudformationParser struct {
+	*types.YamlParser
+}
 
 const TagsAttributeName = "Tags"
 
 var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Description", "Metadata", "Parameters", "Mappings", "Conditions", "Outputs", "Resources"}
 
-type CloudformationParser struct {
-	rootDir              string
-	fileToResourcesLines map[string]common.Lines
-}
-
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
-	p.rootDir = rootDir
-	p.fileToResourcesLines = make(map[string]common.Lines)
+	p.YamlParser = &types.YamlParser{
+		RootDir:              rootDir,
+		FileToResourcesLines: make(map[string]structure.Lines),
+	}
 }
 
 func (p *CloudformationParser) GetSkippedDirs() []string {
@@ -52,12 +56,12 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 			resourceNames = append(resourceNames, resourceName)
 		}
 
-		var resourceNamesToLines map[string]*common.Lines
-		switch common.GetFileFormat(filePath) {
+		var resourceNamesToLines map[string]*structure.Lines
+		switch utils.GetFileFormat(filePath) {
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
 		default:
-			return nil, fmt.Errorf("unsupported file type %s", common.GetFileFormat(filePath))
+			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
 
 		minResourceLine := math.MaxInt8
@@ -66,8 +70,8 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		for resourceName := range template.Resources {
 			resource := template.Resources[resourceName]
 			lines := resourceNamesToLines[resourceName]
-			isTaggable, tagsValue := common.StructContainsProperty(resource, TagsAttributeName)
-			tagsLines := common.Lines{Start: -1, End: -1}
+			isTaggable, tagsValue := utils.StructContainsProperty(resource, TagsAttributeName)
+			tagsLines := structure.Lines{Start: -1, End: -1}
 			var existingTags []tags.ITag
 			if isTaggable {
 				tagsLines, existingTags = p.extractTagsAndLines(filePath, lines, tagsValue)
@@ -82,31 +86,31 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 					RawBlock:          resource,
 					IsTaggable:        isTaggable,
 					TagsAttributeName: TagsAttributeName,
+					Lines:             *lines,
+					TagLines:          tagsLines,
 				},
-				lines:    *lines,
-				name:     resourceName,
-				tagLines: tagsLines,
+				Name: resourceName,
 			}
 			parsedBlocks = append(parsedBlocks, cfnBlock)
 		}
 
-		p.fileToResourcesLines[filePath] = common.Lines{Start: minResourceLine, End: maxResourceLine}
+		p.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
 
 		return parsedBlocks, nil
 	}
 	return nil, err
 }
 
-func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *common.Lines, tagsValue reflect.Value) (common.Lines, []tags.ITag) {
+func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *structure.Lines, tagsValue reflect.Value) (structure.Lines, []tags.ITag) {
 	tagsLines := p.getTagsLines(filePath, lines)
 	existingTags := p.GetExistingTags(tagsValue)
 	return tagsLines, existingTags
 }
 
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
-	existingTags := make([]goformationtags.Tag, 0)
+	existingTags := make([]goformationTags.Tag, 0)
 	if tagsValue.Kind() == reflect.Slice {
-		existingTags = tagsValue.Interface().([]goformationtags.Tag)
+		existingTags = tagsValue.Interface().([]goformationTags.Tag)
 	}
 
 	iTags := make([]tags.ITag, 0)
@@ -119,29 +123,15 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 }
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	fileFormat := common.GetFileFormat(readFilePath)
-	switch fileFormat {
-	case "yaml":
-		for _, block := range blocks {
-			cloudformationBlock, ok := block.(*CloudformationBlock)
-			if !ok {
-				logger.Warning("failed to convert block to CloudformationBlock")
-				continue
-			}
-			cloudformationBlock.UpdateTags()
-		}
-		return structure.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.fileToResourcesLines[readFilePath], TagsAttributeName)
-	default:
-		logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
-		return nil
-	}
+	updatedBlocks := yaml.EncodeBlocksToYaml(readFilePath, blocks)
+	return yaml.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName)
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*common.Lines {
-	resourceToLines := make(map[string]*common.Lines)
+func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*structure.Lines {
+	resourceToLines := make(map[string]*structure.Lines)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
-		resourceToLines[resourceName] = &common.Lines{Start: -1, End: -1}
+		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
 	}
 	// #nosec G304
 	file, err := os.Open(filePath)
@@ -151,6 +141,10 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	}
 	scanner := bufio.NewScanner(file)
 	defer func() {
+		_, err := file.Seek(0, io.SeekStart)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 		_ = file.Close()
 	}()
 
@@ -218,20 +212,11 @@ func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*c
 	return resourceToLines
 }
 
-func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *common.Lines) common.Lines {
-	nonFoundLines := common.Lines{Start: -1, End: -1}
-	switch common.GetFileFormat(filePath) {
+func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines) structure.Lines {
+	nonFoundLines := structure.Lines{Start: -1, End: -1}
+	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		//#nosec G304
-		file, err := os.Open(filePath)
-		if err != nil {
-			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-			return nonFoundLines
-		}
-		scanner := bufio.NewScanner(file)
-		defer func() {
-			_ = file.Close()
-		}()
+		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		resourceLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
@@ -244,9 +229,12 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			}
 			lineCounter++
 		}
-		linesInResource := structure.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
-		return common.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.End + resourceLinesRange.End}
+		defer func() {
+			_ = file.Close()
+		}()
+		linesInResource, _ := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
+		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start) + 1}
 	default:
-		return common.Lines{Start: -1, End: -1}
+		return structure.Lines{Start: -1, End: -1}
 	}
 }

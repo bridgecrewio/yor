@@ -4,7 +4,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
@@ -66,9 +65,9 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 				RawBlock:          resource,
 				IsTaggable:        true,
 				TagsAttributeName: "Tags",
+				Lines:             structure.Lines{Start: 4, End: 14},
 			},
-			name:  resourceName,
-			lines: common.Lines{Start: 4, End: 14},
+			Name: resourceName,
 		}
 
 		b.UpdateTags()

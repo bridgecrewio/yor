@@ -4,8 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/bridgecrewio/yor/src/common"
-	commonStructure "github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +44,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 		tagGroup.InitTagGroup("", nil)
 
 		block := &MockTestBlock{
-			Block: commonStructure.Block{
+			Block: structure.Block{
 				FilePath:   path,
 				IsTaggable: true,
 			},
@@ -57,7 +56,10 @@ func TestCode2CloudTagGroup(t *testing.T) {
 }
 
 type MockTestBlock struct {
-	commonStructure.Block
+	structure.Block
+}
+
+func (b *MockTestBlock) UpdateTags() {
 }
 
 func (b *MockTestBlock) Init(_ string, _ interface{}) {}
@@ -70,12 +72,12 @@ func (b *MockTestBlock) GetResourceID() string {
 	return ""
 }
 
-func (b *MockTestBlock) GetLines(_ ...bool) common.Lines {
-	return common.Lines{Start: 1, End: 3}
+func (b *MockTestBlock) GetLines(_ ...bool) structure.Lines {
+	return structure.Lines{Start: 1, End: 3}
 }
 
-func (b *MockTestBlock) GetTagsLines() common.Lines {
-	return common.Lines{Start: -1, End: -1}
+func (b *MockTestBlock) GetTagsLines() structure.Lines {
+	return structure.Lines{Start: -1, End: -1}
 }
 
 func (b *MockTestBlock) GetSeparator() string {

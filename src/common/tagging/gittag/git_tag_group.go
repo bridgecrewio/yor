@@ -5,12 +5,12 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/go-git/go-git/v5/plumbing"
 
@@ -96,7 +96,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
 	block.AddNewTags(newTags)
 }
 
-func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) common.Lines {
+func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) structure.Lines {
 	blockLines := block.GetLines()
 	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
 	originStart := blockLines.Start
@@ -116,7 +116,7 @@ func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) common.Lines {
 		originEnd--
 	}
 
-	return common.Lines{Start: gitStart, End: gitEnd}
+	return structure.Lines{Start: gitStart, End: gitEnd}
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
@@ -139,7 +139,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		return
 	}
 
-	originLines := common.GetLinesFromBytes(originFileText)
+	originLines := utils.GetLinesFromBytes(originFileText)
 
 	matcher := difflib.NewMatcher(originLines, gitLines)
 	matches := matcher.GetMatchingBlocks()

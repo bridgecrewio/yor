@@ -12,17 +12,18 @@ import (
 	"github.com/bridgecrewio/yor/src/common/cli"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/reports"
-	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"github.com/bridgecrewio/yor/src/common/tagging/utils"
+	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
+	"github.com/bridgecrewio/yor/src/common/utils"
+	slsStructure "github.com/bridgecrewio/yor/src/serverless/structure"
 	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 )
 
 type Runner struct {
 	tagGroups         []tagging.ITagGroup
-	parsers           []structure.IParser
+	parsers           []common.IParser
 	changeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
 	dir               string
@@ -37,7 +38,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 		logger.Warning(fmt.Sprintf("failed to load extenal tags from plugins due to error: %s", err))
 	}
 	for _, group := range commands.TagGroups {
-		tagGroup := utils.TagGroupsByName(utils.TagGroupName(group))
+		tagGroup := taggingUtils.TagGroupsByName(taggingUtils.TagGroupName(group))
 		r.tagGroups = append(r.tagGroups, tagGroup)
 	}
 	r.tagGroups = append(r.tagGroups, extraTagGroups...)
@@ -47,7 +48,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 			simpleTagGroup.SetTags(extraTags)
 		}
 	}
-	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{})
+	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{}, &slsStructure.ServerlessParser{})
 	for _, parser := range r.parsers {
 		parser.Init(dir, nil)
 	}
@@ -58,7 +59,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 	r.skippedTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
 
-	if common.InSlice(r.skipDirs, r.dir) {
+	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	return nil
@@ -188,7 +189,7 @@ func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}
 	return *iArrPtr, nil
 }
 
-func (r *Runner) isFileSkipped(p structure.IParser, file string) bool {
+func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 	for _, sp := range r.skipDirs {
 		if strings.HasPrefix(file, sp) {
 			return true

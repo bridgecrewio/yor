@@ -15,6 +15,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
@@ -297,7 +298,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	if hclBlock.Type() == "resource" {
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
-		if common.InSlice(SkippedProviders, providerName) {
+		if utils.InSlice(SkippedProviders, providerName) {
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
 		}
 		client := p.getClient(providerName)
@@ -463,7 +464,7 @@ func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.To
 	startIndex := 0
 	hasEq := false
 	for i, token := range tokens {
-		if common.InSlice(separatorTokens, token.Type) {
+		if utils.InSlice(separatorTokens, token.Type) {
 			if hasEq {
 				tagPairs = append(tagPairs, tokens[startIndex:i])
 			}
@@ -510,7 +511,7 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 }
 
 func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
-	if common.InSlice(SkippedProviders, providerName) {
+	if utils.InSlice(SkippedProviders, providerName) {
 		return nil
 	}
 

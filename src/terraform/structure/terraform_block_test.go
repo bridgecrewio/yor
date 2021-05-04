@@ -3,7 +3,7 @@ package structure
 import (
 	"testing"
 
-	structure2 "github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
@@ -49,7 +49,7 @@ func TestTerrraformBlock(t *testing.T) {
 			},
 		}
 		block := TerraformBlock{
-			Block: structure2.Block{
+			Block: structure.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
@@ -111,7 +111,7 @@ func TestTerrraformBlock(t *testing.T) {
 			},
 		}
 		block := TerraformBlock{
-			Block: structure2.Block{
+			Block: structure.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
@@ -176,7 +176,7 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 
 		block := TerraformBlock{
-			Block: structure2.Block{
+			Block: structure.Block{
 				FilePath:          "",
 				ExitingTags:       existingTags,
 				NewTags:           []tags.ITag{},

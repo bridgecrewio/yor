@@ -7,8 +7,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"
@@ -53,7 +53,7 @@ func (t *TerraformModule) InitProvider() {
 		Ui:                    &cli.MockUi{},
 	}
 	for provider, constraints := range providers {
-		if common.InSlice(SkippedProviders, provider) {
+		if utils.InSlice(SkippedProviders, provider) {
 			continue
 		}
 		if providerExists(t.ProvidersInstallDir, provider) {
@@ -94,7 +94,7 @@ func (t *TerraformModule) GetModulesDirectories() []string {
 		childModule := NewTerraformModule(childModuleDir)
 		childModulesDirectories := childModule.GetModulesDirectories()
 		for _, childDirPath := range childModulesDirectories {
-			if _, err := os.Stat(childDirPath); !os.IsNotExist(err) && !common.InSlice(modulesDirectories, childDirPath) {
+			if _, err := os.Stat(childDirPath); !os.IsNotExist(err) && !utils.InSlice(modulesDirectories, childDirPath) {
 				// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
 				modulesDirectories = append(modulesDirectories, childDirPath)
 			}

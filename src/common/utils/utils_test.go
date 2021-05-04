@@ -1,76 +1,11 @@
-package common
+package utils
 
 import (
 	"os"
-	"reflect"
 	"testing"
 )
 
-type struct1 struct {
-	Public  string
-	private string
-}
-
-var struct1Instance = struct1{
-	Public:  "Public",
-	private: "private",
-}
-
 var currentDir, _ = os.Getwd()
-
-func TestStructContainsProperty(t *testing.T) {
-	type args struct {
-		s        interface{}
-		property string
-	}
-	tests := []struct {
-		name      string
-		args      args
-		want      bool
-		wantValue reflect.Value
-	}{
-		{
-			name:      "Public attribute",
-			args:      args{s: struct1Instance, property: "Public"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.Public),
-		},
-		{
-			name:      "Private attribute",
-			args:      args{s: struct1Instance, property: "private"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.private),
-		},
-		{
-			name:      "No such attribute",
-			args:      args{s: struct1Instance, property: "protected"},
-			want:      false,
-			wantValue: reflect.ValueOf(nil),
-		},
-		{
-			name:      "Pointer to struct",
-			args:      args{s: &struct1Instance, property: "Public"},
-			want:      true,
-			wantValue: reflect.ValueOf(struct1Instance.Public),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotReflectValue := StructContainsProperty(tt.args.s, tt.args.property)
-			if got != tt.want {
-				t.Errorf("StructContainsProperty() got = %v, want %v", got, tt.want)
-			}
-			if gotReflectValue.Kind() == reflect.String {
-				gotValue := gotReflectValue.String()
-				if !reflect.DeepEqual(gotValue, tt.wantValue.String()) {
-					t.Errorf("StructContainsProperty() gotReflectValue = %v, want %v", gotReflectValue, tt.wantValue)
-				}
-			} else if !reflect.DeepEqual(gotReflectValue, tt.wantValue) {
-				t.Errorf("StructContainsProperty() gotReflectValue = %v, want %v", gotReflectValue, tt.wantValue)
-			}
-		})
-	}
-}
 
 func TestGetFileFormat(t *testing.T) {
 	type args struct {
@@ -108,12 +43,12 @@ func TestGetFileFormat(t *testing.T) {
 		},
 		{
 			name: "template-yaml",
-			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs.template"},
+			args: args{filePath: currentDir + "/../../../tests/cloudformation/resources/extensions/ebs.template"},
 			want: "yaml",
 		},
 		{
-			name: "template-json",
-			args: args{filePath: currentDir + "/../../tests/cloudformation/resources/extensions/ebs2.template"},
+			name: "template-yaml",
+			args: args{filePath: currentDir + "/../../../tests/cloudformation/resources/extensions/ebs2.template"},
 			want: "json",
 		},
 	}
