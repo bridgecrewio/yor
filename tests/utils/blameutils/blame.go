@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -80,7 +80,7 @@ func ExtractDate(dateStr string) (time.Time, error) {
 }
 
 func CreateMockBlame(textBytes []byte) git.BlameResult {
-	textLines := common.GetLinesFromBytes(textBytes)
+	textLines := utils.GetLinesFromBytes(textBytes)
 	layout = "2006-01-02 15:04:05"
 	possibleLines := []*git.Line{
 		{

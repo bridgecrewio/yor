@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
+	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -32,7 +33,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {"Name": "${local.resource_prefix.value}-eks-subnet2", "kubernetes.io/cluster/${local.eks_name.value}": "shared"},
 		}
 
-		expectedLines := map[string]common.Lines{
+		expectedLines := map[string]structure.Lines{
 			"iam_policy_eks": {Start: 10, End: 19},
 			"iam_for_eks":    {Start: 21, End: 24},
 			"policy_attachment-AmazonEKSClusterPolicy": {Start: 26, End: 29},
@@ -49,7 +50,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		for _, block := range parsedBlocks {
 			hclBlock := block.GetRawBlock().(*hclwrite.Block)
 			if hclBlock.Type() == "resource" {
-				if common.InSlice(taggableResources, hclBlock.Labels()) {
+				if utils.InSlice(taggableResources, hclBlock.Labels()) {
 					assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("expected block %s to be taggable", hclBlock.Labels()))
 					resourceName := hclBlock.Labels()[1]
 					expectedTagsForResource := expectedTags[resourceName]
@@ -132,7 +133,7 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 		for _, file := range actualFiles {
 			splitFile := strings.Split(file, "/")
 			lastTwoParts := splitFile[len(splitFile)-2:]
-			assert.True(t, common.InSlice(expectedFiles, strings.Join(lastTwoParts, "/")), fmt.Sprintf("expected file %s to be in directory\n", file))
+			assert.True(t, utils.InSlice(expectedFiles, strings.Join(lastTwoParts, "/")), fmt.Sprintf("expected file %s to be in directory\n", file))
 		}
 		if err != nil {
 			t.Error(err)

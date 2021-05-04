@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
 
 	"github.com/go-git/go-git/v5"
 )
@@ -18,7 +18,7 @@ type GitBlame struct {
 	GitUserEmail  string
 }
 
-func NewGitBlame(filePath string, lines common.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {
+func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {
 	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath, GitUserEmail: userEmail}
 	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
 	endLine := lines.End - 1
