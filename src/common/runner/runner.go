@@ -104,7 +104,11 @@ func (r *Runner) TagFile(file string) {
 			if block.IsBlockTaggable() {
 				isFileTaggable = true
 				for _, tagGroup := range r.TagGroups {
-					tagGroup.CreateTagsForBlock(block)
+					err := tagGroup.CreateTagsForBlock(block)
+					if err != nil {
+						logger.Warning(fmt.Sprintf("Failed to tag %v in %v due to %v", block.GetResourceID(), block.GetFilePath(), err.Error()))
+						continue
+					}
 				}
 			}
 			r.ChangeAccumulator.AccumulateChanges(block)
