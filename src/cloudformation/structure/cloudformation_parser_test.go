@@ -12,7 +12,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -93,7 +92,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		writeFilePath := directory + "/ebs_tagged.yaml"
 		cfnBlocks, err := cfnParser.ParseFile(readFilePath)
 		for _, block := range cfnBlocks {
-			utils.CreateTagsForBlock(&tagGroup, block)
+			tagGroup.CreateTagsForBlock(block)
 		}
 		if err != nil {
 			t.Fail()

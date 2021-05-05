@@ -10,7 +10,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"github.com/bridgecrewio/yor/src/common/utils"
 )
 
 type TagGroup struct {
@@ -45,7 +44,6 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 func (t *TagGroup) GetDefaultTags() []tags.ITag {
 	return []tags.ITag{}
 }
-
-func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
-	utils.CreateTagsForBlock(t, block)
+func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
+	return t.UpdateBlockTags(block, struct{}{})
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"github.com/bridgecrewio/yor/src/common/utils"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -182,7 +180,10 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		writeFilePath := directory + "/serverless_tagged.yml"
 		slsBlocks, err := slsParser.ParseFile(readFilePath)
 		for _, block := range slsBlocks {
-			utils.CreateTagsForBlock(&tagGroup, block)
+			err := tagGroup.CreateTagsForBlock(block)
+			if err != nil {
+				t.Fail()
+			}
 		}
 		if err != nil {
 			t.Fail()
