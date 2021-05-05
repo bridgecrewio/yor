@@ -12,6 +12,7 @@ Yor is an open-source tool that helps add informative and consistent tags across
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) that hydrates IaC code with consistent tagging logics. It can also run as a pre-commit hook and a standalone CLI.
 
 ## Features
+* Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
 * Change management: git-based tags automatically add org, repo, commit and modifyer details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
@@ -83,14 +84,19 @@ Pre-commit
 `tag` : Apply tagging on a given directory.
 
 ```sh
- ./yor tag --directory terraform/
  # Apply all the tags in yor on the directory tree terraform.
+ ./yor tag --directory terraform/
 
+# Apply all the tags in yor except the tags git_last_modified_by and yor_trace.
  ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
- # Apply all the tags in yor except the tags git_last_modified_by and yor_trace.
 
+# Apply only the tags under the git tag group.
  ./yor tag --tag-group git --directory terraform/
- # Apply only the tags under the git tag group.
+
+# Apply key-value tags on a specific directory
+ export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
+ ./yor tag --tag-group simple --directory terraform/dev/
+
 ```
 
 `-o` : Modify output formats.
