@@ -48,7 +48,7 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	gitService := GitService{
-		rootDir:     rootDir,
+		rootDir:     actualDir,
 		repository:  repository,
 		BlameByFile: make(map[string]*git.BlameResult),
 	}
