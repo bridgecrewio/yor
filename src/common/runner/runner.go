@@ -22,9 +22,9 @@ import (
 )
 
 type Runner struct {
-	tagGroups         []tagging.ITagGroup
+	TagGroups         []tagging.ITagGroup
 	parsers           []common.IParser
-	changeAccumulator *reports.TagChangeAccumulator
+	ChangeAccumulator *reports.TagChangeAccumulator
 	reportingService  *reports.ReportService
 	dir               string
 	skipDirs          []string
@@ -39,10 +39,10 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 	}
 	for _, group := range commands.TagGroups {
 		tagGroup := taggingUtils.TagGroupsByName(taggingUtils.TagGroupName(group))
-		r.tagGroups = append(r.tagGroups, tagGroup)
+		r.TagGroups = append(r.TagGroups, tagGroup)
 	}
-	r.tagGroups = append(r.tagGroups, extraTagGroups...)
-	for _, tagGroup := range r.tagGroups {
+	r.TagGroups = append(r.TagGroups, extraTagGroups...)
+	for _, tagGroup := range r.TagGroups {
 		tagGroup.InitTagGroup(dir, commands.SkipTags)
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
 			simpleTagGroup.SetTags(extraTags)
@@ -53,7 +53,7 @@ func (r *Runner) Init(commands *cli.TagOptions) error {
 		parser.Init(dir, nil)
 	}
 
-	r.changeAccumulator = reports.TagChangeAccumulatorInstance
+	r.ChangeAccumulator = reports.TagChangeAccumulatorInstance
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
 	r.skippedTags = commands.SkipTags
@@ -103,11 +103,15 @@ func (r *Runner) TagFile(file string) {
 		for _, block := range blocks {
 			if block.IsBlockTaggable() {
 				isFileTaggable = true
-				for _, tagGroup := range r.tagGroups {
-					tagGroup.CreateTagsForBlock(block)
+				for _, tagGroup := range r.TagGroups {
+					err := tagGroup.CreateTagsForBlock(block)
+					if err != nil {
+						logger.Warning(fmt.Sprintf("Failed to tag %v in %v due to %v", block.GetResourceID(), block.GetFilePath(), err.Error()))
+						continue
+					}
 				}
 			}
-			r.changeAccumulator.AccumulateChanges(block)
+			r.ChangeAccumulator.AccumulateChanges(block)
 		}
 		if isFileTaggable {
 			err = parser.WriteFile(file, blocks, file)

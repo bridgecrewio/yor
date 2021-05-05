@@ -1,13 +1,17 @@
 package structure
 
 import (
+	"bufio"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
-
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -156,5 +160,72 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if parsedBlocks != nil {
 			t.Fail()
 		}
+	})
+
+	t.Run("test SLS writing", func(t *testing.T) {
+		directory := "../../../tests/serverless/resources/no_tags"
+		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
+		slsParser := ServerlessParser{}
+		slsParser.Init(directory, nil)
+		readFilePath := directory + "/serverless.yml"
+		tagGroup := simple.TagGroup{}
+		extraTags := []tags.ITag{
+			&tags.Tag{
+				Key:   "new_tag",
+				Value: "new_value",
+			},
+		}
+		tagGroup.SetTags(extraTags)
+		tagGroup.InitTagGroup("", []string{})
+		writeFilePath := directory + "/serverless_tagged.yml"
+		slsBlocks, err := slsParser.ParseFile(readFilePath)
+		for _, block := range slsBlocks {
+			err := tagGroup.CreateTagsForBlock(block)
+			if err != nil {
+				t.Fail()
+			}
+		}
+		if err != nil {
+			t.Fail()
+		}
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
+		if err != nil {
+			t.Fail()
+		}
+		var expectedHandler, actualHandler *os.File
+		expectedAbs, _ := filepath.Abs(writeFilePath)
+		actualAbs, _ := filepath.Abs(f.Name())
+		expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
+		actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
+		defer expectedHandler.Close()
+		defer actualHandler.Close()
+		_, err = expectedHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		_, err = actualHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		defer expectedHandler.Close()
+		defer actualHandler.Close()
+		actualReader := bufio.NewScanner(actualHandler)
+		expectedReader := bufio.NewScanner(expectedHandler)
+		for actualReader.Scan() && expectedReader.Scan() {
+			actualLine := actualReader.Text()
+			expectedLine := expectedReader.Text()
+			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
+		}
+		defer func(name string) {
+			err := os.Remove(name)
+			if err != nil {
+				t.Fail()
+			}
+		}(f.Name())
+
 	})
 }

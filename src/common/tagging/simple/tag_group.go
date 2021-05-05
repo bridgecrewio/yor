@@ -44,15 +44,6 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 func (t *TagGroup) GetDefaultTags() []tags.ITag {
 	return []tags.ITag{}
 }
-
-func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
-	var newTags []tags.ITag
-	for _, tag := range t.GetTags() {
-		tagVal, err := tag.CalculateValue(struct{}{})
-		if err != nil {
-			logger.Warning("Failed to create extra tag", tag.GetKey())
-		}
-		newTags = append(newTags, tagVal)
-	}
-	block.AddNewTags(newTags)
+func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
+	return t.UpdateBlockTags(block, struct{}{})
 }

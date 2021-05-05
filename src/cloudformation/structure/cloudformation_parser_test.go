@@ -1,10 +1,17 @@
 package structure
 
 import (
+	"bufio"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
-
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,5 +72,70 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		}
 		actual := MapResourcesLineYAML(filePath, resourcesNames)
 		compareLines(t, expected, actual)
+	})
+
+	t.Run("test CFN writing", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/ebs"
+		f, _ := ioutil.TempFile(directory, "temp.*.yaml")
+		cfnParser := CloudformationParser{}
+		cfnParser.Init(directory, nil)
+		readFilePath := directory + "/ebs.yaml"
+		tagGroup := simple.TagGroup{}
+		extraTags := []tags.ITag{
+			&tags.Tag{
+				Key:   "new_tag",
+				Value: "new_value",
+			},
+		}
+		tagGroup.SetTags(extraTags)
+		tagGroup.InitTagGroup("", []string{})
+		writeFilePath := directory + "/ebs_tagged.yaml"
+		cfnBlocks, err := cfnParser.ParseFile(readFilePath)
+		for _, block := range cfnBlocks {
+			err := tagGroup.CreateTagsForBlock(block)
+			if err != nil {
+				t.Fail()
+			}
+		}
+		if err != nil {
+			t.Fail()
+		}
+		_, err = f.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
+		if err != nil {
+			t.Fail()
+		}
+		var expectedHandler, actualHandler *os.File
+		expectedAbs, _ := filepath.Abs(writeFilePath)
+		actualAbs, _ := filepath.Abs(f.Name())
+		expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
+		actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
+		_, err = expectedHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		_, err = actualHandler.Seek(0, io.SeekStart)
+		if err != nil {
+			t.Fail()
+		}
+		defer expectedHandler.Close()
+		defer actualHandler.Close()
+		actualReader := bufio.NewScanner(actualHandler)
+		expectedReader := bufio.NewScanner(expectedHandler)
+		for actualReader.Scan() && expectedReader.Scan() {
+			actualLine := actualReader.Text()
+			expectedLine := expectedReader.Text()
+			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
+		}
+		defer func(name string) {
+			err := os.Remove(name)
+			if err != nil {
+				t.Fail()
+			}
+		}(f.Name())
+
 	})
 }

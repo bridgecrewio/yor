@@ -124,7 +124,7 @@ func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []strin
 		case !isCfn && lineIndent <= functionsIndent:
 			sortedLines[i] = lines[i]
 			processedTags = false
-		case lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags:
+		case lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags && !strings.Contains(line, "stackTags"):
 			sortedLines[i] = ""
 			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
 		case i == len(lines)-1 || lineIndent < tagsIndent:
@@ -146,7 +146,7 @@ func IndentLines(textLines []string, indent string) []string {
 		if strings.Contains(originLine, "- Key") {
 			textLines[i] = strings.Replace(indent, " ", "", 2) + noLeadingWhitespace
 		} else {
-			textLines[i] = indent + noLeadingWhitespace
+			textLines[i] = indent + "  " + noLeadingWhitespace
 		}
 	}
 

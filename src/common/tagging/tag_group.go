@@ -19,7 +19,7 @@ var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
 type ITagGroup interface {
 	InitTagGroup(path string, skippedTags []string)
-	CreateTagsForBlock(block structure.IBlock)
+	CreateTagsForBlock(block structure.IBlock) error
 	GetTags() []tags.ITag
 	GetDefaultTags() []tags.ITag
 }
@@ -50,4 +50,19 @@ func (t *TagGroup) IsTagSkipped(tag tags.ITag) bool {
 		}
 	}
 	return false
+}
+
+func (t *TagGroup) UpdateBlockTags(block structure.IBlock, data interface{}) error {
+	var newTags []tags.ITag
+	var err error
+	var tagVal tags.ITag
+	for _, tag := range t.GetTags() {
+		tagVal, err = tag.CalculateValue(data)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Failed to create %v tag for block %v", tag.GetKey(), block.GetResourceID()))
+		}
+		newTags = append(newTags, tagVal)
+	}
+	block.AddNewTags(newTags)
+	return err
 }

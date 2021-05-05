@@ -33,7 +33,10 @@ func TestGitTagGroup(t *testing.T) {
 			},
 		}
 
-		tagGroup.CreateTagsForBlock(block)
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			t.Fail()
+		}
 		assert.Equal(t, 7, len(block.NewTags))
 	})
 }

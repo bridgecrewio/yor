@@ -112,7 +112,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		runner.tagGroups[0] = mockGitTagGroup
+		runner.TagGroups[0] = mockGitTagGroup
 		_, err = runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -126,12 +126,12 @@ func Test_TagCFNDir(t *testing.T) {
 		editedFileLines := utils.GetLinesFromBytes(editedFileBytes)
 
 		expectedAddedLines := len(mockGitTagGroup.GetTags()) * 2
-		assert.Equal(t, len(originFileLines)+expectedAddedLines+2, len(editedFileLines))
+		assert.Equal(t, len(originFileLines)+expectedAddedLines-1, len(editedFileLines))
 
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 8}, {A: 8, B: 11, Size: 2}, {A: 15, B: 31, Size: 0},
+			{A: 0, B: 0, Size: 8}, {A: 8, B: 10, Size: 2}, {A: 11, B: 13, Size: 1}, {A: 15, B: 28, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
@@ -144,7 +144,7 @@ func Test_TagCFNDir(t *testing.T) {
 			TagGroups: allTagGroups[:len(allTagGroups)-1],
 		})
 
-		tg := runner.tagGroups
+		tg := runner.TagGroups
 		assert.Equal(t, len(allTagGroups)-1, len(tg))
 	})
 }

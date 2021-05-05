@@ -3,6 +3,7 @@ package yaml
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"path/filepath"
 	"strings"
 
@@ -27,6 +28,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	originLines = utils.ReorderByTags(originLines, tagsAttributeName, isCfn)
 	resourcesIndent := utils.ExtractIndentationOfLine(originLines[resourcesLinesRange.Start])
 
+	oldResourcesLineRange := computeResourcesLineRange(originLines, blocks, isCfn)
 	resourcesLines := make([]string, 0)
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
@@ -38,7 +40,6 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName, isCfn)
 		}
 		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
-
 		oldResourceLinesRange := resourceBlock.GetLines()
 		oldResourceLines := originLines[oldResourceLinesRange.Start-1 : oldResourceLinesRange.End]
 
@@ -66,18 +67,58 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			oldTagsIndent = resourcesIndent
 			resourcesLines = append(resourcesLines, resourcesIndent+fmt.Sprintf("%s:", tagsAttributeName))
 		}
-		resourcesLines = append(resourcesLines, resourcesIndent+newResourceLines[newResourceTagLineRange.Start])
-		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
+		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
 		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.End:], oldTagsIndent)...)
-
 	}
-
-	allLines := append(originLines[:resourcesLinesRange.Start-1], resourcesLines...)
-	linesText := strings.Join(allLines, "\n")
+	allLines := make([]string, len(originLines))
+	if isCfn {
+		copy(allLines, originLines[:oldResourcesLineRange.Start-1])
+	} else {
+		copy(allLines, originLines[:oldResourcesLineRange.Start+1])
+	}
+	allLines = append(allLines, resourcesLines...)
+	if !isCfn {
+		allLines = append(allLines, originLines[resourcesLinesRange.End:]...)
+	}
+	filteredLines := make([]string, 0)
+	for i, line := range allLines {
+		if strings.Trim(line, "\n \t") == "" {
+			continue
+		} else {
+			filteredLines = append(filteredLines, allLines[i])
+		}
+	}
+	linesText := strings.Join(filteredLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 
 	return err
+}
+
+func computeResourcesLineRange(originLines []string, blocks []structure.IBlock, isCfn bool) structure.Lines {
+	ret := structure.Lines{
+		Start: -1,
+		End:   -1,
+	}
+	minLine := math.Inf(0)
+	maxLine := -1
+	for _, block := range blocks {
+		minLine = math.Min(minLine, float64(block.GetLines().Start))
+		maxLine = int(math.Max(float64(maxLine), float64(block.GetLines().End)))
+	}
+	if !isCfn {
+		functionsBlockStartLine := -1
+		for i, line := range originLines {
+			if strings.Contains(line, "functions:") {
+				functionsBlockStartLine = i
+				break
+			}
+		}
+		minLine = math.Min(minLine, float64(functionsBlockStartLine))
+	}
+	ret.Start = int(minLine)
+	ret.End = maxLine
+	return ret
 }
 
 func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {

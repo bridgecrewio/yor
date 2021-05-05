@@ -63,37 +63,28 @@ func (t *TagGroup) initFileMapping(path string) bool {
 	return true
 }
 
-func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) {
+func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	if _, ok := t.fileLinesMapper[block.GetFilePath()]; !ok {
 		t.initFileMapping(block.GetFilePath())
 	}
 	linesInGit := t.getBlockLinesInGit(block)
 	if linesInGit.Start < 0 || linesInGit.End < 0 {
-		return
+		return nil
 	}
 	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), t.getBlockLinesInGit(block))
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
-		return
+		return nil
 	}
 	if blame == nil {
 		logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", block.GetFilePath()))
-		return
+		return nil
 	}
 	t.updateBlameForOriginLines(block, blame)
 	if !t.hasNonTagChanges(blame, block) {
-		return
+		return nil
 	}
-	var newTags []tags.ITag
-	for _, tag := range t.GetTags() {
-		newTag, err := tag.CalculateValue(blame)
-		if err != nil {
-			logger.Warning(fmt.Sprintf("Failed to calculate tag value of tag %v, err: %s", tag.GetKey(), err))
-			continue
-		}
-		newTags = append(newTags, newTag)
-	}
-	block.AddNewTags(newTags)
+	return t.UpdateBlockTags(block, blame)
 }
 
 func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) structure.Lines {
