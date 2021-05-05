@@ -92,7 +92,10 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		writeFilePath := directory + "/ebs_tagged.yaml"
 		cfnBlocks, err := cfnParser.ParseFile(readFilePath)
 		for _, block := range cfnBlocks {
-			tagGroup.CreateTagsForBlock(block)
+			err := tagGroup.CreateTagsForBlock(block)
+			if err != nil {
+				t.Fail()
+			}
 		}
 		if err != nil {
 			t.Fail()

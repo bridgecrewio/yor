@@ -11,6 +11,6 @@ Resources:
       #Encrypted: false
       Tags:
         - Key: MyTag
-            Value: TagValue
+          Value: TagValue
         - Key: new_tag
-            Value: new_value
+          Value: new_value
