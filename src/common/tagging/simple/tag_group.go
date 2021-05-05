@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -19,6 +20,15 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	envTagsStr := os.Getenv("YOR_SIMPLE_TAGS")
 	var extraTagsFromArgs map[string]string
+	if strings.HasPrefix(envTagsStr, "'") {
+		envTagsStr = envTagsStr[1 : len(envTagsStr)-1]
+	}
+	if strings.HasPrefix(envTagsStr, "\"") {
+		err := json.Unmarshal([]byte(envTagsStr), &envTagsStr)
+		if err != nil {
+			logger.Info(fmt.Sprintf("failed to parse extra tags from env: %s", err))
+		}
+	}
 	if err := json.Unmarshal([]byte(envTagsStr), &extraTagsFromArgs); err != nil {
 		logger.Info(fmt.Sprintf("failed to parse extra tags from env: %s", err))
 	} else {
