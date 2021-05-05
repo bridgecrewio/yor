@@ -30,17 +30,18 @@ type GitService struct {
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
 	var err error
+	actualDir, _ := filepath.Abs(rootDir)
 	for {
-		repository, err = git.PlainOpen(rootDir)
+		repository, err = git.PlainOpen(actualDir)
 		if err == nil {
 			break
 		}
 
-		newRootDir := filepath.Dir(rootDir)
-		if rootDir == newRootDir {
+		newRootDir := filepath.Dir(actualDir)
+		if actualDir == newRootDir {
 			break
 		}
-		rootDir = newRootDir
+		actualDir = newRootDir
 	}
 	if err != nil {
 		return nil, err
