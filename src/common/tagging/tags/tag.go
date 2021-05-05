@@ -41,7 +41,10 @@ func (t *Tag) GetPriority() int {
 }
 
 func (t *Tag) CalculateValue(_ interface{}) (ITag, error) {
-	return t, nil
+	return &Tag{
+		Key:   t.Key,
+		Value: t.Value,
+	}, nil
 }
 
 func (t *Tag) GetDescription() string {

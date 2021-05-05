@@ -56,7 +56,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 		}
 	}
 	if isTraced {
-		var yorTraceIndex int
+		yorTraceIndex := -1
 		for index, tag := range newTags {
 			match := tags.IsTagKeyMatch(tag, yorTagKey)
 			if match {
@@ -64,7 +64,9 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 			}
 		}
 
-		newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
+		if yorTraceIndex >= 0 {
+			newTags = append(newTags[:yorTraceIndex], newTags[yorTraceIndex+1:]...)
+		}
 	}
 	b.NewTags = append(b.NewTags, newTags...)
 }
