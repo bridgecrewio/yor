@@ -31,11 +31,15 @@ type fileLineMapper struct {
 
 func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
-	gitService, err := gitservice.NewGitService(path)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path), "SILENT")
+	if path != "" {
+		gitService, err := gitservice.NewGitService(path)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path), "SILENT")
+		}
+		t.GitService = gitService
+	} else {
+		logger.Debug("Path was passed as \"\", not initializing git service")
 	}
-	t.GitService = gitService
 	t.SetTags(t.GetDefaultTags())
 }
 
