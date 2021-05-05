@@ -80,6 +80,10 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 		logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", block.GetFilePath()))
 		return nil
 	}
+	t.updateBlameForOriginLines(block, blame)
+	if !t.hasNonTagChanges(blame, block) {
+		return nil
+	}
 	return t.UpdateBlockTags(block, blame)
 }
 
