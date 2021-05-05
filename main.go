@@ -94,7 +94,7 @@ func listTags(options *cli.ListTagsOptions) error {
 		if tagGroup == nil {
 			return fmt.Errorf("tag group %v is not supported", group)
 		}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup(".", nil)
 		tagsByGroup[group] = tagGroup.GetTags()
 	}
 	reports.ReportServiceInst.PrintTagGroupTags(tagsByGroup)
