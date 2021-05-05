@@ -103,7 +103,7 @@ func listTags(options *cli.ListTagsOptions) error {
 
 func run(options *cli.TagOptions) error {
 	yorRunner := new(runner.Runner)
-	logger.Info("Setting up to tag the directory %v\n", options.Directory)
+	logger.Info(fmt.Sprintf("Setting up to tag the directory %v\n", options.Directory))
 	err := yorRunner.Init(options)
 	if err != nil {
 		logger.Error(err.Error())

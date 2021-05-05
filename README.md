@@ -1,4 +1,4 @@
-# Yor - Infrastructure as code tagging engine
+# Yor - Universal Infrastructure-as-Code Tagging
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -7,96 +7,64 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
  
-Cloud service providers allow users to assign metadata to their cloud resources in the form
-of tags. Each tag is a simple label consisting of a customer-defined key and a value
-that can make it easier to manage, search for, and filter resources. Although there are no
-inherent types of tags, they enable customers to categorize resources by purpose, owner,
-environment, or other criteria.
+Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless.
 
-Tags can be used for security, cost allocation, automation, console organization, access control, and operations. 
-
-Yor is an open-source tool that helps to manage tags in a consistent manner across infrastructure as code frameworks (Terraform, Cloudformation, and Serverless Framework) .
-By auto-tagging in IaC you will be able to trace any cloud resource from code to cloud. 
-Yor enables version-controlled owner assignment and resource tracing based git history. It also can extend tag enforcement logic by loading external tagging logic into the CI/CD pipeline. 
+Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) that hydrates IaC code with consistent tagging logics. It can also run as a pre-commit hook and a standalone CLI.
 
 ## Features
-* Simple tagging - tag a directory IaC resource by user input
-* Git tagging - Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) and enables mapping individual resources to specific commits and users.
-* ```yor_trace``` tag enables full attribution between build time and run time resources.
+* Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
+* Change management: git-based tags automatically add org, repo, commit and modifyer details on every resource block.  
+* Custom taggers: user-defined tagging logics can be added to run using Yor.
+* Skips: inline annotations enable developers to excluse paths that should not be tagged.
 
 ## Demo
-> Generate an git tags on infrastructure as code
-![](docs/yor_git_tags.gif)
-
-> Track resource last modifying user from code to cloud
+### Attributing a resource to an owner
 ![](docs/yor_owner.gif)
 
-> Track resource identifer from code to cloud
+### Change management tags
+![](docs/yor_git_tags.gif)
+
+### Trace IaC code to cloud resource
 ![](docs/yor_trace.gif)
 
-> Track resource code block file cloud to code
+### Trace cloud resource to IaC code
 ![](docs/yor_file.gif)
 
 ## **Table of contents**
 
 - [Getting Started](#getting-started)
-- [Disclaimer](#disclaimer)
 - [Support](#support)
-
-More Docs:
 - [Customizing Yor](CUSTOMIZE.md)
 
 ## Getting Started
 
 ### Installation
+GitHub Action
+```yaml
+- name: Checkout repo
+  uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+- name: Run yor action
+  uses: bridgecrewio/yor-action@main
+- name: Commit tag changes
+  uses: stefanzweifel/git-auto-commit-action@v4
+```
 
-On MacOS
-
+MacOS
 ```sh
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
 
-
-
-### Usage
-
-Yor supports the following commands:
-1. `list-tag-groups` - list the groups of tags that are built into yor
-   ```sh
-   ./yor list-tag-groups
-   ```
-2. `list-tags` - list all the tags yor has built in. This will print each tag key
-and the relevant group the tag belongs to.
-   ```sh
-    ./yor list-tags
-    # List all the tags built into yor
-   ./yor list-tags --tag-groups git
-    # List all the tags built into yor under the tag group git
-    ```
-3. `tag` - apply the built in tags and any [custom](CUSTOMIZE.md) tags on a directory
-   ```sh
-    ./yor tag --directory terraform/
-    # Apply all the tags in yor on the directory tree terraform/
-   
-    ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
-    # Apply all the tags in yor except the tags git_last_modified_by and yor_trace
-   
-    ./yor tag --tag-group git --directory terraform/
-    # Apply only the tags under the git tag group
-    ```
-   
-Using docker:
+Docker
 ```sh
 docker pull bridgecrew/yor
 
 docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
-Using pre-commit:
-
-Add a hook:
-
+Pre-commit
 ```yaml
   - repo: git://github.com/bridgecrewio/yor
     rev: 0.0.44
@@ -110,12 +78,35 @@ Add a hook:
         pass_filenames: false
 ```
 
-To your **.pre-commit-config.yaml** and change the args and version number.
+### Usage
 
-### Skipping tags
+`tag` : Apply tagging on a given directory.
 
-Using command line flags you can specify to run only named tags (allow list) or run all tags except 
-those listed (deny list).
+```sh
+ ./yor tag --directory terraform/
+ # Apply all the tags in yor on the directory tree terraform.
+
+ ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
+ # Apply all the tags in yor except the tags git_last_modified_by and yor_trace.
+
+ ./yor tag --tag-group git --directory terraform/
+ # Apply only the tags under the git tag group.
+```
+
+`-o` : Modify output formats.
+
+```sh
+./yor tag -d . -o cli
+# default cli output
+
+./yor tag -d . -o json
+# json output
+
+./yor tag -d . --output cli --output-json-file result.json
+# print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
+```
+
+`--skip-tags`:Specify only named tags (allow list) or run all tags except those listed (deny list).
 
 ```sh
 ./yor tag -d . --skip-tags yor_trace
@@ -128,10 +119,7 @@ those listed (deny list).
 ## Run all tags except tags with specified patterns
 ```
 
-### Skipping directories
-
-Using the command line flag skip-paths you can define paths which won't be tagged.
-Be mindful that the skipped path should include the root dir path. See example below:
+`skip-dirs` : Skip directoruy paths you can define paths that will not be tagged.
 
 ```sh
 ./yor tag -d path/to/files
@@ -141,26 +129,18 @@ Be mindful that the skipped path should include the root dir path. See example b
 ## Run yor on the directory path/to/files, skipping path/to/files/skip/ and path/to/files/another/skip2/
 ```
 
-### Output formats
+`list-tag`
 
 ```sh
-./yor tag -d . -o cli
-# default cli output
-
-./yor tag -d . -o json
-# json output
-
-./yor tag -d . --output cli --output-json-file result.json
-# will print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
+./yor list-tag-groups
+ # List tag classes that are built into yor.
+ 
+ ./yor list-tags
+ # List all the tags built into yor
+./yor list-tags --tag-groups git
+ 
+ # List all the tags built into yor under the tag group git
 ```
-
-
-#### Troubleshooting
-If you encounter the following error: 
-`plugin was built with a different version of package ...`
-
-Build yor with `go build -gcflags="all=-N -l"`
-
 
 ## Contributing
 
@@ -172,11 +152,6 @@ To maintain our conventions, please run lint on your branch before opening a PR.
 ```sh
 golangci-lint run --fix --skip-dirs tests/yor_plugins
 ```
-
-## Disclaimer
-
-`yor` does not save, publish or share with anyone any identifiable customer information.  
-No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
 
 ## Support
 
