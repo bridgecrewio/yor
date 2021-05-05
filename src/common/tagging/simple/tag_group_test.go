@@ -55,6 +55,7 @@ func TestSimpleTagGroup(t *testing.T) {
 			assert.Equal(t, expectedTag.Key, getTags[i].GetKey())
 			assert.Equal(t, expectedTag.Value, getTags[i].GetValue())
 		}
+		_ = os.Unsetenv("YOR_SIMPLE_TAGS")
 	})
 }
 
