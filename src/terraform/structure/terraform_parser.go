@@ -198,13 +198,13 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 		isMergeOpExists := false
 		isRenderedAttribute := false
 		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
-		for _, rawTagsToken := range rawTagsTokens {
+		for i, rawTagsToken := range rawTagsTokens {
 			tokenStr := string(rawTagsToken.Bytes)
 			if tokenStr == "merge" {
 				isMergeOpExists = true
 				break
 			}
-			if utils.InSlice([]string{"var", "local"}, tokenStr) {
+			if i == 0 && utils.InSlice([]string{"var", "local"}, tokenStr) {
 				isRenderedAttribute = true
 				break
 			}
@@ -228,6 +228,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				k++
 			}
 		}
+		mergedTags = mergedTags[:k]
 
 		for _, replacedTag := range replacedTags {
 			tagKey := replacedTag.GetKey()
@@ -248,6 +249,11 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			}
 		}
 
+		if len(mergedTags) == 0 {
+			logger.Debug(fmt.Sprintf("Nothing to update for block %v (%v)", parsedBlock.GetResourceID(), parsedBlock.GetFilePath()))
+			return
+		}
+
 		if !isMergeOpExists && !isRenderedAttribute {
 			newTagsTokens := buildTagsTokens(mergedTags)
 			rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
@@ -257,7 +263,6 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 
 		// These lines execute if there is either a `merge` operator at the start of the tags,
 		// or if it is rendered via a variable / local.
-		mergedTags = mergedTags[:k]
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if !isMergeOpExists && mergedTagsTokens != nil {
 			// Insert the merge token, opening and closing parenthesis tokens
