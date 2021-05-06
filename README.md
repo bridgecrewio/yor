@@ -20,19 +20,19 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 
 ## Demo
 ### Attributing a directory with tags by user input
-![](docs/yor_terragoat_simple.gif)
+[![](docs/yor_terragoat_simple.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_terragoat_simple.gif)
 
 ### Attributing a resource to an owner
-![](docs/yor_owner.gif)
+[![](docs/yor_owner.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_owner.gif)
 
 ### Change management tags
-![](docs/yor_git_tags.gif)
+[![](docs/yor_git_tags.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_git_tags.gif)
 
 ### Trace IaC code to cloud resource
-![](docs/yor_trace.gif)
+[![](docs/yor_trace.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_trace.gif)
 
 ### Trace cloud resource to IaC code
-![](docs/yor_file.gif)
+[![](docs/yor_file.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_file.gif)
 
 ## **Table of contents**
 
