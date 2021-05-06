@@ -276,12 +276,16 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				Bytes: []byte(")"),
 			})
 		}
-		// Insert a comma token before the merge closing parenthesis and add as a separate dict
 		if newTagsTokens != nil {
-			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
-				Type:  hclsyntax.TokenComma,
-				Bytes: []byte(","),
-			})
+			if rawTagsTokens[len(rawTagsTokens)-3].Type != hclsyntax.TokenComma &&
+				rawTagsTokens[len(rawTagsTokens)-2].Type != hclsyntax.TokenComma {
+				// Insert a comma token before the merge closing parenthesis and add as a separate dict
+				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
+					Type:  hclsyntax.TokenComma,
+					Bytes: []byte(","),
+				})
+			}
+
 			for _, tagToken := range newTagsTokens {
 				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
 			}

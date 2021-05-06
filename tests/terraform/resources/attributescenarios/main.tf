@@ -1,3 +1,15 @@
+resource "aws_security_group" "cluster" {
+  name_prefix = "acme"
+  description = "EKS cluster security group"
+  vpc_id      = "vpc-123456"
+  tags = merge(
+  var.tags,
+  {
+    "Name" = "${var.env}-eks_cluster_sg"
+  },
+  )
+}
+
 resource "aws_vpc" "vpc_tags_one_line" {
   cidr_block = ""
   tags = { "Name" = "tag-for-s3", "Environment" = "prod" }

@@ -221,7 +221,7 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		resultFilePath := "../../../tests/terraform/resources/attributescenarios/main_result.tf"
 		expectedFilePath := "../../../tests/terraform/resources/attributescenarios/expected.txt"
 		blocks, _ := p.ParseFile(filePath)
-		assert.Equal(t, 5, len(blocks))
+		assert.Equal(t, 6, len(blocks))
 		for _, block := range blocks {
 			block.AddNewTags([]tags.ITag{
 				&tags.Tag{Key: "git_repo", Value: "yor"},
