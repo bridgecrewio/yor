@@ -319,9 +319,7 @@ func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tok
 		suffixLength = 2
 	}
 	var result hclwrite.Tokens
-	for _, token := range tokens[:len(tokens)-suffixLength] {
-		result = append(result, token)
-	}
+	result = append(result, tokens[:len(tokens)-suffixLength]...)
 	result = append(result, &hclwrite.Token{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")})
 	result = append(result, values...)
 	if suffixLength == 1 {
