@@ -211,7 +211,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 		}
 
 		var replacedTags []tags.ITag
-		k := 0
+		var newTags []tags.ITag
 		for _, tag := range mergedTags {
 			tagReplaced := false
 			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
@@ -223,12 +223,9 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				}
 			}
 			if !tagReplaced {
-				// Keep only new tags (non-appearing) in mergedTags
-				mergedTags[k] = tag
-				k++
+				newTags = append(newTags, tag)
 			}
 		}
-		mergedTags = mergedTags[:k]
 
 		for _, replacedTag := range replacedTags {
 			tagKey := replacedTag.GetKey()
@@ -249,13 +246,13 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			}
 		}
 
-		if len(mergedTags) == 0 {
+		if len(newTags) == 0 {
 			logger.Debug(fmt.Sprintf("Nothing to update for block %v (%v)", parsedBlock.GetResourceID(), parsedBlock.GetFilePath()))
 			return
 		}
 
 		if !isMergeOpExists && !isRenderedAttribute {
-			newTagsTokens := buildTagsTokens(mergedTags)
+			newTagsTokens := buildTagsTokens(newTags)
 			rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
@@ -263,8 +260,8 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 
 		// These lines execute if there is either a `merge` operator at the start of the tags,
 		// or if it is rendered via a variable / local.
-		mergedTagsTokens := buildTagsTokens(mergedTags)
-		if !isMergeOpExists && mergedTagsTokens != nil {
+		newTagsTokens := buildTagsTokens(newTags)
+		if !isMergeOpExists && newTagsTokens != nil {
 			// Insert the merge token, opening and closing parenthesis tokens
 			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
 				Type:  hclsyntax.TokenIdent,
@@ -280,12 +277,12 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			})
 		}
 		// Insert a comma token before the merge closing parenthesis and add as a separate dict
-		if mergedTagsTokens != nil {
+		if newTagsTokens != nil {
 			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
 				Type:  hclsyntax.TokenComma,
 				Bytes: []byte(","),
 			})
-			for _, tagToken := range mergedTagsTokens {
+			for _, tagToken := range newTagsTokens {
 				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
 			}
 		}
