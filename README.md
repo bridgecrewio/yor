@@ -19,17 +19,20 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 * Skips: inline annotations enable developers to excluse paths that should not be tagged.
 
 ## Demo
+### Attributing a directory with tags by user input
+[![](docs/yor_terragoat_simple.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_terragoat_simple.gif)
+
 ### Attributing a resource to an owner
-![](docs/yor_owner.gif)
+[![](docs/yor_owner.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_owner.gif)
 
 ### Change management tags
-![](docs/yor_git_tags.gif)
+[![](docs/yor_git_tags.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_git_tags.gif)
 
 ### Trace IaC code to cloud resource
-![](docs/yor_trace.gif)
+[![](docs/yor_trace.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_trace.gif)
 
 ### Trace cloud resource to IaC code
-![](docs/yor_file.gif)
+[![](docs/yor_file.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_file.gif)
 
 ## **Table of contents**
 
@@ -57,6 +60,7 @@ MacOS
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
+__OR__
 
 Docker
 ```sh
@@ -91,11 +95,11 @@ Pre-commit
  ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
 
 # Apply only the tags under the git tag group.
- ./yor tag --tag-group git --directory terraform/
+ ./yor tag --tag-groups git --directory terraform/
 
 # Apply key-value tags on a specific directory
  export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
- ./yor tag --tag-group simple --directory terraform/dev/
+ ./yor tag --tag-groups simple --directory terraform/dev/
 
 ```
 
@@ -147,7 +151,12 @@ Pre-commit
  
  # List all the tags built into yor under the tag group git
 ```
+### What is Yor trace?
+yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
 
+Having a yor_trace in place can help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
+
+See demo [here](#Trace-IaC-code-to-cloud-resource)
 ## Contributing
 
 Contribution is welcomed! 
