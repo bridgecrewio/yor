@@ -19,6 +19,9 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 * Skips: inline annotations enable developers to excluse paths that should not be tagged.
 
 ## Demo
+### Attributing a directory with tags by user input
+![](docs/yor_terragoat_simple.gif)
+
 ### Attributing a resource to an owner
 ![](docs/yor_owner.gif)
 
@@ -91,11 +94,11 @@ Pre-commit
  ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
 
 # Apply only the tags under the git tag group.
- ./yor tag --tag-group git --directory terraform/
+ ./yor tag --tag-groups git --directory terraform/
 
 # Apply key-value tags on a specific directory
  export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
- ./yor tag --tag-group simple --directory terraform/dev/
+ ./yor tag --tag-groups simple --directory terraform/dev/
 
 ```
 
