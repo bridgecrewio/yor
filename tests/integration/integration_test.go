@@ -211,12 +211,9 @@ func TestTagUncommittedResults(t *testing.T) {
 		}
 
 		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["tags"]
-		rawTagsExpr := rawTags.Expr.(*hclsyntax.FunctionCallExpr)
-		assert.Equal(t, "merge", rawTagsExpr.Name)
-		mergeArgs := rawTagsExpr.Args
-		assert.Equal(t, 2, len(mergeArgs))
-		assert.Equal(t, 2, len(mergeArgs[0].(*hclsyntax.ObjectConsExpr).Items))
-		assert.Equal(t, 8, len(mergeArgs[1].(*hclsyntax.ObjectConsExpr).Items))
+		rawTagsExpr := rawTags.Expr.(*hclsyntax.ObjectConsExpr)
+		assert.Equal(t, "tags", rawTags.Name)
+		assert.Equal(t, 10, len(rawTagsExpr.Items))
 
 		currentTags := defaultInstanceBlock.ExitingTags
 
