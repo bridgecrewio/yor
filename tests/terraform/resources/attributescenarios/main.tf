@@ -1,3 +1,8 @@
+resource "aws_vpc" "vpc_tags_one_line" {
+  cidr_block = ""
+  tags = { "Name" = "tag-for-s3", "Environment" = "prod" }
+}
+
 resource "aws_instance" "no_tags" {
   ami           = "some-ami"
   instance_type = "t3.micro"

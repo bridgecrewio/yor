@@ -314,10 +314,20 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 
 // Inserts a list of tags at end of list
 func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tokens {
-	suffix := tokens[len(tokens)-2:]
-	result := append(tokens[:len(tokens)-2], &hclwrite.Token{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")})
+	suffixLength := 1 // Only the closing parenthesis
+	if tokens[len(tokens)-2].Type == hclsyntax.TokenNewline {
+		suffixLength = 2
+	}
+	var result hclwrite.Tokens
+	for _, token := range tokens[:len(tokens)-suffixLength] {
+		result = append(result, token)
+	}
+	result = append(result, &hclwrite.Token{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")})
 	result = append(result, values...)
-	return append(result, suffix...)
+	if suffixLength == 1 {
+		result = append(result, &hclwrite.Token{Type: hclsyntax.TokenNewline, Bytes: []byte("\n")})
+	}
+	return append(result, tokens[len(tokens)-suffixLength:]...)
 }
 
 func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
