@@ -188,86 +188,76 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
-	if tagsAttribute != nil {
-		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		isMergeOpExists := false
-		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
-		for _, rawTagsToken := range rawTagsTokens {
-			if string(rawTagsToken.Bytes) == "merge" {
-				isMergeOpExists = true
-				break
-			}
-		}
-		var replacedTags []tags.ITag
-		k := 0
-		for _, tag := range mergedTags {
-			tagReplaced := false
-			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
-			for _, rawTagsToken := range rawTagsTokens {
-				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
-					replacedTags = append(replacedTags, tag)
-					tagReplaced = true
-				}
-			}
-			if !tagReplaced {
-				// Keep only new tags (non-appearing) in mergedTags
-				mergedTags[k] = tag
-				k++
-			}
-		}
-		mergedTags = mergedTags[:k]
-		mergedTagsTokens := buildTagsTokens(mergedTags)
-		if !isMergeOpExists && mergedTagsTokens != nil {
-			// Insert the merge token, opening and closing parenthesis tokens
-			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
-				Type:  hclsyntax.TokenIdent,
-				Bytes: []byte("merge"),
-			})
-			rawTagsTokens = InsertToken(rawTagsTokens, 1, &hclwrite.Token{
-				Type:  hclsyntax.TokenOParen,
-				Bytes: []byte("("),
-			})
-			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
-				Type:  hclsyntax.TokenCParen,
-				Bytes: []byte(")"),
-			})
-		}
-		for _, replacedTag := range replacedTags {
-			tagKey := replacedTag.GetKey()
-			var existingTagValue string
-			if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
-				quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
-				existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
-			}
-			replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
-			foundKey := false
-			for _, rawToken := range rawTagsTokens {
-				if string(rawToken.Bytes) == tagKey {
-					foundKey = true
-				}
-				if string(rawToken.Bytes) == existingTagValue && foundKey {
-					rawToken.Bytes = []byte(replacedValue)
-				}
-			}
-		}
-		// Insert a comma token before the merge closing parenthesis
-		if mergedTagsTokens != nil {
-			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
-				Type:  hclsyntax.TokenComma,
-				Bytes: []byte(","),
-			})
-			for _, tagToken := range mergedTagsTokens {
-				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
-			}
-		}
-		// Set the body's tags to the new built tokens
-		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
-	} else {
+	if tagsAttribute == nil {
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if mergedTagsTokens != nil {
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, mergedTagsTokens)
 		}
+	} else {
+		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		isMergeOpExists, existingParsedTags := p.parseExistingTagsTokens(rawTagsTokens)
+
+		if !isMergeOpExists {
+			rawBlock.Body().SetAttributeRaw(tagsAttributeName, buildTagsTokens(mergedTags))
+		} else {
+			var replacedTags []tags.ITag
+			k := 0
+			for _, tag := range mergedTags {
+				tagReplaced := false
+				strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
+				for _, rawTagsToken := range rawTagsTokens {
+					if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+						replacedTags = append(replacedTags, tag)
+						tagReplaced = true
+					}
+				}
+				if !tagReplaced {
+					// Keep only new tags (non-appearing) in mergedTags
+					mergedTags[k] = tag
+					k++
+				}
+			}
+			mergedTags = mergedTags[:k]
+			mergedTagsTokens := buildTagsTokens(mergedTags)
+			for _, replacedTag := range replacedTags {
+				tagKey := replacedTag.GetKey()
+				var existingTagValue string
+				if existingTagValue = strings.ReplaceAll(existingParsedTags[tagKey], `"`, ""); existingTagValue == "" {
+					quotedTagKey := fmt.Sprintf(`"%s"`, tagKey)
+					existingTagValue = strings.ReplaceAll(existingParsedTags[quotedTagKey], `"`, "")
+				}
+				replacedValue := strings.ReplaceAll(replacedTag.GetValue(), `"`, "")
+				foundKey := false
+				for _, rawToken := range rawTagsTokens {
+					if string(rawToken.Bytes) == tagKey {
+						foundKey = true
+					}
+					if string(rawToken.Bytes) == existingTagValue && foundKey {
+						rawToken.Bytes = []byte(replacedValue)
+					}
+				}
+			}
+			// Insert a comma token before the merge closing parenthesis
+			if isMergeOpExists && mergedTagsTokens != nil {
+				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, &hclwrite.Token{
+					Type:  hclsyntax.TokenComma,
+					Bytes: []byte(","),
+				})
+			}
+		}
 	}
+}
+
+func (p *TerrraformParser) parseExistingTagsTokens(rawTagsTokens hclwrite.Tokens) (bool, map[string]string) {
+	isMergeOpExists := false
+	existingParsedTags := p.parseTagAttribute(rawTagsTokens)
+	for _, rawTagsToken := range rawTagsTokens {
+		if string(rawTagsToken.Bytes) == "merge" {
+			isMergeOpExists = true
+			break
+		}
+	}
+	return isMergeOpExists, existingParsedTags
 }
 
 func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
