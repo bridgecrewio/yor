@@ -150,7 +150,12 @@ Pre-commit
  
  # List all the tags built into yor under the tag group git
 ```
+### What is Yor trace?
+yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
 
+Having a yor_trace in place can help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
+
+See demo [here](#Trace-IaC-code-to-cloud-resource)
 ## Contributing
 
 Contribution is welcomed! 
