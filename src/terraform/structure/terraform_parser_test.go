@@ -3,6 +3,7 @@ package structure
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +14,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
@@ -212,6 +212,28 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(blocks))
 		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
+	})
+
+	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/resources/attributescenarios", nil)
+		filePath := "../../../tests/terraform/resources/attributescenarios/main.tf"
+		resultFilePath := "../../../tests/terraform/resources/attributescenarios/main_result.tf"
+		expectedFilePath := "../../../tests/terraform/resources/attributescenarios/expected.txt"
+		blocks, _ := p.ParseFile(filePath)
+		assert.Equal(t, 4, len(blocks))
+		for _, block := range blocks {
+			block.AddNewTags([]tags.ITag{&tags.Tag{Key: "git_repo", Value: "yor"}})
+		}
+
+		_ = p.WriteFile(filePath, blocks, resultFilePath)
+		defer func() {
+			_ = os.Remove(resultFilePath)
+		}()
+
+		result, _ := ioutil.ReadFile(resultFilePath)
+		expected, _ := ioutil.ReadFile(expectedFilePath)
+		assert.Equal(t, string(result), string(expected))
 	})
 }
 

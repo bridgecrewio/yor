@@ -1,0 +1,49 @@
+resource "aws_instance" "no_tags" {
+  ami           = "some-ami"
+  instance_type = "t3.micro"
+  tags = {
+    git_repo = "yor"
+  }
+}
+
+resource "aws_instance" "simple_tags" {
+  ami           = "some-ami"
+  instance_type = "t3.micro"
+
+  tags = {
+    Name     = "my-instance"
+    git_repo = "yor"
+  }
+}
+
+resource "aws_instance" "rendered_tags" {
+  ami           = "some-ami"
+  instance_type = "t3.micro"
+
+  tags = merge(var.tags, {
+    git_repo = "yor"
+  })
+}
+
+resource "aws_instance" "merge_tags" {
+  ami           = "some-ami"
+  instance_type = "t3.micro"
+
+  tags = merge(var.tags,
+    {
+      Name = "merged-tags-instance",
+      Env  = var.env
+      }, {
+      git_repo = "yor"
+  })
+}
+
+variable "tags" {
+  default = {}
+  type    = map(string)
+}
+
+variable "env" {
+  default = "dev"
+  type    = string
+}
