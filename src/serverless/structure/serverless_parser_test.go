@@ -44,12 +44,19 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 				func1Block = castedBlock
 			}
 		}
-		assert.Equal(t, structure.Lines{Start: 14, End: 19}, func1Block.GetLines())
-		assert.Equal(t, "myFunction", func1Block.GetResourceID())
+		if func1Block == nil {
+			assert.Fail(t, "Didn't find the function block")
+		} else {
+			assert.Equal(t, structure.Lines{Start: 14, End: 19}, func1Block.GetLines())
+			assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
-		existingTag := func1Block.GetExistingTags()[0]
-		assert.Equal(t, "TAG1_FUNC", existingTag.GetKey())
-		assert.Equal(t, "Func1 Tag Value", existingTag.GetValue())
+			expectedTags := []tags.ITag{
+				&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"},
+				&tags.Tag{Key: "TAG2_FUNC", Value: "Func1 Tag2 Value"},
+			}
+
+			assert.ElementsMatch(t, func1Block.GetExistingTags(), expectedTags)
+		}
 	})
 
 }
