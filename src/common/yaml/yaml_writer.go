@@ -5,18 +5,22 @@ import (
 	"io/ioutil"
 	"math"
 	"path/filepath"
+	"sort"
 	"strings"
 
-	"github.com/awslabs/goformation/v4/cloudformation"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/utils"
+	"github.com/thepauleh/goserverless/serverless"
 
 	"github.com/sanathkr/yaml"
 )
 
-func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, resourcesLinesRange structure.Lines, tagsAttributeName string) error {
+const SingleIndent = "  "
+
+func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string,
+	resourcesLinesRange structure.Lines, tagsAttributeName string, resourcesStartToken string) error {
 	// read file bytes
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
@@ -25,23 +29,23 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	}
 	isCfn := !strings.Contains(filepath.Base(readFilePath), "serverless")
 	originLines := utils.GetLinesFromBytes(originFileSrc)
-	originLines = utils.ReorderByTags(originLines, tagsAttributeName, isCfn)
-	resourcesIndent := utils.ExtractIndentationOfLine(originLines[resourcesLinesRange.Start])
 
 	oldResourcesLineRange := computeResourcesLineRange(originLines, blocks, isCfn)
 	resourcesLines := make([]string, 0)
+	sort.Slice(blocks, func(i, j int) bool {
+		return blocks[i].GetLines().Start < blocks[j].GetLines().Start
+	})
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
 		var newResourceLines []string
-		switch rawBlockCasted := rawBlock.(type) {
-		case cloudformation.Resource:
-			newResourceLines = getYAMLLines(rawBlockCasted, tagsAttributeName, isCfn)
-		case map[interface{}]interface{}:
-			newResourceLines = getYAMLLines(resourceBlock.GetRawBlock().(map[interface{}]interface{}), tagsAttributeName, isCfn)
+		if isCfn {
+			newResourceLines = getYAMLLines(rawBlock, isCfn)
+		} else {
+			newResourceLines = getYAMLLines(rawBlock, isCfn)
 		}
 		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 		oldResourceLinesRange := resourceBlock.GetLines()
-		oldResourceLines := originLines[oldResourceLinesRange.Start-1 : oldResourceLinesRange.End]
+		oldResourceLines := originLines[oldResourceLinesRange.Start : oldResourceLinesRange.End+1]
 
 		// if the block is not taggable, write it and continue
 		if !resourceBlock.IsBlockTaggable() {
@@ -49,46 +53,34 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			continue
 		}
 
-		oldResourceTagLines, oldTagsExist := FindTagsLinesYAML(oldResourceLines, tagsAttributeName)
+		oldResourceTagLines := resourceBlock.GetTagsLines()
 		// if the resource don't contain Tags entry - create it
 		if oldResourceTagLines.Start == -1 || oldResourceTagLines.End == -1 {
 			// get the indentation of the property under the resource name
-			tagAttributeIndent := utils.ExtractIndentationOfLine(oldResourceLines[1])
+			tagAttributeIndent := ExtractIndentationOfLine(oldResourceLines[1])
 			resourcesLines = append(resourcesLines, oldResourceLines...)                      // add all the existing resource data first
 			resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
 			// add the tags with extra indentation below the 'Tags:' line
-			resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent+"  ")...)
+			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
 			continue
 		}
 
-		oldTagsIndent := utils.ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start])
-		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start]...) // add all the resource's line before the tags
-		if !oldTagsExist {
-			oldTagsIndent = resourcesIndent
-			resourcesLines = append(resourcesLines, resourcesIndent+fmt.Sprintf("%s:", tagsAttributeName))
-		}
-		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.Start:newResourceTagLineRange.End], oldTagsIndent)...) // add tags
-		resourcesLines = append(resourcesLines, utils.IndentLines(newResourceLines[newResourceTagLineRange.End:], oldTagsIndent)...)
+		oldTagsIndent := ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start-oldResourceLinesRange.Start])
+		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start-oldResourceLinesRange.Start+1]...)                                  // add all the resource's line before the tags
+		resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)...) // add tags
+		// Add any other attributes after the tags
+		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End-oldResourceLinesRange.Start+1:]...)
 	}
-	allLines := make([]string, len(originLines))
-	if isCfn {
-		copy(allLines, originLines[:oldResourcesLineRange.Start-1])
-	} else {
-		copy(allLines, originLines[:oldResourcesLineRange.Start+1])
+	allLines := make([]string, oldResourcesLineRange.Start)
+	copy(allLines, originLines[:oldResourcesLineRange.Start])
+	if !isCfn {
+		allLines = append(allLines, resourcesStartToken+":")
 	}
 	allLines = append(allLines, resourcesLines...)
 	if !isCfn {
-		allLines = append(allLines, originLines[resourcesLinesRange.End:]...)
+		allLines = append(allLines, originLines[resourcesLinesRange.End+1:]...)
 	}
-	filteredLines := make([]string, 0)
-	for i, line := range allLines {
-		if strings.Trim(line, "\n \t") == "" {
-			continue
-		} else {
-			filteredLines = append(filteredLines, allLines[i])
-		}
-	}
-	linesText := strings.Join(filteredLines, "\n")
+	linesText := strings.Join(allLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 
@@ -121,48 +113,39 @@ func computeResourcesLineRange(originLines []string, blocks []structure.IBlock, 
 	return ret
 }
 
-func reflectValueToMap(rawMap interface{}, currResourceMap *map[string]interface{}, tagsAttributeName string) *map[string]interface{} {
-	switch rawMap := rawMap.(type) {
-	case map[interface{}]interface{}:
-		rawMapCasted := rawMap
-		for mapKey, mapValue := range rawMapCasted {
-			mapKeyString := mapKey.(string)
-			if mapKey == tagsAttributeName {
-				currResourceMap = reflectValueToMap(mapValue.(map[string]string), currResourceMap, tagsAttributeName)
-			} else {
-				switch mapValue := mapValue.(type) {
-				case string, int, bool:
-					(*currResourceMap)[mapKeyString] = mapValue
-				}
-			}
-		}
-	case map[string]string:
-		if _, ok := (*currResourceMap)[tagsAttributeName]; !ok {
-			(*currResourceMap)[tagsAttributeName] = make(map[string]string)
-		}
-		rawMapCasted := rawMap
-		for mapKey, mapValue := range rawMapCasted {
-			(*currResourceMap)[tagsAttributeName].(map[string]string)[mapKey] = mapValue
-		}
-	}
-	return currResourceMap
-}
-
-func getYAMLLines(rawBlock interface{}, tagsAttributeName string, isCfn bool) []string {
+func getYAMLLines(rawBlock interface{}, isCfn bool) []string {
 	var textLines []string
-	var castedRawBlock = rawBlock
-	tempTagsMap := make(map[string]interface{})
-	_, ok := rawBlock.(map[interface{}]interface{})
-	if ok {
-		castedRawBlock = reflectValueToMap(rawBlock, &tempTagsMap, tagsAttributeName)
-	}
-	yamlBytes, err := yaml.Marshal(castedRawBlock)
+	yamlBytes, err := yaml.Marshal(rawBlock)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to marshal resource to yaml: %s", err))
 	}
 
 	textLines = utils.GetLinesFromBytes(yamlBytes)
-	textLines = utils.ReorderByTags(textLines, tagsAttributeName, isCfn)
+
+	if !isCfn {
+		slsFunction := rawBlock.(serverless.Function)
+		if utils.AllNil(slsFunction.VPC.SecurityGroupIds, slsFunction.VPC.SubnetIds) {
+			textLines = removeLineByAttribute(textLines, "vpc:")
+		}
+		if utils.AllNil(slsFunction.Package.Include, slsFunction.Package.Artifact, slsFunction.Package.Exclude,
+			slsFunction.Package.ExcludeDevDependencies, slsFunction.Package.Individually) {
+			textLines = removeLineByAttribute(textLines, "package")
+		}
+	}
+	return textLines
+}
+
+func removeLineByAttribute(textLines []string, attribute string) []string {
+	vpcLineIndex := -1
+	for i, line := range textLines {
+		if strings.Contains(line, attribute) {
+			vpcLineIndex = i
+			break
+		}
+	}
+	if vpcLineIndex != -1 {
+		textLines = append(textLines[:vpcLineIndex], textLines[vpcLineIndex+1:]...)
+	}
 	return textLines
 }
 
@@ -173,19 +156,19 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	var tagsExist bool
 	var tagsIndent = ""
 	for i, line := range textLines {
-		lineIndent = utils.ExtractIndentationOfLine(line)
+		lineIndent = ExtractIndentationOfLine(line)
 		switch {
 		case strings.Contains(line, tagsAttributeName+":"):
-			tagsLines.Start = i + 1
+			tagsLines.Start = i
 			tagsIndent = lineIndent
 			tagsExist = true
-		case lineIndent < tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1):
-			tagsLines.End = i - 1
+		case lineIndent <= tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1):
+			tagsLines.End = findLastNonEmptyLine(textLines, i)
 			return tagsLines, tagsExist
 		case i == len(textLines)-1 && !tagsExist:
 			tagsLines.End = i
 			tagsLines.Start = tagsLines.End
-			tagsIndent = utils.ExtractIndentationOfLine(prevLine) //nolint:ineffassign,staticcheck
+			tagsIndent = ExtractIndentationOfLine(prevLine)
 			return tagsLines, tagsExist
 		}
 		prevLine = line
@@ -198,16 +181,95 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 
 func EncodeBlocksToYaml(readFilePath string, blocks []structure.IBlock) []structure.IBlock {
 	fileFormat := utils.GetFileFormat(readFilePath)
-	switch fileFormat {
-	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
+	if fileFormat == common.YamlFileType.FileFormat || fileFormat == common.YmlFileType.FileFormat {
 		for _, block := range blocks {
 			yamlBlock := block.(IYamlBlock)
 			yamlBlock.UpdateTags()
 		}
 		return blocks
-	default:
-		logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
+	}
+	logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
+	return nil
+}
+
+func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) map[string]*structure.Lines {
+	resourceToLines := make(map[string]*structure.Lines)
+	for _, resourceName := range resourceNames {
+		// initialize a map between resource name and its lines in file
+		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
+	}
+	// #nosec G304
+	file, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return nil
 	}
 
+	readFunctions := false
+	latestResourceName := ""
+	fileLines := strings.Split(string(file), "\n")
+	// iterate file line by line
+	for i, line := range fileLines {
+		cleanContent := strings.TrimSpace(line)
+		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
+			readFunctions = true
+			continue
+		}
+
+		if readFunctions {
+			for _, resName := range resourceNames {
+				if strings.Contains(line, " "+resName+":") {
+					if latestResourceName != "" {
+						// Complete previous function block
+						resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
+					}
+					latestResourceName = resName
+					resourceToLines[latestResourceName].Start = i
+				}
+				if !strings.HasPrefix(line, " ") && line != "" && readFunctions {
+					// This is no longer in the functions block, complete last function block
+					resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
+				}
+			}
+		}
+	}
+	if resourceToLines[latestResourceName].End == -1 {
+		// Handle last line of resource is last line of file
+		resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, len(fileLines)-1)
+	}
+	return resourceToLines
+}
+
+func findLastNonEmptyLine(fileLines []string, maxIndex int) int {
+	for i := maxIndex - 1; i >= 0; i-- {
+		if strings.TrimSpace(fileLines[i]) != "" {
+			return i
+		}
+	}
+	return 0
+}
+
+func IndentLines(textLines []string, indent string) []string {
+	for i, originLine := range textLines {
+		noLeadingWhitespace := strings.TrimLeft(originLine, "\t \n")
+		if strings.Contains(originLine, "- Key") {
+			textLines[i] = indent + noLeadingWhitespace
+		} else {
+			textLines[i] = indent + SingleIndent + noLeadingWhitespace
+		}
+	}
+
+	return textLines
+}
+
+func ExtractIndentationOfLine(textLine string) string {
+	indent := ""
+	for _, c := range textLine {
+		if c != ' ' && c != '-' {
+			break
+		}
+		indent += " "
+	}
+
+	return indent
 }

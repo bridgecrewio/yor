@@ -61,35 +61,6 @@ func TestGetFileFormat(t *testing.T) {
 	}
 }
 
-func TestExtractIndentationOfLine(t *testing.T) {
-	type args struct {
-		textLine string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "on indent",
-			args: args{textLine: "some text line"},
-			want: "",
-		},
-		{
-			name: "3 indents",
-			args: args{textLine: "   some text line"},
-			want: "   ",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ExtractIndentationOfLine(tt.args.textLine); got != tt.want {
-				t.Errorf("ExtractIndentationOfLine() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestInSlice(t *testing.T) {
 	type args struct {
 		slice interface{}

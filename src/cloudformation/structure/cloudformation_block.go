@@ -10,20 +10,6 @@ import (
 
 type CloudformationBlock struct {
 	structure.Block
-	Name string
-}
-
-func (b *CloudformationBlock) GetResourceID() string {
-	return b.Name
-}
-
-func (b *CloudformationBlock) Init(filePath string, rawBlock interface{}) {
-	b.RawBlock = rawBlock
-	b.FilePath = filePath
-}
-
-func (b *CloudformationBlock) GetLines(_ ...bool) structure.Lines {
-	return b.Lines
 }
 
 func (b *CloudformationBlock) UpdateTags() {

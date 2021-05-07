@@ -24,9 +24,11 @@ resources: # CloudFormation template syntax
       Type: AWS::S3::Bucket
       Properties:
         Tags:
-          TAG1_CFN: CFN Tag Value
-          TAG2_CFN: CFN Tag2 Value
-          AccessControl: Private
+          - Key: TAG1_CFN
+            Value: CFN Tag Value
+          - Key: TAG2_CFN
+            Value: CFN Tag2 Value
+        AccessControl: Private
         BucketEncryption:
           ServerSideEncryptionConfiguration:
             - ServerSideEncryptionByDefault:

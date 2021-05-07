@@ -18,6 +18,28 @@ type Block struct {
 	TagsAttributeName string
 	Lines             Lines
 	TagLines          Lines
+	Name              string
+}
+
+func (b *Block) Init(filePath string, rawBlock interface{}) {
+	b.FilePath = filePath
+	b.RawBlock = rawBlock
+}
+
+func (b *Block) GetLines(_ ...bool) Lines {
+	return b.Lines
+}
+
+func (b *Block) GetResourceID() string {
+	return b.Name
+}
+
+func (b *Block) GetTagsLines() Lines {
+	return b.TagLines
+}
+
+func (b *Block) GetSeparator() string {
+	panic("implement me")
 }
 
 type TagDiff struct {

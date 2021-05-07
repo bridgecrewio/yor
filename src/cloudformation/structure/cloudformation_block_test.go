@@ -66,8 +66,8 @@ func TestCloudformationBlock_UpdateTags(t *testing.T) {
 				IsTaggable:        true,
 				TagsAttributeName: "Tags",
 				Lines:             structure.Lines{Start: 4, End: 14},
+				Name:              resourceName,
 			},
-			Name: resourceName,
 		}
 
 		b.UpdateTags()

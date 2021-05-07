@@ -38,6 +38,18 @@ func InSlice(slice interface{}, elem interface{}) bool {
 	return false
 }
 
+func AllNil(vv ...interface{}) bool {
+	for _, v := range vv {
+		if reflect.ValueOf(v).Kind() == reflect.Ptr && !reflect.ValueOf(v).IsNil() {
+			return false
+		}
+		if reflect.ValueOf(v).Kind() == reflect.String && v != "" {
+			return false
+		}
+	}
+	return true
+}
+
 func getKind(val interface{}) reflect.Kind {
 	s := reflect.ValueOf(val)
 	return s.Kind()
@@ -88,78 +100,6 @@ func GetFileFormat(filePath string) string {
 
 func GetLinesFromBytes(bytes []byte) []string {
 	return strings.Split(string(bytes), "\n")
-}
-
-func ExtractIndentationOfLine(textLine string) string {
-	indent := ""
-	for _, c := range textLine {
-		if c != ' ' {
-			break
-		}
-		indent += " "
-	}
-
-	return indent
-}
-
-func ReorderByTags(lines []string, tagsAttributeName string, isCfn bool) []string {
-	tagsOriginalStartLineInd := -1
-	var processedTags = false
-	var tagsIndent string
-	var functionsIndent = ""
-	var processedFunctions = false
-	var sortedLines = make([]string, len(lines))
-	for i, line := range lines {
-		lineIndent := ExtractIndentationOfLine(line)
-		switch {
-		case strings.Contains(line, "functions:"):
-			processedFunctions = true
-			functionsIndent = lineIndent + "  "
-			sortedLines[i] = lines[i]
-		case strings.Contains(line, tagsAttributeName+":") || (!isCfn && processedFunctions):
-			tagsOriginalStartLineInd = i
-			tagsIndent = lineIndent
-			sortedLines[i] = lines[i]
-			processedTags = true
-		case !isCfn && lineIndent <= functionsIndent:
-			sortedLines[i] = lines[i]
-			processedTags = false
-		case lineIndent <= tagsIndent && !CfnTagLine(line) && processedTags && !strings.Contains(line, "stackTags"):
-			sortedLines[i] = ""
-			sortedLines = insert(sortedLines, tagsOriginalStartLineInd-1, line)
-		case i == len(lines)-1 || lineIndent < tagsIndent:
-			sortedLines[i] = lines[i]
-		default:
-			sortedLines[i] = lines[i]
-		}
-	}
-	return sortedLines
-}
-
-func CfnTagLine(line string) bool {
-	return strings.Contains(line, "- Key") || strings.Contains(line, "Value")
-}
-
-func IndentLines(textLines []string, indent string) []string {
-	for i, originLine := range textLines {
-		noLeadingWhitespace := strings.TrimLeft(originLine, "\t \n")
-		if strings.Contains(originLine, "- Key") {
-			textLines[i] = strings.Replace(indent, " ", "", 2) + noLeadingWhitespace
-		} else {
-			textLines[i] = indent + "  " + noLeadingWhitespace
-		}
-	}
-
-	return textLines
-}
-
-func insert(a []string, index int, value string) []string {
-	if len(a) == index { // nil or empty slice or after last element
-		return append(a, value)
-	}
-	a = append(a[:index+1], a[index:]...) // index < len(a)
-	a[index] = value
-	return a
 }
 
 func StructContainsProperty(s interface{}, property string) (bool, reflect.Value) {

@@ -12,6 +12,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/yaml"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,14 +28,14 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(cfnBlocks))
 		newVolumeBlock := cfnBlocks[0]
-		assert.Equal(t, structure.Lines{Start: 4, End: 14}, newVolumeBlock.GetLines())
+		assert.Equal(t, structure.Lines{Start: 3, End: 13}, newVolumeBlock.GetLines())
 		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
 
 		existingTag := newVolumeBlock.GetExistingTags()[0]
 		assert.Equal(t, "MyTag", existingTag.GetKey())
 		assert.Equal(t, "TagValue", existingTag.GetValue())
-		assert.Equal(t, 4, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
-		assert.Equal(t, 14, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
+		assert.Equal(t, 3, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
+		assert.Equal(t, 13, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
 	})
 
 }
@@ -55,9 +56,9 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
 		resourcesNames := []string{"NewVolume"}
 		expected := map[string]*structure.Lines{
-			"NewVolume": {Start: 4, End: 14},
+			"NewVolume": {Start: 3, End: 13},
 		}
-		actual := MapResourcesLineYAML(filePath, resourcesNames)
+		actual := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
 	})
 
@@ -65,12 +66,12 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.yaml"
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
 		expected := map[string]*structure.Lines{
-			"EC2InstanceResource0":       {Start: 3, End: 6},
-			"EC2InstanceResource1":       {Start: 7, End: 16},
-			"EC2LaunchTemplateResource0": {Start: 17, End: 21},
-			"EC2LaunchTemplateResource1": {Start: 22, End: 32},
+			"EC2InstanceResource0":       {Start: 2, End: 5},
+			"EC2InstanceResource1":       {Start: 6, End: 15},
+			"EC2LaunchTemplateResource0": {Start: 16, End: 20},
+			"EC2LaunchTemplateResource1": {Start: 21, End: 31},
 		}
-		actual := MapResourcesLineYAML(filePath, resourcesNames)
+		actual := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
 	})
 
@@ -121,8 +122,11 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		defer expectedHandler.Close()
-		defer actualHandler.Close()
+		defer func() {
+			_ = expectedHandler.Close()
+			_ = actualHandler.Close()
+			_ = os.Remove(f.Name())
+		}()
 		actualReader := bufio.NewScanner(actualHandler)
 		expectedReader := bufio.NewScanner(expectedHandler)
 		for actualReader.Scan() && expectedReader.Scan() {
@@ -130,12 +134,5 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			expectedLine := expectedReader.Text()
 			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
 		}
-		defer func(name string) {
-			err := os.Remove(name)
-			if err != nil {
-				t.Fail()
-			}
-		}(f.Name())
-
 	})
 }

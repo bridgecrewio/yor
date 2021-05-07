@@ -9,9 +9,11 @@ provider:
   stackTags:
     RESOURCE_TAG1: foo
     RESOURCE_TAG2: bar
+
 functions:
   myFunction:
     handler: myFunction.handler
+    name: myFunction
     tags:
       new_tag: new_value
   myFunction2:
@@ -19,14 +21,18 @@ functions:
     handler: myFunction2.handler
     tags:
       new_tag: new_value
+
+resources: # CloudFormation template syntax
   Resources:
     S3BucketPublicRead:
       Type: AWS::S3::Bucket
       Properties:
         Tags:
-          TAG1_CFN: CFN Tag Value
-          TAG2_CFN: CFN Tag2 Value
-          AccessControl: Private
+          - Key: TAG1_CFN
+            Value: CFN Tag Value
+          - Key: TAG2_CFN
+            Value: CFN Tag2 Value
+        AccessControl: Private
         BucketEncryption:
           ServerSideEncryptionConfiguration:
             - ServerSideEncryptionByDefault:

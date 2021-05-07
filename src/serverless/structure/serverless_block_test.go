@@ -8,6 +8,7 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/thepauleh/goserverless/serverless"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -66,24 +67,24 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 			Block: structure.Block{
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
-				RawBlock:          resource[0].GetRawBlock(),
+				RawBlock:          resource[0].GetRawBlock().(serverless.Function),
 				IsTaggable:        true,
 				TagsAttributeName: "tags",
 				Lines:             structure.Lines{Start: 4, End: 14},
+				Name:              resourceName,
 			},
-			Name: resourceName,
 		}
 
 		b.UpdateTags()
 
-		currentRawBlock := b.RawBlock
-		currentTags := currentRawBlock.(map[interface{}]interface{})[b.TagsAttributeName]
+		currentRawBlock := b.RawBlock.(serverless.Function)
+		currentTags := currentRawBlock.Tags
 		sort.Slice(expectedMergedTags, func(i, j int) bool {
 			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()
 		})
 
-		assert.Equal(t, len(expectedMergedTags), len(currentTags.(map[string]string)))
-		for currentTagKey, currentTagVals := range currentTags.(map[string]string) {
+		assert.Equal(t, len(expectedMergedTags), len(currentTags))
+		for currentTagKey, currentTagVals := range currentTags {
 			for j, expectedMergedTag := range expectedMergedTags {
 				if expectedMergedTag.GetKey() == currentTagKey {
 					assert.Equal(t, expectedMergedTags[j].GetKey(), currentTagKey)
