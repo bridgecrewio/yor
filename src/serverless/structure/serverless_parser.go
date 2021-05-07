@@ -104,7 +104,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		if slsFunction.Tags != nil {
 			tagsLines = p.getTagsLines(filePath, lines)
 			for tagKey, tagValue := range slsFunction.Tags {
-				existingTags = append(existingTags, &tags.Tag{Key: tagKey, Value: tagValue.(string)})
+				existingTags = append(existingTags, &tags.Tag{Key: tagKey, Value: fmt.Sprintf("%v", tagValue)})
 			}
 
 		}
