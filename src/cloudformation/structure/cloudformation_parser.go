@@ -46,7 +46,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 	}
 
 	resourceNames := make([]string, 0)
-	if template != nil {
+	if template != nil && template.Resources != nil {
 		for resourceName := range template.Resources {
 			resourceNames = append(resourceNames, resourceName)
 		}

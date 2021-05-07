@@ -130,7 +130,6 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 		defer func() {
 			_ = file.Close()
 		}()
-		tagsLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
 		tagsIndentSize := 0
@@ -150,10 +149,6 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 				tagsLines.Start = lineCounter
 				lineCounter++
 				continue
-			}
-
-			if lineCounter >= resourceLinesRange.Start && lineCounter <= resourceLinesRange.End && (tagsIndentSize > 0 && lineIndent > tagsIndentSize) {
-				tagsLinesText = append(tagsLinesText, line)
 			}
 			lineCounter++
 		}

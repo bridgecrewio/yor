@@ -37,12 +37,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	})
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
-		var newResourceLines []string
-		if isCfn {
-			newResourceLines = getYAMLLines(rawBlock, isCfn)
-		} else {
-			newResourceLines = getYAMLLines(rawBlock, isCfn)
-		}
+		newResourceLines := getYAMLLines(rawBlock, isCfn)
 		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 		oldResourceLinesRange := resourceBlock.GetLines()
 		oldResourceLines := originLines[oldResourceLinesRange.Start : oldResourceLinesRange.End+1]
@@ -151,7 +146,6 @@ func removeLineByAttribute(textLines []string, attribute string) []string {
 
 func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.Lines, bool) {
 	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
-	var prevLine string
 	var lineIndent string
 	var tagsExist bool
 	var tagsIndent = ""
@@ -168,10 +162,8 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 		case i == len(textLines)-1 && !tagsExist:
 			tagsLines.End = i
 			tagsLines.Start = tagsLines.End
-			tagsIndent = ExtractIndentationOfLine(prevLine)
 			return tagsLines, tagsExist
 		}
-		prevLine = line
 	}
 	if !tagsExist {
 		tagsLines.Start = tagsLines.End
