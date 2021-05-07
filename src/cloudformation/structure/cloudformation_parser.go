@@ -42,7 +42,11 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.Open(filePath)
 	if err != nil || template == nil {
-		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template: %s", err))
+		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
+		if err == nil {
+			err = fmt.Errorf("failed to parse template %v", filePath)
+		}
+		return nil, err
 	}
 
 	resourceNames := make([]string, 0)

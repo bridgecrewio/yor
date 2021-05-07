@@ -96,7 +96,7 @@ func (r *Runner) TagFile(file string) {
 		}
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
-			logger.Warning(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
 			continue
 		}
 		isFileTaggable := false

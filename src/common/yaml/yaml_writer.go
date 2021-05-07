@@ -218,10 +218,11 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 					latestResourceName = resName
 					resourceToLines[latestResourceName].Start = i
 				}
-				if !strings.HasPrefix(line, " ") && line != "" && readFunctions {
-					// This is no longer in the functions block, complete last function block
-					resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
-				}
+			}
+			if !strings.HasPrefix(line, " ") && line != "" && readFunctions && latestResourceName != "" {
+				// This is no longer in the functions block, complete last function block
+				resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
+				break
 			}
 		}
 	}

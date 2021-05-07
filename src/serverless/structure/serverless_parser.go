@@ -39,6 +39,20 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension}
 }
 
+func goserverlessParse(file string) (*serverless.Template, error) {
+	var template *serverless.Template
+	var err error
+	defer func() {
+		if e := recover(); e != nil {
+			logger.Warning(fmt.Sprintf("Failed to parser serverless yaml at %v due to: %v", file, e))
+			err = fmt.Errorf("failed to parse sls file %v: %v", file, e)
+		}
+	}()
+
+	template, err = goserverless.Open(file)
+	return template, err
+}
+
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
@@ -47,13 +61,14 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		return nil, nil
 	}
 	// #nosec G304 - file is from user
-	template, err := goserverless.Open(filePath)
+	template, err := goserverlessParse(filePath)
 	p.Template = template
-	if err != nil {
+	if err != nil || template == nil || template.Functions == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
-	}
-	if err != nil {
-		logger.Error(fmt.Sprintf("Unmarshal: %s", err), "SILENT")
+		if err == nil {
+			err = fmt.Errorf("failed to parse file")
+		}
+		return nil, err
 	}
 	if p.Template.Functions == nil && p.Template.Resources.Resources == nil {
 		return parsedBlocks, nil
