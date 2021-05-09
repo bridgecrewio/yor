@@ -197,18 +197,18 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		return nil
 	}
 
-	readFunctions := false
+	readResources := false
 	latestResourceName := ""
 	fileLines := strings.Split(string(file), "\n")
 	// iterate file line by line
 	for i, line := range fileLines {
 		cleanContent := strings.TrimSpace(line)
 		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
-			readFunctions = true
+			readResources = true
 			continue
 		}
 
-		if readFunctions {
+		if readResources {
 			for _, resName := range resourceNames {
 				if strings.Contains(line, " "+resName+":") {
 					if latestResourceName != "" {
@@ -219,7 +219,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 					resourceToLines[latestResourceName].Start = i
 				}
 			}
-			if !strings.HasPrefix(line, " ") && line != "" && readFunctions && latestResourceName != "" {
+			if !strings.HasPrefix(line, " ") && line != "" && readResources && latestResourceName != "" {
 				// This is no longer in the functions block, complete last function block
 				resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
 				break
