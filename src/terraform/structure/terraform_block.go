@@ -17,11 +17,6 @@ func (b *TerraformBlock) GetResourceID() string {
 	return strings.Join(b.HclSyntaxBlock.Labels, ".")
 }
 
-func (b *TerraformBlock) Init(filePath string, rawBlock interface{}) {
-	b.RawBlock = rawBlock
-	b.FilePath = filePath
-}
-
 func (b *TerraformBlock) AddHclSyntaxBlock(hclSyntaxBlock *hclsyntax.Block) {
 	b.HclSyntaxBlock = hclSyntaxBlock
 }

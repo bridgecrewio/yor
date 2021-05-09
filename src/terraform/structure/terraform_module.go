@@ -20,7 +20,7 @@ import (
 
 const PluginsOutputDir = ".yor_plugins"
 
-var SkippedProviders = []string{"null", "random", "tls"}
+var SkippedProviders = []string{"null", "random", "tls", "local"}
 
 type TerraformModule struct {
 	tfModule            *tfconfig.Module

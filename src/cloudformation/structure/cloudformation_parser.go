@@ -1,12 +1,8 @@
 package structure
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"math"
-	"os"
-	"strings"
 
 	"github.com/awslabs/goformation/v4"
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
@@ -26,8 +22,7 @@ type CloudformationParser struct {
 }
 
 const TagsAttributeName = "Tags"
-
-var TemplateSections = []string{"AWSTemplateFormatVersion", "Transform", "Description", "Metadata", "Parameters", "Mappings", "Conditions", "Outputs", "Resources"}
+const ResourcesStartToken = "Resources"
 
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser = &types.YamlParser{
@@ -47,11 +42,15 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.Open(filePath)
 	if err != nil || template == nil {
-		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template: %s", err))
+		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
+		if err == nil {
+			err = fmt.Errorf("failed to parse template %v", filePath)
+		}
+		return nil, err
 	}
 
 	resourceNames := make([]string, 0)
-	if template != nil {
+	if template != nil && template.Resources != nil {
 		for resourceName := range template.Resources {
 			resourceNames = append(resourceNames, resourceName)
 		}
@@ -59,7 +58,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		var resourceNamesToLines map[string]*structure.Lines
 		switch utils.GetFileFormat(filePath) {
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-			resourceNamesToLines = MapResourcesLineYAML(filePath, resourceNames)
+			resourceNamesToLines = yaml.MapResourcesLineYAML(filePath, resourceNames, ResourcesStartToken)
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
@@ -88,8 +87,8 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 					TagsAttributeName: TagsAttributeName,
 					Lines:             *lines,
 					TagLines:          tagsLines,
+					Name:              resourceName,
 				},
-				Name: resourceName,
 			}
 			parsedBlocks = append(parsedBlocks, cfnBlock)
 		}
@@ -124,92 +123,8 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	updatedBlocks := yaml.EncodeBlocksToYaml(readFilePath, blocks)
-	return yaml.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName)
-}
-
-func MapResourcesLineYAML(filePath string, resourceNames []string) map[string]*structure.Lines {
-	resourceToLines := make(map[string]*structure.Lines)
-	for _, resourceName := range resourceNames {
-		// initialize a map between resource name and its lines in file
-		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
-	}
-	// #nosec G304
-	file, err := os.Open(filePath)
-	if err != nil {
-		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return nil
-	}
-	scanner := bufio.NewScanner(file)
-	defer func() {
-		_, err := file.Seek(0, io.SeekStart)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		_ = file.Close()
-	}()
-
-	// deep copy TemplateSections to allow modifying it safely
-	templateSections := make([]string, len(TemplateSections))
-	copy(templateSections, TemplateSections)
-
-	readResources := false
-	lineCounter := 0
-	latestResourceName := ""
-	// iterate file line by line
-	for scanner.Scan() {
-		lineCounter++
-		line := scanner.Text()
-
-		// make sure we look for resources names only under the Resources section
-		foundSectionIndex := -1
-		for i, templateSectionName := range templateSections {
-			if strings.Contains(line, templateSectionName) {
-				foundSectionIndex = i
-				readResources = templateSectionName == "Resources"
-				break
-			}
-		}
-		if foundSectionIndex >= 0 {
-			// if this is a section line, check if we're done reading resources, otherwise remove the section name
-
-			if !readResources && latestResourceName != "" {
-				// if we already read all the resources set the end line of the last resource and stop iterating the file
-				resourceToLines[latestResourceName].End = lineCounter - 1
-				break
-			}
-			// remove found section to avoid searching for it once it was found
-			templateSections = append(templateSections[:foundSectionIndex], templateSections[foundSectionIndex+1:]...)
-			continue
-		}
-
-		if readResources {
-			foundResourceIndex := -1
-			for i, resourceName := range resourceNames {
-				if strings.Contains(line, resourceName) {
-					if latestResourceName != "" {
-						// set the end line of the previous resource
-						resourceToLines[latestResourceName].End = lineCounter - 1
-					}
-
-					foundResourceIndex = i
-					resourceToLines[resourceName].Start = lineCounter
-					latestResourceName = resourceName
-					break
-				}
-			}
-			if foundResourceIndex >= 0 {
-				// remove found resource name to avoid searching for it once it was found
-				resourceNames = append(resourceNames[:foundResourceIndex], resourceNames[foundResourceIndex+1:]...)
-				continue
-			}
-		}
-	}
-	if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
-		// in case we reached the end of the file without setting the end line of the last resource
-		resourceToLines[latestResourceName].End = lineCounter
-	}
-
-	return resourceToLines
+	return yaml.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName,
+		ResourcesStartToken)
 }
 
 func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines) structure.Lines {
@@ -233,7 +148,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			_ = file.Close()
 		}()
 		linesInResource, _ := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
-		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start) + 1}
+		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
 	default:
 		return structure.Lines{Start: -1, End: -1}
 	}

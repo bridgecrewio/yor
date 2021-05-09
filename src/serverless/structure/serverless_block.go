@@ -2,26 +2,13 @@ package structure
 
 import (
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/thepauleh/goserverless/serverless"
 
 	"go.opencensus.io/tag"
 )
 
 type ServerlessBlock struct {
 	structure.Block
-	Name string
-}
-
-func (b *ServerlessBlock) GetResourceID() string {
-	return b.Name
-}
-
-func (b *ServerlessBlock) Init(filePath string, rawBlock interface{}) {
-	b.RawBlock = rawBlock
-	b.FilePath = filePath
-}
-
-func (b *ServerlessBlock) GetLines(_ ...bool) structure.Lines {
-	return b.Block.Lines
 }
 
 func (b *ServerlessBlock) UpdateTags() {
@@ -40,11 +27,18 @@ func (b *ServerlessBlock) UpdateTags() {
 
 		slsMergedTags = append(slsMergedTags, slsTag)
 	}
-	slsMergedTagsValue := make(map[string]string)
+	slsMergedTagsValue := make(map[string]interface{})
 	for _, mergedTag := range slsMergedTags {
 		slsMergedTagsValue[mergedTag.Key.Name()] = mergedTag.Value
 	}
-	b.RawBlock.(map[interface{}]interface{})[b.TagsAttributeName] = slsMergedTagsValue
+	rawFunction := b.RawBlock.(serverless.Function)
+	if rawFunction.Tags == nil {
+		rawFunction.Tags = make(map[string]interface{}, len(slsMergedTags))
+	}
+	for _, slsTag := range slsMergedTags {
+		rawFunction.Tags[slsTag.Key.Name()] = slsTag.Value
+	}
+	b.RawBlock = rawFunction
 }
 
 func (b *ServerlessBlock) GetTagsLines() structure.Lines {

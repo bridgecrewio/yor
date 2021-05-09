@@ -1,8 +1,6 @@
 package structure
 
 import (
-	"bufio"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -30,7 +28,8 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		directory := "../../../tests/serverless/resources/tags_exist"
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
-		slsFilepath, _ := filepath.Abs(strings.Join([]string{slsParser.YamlParser.RootDir, "serverless.yml"}, "/"))
+		slsFilepath, _ := filepath.Abs(filepath.Join(slsParser.YamlParser.RootDir, "serverless.yml"))
+		expectedSlsFilepath, _ := filepath.Abs(filepath.Join(slsParser.YamlParser.RootDir, "serverless_expected.yaml"))
 		slsBlocks, err := slsParser.ParseFile(slsFilepath)
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
@@ -47,7 +46,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		if func1Block == nil {
 			assert.Fail(t, "Didn't find the function block")
 		} else {
-			assert.Equal(t, structure.Lines{Start: 14, End: 19}, func1Block.GetLines())
+			assert.Equal(t, structure.Lines{Start: 13, End: 18}, func1Block.GetLines())
 			assert.Equal(t, "myFunction", func1Block.GetResourceID())
 
 			expectedTags := []tags.ITag{
@@ -57,8 +56,17 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 
 			assert.ElementsMatch(t, func1Block.GetExistingTags(), expectedTags)
 		}
-	})
 
+		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
+		_ = slsParser.WriteFile(slsFilepath, slsBlocks, f.Name())
+
+		expected, _ := ioutil.ReadFile(expectedSlsFilepath)
+		actual, _ := ioutil.ReadFile(f.Name())
+
+		assert.Equal(t, string(expected), string(actual))
+
+		defer func() { _ = os.Remove(f.Name()) }()
+	})
 }
 
 func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {
@@ -84,18 +92,18 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			return
 		}
 		var func1Block *ServerlessBlock
+		assert.Equal(t, 2, len(slsBlocks))
 		for _, block := range slsBlocks {
 			castedBlock := block.(*ServerlessBlock)
 			if castedBlock.Name == "myFunction" {
 				func1Block = castedBlock
 			}
-			assert.Equal(t, 2, len(slsBlocks))
-			expected := map[string]*structure.Lines{
-				"myFunction": {Start: 14, End: 19},
-			}
-			func1Lines := func1Block.GetLines()
-			compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
 		}
+		expected := map[string]*structure.Lines{
+			"myFunction": {Start: 13, End: 18},
+		}
+		func1Lines := func1Block.GetLines()
+		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines})
 	})
 
 	t.Run("test multiple resources", func(t *testing.T) {
@@ -122,8 +130,8 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			return
 		}
 		expected := map[string]*structure.Lines{
-			"myFunction":  {Start: 14, End: 19},
-			"myFunction2": {Start: 20, End: 27},
+			"myFunction":  {Start: 13, End: 18},
+			"myFunction2": {Start: 19, End: 24},
 		}
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
@@ -152,8 +160,8 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			return
 		}
 		expected := map[string]*structure.Lines{
-			"myFunction":  {Start: 14, End: 16},
-			"myFunction2": {Start: 17, End: 21},
+			"myFunction":  {Start: 13, End: 15},
+			"myFunction2": {Start: 16, End: 18},
 		}
 		compareLines(t, expected, map[string]*structure.Lines{"myFunction": &func1Lines, "myFunction2": &func2Lines})
 	})
@@ -171,7 +179,6 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 
 	t.Run("test SLS writing", func(t *testing.T) {
 		directory := "../../../tests/serverless/resources/no_tags"
-		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		readFilePath := directory + "/serverless.yml"
@@ -195,38 +202,16 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		_, err = f.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
+		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
 		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
 		if err != nil {
 			t.Fail()
 		}
-		var expectedHandler, actualHandler *os.File
-		expectedAbs, _ := filepath.Abs(writeFilePath)
-		actualAbs, _ := filepath.Abs(f.Name())
-		expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
-		actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
-		defer expectedHandler.Close()
-		defer actualHandler.Close()
-		_, err = expectedHandler.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
-		_, err = actualHandler.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
-		defer expectedHandler.Close()
-		defer actualHandler.Close()
-		actualReader := bufio.NewScanner(actualHandler)
-		expectedReader := bufio.NewScanner(expectedHandler)
-		for actualReader.Scan() && expectedReader.Scan() {
-			actualLine := actualReader.Text()
-			expectedLine := expectedReader.Text()
-			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
-		}
+		expectedFilePath, _ := filepath.Abs(writeFilePath)
+		actualFilePath, _ := filepath.Abs(f.Name())
+		expected, _ := ioutil.ReadFile(expectedFilePath)
+		actualOutput, _ := ioutil.ReadFile(actualFilePath)
+		assert.Equal(t, string(expected), string(actualOutput))
 		defer func(name string) {
 			err := os.Remove(name)
 			if err != nil {
