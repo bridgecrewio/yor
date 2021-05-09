@@ -17,6 +17,9 @@ MacOS
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
+```sh
+brew install yor
+```
 
 Docker
 ```sh
