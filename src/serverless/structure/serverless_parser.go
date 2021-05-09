@@ -92,8 +92,8 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	}
 	minResourceLine := math.MaxInt8
 	maxResourceLine := 0
-	var existingTags []tags.ITag
 	for _, funcName := range resourceNames {
+		var existingTags []tags.ITag
 		var slsBlock *ServerlessBlock
 		tagsLines := structure.Lines{Start: -1, End: -1}
 		var lines *structure.Lines
@@ -106,7 +106,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 			for tagKey, tagValue := range slsFunction.Tags {
 				existingTags = append(existingTags, &tags.Tag{Key: tagKey, Value: fmt.Sprintf("%v", tagValue)})
 			}
-
 		}
 
 		slsBlock = &ServerlessBlock{

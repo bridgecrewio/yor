@@ -37,26 +37,35 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 2, len(slsBlocks))
 		var func1Block *ServerlessBlock
+		var func2Block *ServerlessBlock
 		for _, block := range slsBlocks {
 			castedBlock := block.(*ServerlessBlock)
 			if castedBlock.Name == "myFunction" {
 				func1Block = castedBlock
+				assert.Equal(t, structure.Lines{Start: 13, End: 18}, func1Block.GetLines())
+				assert.Equal(t, "myFunction", func1Block.GetResourceID())
+
+				expectedTags := []tags.ITag{
+					&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"},
+					&tags.Tag{Key: "TAG2_FUNC", Value: "Func1 Tag2 Value"},
+				}
+
+				assert.ElementsMatch(t, expectedTags, func1Block.GetExistingTags())
+			} else if castedBlock.Name == "myFunction2" {
+				func2Block = castedBlock
+				assert.Equal(t, structure.Lines{Start: 19, End: 24}, func2Block.GetLines())
+				assert.Equal(t, "myFunction2", func2Block.GetResourceID())
+
+				expectedTags := []tags.ITag{
+					&tags.Tag{Key: "TAG1_FUNC", Value: "Func2 Tag Value"},
+					&tags.Tag{Key: "TAG2_FUNC", Value: "Func2 Tag2 Value"},
+				}
+
+				assert.ElementsMatch(t, expectedTags, func2Block.GetExistingTags())
 			}
 		}
-		if func1Block == nil {
-			assert.Fail(t, "Didn't find the function block")
-		} else {
-			assert.Equal(t, structure.Lines{Start: 13, End: 18}, func1Block.GetLines())
-			assert.Equal(t, "myFunction", func1Block.GetResourceID())
-
-			expectedTags := []tags.ITag{
-				&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"},
-				&tags.Tag{Key: "TAG2_FUNC", Value: "Func1 Tag2 Value"},
-			}
-
-			assert.ElementsMatch(t, func1Block.GetExistingTags(), expectedTags)
-		}
-
+		assert.NotNil(t, func1Block)
+		assert.NotNil(t, func2Block)
 		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
 		_ = slsParser.WriteFile(slsFilepath, slsBlocks, f.Name())
 
