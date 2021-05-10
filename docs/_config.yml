@@ -1,0 +1,19 @@
+remote_theme: bridgecrewio/checkov-theme-2
+
+site_author: Bridgecrew
+repo_url: "https://github.com/bridgecrewio/yor/"
+
+edit_on_github: true
+github_docs_folder: true
+sticky_navigation: true
+prev_next_buttons_location: both
+search_enabled: false
+hljs_style: github-gist
+plugins:
+  - jekyll-redirect-from
+  - jekyll-remote-theme
+  - jekyll-get-json
+
+jekyll_get_json:
+  - data: menus
+    json: './menus.json'
