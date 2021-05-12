@@ -9,6 +9,7 @@ Yor can tag these IaC file types:
   * Terraform (for AWS, GCP and Azure)
   * CloudFormation (YAML, JSON)
   * Serverless
+  * K8S (YAML, JSON)
 
 # Tracing Tagger
 * ```yor_trace``` tag enables full attribution between build time and run time resources. 
