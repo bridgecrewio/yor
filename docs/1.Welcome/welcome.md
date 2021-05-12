@@ -12,7 +12,7 @@ Yor can tag these IaC file types:
   * K8S (YAML, JSON)
 
 # Tracing Tagger
-* ```yor_trace``` tag enables full attribution between build time and run time resources. 
+* ```yor_trace``` tag enables full attribution between build time and run time resources. Using unique Yor GUID, you'll be able to track your runtime resource that is rely on a resource block in your IaC files. Tracing between the two enables better visibility of your assets and detecting drifts between build time and runtime resources across IaC frameworks and multiple cloud providers. See examples [here](<add publi link to 5.usecases once published>)
 
 # Git-based Tagger
 * ```git_*``` tags connect cloud resources to individual git commits and enable assigning clear ownership between developers and the resources they routinely change.
