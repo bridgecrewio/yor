@@ -1,19 +1,12 @@
-#Cli Command Reference
+# Cli Command Reference
 
 The following parameter fields are used with the `./yor tag` command.
 
 |Parameter  |  Description | Reference  |
 |---|---|---|
-|`-h`, `--help`| Show this help message and exit.  |   |
-|`-v`, `--version`| Version |   |
-|`-d DIRECTORY`, `--directory DIRECTORY` |IaC root directory. Can not be used together with --file.` |[Scan Use Cases](doc:scan-use-cases#section-scan---repo-branch-folder-or-file)   |
-|`--skip-tags` |   |   |
-|`--skip-dirs` |   |   |
-|`-o OUTPUT`, `--output OUTPUT` |   |   |
+|`-d DIRECTORY`, `--directory DIRECTORY` |IaC root directory. Can not be used together with --file. |[Scan Use Cases](doc:scan-use-cases#section-scan---repo-branch-folder-or-file)   |
+|`--skip-tags` | run all tags except those listed | [Skipping Tags](https://github.com/bridgecrewio/yor/blob/yor-docs/docs/2.Using%20Yor/applyTag.md#skipping-tags) |
+|`--skip-dirs` | run tags on all files within root directory except path listed | [Skipping Directories](https://github.com/bridgecrewio/yor/blob/yor-docs/docs/2.Using%20Yor/applyTag.md#skipping-directories)  |
 
-The following parameter fields are used with the `./yor` command.
+Type `yor -h` to have up-to-date list of supported commands.
 
-|Parameter  |  Description | Reference  |
-|---|---|---|
-|`list-tag-groups` | list the standard groups of yor tags available for use |   |
-|`list-tags` | List all standard yor tags available for use  |   |
