@@ -1,4 +1,7 @@
-# Yor - Universal Infrastructure-as-Code Tagging
+[![checkov](https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png)](#)
+
+Yor is Universal Infrastructure-as-Code Tagging framework
+
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
