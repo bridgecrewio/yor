@@ -48,12 +48,31 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ### Installation
 GitHub Action
 ```yaml
-- name: Checkout repo
-  uses: actions/checkout@v2
-  with:
-    fetch-depth: 0
-- name: Run yor action
-  uses: bridgecrewio/yor-action@main
+name: IaC trace
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  yor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout repo
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+      - name: Run yor action
+        uses: bridgecrewio/yor-action@main
+      - name: Commit tag changes
+        uses: stefanzweifel/git-auto-commit-action@v4
 ```
 
 MacOS
