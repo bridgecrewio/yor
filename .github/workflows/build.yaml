@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main
-
+    paths-ignore:
+      - 'docs/**'
+      - 'INTHEWILD.md'
 jobs:
   test:
     runs-on: ubuntu-latest
