@@ -1,4 +1,7 @@
-# Yor - Universal Infrastructure-as-Code Tagging
+[![checkov](https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png)](#)
+
+Yor is Universal Infrastructure-as-Code Tagging framework
+
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -45,12 +48,31 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ### Installation
 GitHub Action
 ```yaml
-- name: Checkout repo
-  uses: actions/checkout@v2
-  with:
-    fetch-depth: 0
-- name: Run yor action
-  uses: bridgecrewio/yor-action@main
+name: IaC trace
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  yor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout repo
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+      - name: Run yor action
+        uses: bridgecrewio/yor-action@main
+      - name: Commit tag changes
+        uses: stefanzweifel/git-auto-commit-action@v4
 ```
 
 MacOS
