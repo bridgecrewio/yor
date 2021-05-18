@@ -12,9 +12,10 @@ The following commands are used to apply tags.
    
     ./yor tag --tag-group git --directory terraform/
     # Apply only the tags under the git tag group
-    ```
+   ```
 
 Using docker:
+
 ```sh
 docker pull bridgecrew/yor
 
