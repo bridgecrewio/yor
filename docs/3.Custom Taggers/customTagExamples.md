@@ -17,7 +17,9 @@ export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
 # When yor is run, all resources will be tagged by these two tags as well
 ```
 
-## Adding Simple Code Based Tags Using Golang
+## Adding Custom Tags Using Golang
+
+### Adding Simple Code Based Tags Using Golang
 1. Create tags implementing the `ITag` interface.
 2. If you wish to override an existing tag, make the tag's method `GetPriority()` return a positive number. Otherwise, return `0` or a negative number.
 3. Create a file located in package `main` that exposes a variable `ExtraTags` - array containing pointers to all tags implemented. Example:
@@ -30,7 +32,7 @@ export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
 
 See example in [tests/yor_plugins/example](tests/yor_plugins/example)
 
-## Adding Complex Tags Using Golang
+### Adding Complex Tags Using Golang
 1. Create a tagger struct, implementing the `ITagGroup` interface.
 2. Implement the `InitTagGroup` method, which should look something like this:
     ```go
