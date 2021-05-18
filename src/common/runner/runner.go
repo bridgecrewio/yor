@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
+	"reflect"
 	"strings"
 
 	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
@@ -96,7 +97,7 @@ func (r *Runner) TagFile(file string) {
 		}
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
-			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, parser))
+			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
 			continue
 		}
 		isFileTaggable := false
