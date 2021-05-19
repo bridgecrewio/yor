@@ -69,10 +69,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
-      - name: Run yor action
+      - name: Run yor action and commit
         uses: bridgecrewio/yor-action@main
-      - name: Commit tag changes
-        uses: stefanzweifel/git-auto-commit-action@v4
 ```
 
 MacOS
@@ -165,7 +163,7 @@ Pre-commit
 ./yor list-tag-groups
  # List tag classes that are built into yor.
  
- ./yor list-tags
+./yor list-tags
  # List all the tags built into yor
 ./yor list-tags --tag-groups git
  
