@@ -1,4 +1,4 @@
-[![checkov](https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png)](#)
+![yor](https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png)
 
 Yor is Universal Infrastructure-as-Code Tagging framework
 
@@ -17,9 +17,9 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
-* Change management: git-based tags automatically add org, repo, commit and modifyer details on every resource block.  
+* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
-* Skips: inline annotations enable developers to excluse paths that should not be tagged.
+* Skips: inline annotations enable developers to exclude paths that should not be tagged.
 
 ## Demo
 ### Attributing a directory with tags by user input
@@ -131,10 +131,10 @@ Pre-commit
 # json output
 
 ./yor tag -d . --output cli --output-json-file result.json
-# print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
+# print cli output and additional output to file on json file -- enables programmatic analysis alongside printing human readable result
 ```
 
-`--skip-tags`:Specify only named tags (allow list) or run all tags except those listed (deny list).
+`--skip-tags`: Specify only named tags (allow list) or run all tags except those listed (deny list).
 
 ```sh
 ./yor tag -d . --skip-tags yor_trace
@@ -147,7 +147,7 @@ Pre-commit
 ## Run all tags except tags with specified patterns
 ```
 
-`skip-dirs` : Skip directoruy paths you can define paths that will not be tagged.
+`skip-dirs` : Skip directory paths you can define paths that will not be tagged.
 
 ```sh
 ./yor tag -d path/to/files
@@ -188,4 +188,4 @@ golangci-lint run --fix --skip-dirs tests/yor_plugins
 
 ## Support
 
-If you need direct support you can contact us at https://slack.bridgecrew.io/.
+For more support contact us at https://slack.bridgecrew.io/.
