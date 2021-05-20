@@ -113,7 +113,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
-		if block.Type() != "resource" {
+		if !utils.InSlice(SupportedBlockTypes, block.Type()) {
 			continue
 		}
 		blockID := strings.Join(block.Labels(), ".")
@@ -336,7 +336,8 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	var existingTags []tags.ITag
 	isTaggable := false
 	var tagsAttributeName string
-	if hclBlock.Type() == "resource" {
+	switch hclBlock.Type() {
+	case ResourceBlockType:
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
 		if utils.InSlice(SkippedProviders, providerName) {
@@ -367,6 +368,9 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
 			return nil, nil
 		}
+	case ModuleBlockType:
+		tagsAttributeName = "tags"
+		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
 	}
 
 	terraformBlock := TerraformBlock{
