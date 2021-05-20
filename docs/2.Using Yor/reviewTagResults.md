@@ -1,5 +1,12 @@
-# Reviewing Tag Results
+---
+layout: default
+published: true
+title: Reviewing Tag Results
+nav_order: 4
+---
 
+# Reviewing Tag Results
+Use the following commands to display the tags that are currently used.
 ```sh
 ./yor tag -d . -o cli
 # default cli output

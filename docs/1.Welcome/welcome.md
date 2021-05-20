@@ -1,34 +1,63 @@
+---
+layout: default
+published: true
+title: What is Yor?
+nav_order: 1
+---
+
 # Overview
-Yor is an open-source tool that helps to manage tags consistently across infrastructure as code frameworks 
-(Terraform, Cloudformation, Kubernetes, and Serverless Framework). By auto-tagging in IaC you will be able to trace any cloud resource from code to cloud.
+
+Yor is an open-source tool that helps to manage tags consistently across infrastructure as code frameworks such as 
+Terraform, Cloudformation, Kubernetes, and Serverless Framework. Auto-tagging in IaC enables you to trace any resource 
+from code to cloud.
+
+IaC resource tagging provides added benefits which include:
+* **Security Risk Management** - identify resources that require heightened security
+* **Access Control** - use IAM policies to control access to resources
+* **Automation** - tag resources for automation policies
+* **Cost Allocation** - break down costs based on tagging of resources
+* **Operation Support** - tracing of resource ownership
+* **Console Organization** - consolidate resource inventory based on tags so that you can track multiple instances of the same resources
 
 # IaC Types
-Yor enables version-controlled owner assignment and resource tracing based git history. It also can extend tag enforcement logic by loading external tagging logic into the CI/CD pipeline. 
+Yor enables version-controlled owner assignment and resource tracing based on git history and extends tag enforcement logic 
+into the CI/CD pipeline. 
 
-Yor can tag these IaC file types:
+Yor can tag the following IaC file types:
   * Terraform (for AWS, GCP and Azure)
   * CloudFormation (YAML, JSON)
   * Serverless
-
   * K8S (YAML, JSON)
 
 # Tracing Tagger
-```yor_trace``` tag enables full attribution between build time and run time resources. Using unique Yor GUID, you'll be able to track your runtime resource that is rely on a resource block in your IaC files. Tracing between the two enables better visibility of your assets and detecting drifts between build time and runtime resources across IaC frameworks and multiple cloud providers. See examples [here](<add publi link to 5.usecases once published>)
+Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) logs to create tags which enable the mapping of individual 
+resources to specific commits. 
+
+Yor provides a unique ID created when running the tag command which enables complete traceability between build time and run time resources.
+The ability to track a runtime resource relies on a resource block in your IaC files creating better visibility of your assets. Yor can also detect 
+drifts between build time and runtime resources across IaC frameworks and 
+multiple cloud providers. 
+
+## Supported Yor Trace Tags
+The following tags are supported in Yor:
+
+```yor_trace``` which is a unique ID provided when a resource is tagged.
+
+For examples see [Use Cases](/docs/4.Use Cases/useCases.md).
 
 # Git-based Tagger
-```git_*``` tags connect cloud resources to individual git commits and enable assigning clear ownership between developers and the resources they routinely change.
+The ```git_*``` tags connect cloud resources to individual git commits and establish clear ownership between developers and 
+resources which are routinely change.
 
-
-Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) and enables mapping individual resources to specific commits.
-
-### Supported tags
-
+## Supported Git tags
+The following tags are supported in Yor:
 ```
 git_org = "bridgecrewio"
 git_repo = "terragoat"
-git_file = "README.md" # this is the path from the repo root dir...
-git_commit = "47accf06f13b503f3bab06fed7860e72f7523cac" # This is the latest commit for this resource
+git_file = "README.md" # This is the path from the repo root dir.
+git_commit = "47accf06f13b503f3bab06fed7860e72f7523cac" # This is the latest commit for this resource.
 git_last_modified_At = "2020-03-28 21:42:46 +0000 UTC"
 git_last_modified_by = "schosterbarak@gmail.com"
-git_modifiers = "schosterbarak/baraks" # These are extracted from the emails, everything before the @ sign. Can be done for modified_by tag as well
+git_modifiers = "schosterbarak/baraks" # These are extracted from emails (everything before the @ sign). This can also be done 
+for the git_last_modified_by tag.
 ```
