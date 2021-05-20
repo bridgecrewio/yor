@@ -173,7 +173,7 @@ jobs:
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
   update-bridgecrew-projects:
-    needs: create-release
+    needs: publish-dockerhub
     runs-on: ubuntu-latest
     steps:
       - name: update on yor release
