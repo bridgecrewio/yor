@@ -1,29 +1,27 @@
-# Examples of Applied Custom Tags
+# Defining Custom Taggers
 
 ## Prerequisites
 
 Examples can be found in `tests/yor_plugins`
-Yor supports 2 ways of adding custom tags:
-1. [Using Enverionment Variable - Simple tags with constant key-value](#adding-simple-tags)
-2. Using Go builtim classes -
-	1. [Simple code-based tags](#adding-simple-code-based-tags)
-	2. [Complex tags which rely on different inputs](#adding-complex-tags)
+Yor supports 3 ways of adding custom tags:
+1. [Simple tags with constant key-value](#adding-simple-tags)
+2. [Simple code-based tags](#adding-simple-code-based-tags)
+3. [Complex tags which rely on different inputs](#adding-complex-tags)
 
-## Adding Simple Tags Using Enviornment Variables
+## Adding Simple Tags
 To add tags with constant key-value pairs, set the environment variable YOR_SIMPLE_TAGS
 with a JSON object detailing all key value pairs. Example:
 ```sh
-export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
+export YOR_SIMPLE_TAGS='{"someKey": "someValue", "another-key": "another_val"}'
 # When yor is run, all resources will be tagged by these two tags as well
 ```
 
-## Adding Custom Tags Using Golang
-
-### Adding Simple Code Based Tags Using Golang
+## Adding Simple Code Based Tags
 1. Create tags implementing the `ITag` interface.
 2. If you wish to override an existing tag, make the tag's method `GetPriority()` return a positive number. Otherwise, return `0` or a negative number.
 3. Create a file located in package `main` that exposes a variable `ExtraTags` - array containing pointers to all tags implemented. Example:
-    ```go
+    ```
+   go
     package main
     
     var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
@@ -32,11 +30,11 @@ export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
 
 See example in [tests/yor_plugins/example](tests/yor_plugins/example)
 
-### Adding Complex Tags Using Golang
-1. Create a tagger struct, implementing the `ITagGroup` interface.
-2. Implement the `InitTagGroup` method, which should look something like this:
+## Adding Complex Tags
+1. Create a tagger struct, implementing the `ITagger` interface.
+2. Implement the `InitTagger` method, which should look something like this:
     ```go
-    func (d *CustomTagger) InitTagGroup(_ string, skippedTags []string) {
+    func (d *CustomTagger) InitTagger(_ string, skippedTags []string) {
 	    d.SkippedTags = skippedTags
 	    d.SetTags([]tags.ITag{}) // This is just a placeholder
     }
@@ -56,7 +54,7 @@ See example in [tests/yor_plugins/example](tests/yor_plugins/example)
    }
     ```
 4. Implement tags, which implement the `ITag` interface just like we described [here](#adding-simple-tags)
-5. Go back to the `InitTagGroup` method and add pointers to your new tags in the input of the `SetTags` function call.
+5. Go back to the `InitTagger` method and add pointers to your new tags in the input of the `SetTags` function call.
 6. Create a file located in package `main` that exposes a variable `ExtraTaggers` - array containing pointers to all tags implemented. Example:
     ```go
     package main
@@ -65,14 +63,3 @@ See example in [tests/yor_plugins/example](tests/yor_plugins/example)
     ```
 
 See example in [tests/yor_plugins/tag_group_example](tests/yor_plugins/tag_group_example)
-
-## Running yor with the external tags / taggers
-
-```sh
-./yor tag --custom-tagging tests/yor_plugins/example
-# run yor with custom tags located in tests/yor_plugins/example
-
-./yor tag --custom-tagging tests/yor_plugins/example,tests/yor_plugins/tag_group_example
-# run yor with custom tags located in tests/yor_plugins/example and custom taggers located in tests/yor_plugins/tag_group_example
-```
-

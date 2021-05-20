@@ -12,6 +12,7 @@ The following commands are used to apply tags.
    
     ./yor tag --tag-group git --directory terraform/
     # Apply only the tags under the git tag group
+
    ```
 
 Using docker:
@@ -68,4 +69,5 @@ Be mindful that the skipped path should include the root dir path. See example b
 
 ./yor tag -d path/to/files --skip-dirs path/to/files/skip,path/to/files/another/skip2
 ## Run yor on the directory path/to/files, skipping path/to/files/skip/ and path/to/files/another/skip2/
+
 ```

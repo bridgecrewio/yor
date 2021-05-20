@@ -9,6 +9,7 @@ Yor can tag these IaC file types:
   * Terraform (for AWS, GCP and Azure)
   * CloudFormation (YAML, JSON)
   * Serverless
+
   * K8S (YAML, JSON)
 
 # Tracing Tagger
@@ -16,6 +17,7 @@ Yor can tag these IaC file types:
 
 # Git-based Tagger
 ```git_*``` tags connect cloud resources to individual git commits and enable assigning clear ownership between developers and the resources they routinely change.
+
 
 Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) and enables mapping individual resources to specific commits.
 
