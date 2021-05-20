@@ -13,6 +13,12 @@ type TerraformBlock struct {
 	HclSyntaxBlock *hclsyntax.Block
 }
 
+const ResourceBlockType = "resource"
+const ModuleBlockType = "module"
+const DataBlockType = "data"
+
+var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType}
+
 func (b *TerraformBlock) GetResourceID() string {
 	return strings.Join(b.HclSyntaxBlock.Labels, ".")
 }
