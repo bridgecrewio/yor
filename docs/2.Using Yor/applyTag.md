@@ -1,8 +1,17 @@
+---
+layout: default
+published: true
+title: Applying Tags
+nav_order: 3
+---
 # Applying Tags
 
 The following commands are used to apply tags.
-`./yor` 
-`tag` - apply the built in tags and any [custom](CUSTOMIZE.md) tags on a directory
+
+## Apply Built-in Tags
+To apply all configured tags run the following commands:
+
+`./yor tag` - apply the built-in tags and any [custom](/docs/3.Custom Taggers/customTagExamples.md) tags on a directory
    ```sh
     ./yor tag --directory terraform/
     # Apply all the tags in yor on the directory tree terraform/
@@ -14,18 +23,21 @@ The following commands are used to apply tags.
     # Apply only the tags under the git tag group
 
    ```
+## Tagging Docker Files
 
-Using docker:
-
+To add tags to your Dockerfile, run the following commands after the file has been built.
 ```sh
 docker pull bridgecrew/yor
 
 docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
 ```
 
-Using pre-commit:
+## Tagging Using Pre-commit:
+Using Pre-commit with Yor provides a simple, automatic way of applying tags to your IaC identifying potential issues before submission to code review.
 
-Add a hook:
+You need to have the pre-commit package manager installed before you can run Pre-commit hooks.
+
+Add a hook to your **.pre-commit-config.yaml** and change the args and version number.
 
 ```yaml
   - repo: git://github.com/bridgecrewio/yor
@@ -40,9 +52,7 @@ Add a hook:
         pass_filenames: false
 ```
 
-To your **.pre-commit-config.yaml** and change the args and version number.
-
-### Skipping tags
+## Skipping Tags
 
 Using command line flags you can specify to run only named tags (allow list) or run all tags except
 those listed (deny list).
@@ -58,7 +68,7 @@ those listed (deny list).
 ## Run all tags except tags with specified patterns
 ```
 
-### Skipping directories
+## Skipping Directories
 
 Using the command line flag skip-paths you can define paths which won't be tagged.
 Be mindful that the skipped path should include the root dir path. See example below:
