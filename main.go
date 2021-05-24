@@ -142,6 +142,8 @@ func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
 	flag.StringSliceVarP(&options.CustomTagging, "custom-tagging", "c", []string{}, "paths to custom tag groups and tags plugins")
 	flag.StringSliceVar(&options.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
 	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "g", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
+	flag.StringVar(&options.ConfigFile, "config-file", "", "Custom tagging group configuration file path")
+
 }
 
 func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {
