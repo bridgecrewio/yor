@@ -1,10 +1,10 @@
 ---
 layout: default
 published: true
-title: Applying Tags
+title: Custom Tagger Using YAML  Configuration Files
 nav_order: 2
 ---
-# Custom Tagger by YAML configuration file
+# Custom Tagger Using YAML  Configuration Files
 
 The Yor framework uses YAML configuration files to support advanced rules when applying custom tags.
 Users can define tagging enforcement rules that are specific to their organization’s needs. 
