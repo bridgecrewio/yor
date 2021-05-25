@@ -86,6 +86,7 @@ func tagCommand() *cli.Command {
 	outputArg := "output"
 	tagGroupArg := "tag-groups"
 	outputJSONFileArg := "output-json-file"
+	externalConfPath := "config-file"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -101,6 +102,7 @@ func tagCommand() *cli.Command {
 				Output:         c.String(outputArg),
 				OutputJSONFile: c.String(outputJSONFileArg),
 				TagGroups:      c.StringSlice(tagGroupArg),
+				ConfigFile:     c.String(externalConfPath),
 			}
 
 			options.Validate()
@@ -161,6 +163,11 @@ func tagCommand() *cli.Command {
 				Value:       cli.NewStringSlice(utils.GetAllTagGroupsNames()...),
 				DefaultText: "git,code2cloud",
 			},
+			&cli.StringFlag{
+				Name:        externalConfPath,
+				Usage:       "external tag group configuration file path",
+				DefaultText: "/path/to/conf/file/ (.yml/.yaml extension)",
+			},
 		},
 	}
 }
@@ -219,19 +226,19 @@ func printReport(reportService *reports.ReportService, options *clioptions.TagOp
 	}
 }
 
-func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
-	flag.StringVarP(&options.Directory, "directory", "d", "", "directory to tag")
-	flag.StringVarP(&options.Tag, "tag", "t", "", "run yor only with the specified tag")
-	flag.StringSliceVarP(&options.SkipTags, "skip-tags", "s", []string{}, "run yor without ths specified tag")
-	flag.StringVarP(&options.Output, "output", "o", "cli", "set output format")
-	flag.StringVar(&options.OutputJSONFile, "output-json-file", "", "json file path for output")
-	flag.StringSliceVarP(&options.CustomTagging, "custom-tagging", "c", []string{}, "paths to custom tag groups and tags plugins")
-	flag.StringSliceVar(&options.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
-	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "g", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
-	flag.StringVar(&options.ConfigFile, "config-file", "", "Custom tagging group configuration file path")
-	// TODO merge
-}
+//func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
+//	flag.StringVarP(&options.Directory, "directory", "d", "", "directory to tag")
+//	flag.StringVarP(&options.Tag, "tag", "t", "", "run yor only with the specified tag")
+//	flag.StringSliceVarP(&options.SkipTags, "skip-tags", "s", []string{}, "run yor without ths specified tag")
+//	flag.StringVarP(&options.Output, "output", "o", "cli", "set output format")
+//	flag.StringVar(&options.OutputJSONFile, "output-json-file", "", "json file path for output")
+//	flag.StringSliceVarP(&options.CustomTagging, "custom-tagging", "c", []string{}, "paths to custom tag groups and tags plugins")
+//	flag.StringSliceVar(&options.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
+//	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "g", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
+//	flag.StringVar(&options.ConfigFile, "config-file", "", "Custom tagging group configuration file path")
+//	// TODO merge
+//}
 
-func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {
-	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
-}
+//func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {
+//	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
+//}

@@ -1,19 +1,19 @@
 package external
 
 import (
-	"os"
+	"io/ioutil"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 type TagGroup struct {
 	tagging.TagGroup
 	configFilePath string
-	config         map[string]interface{}
+	config         map[interface{}]interface{}
 }
 
 func (t *TagGroup) InitConfigFile(configFilePath string) {
@@ -25,17 +25,13 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 }
 
 func (t *TagGroup) InitExternalTagGroup() {
-	viper.SetConfigName("external_tags")
-	viper.SetConfigType("yaml")
-	file, err := os.Open(t.configFilePath)
+	m := make(map[interface{}]interface{})
+	confBytes, err := ioutil.ReadFile(t.configFilePath)
+	err = yaml.Unmarshal(confBytes, &m)
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	err = viper.ReadConfig(file)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	t.config = viper.AllSettings()
+	t.config = m
 }
 
 func (t *TagGroup) GetDefaultTags() []tags.ITag {

@@ -24,6 +24,7 @@ require (
 	go.opencensus.io v0.22.0
 	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4 // indirect
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
