@@ -4,78 +4,164 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bridgecrewio/yor/src/common"
-	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/clioptions"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/reports"
 	"github.com/bridgecrewio/yor/src/common/runner"
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/tagging/utils"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	tagOptions := &cli.TagOptions{}
-	cmd := &cobra.Command{
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Version:       common.Version,
-		Short:         fmt.Sprintf("\nYor, the IaC auto-tagger (v%v)", common.Version),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if tagOptions.Directory == "" {
-				// If no flags supplied display the help menu and quit cleanly
-				err := cmd.Help()
-				if err == nil {
-					os.Exit(0)
-				}
-				logger.Error(err.Error())
-			}
-			return run(tagOptions)
+	app := &cli.App{
+		Name:                   "yor",
+		HelpName:               "",
+		Usage:                  "enrich IaC files with tags automatically",
+		Version:                common.Version,
+		Description:            "Yor, the IaC auto-tagger",
+		Compiled:               time.Time{},
+		Authors:                []*cli.Author{{Name: "Bridgecrew", Email: "support@bridgecrew.io"}},
+		UseShortOptionHandling: true,
+		Commands: []*cli.Command{
+			listTagsCommand(),
+			listTagGroupsCommand(),
+			tagCommand(),
 		},
 	}
-	tagCmd := &cobra.Command{
-		Use:           "tag",
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Short:         "Tag you IaC files",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			tagOptions.Validate()
-			return run(tagOptions)
-		},
+	err := app.Run(os.Args)
+	if err != nil {
+		logger.Error(err.Error())
 	}
-	addTagFlags(tagCmd.Flags(), tagOptions)
+}
 
-	listTagsOptions := &cli.ListTagsOptions{}
-	listTagsCmd := &cobra.Command{
-		Use:           "list-tags",
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Short:         "List the tags supported by Yor",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			listTagsOptions.Validate()
-			return listTags(listTagsOptions)
-		},
-	}
-	addListTagsFlags(listTagsCmd.Flags(), listTagsOptions)
-
-	listTagGroups := &cobra.Command{
-		Use:           "list-tag-groups",
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Short:         "List the Tag Groups supported by Yor",
-		RunE: func(cmd *cobra.Command, args []string) error {
+func listTagGroupsCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "list-tag-groups",
+		Usage: "List the tag groups that will be applied by yor",
+		Action: func(c *cli.Context) error {
 			return listTagGroups()
 		},
 	}
-	cmd.AddCommand(tagCmd, listTagsCmd, listTagGroups)
+}
 
-	cmd.SetVersionTemplate(fmt.Sprintf("Yor version %s", cmd.Version))
-	if err := cmd.Execute(); err != nil {
-		logger.Error(err.Error())
+func listTagsCommand() *cli.Command {
+	tagGroupsArg := "tag-groups"
+	return &cli.Command{
+		Name:  "list-tags",
+		Usage: "List the tags yor will create if possible",
+		Action: func(c *cli.Context) error {
+			listTagsOptions := clioptions.ListTagsOptions{
+				// cli package doesn't split comma separated values
+				TagGroups: c.StringSlice(tagGroupsArg),
+			}
+
+			listTagsOptions.Validate()
+			return listTags(&listTagsOptions)
+		},
+		Flags: []cli.Flag{
+			&cli.StringSliceFlag{
+				Name:        tagGroupsArg,
+				Aliases:     []string{"g"},
+				Usage:       "Filter results by specific tag group(s), comma delimited",
+				Value:       cli.NewStringSlice(utils.GetAllTagGroupsNames()...),
+				DefaultText: strings.Join(utils.GetAllTagGroupsNames(), ","),
+			},
+		},
+		HideHelpCommand:        true,
+		UseShortOptionHandling: true,
+	}
+}
+
+func tagCommand() *cli.Command {
+	directoryArg := "directory"
+	tagArg := "tags"
+	skipTagsArg := "skip-tags"
+	customTaggingArg := "custom-tagging"
+	skipDirsArg := "skip-dirs"
+	outputArg := "output"
+	tagGroupArg := "tag-groups"
+	outputJSONFileArg := "output-json-file"
+	return &cli.Command{
+		Name:                   "tag",
+		Usage:                  "apply tagging across your directory",
+		HideHelpCommand:        true,
+		UseShortOptionHandling: true,
+		Action: func(c *cli.Context) error {
+			options := clioptions.TagOptions{
+				Directory:      c.String(directoryArg),
+				Tag:            c.StringSlice(tagArg),
+				SkipTags:       c.StringSlice(skipTagsArg),
+				CustomTagging:  c.StringSlice(customTaggingArg),
+				SkipDirs:       c.StringSlice(skipDirsArg),
+				Output:         c.String(outputArg),
+				OutputJSONFile: c.String(outputJSONFileArg),
+				TagGroups:      c.StringSlice(tagGroupArg),
+			}
+
+			options.Validate()
+
+			return tag(&options)
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        directoryArg,
+				Aliases:     []string{"d"},
+				Usage:       "directory to tag",
+				Required:    true,
+				DefaultText: "path/to/iac/root",
+			},
+			&cli.StringSliceFlag{
+				Name:        tagArg,
+				Aliases:     []string{"t"},
+				Usage:       "run yor only with the specified tags",
+				DefaultText: "yor_trace,git_repository",
+			},
+			&cli.StringSliceFlag{
+				Name:        skipTagsArg,
+				Aliases:     []string{"s"},
+				Usage:       "run yor skipping the specified tags",
+				Value:       cli.NewStringSlice(),
+				DefaultText: "yor_trace",
+			},
+			&cli.StringFlag{
+				Name:        outputArg,
+				Aliases:     []string{"o"},
+				Usage:       "set output format",
+				Value:       "cli",
+				DefaultText: "json",
+			},
+			&cli.StringFlag{
+				Name:        outputJSONFileArg,
+				Usage:       "json file path for output",
+				DefaultText: "result.json",
+			},
+			&cli.StringSliceFlag{
+				Name:        customTaggingArg,
+				Aliases:     []string{"c"},
+				Usage:       "paths to custom tag groups and tags plugins",
+				Value:       cli.NewStringSlice(),
+				DefaultText: "path/to/custom/yor/tagging",
+			},
+			&cli.StringSliceFlag{
+				Name:        skipDirsArg,
+				Aliases:     nil,
+				Usage:       "configuration paths to skip",
+				Value:       cli.NewStringSlice(),
+				DefaultText: "path/to/skip,another/path/to/skip",
+			},
+			&cli.StringSliceFlag{
+				Name:        tagGroupArg,
+				Aliases:     []string{"g"},
+				Usage:       "Narrow down results to the matching tag groups",
+				Value:       cli.NewStringSlice(utils.GetAllTagGroupsNames()...),
+				DefaultText: "git,code2cloud",
+			},
+		},
 	}
 }
 
@@ -86,7 +172,7 @@ func listTagGroups() error {
 	return nil
 }
 
-func listTags(options *cli.ListTagsOptions) error {
+func listTags(options *clioptions.ListTagsOptions) error {
 	var tagGroup tagging.ITagGroup
 	tagsByGroup := make(map[string][]tags.ITag)
 	for _, group := range options.TagGroups {
@@ -94,14 +180,14 @@ func listTags(options *cli.ListTagsOptions) error {
 		if tagGroup == nil {
 			return fmt.Errorf("tag group %v is not supported", group)
 		}
-		tagGroup.InitTagGroup(".", nil)
+		tagGroup.InitTagGroup("", nil)
 		tagsByGroup[group] = tagGroup.GetTags()
 	}
 	reports.ReportServiceInst.PrintTagGroupTags(tagsByGroup)
 	return nil
 }
 
-func run(options *cli.TagOptions) error {
+func tag(options *clioptions.TagOptions) error {
 	yorRunner := new(runner.Runner)
 	logger.Info(fmt.Sprintf("Setting up to tag the directory %v\n", options.Directory))
 	err := yorRunner.Init(options)
@@ -117,7 +203,7 @@ func run(options *cli.TagOptions) error {
 	return nil
 }
 
-func printReport(reportService *reports.ReportService, options *cli.TagOptions) {
+func printReport(reportService *reports.ReportService, options *clioptions.TagOptions) {
 	reportService.CreateReport()
 
 	if options.OutputJSONFile != "" {
@@ -143,7 +229,7 @@ func addTagFlags(flag *pflag.FlagSet, options *cli.TagOptions) {
 	flag.StringSliceVar(&options.SkipDirs, "skip-dirs", []string{}, "configuration paths to skip")
 	flag.StringSliceVarP(&options.TagGroups, "tag-groups", "g", utils.GetAllTagGroupsNames(), "Narrow down results to the matching tag groups")
 	flag.StringVar(&options.ConfigFile, "config-file", "", "Custom tagging group configuration file path")
-
+	// TODO merge
 }
 
 func addListTagsFlags(flag *pflag.FlagSet, options *cli.ListTagsOptions) {

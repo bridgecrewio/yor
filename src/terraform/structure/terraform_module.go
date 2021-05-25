@@ -140,8 +140,8 @@ func getProviderDependencies(tfModule *tfconfig.Module) *moduledeps.Module {
 	moduleDependencies.Providers = providers
 
 	for _, moduleCall := range tfModule.ModuleCalls {
-		if strings.HasPrefix(moduleCall.Source, "git::") {
-			logger.Info("Skipping remote module", moduleCall.Source)
+		if isRemoteModule(moduleCall.Source) || isTerraformRegistryModule(moduleCall.Source) {
+			logger.Info("Skipping remote git module", moduleCall.Source)
 			continue
 		}
 		childModulePath := path.Join(tfModule.Path, moduleCall.Source)
@@ -156,4 +156,23 @@ func getProviderDependencies(tfModule *tfconfig.Module) *moduledeps.Module {
 	}
 
 	return moduleDependencies
+}
+
+func isRemoteModule(s string) bool {
+	// Taken from https://www.terraform.io/docs/language/modules/sources.html
+	return strings.HasPrefix(s, "git::") || strings.HasPrefix(s, "hg::") || strings.HasPrefix(s, "s3::") || strings.HasPrefix(s, "gcs::") ||
+		strings.HasPrefix(s, "github.com/") || strings.HasPrefix(s, "bitbucket.org/") || strings.HasPrefix(s, "app.terraform.io/") ||
+		strings.HasPrefix(s, "https://") || strings.HasPrefix(s, "git@")
+}
+
+func isTerraformRegistryModule(source string) bool {
+	// All terraform registry modules are of the following structure:
+	// terraform-<PROVIDER>-modules/<MODULE_NAME>/<PROVIDER>
+	parts := strings.Split(source, "/")
+	if len(parts) == 3 {
+		if "terraform-"+parts[2]+"-modules" == parts[0] {
+			return true
+		}
+	}
+	return false
 }

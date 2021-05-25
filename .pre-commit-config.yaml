@@ -1,11 +1,12 @@
 ---
 repos:
-  - repo: local
+  - repo: git://github.com/bridgecrewio/yor
+    rev: 0.1.24
     hooks:
       - id: yor
         name: yor
         entry: yor tag -d
-        args: ["tests/terraform/mixed/"]
+        args: ["."]
         language: golang
         types: [terraform]
-        pass_filenames: false        
+        pass_filenames: false

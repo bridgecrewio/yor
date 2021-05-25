@@ -1,4 +1,5 @@
-# Yor - Universal Infrastructure-as-Code Tagging
+<img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
+
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -9,14 +10,14 @@
  
 Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless.
 
-Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) that hydrates IaC code with consistent tagging logics. It can also run as a pre-commit hook and a standalone CLI.
+Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
-* Change management: git-based tags automatically add org, repo, commit and modifyer details on every resource block.  
+* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
-* Skips: inline annotations enable developers to excluse paths that should not be tagged.
+* Skips: inline annotations enable developers to exclude paths that should not be tagged.
 
 ## Demo
 ### Attributing a directory with tags by user input
@@ -45,12 +46,29 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ### Installation
 GitHub Action
 ```yaml
-- name: Checkout repo
-  uses: actions/checkout@v2
-  with:
-    fetch-depth: 0
-- name: Run yor action
-  uses: bridgecrewio/yor-action@main
+name: IaC trace
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  yor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout repo
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+      - name: Run yor action and commit
+        uses: bridgecrewio/yor-action@main
 ```
 
 MacOS
@@ -111,10 +129,10 @@ Pre-commit
 # json output
 
 ./yor tag -d . --output cli --output-json-file result.json
-# print cli output and additional output to file on json file -- enables prgormatic analysis alongside printing human readable result
+# print cli output and additional output to file on json file -- enables programmatic analysis alongside printing human readable result
 ```
 
-`--skip-tags`:Specify only named tags (allow list) or run all tags except those listed (deny list).
+`--skip-tags`: Specify only named tags (allow list) or run all tags except those listed (deny list).
 
 ```sh
 ./yor tag -d . --skip-tags yor_trace
@@ -127,7 +145,7 @@ Pre-commit
 ## Run all tags except tags with specified patterns
 ```
 
-`skip-dirs` : Skip directoruy paths you can define paths that will not be tagged.
+`skip-dirs` : Skip directory paths you can define paths that will not be tagged.
 
 ```sh
 ./yor tag -d path/to/files
@@ -143,7 +161,7 @@ Pre-commit
 ./yor list-tag-groups
  # List tag classes that are built into yor.
  
- ./yor list-tags
+./yor list-tags
  # List all the tags built into yor
 ./yor list-tags --tag-groups git
  
@@ -168,4 +186,4 @@ golangci-lint run --fix --skip-dirs tests/yor_plugins
 
 ## Support
 
-If you need direct support you can contact us at https://slack.bridgecrew.io/.
+For more support contact us at https://slack.bridgecrew.io/.

@@ -16,11 +16,11 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -34,6 +34,8 @@ type TerrraformParser struct {
 	taggableResourcesCache map[string]bool
 	tagModules             bool
 	terraformModule        *TerraformModule
+	moduleImporter         *command.GetCommand
+	moduleInstallDir       string
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -45,6 +47,9 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
+	p.moduleImporter = &command.GetCommand{Meta: command.Meta{Color: false, Ui: customTfLogger{}}}
+	pwd, _ := os.Getwd()
+	p.moduleInstallDir = filepath.Join(pwd, ".terraform", "modules")
 }
 
 func (p *TerrraformParser) GetSkippedDirs() []string {
@@ -113,11 +118,11 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
-		if block.Type() != "resource" {
+		if !utils.InSlice(SupportedBlockTypes, block.Type()) {
 			continue
 		}
 		blockID := strings.Join(block.Labels(), ".")
-		terraformBlock, err := p.parseBlock(block)
+		terraformBlock, err := p.parseBlock(block, filePath)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "resource belongs to skipped provider") {
 				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockID, strings.Split(blockID, "_")[0]))
@@ -306,7 +311,7 @@ func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
 	return nil
 }
 
-// Insert inserts a value at a specific index in a slice
+// InsertToken Insert inserts a value at a specific index in a slice
 func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwrite.Tokens {
 	if len(tokens) == index {
 		return append(tokens, value)
@@ -316,7 +321,7 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 	return tokens
 }
 
-// Inserts a list of tags at end of list
+// InsertTokens Inserts a list of tags at end of list
 func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tokens {
 	suffixLength := 1 // Only the closing parenthesis
 	if tokens[len(tokens)-2].Type == hclsyntax.TokenNewline {
@@ -332,11 +337,12 @@ func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tok
 	return append(result, tokens[len(tokens)-suffixLength:]...)
 }
 
-func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
+func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
 	isTaggable := false
 	var tagsAttributeName string
-	if hclBlock.Type() == "resource" {
+	switch hclBlock.Type() {
+	case ResourceBlockType:
 		resourceType := hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
 		if utils.InSlice(SkippedProviders, providerName) {
@@ -367,6 +373,13 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
 			return nil, nil
 		}
+	case ModuleBlockType:
+		tagsAttributeName = "tags"
+		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
+
+		if !isTaggable {
+			isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
+		}
 	}
 
 	terraformBlock := TerraformBlock{
@@ -378,6 +391,35 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	}
 
 	return &terraformBlock, nil
+}
+
+func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
+	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
+	absRootPath, _ := filepath.Abs(p.rootDir)
+	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
+	logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
+	logger.MuteLogging()
+	exitCode := p.moduleImporter.Run([]string{actualPath})
+	logger.UnmuteLogging()
+	if exitCode != 0 {
+		// Failed to get modules for this repo
+		return false
+	}
+	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
+
+	files, _ := ioutil.ReadDir(expectedModuleDir)
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), ".tf") {
+			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
+			for _, b := range blocks {
+				if b.(*TerraformBlock).HclSyntaxBlock.Type == VarBlockType && b.GetResourceID() == "tags" {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttributeName string, resourceScheme *tfschema.Block) bool {

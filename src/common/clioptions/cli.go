@@ -1,4 +1,4 @@
-package cli
+package clioptions
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ var allowedOutputTypes = []string{"cli", "json"}
 
 type TagOptions struct {
 	Directory      string
-	Tag            string
+	Tag            []string
 	SkipTags       []string
 	CustomTagging  []string
 	SkipDirs       []string
