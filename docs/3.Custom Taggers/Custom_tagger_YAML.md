@@ -91,4 +91,12 @@ In the example below, EC2 instances and Security Groups will be tagged with env:
 
 ```yor tag --tag-name env –tag-value prod --resource-types [aws_ec2_instance,aws_ec2_security_group] –filter-tags git_modifiers=[tronxd,amy];git_repo=[checkov,terragoat]```
 
+## Running Yor with the Custom Tags / Taggers
+Use the following example to run Yor with custom tags:
+```sh
+./yor tag --custom-tagging tests/yor_plugins/example
+# run yor with custom tags located in tests/yor_plugins/example
 
+./yor tag --custom-tagging tests/yor_plugins/example,tests/yor_plugins/tag_group_example
+# run yor with custom tags located in tests/yor_plugins/example and custom taggers located in tests/yor_plugins/tag_group_example
+```
