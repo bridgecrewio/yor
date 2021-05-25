@@ -121,13 +121,13 @@ func tagCommand() *cli.Command {
 				Usage:       "run yor only with the specified tags",
 				DefaultText: "yor_trace,git_repository",
 			},
-			//&cli.StringSliceFlag{
-			//	Name:        skipTagsArg,
-			//	Aliases:     []string{"s"},
-			//	Usage:       "run yor only with the specified tag",
-			//	Value:       cli.NewStringSlice(),
-			//	DefaultText: "yor_trace",
-			//},
+			&cli.StringSliceFlag{
+				Name:        skipTagsArg,
+				Aliases:     []string{"s"},
+				Usage:       "run yor skipping the specified tags",
+				Value:       cli.NewStringSlice(),
+				DefaultText: "yor_trace",
+			},
 			&cli.StringFlag{
 				Name:        outputArg,
 				Aliases:     []string{"o"},
@@ -135,9 +135,8 @@ func tagCommand() *cli.Command {
 				Value:       "cli",
 				DefaultText: "json",
 			},
-			&cli.BoolFlag{
+			&cli.StringFlag{
 				Name:        outputJSONFileArg,
-				Aliases:     nil,
 				Usage:       "json file path for output",
 				DefaultText: "result.json",
 			},
@@ -149,7 +148,7 @@ func tagCommand() *cli.Command {
 				DefaultText: "path/to/custom/yor/tagging",
 			},
 			&cli.StringSliceFlag{
-				Name:        skipTagsArg,
+				Name:        skipDirsArg,
 				Aliases:     nil,
 				Usage:       "configuration paths to skip",
 				Value:       cli.NewStringSlice(),
