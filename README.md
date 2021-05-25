@@ -1,6 +1,4 @@
-![yor](https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png)
-
-Yor is Universal Infrastructure-as-Code Tagging framework
+<img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
@@ -12,7 +10,7 @@ Yor is Universal Infrastructure-as-Code Tagging framework
  
 Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless.
 
-Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) that hydrates IaC code with consistent tagging logics. It can also run as a pre-commit hook and a standalone CLI.
+Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
 ## Features
 * Apply tags and labels on infrastructure as code directory
