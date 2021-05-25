@@ -28,9 +28,6 @@ Run the following commands to install Yor on MacOS:
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
-```sh
-brew install yor
-```
 
 ## Docker
 To install Yor and add tags to your Dockerfile, run the following commands after the file has been built.
