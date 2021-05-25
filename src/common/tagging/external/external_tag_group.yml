@@ -1,37 +1,38 @@
--
-name: env
-value:
-  default: prod
-filters:
-  resource_types:
-    - aws_ec2_instance
-    - aws_security_group
+tag_group:
+  name: ownership
   tags:
-    git_modifiers: tronxd
-    git_repo: checkov
-  directory: /path/to/some/dir
-  -
-name: team
-value:
-  default: interfaces
-  matches:
-    - seceng:
+    - name: env
+      value:
+        default: prod
+      filters:
+        resource_types:
+          - aws_ec2_instance
+          - aws_security_group
         tags:
-          git_modifiers:
-            - rotemavni
-            - tronxd
-            - nimrodkor
-          git_commit: asd12f
-          git_repo: yor
-    - platform:
+          git_modifiers: tronxd
+          git_repo: checkov
+        directory: /path/to/some/dir
+    - name: team
+      value:
+        default: interfaces
+        matches:
+          - seceng:
+              tags:
+                git_modifiers:
+                  - rotemavni
+                  - tronxd
+                  - nimrodkor
+                git_commit: asd12f
+                git_repo: yor
+          - platform:
+              tags:
+                git_modifiers:
+                  - milkana
+                  - nofar
+      filters:
+        resource_types:
+          - aws_ec2_instance
+          - aws_security_group
         tags:
-          git_modifiers:
-            - milkana
-            - nofar
-filters:
-  resource_types:
-    - aws_ec2_instance
-    - aws_security_group
-  tags:
-    yor_trace: 123
-  directory: /path/to/some/dir
+          yor_trace: 123
+        directory: /path/to/some/dir
