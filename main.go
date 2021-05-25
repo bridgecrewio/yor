@@ -57,7 +57,7 @@ func listTagsCommand() *cli.Command {
 		Action: func(c *cli.Context) error {
 			listTagsOptions := clioptions.ListTagsOptions{
 				// cli package doesn't split comma separated values
-				TagGroups: extractCommaDelimitedStringSlice(c, tagGroupsArg),
+				TagGroups: c.StringSlice(tagGroupsArg),
 			}
 
 			listTagsOptions.Validate()
@@ -77,19 +77,15 @@ func listTagsCommand() *cli.Command {
 	}
 }
 
-func extractCommaDelimitedStringSlice(c *cli.Context, key string) []string {
-	return strings.Split(c.String(key), ",")
-}
-
 func tagCommand() *cli.Command {
 	directoryArg := "directory"
-	tagArg := "tag"
-	skipTagsArg := "skipTags"
+	tagArg := "tags"
+	skipTagsArg := "skip-tags"
 	customTaggingArg := "custom-tagging"
-	skipDirsArg := "skipDirs"
+	skipDirsArg := "skip-dirs"
 	outputArg := "output"
 	tagGroupArg := "tag-groups"
-	outputJsonFileArg := "output-json-file"
+	outputJSONFileArg := "output-json-file"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -98,13 +94,13 @@ func tagCommand() *cli.Command {
 		Action: func(c *cli.Context) error {
 			options := clioptions.TagOptions{
 				Directory:      c.String(directoryArg),
-				Tag:            c.String(tagArg),
-				SkipTags:       extractCommaDelimitedStringSlice(c, skipTagsArg),
-				CustomTagging:  extractCommaDelimitedStringSlice(c, customTaggingArg),
-				SkipDirs:       extractCommaDelimitedStringSlice(c, skipDirsArg),
+				Tag:            c.StringSlice(tagArg),
+				SkipTags:       c.StringSlice(skipTagsArg),
+				CustomTagging:  c.StringSlice(customTaggingArg),
+				SkipDirs:       c.StringSlice(skipDirsArg),
 				Output:         c.String(outputArg),
-				OutputJSONFile: c.String(outputJsonFileArg),
-				TagGroups:      extractCommaDelimitedStringSlice(c, tagGroupArg),
+				OutputJSONFile: c.String(outputJSONFileArg),
+				TagGroups:      c.StringSlice(tagGroupArg),
 			}
 
 			options.Validate()
@@ -119,19 +115,19 @@ func tagCommand() *cli.Command {
 				Required:    true,
 				DefaultText: "path/to/iac/root",
 			},
-			&cli.StringFlag{
+			&cli.StringSliceFlag{
 				Name:        tagArg,
 				Aliases:     []string{"t"},
-				Usage:       "run yor only with the specified tag",
-				DefaultText: "yor_trace",
+				Usage:       "run yor only with the specified tags",
+				DefaultText: "yor_trace,git_repository",
 			},
-			&cli.StringSliceFlag{
-				Name:        skipTagsArg,
-				Aliases:     []string{"s"},
-				Usage:       "run yor only with the specified tag",
-				Value:       cli.NewStringSlice(),
-				DefaultText: "yor_trace",
-			},
+			//&cli.StringSliceFlag{
+			//	Name:        skipTagsArg,
+			//	Aliases:     []string{"s"},
+			//	Usage:       "run yor only with the specified tag",
+			//	Value:       cli.NewStringSlice(),
+			//	DefaultText: "yor_trace",
+			//},
 			&cli.StringFlag{
 				Name:        outputArg,
 				Aliases:     []string{"o"},
@@ -140,7 +136,7 @@ func tagCommand() *cli.Command {
 				DefaultText: "json",
 			},
 			&cli.BoolFlag{
-				Name:        outputJsonFileArg,
+				Name:        outputJSONFileArg,
 				Aliases:     nil,
 				Usage:       "json file path for output",
 				DefaultText: "result.json",
@@ -153,7 +149,7 @@ func tagCommand() *cli.Command {
 				DefaultText: "path/to/custom/yor/tagging",
 			},
 			&cli.StringSliceFlag{
-				Name:        skipDirsArg,
+				Name:        skipTagsArg,
 				Aliases:     nil,
 				Usage:       "configuration paths to skip",
 				Value:       cli.NewStringSlice(),

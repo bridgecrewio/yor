@@ -12,11 +12,11 @@ func TestCliArgParsing(t *testing.T) {
 	t.Run("Test tag argument parsing - valid output", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "clioptions",
+			Output:         "cli",
 			OutputJSONFile: "",
 		}
 		// Expect the validation to pass without throwing errors
@@ -36,11 +36,11 @@ func TestCliArgParsing(t *testing.T) {
 	t.Run("Test tag argument parsing - valid tag groups", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "clioptions",
+			Output:         "cli",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "code2cloud"},
 		}
@@ -81,7 +81,7 @@ func TestOutputCrasher(t *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
@@ -97,11 +97,11 @@ func TestTagGroupCrasher(t *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "clioptions",
+			Output:         "cli",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
 		}
