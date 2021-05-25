@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/terraform/command"
 	"github.com/minamijoyo/tfschema/tfschema"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -34,6 +35,8 @@ type TerrraformParser struct {
 	taggableResourcesCache map[string]bool
 	tagModules             bool
 	terraformModule        *TerraformModule
+	moduleImporter         *command.GetCommand
+	moduleInstallDir       string
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -45,6 +48,9 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
+	p.moduleImporter = &command.GetCommand{}
+	pwd, _ := os.Getwd()
+	p.moduleInstallDir = path.Join(pwd, ".terraform", "modules")
 }
 
 func (p *TerrraformParser) GetSkippedDirs() []string {
@@ -382,6 +388,28 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	}
 
 	return &terraformBlock, nil
+}
+
+func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
+	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
+	absRootPath, _ := filepath.Abs(p.rootDir)
+	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
+	logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
+	exitCode := p.moduleImporter.Run([]string{})
+	if exitCode != 0 {
+		// Failed to get modules for this repo
+		return false
+	}
+	expectedVarFile := filepath.Join(p.moduleInstallDir, moduleName, "variables.tf")
+	if _, err := os.Stat(expectedVarFile); err == nil {
+		blocks, _ := p.ParseFile(expectedVarFile)
+		for _, b := range blocks {
+			if b.GetResourceID() == "tags" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttributeName string, resourceScheme *tfschema.Block) bool {

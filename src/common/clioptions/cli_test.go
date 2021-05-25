@@ -1,4 +1,4 @@
-package cli
+package clioptions
 
 import (
 	"os"
@@ -16,7 +16,7 @@ func TestCliArgParsing(t *testing.T) {
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "cli",
+			Output:         "clioptions",
 			OutputJSONFile: "",
 		}
 		// Expect the validation to pass without throwing errors
@@ -40,7 +40,7 @@ func TestCliArgParsing(t *testing.T) {
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "cli",
+			Output:         "clioptions",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "code2cloud"},
 		}
@@ -101,7 +101,7 @@ func TestTagGroupCrasher(t *testing.T) {
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
-			Output:         "cli",
+			Output:         "clioptions",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
 		}

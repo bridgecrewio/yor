@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/clioptions"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/reports"
 	"github.com/bridgecrewio/yor/src/common/runner"
@@ -60,7 +60,7 @@ func TestMultipleCommits(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		// run yor on resource 1
 		yorRunner := runner.Runner{}
-		err = yorRunner.Init(&cli.TagOptions{
+		err = yorRunner.Init(&clioptions.TagOptions{
 			Directory: dir,
 			TagGroups: getTagGroups(),
 		})
@@ -111,7 +111,7 @@ func TestMultipleCommits(t *testing.T) {
 
 		// run yor on both resources
 		yorRunner2 := runner.Runner{}
-		err = yorRunner2.Init(&cli.TagOptions{
+		err = yorRunner2.Init(&clioptions.TagOptions{
 			Directory: dir,
 			TagGroups: getTagGroups(),
 		})
@@ -313,7 +313,7 @@ func failIfErr(t *testing.T, err error) {
 
 func tagDirectory(t *testing.T, path string) {
 	yorRunner := runner.Runner{}
-	err := yorRunner.Init(&cli.TagOptions{
+	err := yorRunner.Init(&clioptions.TagOptions{
 		Directory: path,
 		TagGroups: getTagGroups(),
 	})
