@@ -6,7 +6,7 @@ nav_order: 3
 ---
 # Applying Tags
 
-The following commands are used to apply tags.
+The following commands are used to apply tags. In order to integrate Yor into GitHub Actions which provides a simple, automatic way of applying tags to your IaC both during pull request review and as part of any build process - check implementation [here](/docs/docs/2.Using Yor/installation.md#integrate-yor-with-github-actions)
 
 ## Apply Built-in Tags
 To apply all configured tags run the following commands:
