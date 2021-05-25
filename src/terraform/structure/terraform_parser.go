@@ -16,7 +16,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -48,9 +47,9 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
-	p.moduleImporter = &command.GetCommand{}
+	p.moduleImporter = &command.GetCommand{Meta: command.Meta{Color: false, Ui: customTfLogger{}}}
 	pwd, _ := os.Getwd()
-	p.moduleInstallDir = path.Join(pwd, ".terraform", "modules")
+	p.moduleInstallDir = filepath.Join(pwd, ".terraform", "modules")
 }
 
 func (p *TerrraformParser) GetSkippedDirs() []string {
@@ -123,7 +122,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 			continue
 		}
 		blockID := strings.Join(block.Labels(), ".")
-		terraformBlock, err := p.parseBlock(block)
+		terraformBlock, err := p.parseBlock(block, filePath)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "resource belongs to skipped provider") {
 				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockID, strings.Split(blockID, "_")[0]))
@@ -312,7 +311,7 @@ func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
 	return nil
 }
 
-// Insert inserts a value at a specific index in a slice
+// InsertToken Insert inserts a value at a specific index in a slice
 func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwrite.Tokens {
 	if len(tokens) == index {
 		return append(tokens, value)
@@ -322,7 +321,7 @@ func InsertToken(tokens hclwrite.Tokens, index int, value *hclwrite.Token) hclwr
 	return tokens
 }
 
-// Inserts a list of tags at end of list
+// InsertTokens Inserts a list of tags at end of list
 func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tokens {
 	suffixLength := 1 // Only the closing parenthesis
 	if tokens[len(tokens)-2].Type == hclsyntax.TokenNewline {
@@ -338,7 +337,7 @@ func InsertTokens(tokens hclwrite.Tokens, values []*hclwrite.Token) hclwrite.Tok
 	return append(result, tokens[len(tokens)-suffixLength:]...)
 }
 
-func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock, error) {
+func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string) (*TerraformBlock, error) {
 	var existingTags []tags.ITag
 	isTaggable := false
 	var tagsAttributeName string
@@ -377,6 +376,10 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block) (*TerraformBlock
 	case ModuleBlockType:
 		tagsAttributeName = "tags"
 		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
+
+		if !isTaggable {
+			isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
+		}
 	}
 
 	terraformBlock := TerraformBlock{
@@ -395,20 +398,27 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 	absRootPath, _ := filepath.Abs(p.rootDir)
 	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
 	logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
-	exitCode := p.moduleImporter.Run([]string{})
+	logger.MuteLogging()
+	exitCode := p.moduleImporter.Run([]string{actualPath})
+	logger.UnmuteLogging()
 	if exitCode != 0 {
 		// Failed to get modules for this repo
 		return false
 	}
-	expectedVarFile := filepath.Join(p.moduleInstallDir, moduleName, "variables.tf")
-	if _, err := os.Stat(expectedVarFile); err == nil {
-		blocks, _ := p.ParseFile(expectedVarFile)
-		for _, b := range blocks {
-			if b.GetResourceID() == "tags" {
-				return true
+	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
+
+	files, _ := ioutil.ReadDir(expectedModuleDir)
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), ".tf") {
+			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
+			for _, b := range blocks {
+				if b.(*TerraformBlock).HclSyntaxBlock.Type == VarBlockType && b.GetResourceID() == "tags" {
+					return true
+				}
 			}
 		}
 	}
+
 	return false
 }
 
