@@ -1,4 +1,4 @@
-package cli
+package clioptions
 
 import (
 	"os"
@@ -12,7 +12,7 @@ func TestCliArgParsing(t *testing.T) {
 	t.Run("Test tag argument parsing - valid output", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
@@ -36,7 +36,7 @@ func TestCliArgParsing(t *testing.T) {
 	t.Run("Test tag argument parsing - valid tag groups", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
@@ -81,7 +81,7 @@ func TestOutputCrasher(t *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,
@@ -97,7 +97,7 @@ func TestTagGroupCrasher(t *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
-			Tag:            "",
+			Tag:            nil,
 			SkipTags:       nil,
 			CustomTagging:  nil,
 			SkipDirs:       nil,

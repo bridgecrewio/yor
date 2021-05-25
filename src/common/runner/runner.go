@@ -10,7 +10,7 @@ import (
 
 	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common"
-	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/clioptions"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/reports"
 	"github.com/bridgecrewio/yor/src/common/tagging"
@@ -32,7 +32,7 @@ type Runner struct {
 	skippedTags       []string
 }
 
-func (r *Runner) Init(commands *cli.TagOptions) error {
+func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	dir := commands.Directory
 	extraTags, extraTagGroups, err := loadExternalResources(commands.CustomTagging)
 	if err != nil {
