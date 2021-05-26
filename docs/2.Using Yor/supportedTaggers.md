@@ -18,6 +18,9 @@ The following commands are used to see the list of Yor supported taggers, both [
     # List all the tags built into yor
    ```
 ![Environment variables after tagging](../yor_list_tags_after_env_var.png)
+   
+   
+   
    ```sh
    ./yor list-tags --tag-groups git
     # List all the tags built into yor under the tag group git
