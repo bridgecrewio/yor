@@ -45,7 +45,7 @@ The following tags are supported in Yor:
 
 ```yor_trace``` which is a unique ID provided when a resource is tagged.
 
-For examples see [Use Cases](/docs/4.Use Cases/useCases.html).
+For examples see [Use Cases](/4.Use Cases/useCases.md).
 
 ## Git-based Tagger
 Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) logs to create tags which enable the mapping of individual 
@@ -70,10 +70,10 @@ for the git_last_modified_by tag.
 # Custom Taggers
 
 Yor supports Custom taggers to enable you to enhance your resource traceability. Yor supports custom taggers using:
-* [Environment variable settings](/docs/3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables) 
-* [Golang settings](/docs/3.Custom Taggers/customTagExamples.md#adding-custom-tags-using-golang)
-* [YAML configuration files](./3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)  
-* [CLI commands](/docs/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagging-using-cli)
+* [Environment variable settings](/3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables) 
+* [Golang settings](/3.Custom Taggers/customTagExamples.md#adding-custom-tags-using-golang)
+* [YAML configuration files](/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)  
+* [CLI commands](/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagging-using-cli)
 
 Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's 
 structure.
