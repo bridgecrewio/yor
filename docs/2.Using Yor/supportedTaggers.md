@@ -4,7 +4,7 @@ published: true
 title: Supported Taggers
 nav_order: 2
 ---
-# Viewing Supported Taggers in your Enviornment
+# Viewing Supported Taggers in Your Environment
 
 The following commands are used to see the list of Yor supported taggers, both [built-in](/1.Welcome/welcome.html#custom-taggers) and [custom tags](/3.Custom%20Taggers/customTagExamples.html). 
 
