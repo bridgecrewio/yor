@@ -70,7 +70,7 @@ for the git_last_modified_by tag.
 # Custom Taggers
 
 Yor supports Custom taggers to enable you to enhance your resource traceability. Yor supports custom taggers using:
-* [Environment variable settings](/3.Custom Taggers/customTagExamples.html#adding-simple-tags-using-environment-variables) 
+* [Environment variable settings](../3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables) 
 * [Golang settings](/3.Custom Taggers/customTagExamples.html#adding-custom-tags-using-golang)
 * [YAML configuration files](/3.Custom Taggers/Custom_tagger_YAML.html#custom-tagger-using-yaml--configuration-files)  
 * [CLI commands](/3.Custom Taggers/Custom_tagger_YAML.html#custom-tagging-using-cli)
