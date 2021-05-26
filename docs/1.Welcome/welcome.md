@@ -76,6 +76,6 @@ Yor supports Custom taggers to enable you to enhance your resource traceability.
 * [CLI commands](/3.Custom Taggers/Custom_tagger_YAML.html#custom-tagging-using-cli)
 
 Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's 
-structure.
+structure.!
 
 
