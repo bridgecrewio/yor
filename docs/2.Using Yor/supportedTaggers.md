@@ -6,7 +6,7 @@ nav_order: 2
 ---
 # Viewing Supported Taggers in Your Environment
 
-The following commands are used to see the list of Yor supported taggers, both [built-in](../1.Welcome/welcome.md#built-in-taggers) and [custom tags](../3.Custom%20Taggers/customTagExamples.md). 
+The following commands are used to see the list of Yor supported taggers, both [built-in](../1.Welcome/welcome.md#built-in-taggers) and [custom](../3.Custom%20Taggers/customTagExamples.md) tags. 
 
 `list-tag-groups` - list the groups of tags that are built into yor
    ```sh
