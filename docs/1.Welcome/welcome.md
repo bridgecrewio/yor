@@ -27,7 +27,6 @@ Yor can tag the following IaC file types:
   * Terraform (for AWS, GCP and Azure)
   * CloudFormation (YAML, JSON)
   * Serverless
-  * K8S (YAML, JSON)
 
 # Built-in Taggers
 
