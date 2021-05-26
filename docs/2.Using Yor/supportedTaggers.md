@@ -4,9 +4,9 @@ published: true
 title: Supported Taggers
 nav_order: 2
 ---
-# Supported Taggers
+# Viewing Supported Taggers in your Enviornment
 
-The following commands are used to see the list of Yor supported taggers. 
+The following commands are used to see the list of Yor supported taggers, both [built-in](/1.Welcome/welcome.md#custom-taggers) and [custom tags](/3.Custom%20Taggers/customTagExamples.md). 
 
 `list-tag-groups` - list the groups of tags that are built into yor
    ```sh
