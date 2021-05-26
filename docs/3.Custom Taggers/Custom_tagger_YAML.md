@@ -8,7 +8,7 @@ nav_order: 2
 
 The Yor framework uses YAML configuration files to support advanced rules when applying custom tags.
 Users can define tagging enforcement rules that are specific to their organization’s needs. 
-YAML-based custom tagging enables you to have different tags for different resource types and existing resource tags.
+YAML based custom tagging enables you to have different tags for different resource types and existing resource tags.
 
 ## Running YAML based
 In the CLI, define the path of the YAML configuration file that you want to apply. For example:
@@ -79,19 +79,21 @@ value:
    directory: /path/to/some/dir
 ```
 ## Custom tagging using CLI
+
 You can use some YAML configuration capabilities in a CLI command. 
 1. `--tag-name`: define tag name
 2. `--tag-value`: define tag value
 3. `--resource-types`: define which resource types to tag (Terraform format)
-4. `-filter-tags`: tag resources that have tags as defined. In order to support one of several values - use array [], in order to support AND logic between tags use ;
+4. `-filter-tags`: tag resources that have tags as defined. Use an array [] to support multiple values and to support `AND` logic between tags
 
-In the example below, EC2 instances and Security Groups will be tagged with env:prod tag in case of a resource have that tronxd or amy are one of the `git_modifiers` and it is located in `checkov` or `terragoat git_repo`.
+In the example below, EC2 instances and Security Groups will be tagged with the `env:prod` tag. Use this in cases where a resource that has `tronxd` 
+or `amy` are one of the `git_modifiers` and it is located in `checkov` or `terragoat git_repo`.
 
 **Example 3:** CLI custom tagging
 
 ```yor tag --tag-name env –tag-value prod --resource-types [aws_ec2_instance,aws_ec2_security_group] –filter-tags git_modifiers=[tronxd,amy];git_repo=[checkov,terragoat]```
 
-## Running Yor with the Custom Tags / Taggers
+## Running Yor with Custom Taggers
 Use the following example to run Yor with custom tags:
 ```sh
 ./yor tag --custom-tagging tests/yor_plugins/example

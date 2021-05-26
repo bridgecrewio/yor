@@ -6,32 +6,34 @@ nav_order: 1
 ---
 
 # Creating and Applying Custom Tags
-Using custom tags allows organizations to tag resources to match the development cycle, development flow, or the organization's structure.
+Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's
+structure.
 
-Yor supports several ways ways of adding custom tags:
+Yor supports several ways of adding custom tags:
 1. [Using Environment Variables - Simple tags with constant key-value](#adding-simple-tags-using-environment-variables)
 2. Using Go built-in classes -
 	1. [Simple code-based tags](#adding-simple-code-based-tags)
 	2. [Complex tags that rely on different inputs](#adding-complex-tags)
-3. [Using YAML configuration files](./3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
-4. [Using CLI commands](./3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
+3. [Using YAML configuration files](/docs/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
+4. [Using CLI commands](/docs/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
        
-Examples can be found in `tests/yor_plugins`
+Examples can be found in [`tests/yor_plugins`](../../tests/yor_plugins)
 
 ## Adding Simple Tags Using Environment Variables
 To add tags with constant key-value pairs, set the environment variable `YOR_SIMPLE_TAGS`
 with a JSON object detailing all key value pairs. For example:
 ```sh
 export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
-# When yor is run, all resources will be tagged by these two tags as well
+# When yor is run, all resources will be tagged with these two tags as well.
 ```
 
-For instance, running -
+For example:
 ```sh
 export YOR_SIMPLE_TAGS='{"team": "devops", "env": "prod"}'
 ```
-will add these tags as part of yor run, as shown once running `./yor --list-tags` command:
-<Yor_list_tags_after_env_var.png>
+You can see the added tags using the `./yor --list-tags` command.
+
+![Environment variables after tagging](/docs/yor_list_tags_after_env_var.png)
 
 ## Adding Custom Tags Using Golang
 Use the following code samples to add tags using Go. 
@@ -85,7 +87,7 @@ For examples see the [example](../../tests/yor_plugins/example) file.
 
 For examples see the [example](../../tests/yor_plugins/example) file.
 
-## Running Yor with the Custom Tags / Taggers
+## Running Yor with Custom Taggers
 Use the following example to run Yor with custom tags:
 ```sh
 ./yor tag --custom-tagging tests/yor_plugins/example
