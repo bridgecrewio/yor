@@ -45,7 +45,7 @@ The following tags are supported in Yor:
 
 ```yor_trace``` which is a unique ID provided when a resource is tagged.
 
-For examples see [Use Cases](/docs/4.Use Cases/useCases.md).
+For examples see [Use Cases](/docs/4.Use Cases/useCases.html).
 
 ## Git-based Tagger
 Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) logs to create tags which enable the mapping of individual 
