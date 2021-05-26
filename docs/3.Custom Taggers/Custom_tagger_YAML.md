@@ -91,7 +91,9 @@ or `amy` are one of the `git_modifiers` and it is located in `checkov` or `terra
 
 **Example 3:** CLI custom tagging
 
-```yor tag --tag-name env –tag-value prod --resource-types [aws_ec2_instance,aws_ec2_security_group] –filter-tags git_modifiers=[tronxd,amy];git_repo=[checkov,terragoat]```
+```sh
+yor tag --tag-name env –tag-value prod --resource-types [aws_ec2_instance,aws_ec2_security_group] –filter-tags git_modifiers=[tronxd,amy];git_repo=[checkov,terragoat]
+```
 
 ## Running Yor with Custom Taggers
 Use the following example to run Yor with custom tags:
