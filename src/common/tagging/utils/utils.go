@@ -23,7 +23,6 @@ var tagGroupsByName = map[TagGroupName]tagging.ITagGroup{
 	SimpleTagGroupName: &simple.TagGroup{},
 	GitTagGroupName:    &gittag.TagGroup{},
 	Code2Cloud:         &code2cloud.TagGroup{},
-	ExternalTagName:    &external.TagGroup{},
 }
 
 func TagGroupsByName(name TagGroupName) tagging.ITagGroup {
@@ -48,6 +47,6 @@ func GetAllTagGroupsNames() []string {
 		tagGroupNames = append(tagGroupNames, string(name))
 	}
 	sort.Strings(tagGroupNames)
-
+	tagGroupNames = append(tagGroupNames, string(ExternalTagName)) // Add the external tag name as the last tag group
 	return tagGroupNames
 }
