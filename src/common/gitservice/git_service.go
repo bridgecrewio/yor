@@ -19,7 +19,7 @@ import (
 
 type GitService struct {
 	gitRootDir       string
-	scanRootDir      string
+	scanPathFromRoot string
 	repository       *git.Repository
 	remoteURL        string
 	organization     string
@@ -31,7 +31,7 @@ type GitService struct {
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
 	var err error
-	srd := rootDir
+	scanPathFromRoot := "."
 	for {
 		repository, err = git.PlainOpen(rootDir)
 		if err == nil {
@@ -39,6 +39,8 @@ func NewGitService(rootDir string) (*GitService, error) {
 		}
 		absRoot, _ := filepath.Abs(rootDir)
 		newRootDir := filepath.Dir(absRoot)
+		relPath, _ := filepath.Rel(newRootDir, absRoot)
+		scanPathFromRoot = filepath.Join(relPath, scanPathFromRoot)
 		if rootDir == newRootDir {
 			break
 		}
@@ -49,10 +51,10 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	gitService := GitService{
-		gitRootDir:  rootDir,
-		scanRootDir: srd,
-		repository:  repository,
-		BlameByFile: make(map[string]*git.BlameResult),
+		gitRootDir:       rootDir,
+		scanPathFromRoot: scanPathFromRoot,
+		repository:       repository,
+		BlameByFile:      make(map[string]*git.BlameResult),
 	}
 
 	err = gitService.setOrgAndName()
@@ -89,8 +91,12 @@ func (g *GitService) setOrgAndName() error {
 
 	return nil
 }
-func (g *GitService) ComputeRelativeFilePath(filepath string) string {
-	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.scanRootDir), "")
+
+func (g *GitService) ComputeRelativeFilePath(fp string) string {
+	if strings.HasPrefix(fp, g.gitRootDir) {
+		return strings.ReplaceAll(fp, fmt.Sprintf("%s/", g.gitRootDir), "")
+	}
+	return filepath.Join(g.scanPathFromRoot, fp)
 }
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines) (*GitBlame, error) {
