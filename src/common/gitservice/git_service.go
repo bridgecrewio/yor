@@ -75,11 +75,11 @@ func (g *GitService) setOrgAndName() error {
 			}
 			// remove leading '/' from path and trailing '.git. suffix, then split by '/'
 			endpointPathParts := strings.Split(strings.TrimSuffix(strings.TrimLeft(endpoint.Path, "/"), ".git"), "/")
-			if len(endpointPathParts) != 2 {
+			if len(endpointPathParts) < 2 {
 				return fmt.Errorf("invalid format of endpoint path: %s", endpoint.Path)
 			}
 			g.organization = endpointPathParts[0]
-			g.repoName = endpointPathParts[1]
+			g.repoName = strings.Join(endpointPathParts[1:], "/")
 			break
 		}
 	}
