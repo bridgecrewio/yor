@@ -18,7 +18,8 @@ import (
 )
 
 type GitService struct {
-	rootDir          string
+	gitRootDir       string
+	scanRootDir      string
 	repository       *git.Repository
 	remoteURL        string
 	organization     string
@@ -30,13 +31,14 @@ type GitService struct {
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
 	var err error
+	srd := rootDir
 	for {
 		repository, err = git.PlainOpen(rootDir)
 		if err == nil {
 			break
 		}
-
-		newRootDir := filepath.Dir(rootDir)
+		absRoot, _ := filepath.Abs(rootDir)
+		newRootDir := filepath.Dir(absRoot)
 		if rootDir == newRootDir {
 			break
 		}
@@ -47,7 +49,8 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	gitService := GitService{
-		rootDir:     rootDir,
+		gitRootDir:  rootDir,
+		scanRootDir: srd,
 		repository:  repository,
 		BlameByFile: make(map[string]*git.BlameResult),
 	}
@@ -87,7 +90,7 @@ func (g *GitService) setOrgAndName() error {
 	return nil
 }
 func (g *GitService) ComputeRelativeFilePath(filepath string) string {
-	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.rootDir), "")
+	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.scanRootDir), "")
 }
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines) (*GitBlame, error) {

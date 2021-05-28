@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/awslabs/goformation/v4/cloudformation/s3"
+	s3tags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
@@ -77,6 +79,61 @@ func TestServerlessWriting(t *testing.T) {
 				t.Fail()
 			}
 		}(f.Name())
+
+	})
+}
+
+func TestCFNWriting(t *testing.T) {
+	t.Run("test CFN writing", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/no_tags"
+		readFilePath := directory + "/base.template"
+		extraTags := []tags.ITag{
+			&tags.Tag{
+				Key:   "new_tag",
+				Value: "new_value",
+			},
+			&tags.Tag{
+				Key:   "another_tag",
+				Value: "another_val",
+			},
+		}
+		blocks := []structure.IBlock{
+			&structure.Block{
+				FilePath:    readFilePath,
+				ExitingTags: []tags.ITag{},
+				NewTags:     extraTags,
+				RawBlock: &s3.Bucket{
+					AccessControl:                   "PublicRead",
+					AWSCloudFormationDeletionPolicy: "Retain",
+					WebsiteConfiguration: &s3.Bucket_WebsiteConfiguration{
+						ErrorDocument: "error.html",
+						IndexDocument: "index.html",
+					},
+					Tags: []s3tags.Tag{
+						{Key: "new_tag", Value: "new_val"},
+						{Key: "another_tag", Value: "another_val"},
+					},
+				},
+				IsTaggable:        true,
+				TagsAttributeName: "Tags",
+				Lines:             structure.Lines{Start: 2, End: 9},
+				TagLines:          structure.Lines{Start: -1, End: -1},
+				Name:              "S3Bucket",
+			},
+		}
+		f, _ := ioutil.TempFile(directory, "base.*.template")
+		err := WriteYAMLFile(readFilePath, blocks, f.Name(), structure.Lines{Start: 2, End: 8}, "Tags", "Resources")
+		if err != nil {
+			assert.Fail(t, err.Error())
+		}
+		expectedFilePath := filepath.Join(directory, "expected.txt")
+		actualFilePath, _ := filepath.Abs(f.Name())
+		expected, _ := ioutil.ReadFile(expectedFilePath)
+		actualOutput, _ := ioutil.ReadFile(actualFilePath)
+		assert.Equal(t, string(expected), string(actualOutput))
+		defer func() {
+			_ = os.Remove(f.Name())
+		}()
 
 	})
 }
