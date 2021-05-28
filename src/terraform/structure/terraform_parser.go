@@ -124,8 +124,9 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 		blockID := strings.Join(block.Labels(), ".")
 		terraformBlock, err := p.parseBlock(block, filePath)
 		if err != nil {
-			if strings.HasPrefix(err.Error(), "resource belongs to skipped provider") {
-				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not support tags", blockID, strings.Split(blockID, "_")[0]))
+			if strings.HasPrefix(err.Error(), "resource belongs to skipped") || strings.HasPrefix(err.Error(), "could not find client") {
+				logger.Info(fmt.Sprintf("skipping block %s because the provider %s does not exist locally or does not support tags",
+					blockID, strings.Split(blockID, "_")[0]))
 			} else {
 				logger.Warning(fmt.Sprintf("failed to parse terraform block because %s", err.Error()))
 			}
