@@ -121,3 +121,10 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 
 	return true, field
 }
+
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

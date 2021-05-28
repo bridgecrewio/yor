@@ -3,6 +3,8 @@ package utils
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var currentDir, _ = os.Getwd()
@@ -124,4 +126,11 @@ func TestInSlice(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMinInt(t *testing.T) {
+	t.Run("Test MinInt", func(t *testing.T) {
+		ans := MinInt(3, 4)
+		assert.Equal(t, 3, ans)
+	})
 }
