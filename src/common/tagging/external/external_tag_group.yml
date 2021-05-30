@@ -14,7 +14,7 @@ tag_group:
         directory: /path/to/some/dir
     - name: team
       value:
-        default: interfaces
+        default: platform
         matches:
           - seceng:
               tags:

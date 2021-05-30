@@ -13,12 +13,14 @@ import (
 
 type TagGroup struct {
 	tagging.TagGroup
-	configFilePath string
-	config         map[interface{}]interface{}
+	configFilePath  string
+	config          map[interface{}]interface{}
+	tagGroupsByName map[string]interface{}
 }
 
 func (t *TagGroup) InitConfigFile(configFilePath string) {
 	t.configFilePath = configFilePath
+	t.tagGroupsByName = make(map[string]interface{})
 }
 
 func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
@@ -61,7 +63,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	return t.UpdateBlockTags(block, struct{}{})
 }
 
-func (t *TagGroup) ExtractExternalGroupTags([]interface{}) []tags.ITag {
+func (t *TagGroup) ExtractExternalGroupTags(tags []interface{}) []tags.ITag {
 	return nil
 	//TODO
 }
