@@ -15,12 +15,14 @@ type TagGroup struct {
 	tagging.TagGroup
 	configFilePath  string
 	config          map[interface{}]interface{}
-	tagGroupsByName map[string]interface{}
+	tagGroupsByName map[string][]tags.ITag
 }
 
-func (t *TagGroup) InitConfigFile(configFilePath string) {
+func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
 	t.configFilePath = configFilePath
-	t.tagGroupsByName = make(map[string]interface{})
+	t.tagGroupsByName = make(map[string][]tags.ITag)
+	t.InitExternalTagGroup()
+
 }
 
 func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
@@ -42,13 +44,12 @@ func (t *TagGroup) InitExternalTagGroup() {
 func (t *TagGroup) extractExternalTags() []tags.ITag {
 	externalGroupTags := make([]tags.ITag, 0)
 	tagGroups := t.config["tag_group"]
-	fmt.Println(tagGroups)
-	switch tm := tagGroups.(type) {
+	switch tgs := tagGroups.(type) {
 	case map[interface{}]interface{}:
-		externalGroupTags = t.ExtractExternalGroupTags(tm["tags"].([]interface{}))
+		externalGroupTags = t.ExtractExternalGroupTags(tgs["tags"].([]interface{}))
 	case []interface{}:
-		for _, tg := range tm {
-			fmt.Println(tg)
+		for _, tagGroup := range tgs {
+			fmt.Println(tagGroup)
 			//externalGroupTags = append(externalGroupTags, t.extractExternalTags(tg.([]interface{}))...)
 		}
 	}
@@ -63,7 +64,9 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	return t.UpdateBlockTags(block, struct{}{})
 }
 
-func (t *TagGroup) ExtractExternalGroupTags(tags []interface{}) []tags.ITag {
+func (t *TagGroup) ExtractExternalGroupTags(rawTags []interface{}) []tags.ITag {
+	var tagGroups tags.ITag
+	fmt.Println(tagGroups)
 	return nil
 	//TODO
 }

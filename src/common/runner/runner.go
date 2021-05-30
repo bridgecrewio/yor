@@ -50,8 +50,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
 			simpleTagGroup.SetTags(extraTags)
 		} else if externalTagGroup, ok := tagGroup.(*external.TagGroup); ok && commands.ConfigFile != "" {
-			externalTagGroup.InitConfigFile(commands.ConfigFile)
-			externalTagGroup.InitExternalTagGroup()
+			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
 		}
 	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{}, &slsStructure.ServerlessParser{})
