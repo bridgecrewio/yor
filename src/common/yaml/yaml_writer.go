@@ -52,10 +52,28 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		if oldResourceTagLines.Start == -1 || oldResourceTagLines.End == -1 {
 			// get the indentation of the property under the resource name
 			tagAttributeIndent := ExtractIndentationOfLine(oldResourceLines[1])
-			resourcesLines = append(resourcesLines, oldResourceLines...)                      // add all the existing resource data first
-			resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
-			// add the tags with extra indentation below the 'Tags:' line
-			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
+			if isCfn {
+				tagAttributeIndent += "  "
+			}
+			foundPlace := false
+			written := false
+			for _, line := range oldResourceLines {
+				if len(ExtractIndentationOfLine(line)) < len(tagAttributeIndent) {
+					if foundPlace {
+						resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
+						resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
+						written = true
+					}
+					resourcesLines = append(resourcesLines, line)
+					continue
+				}
+				foundPlace = true
+				resourcesLines = append(resourcesLines, line)
+			}
+			if !written {
+				resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
+				resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
+			}
 			continue
 		}
 
@@ -144,7 +162,7 @@ func removeLineByAttribute(textLines []string, attribute string) []string {
 }
 
 func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.Lines, bool) {
-	tagsLines := structure.Lines{Start: -1, End: len(textLines) - 1}
+	tagsLines := structure.Lines{Start: -1, End: -1}
 	var lineIndent string
 	var tagsExist bool
 	var tagsIndent = ""
@@ -156,11 +174,9 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 			tagsIndent = lineIndent
 			tagsExist = true
 		case lineIndent <= tagsIndent && (tagsLines.Start >= 0 || i == len(textLines)-1):
-			tagsLines.End = findLastNonEmptyLine(textLines, i)
+			tagsLines.End = findLastNonEmptyLine(textLines, i-1)
 			return tagsLines, tagsExist
 		case i == len(textLines)-1 && !tagsExist:
-			tagsLines.End = i
-			tagsLines.Start = tagsLines.End
 			return tagsLines, tagsExist
 		}
 	}
@@ -199,7 +215,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 				if strings.Contains(line, " "+resName+":") {
 					if latestResourceName != "" {
 						// Complete previous function block
-						resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
+						resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i-1)
 					}
 					latestResourceName = resName
 					resourceToLines[latestResourceName].Start = i
@@ -207,7 +223,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 			}
 			if !strings.HasPrefix(line, " ") && line != "" && readResources && latestResourceName != "" {
 				// This is no longer in the functions block, complete last function block
-				resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i)
+				resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i-1)
 				break
 			}
 		}
@@ -220,7 +236,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 }
 
 func findLastNonEmptyLine(fileLines []string, maxIndex int) int {
-	for i := maxIndex - 1; i >= 0; i-- {
+	for i := utils.MinInt(maxIndex, len(fileLines)-1); i >= 0; i-- {
 		if strings.TrimSpace(fileLines[i]) != "" {
 			return i
 		}

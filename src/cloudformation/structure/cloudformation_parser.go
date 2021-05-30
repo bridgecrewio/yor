@@ -167,8 +167,11 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 		defer func() {
 			_ = file.Close()
 		}()
-		linesInResource, _ := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
-		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
+		linesInResource, tagsExist := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
+		if tagsExist {
+			return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
+		}
+		return structure.Lines{Start: -1, End: -1}
 	case common.JSONFileType.FileFormat:
 		// #nosec G304
 		file, err := ioutil.ReadFile(filePath)

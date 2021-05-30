@@ -34,7 +34,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	if path != "" {
 		gitService, err := gitservice.NewGitService(path)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Failed to initialize git service for path %s. Please ensure the provided root directory is initialized via the git init command.", path), "SILENT")
+			logger.Error(fmt.Sprintf("Failed to initialize git service for path \"%s\". Please ensure the provided root directory is initialized via the git init command: %q", path, err), "SILENT")
 		}
 		t.GitService = gitService
 	} else {

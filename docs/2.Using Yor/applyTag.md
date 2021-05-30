@@ -6,12 +6,14 @@ nav_order: 3
 ---
 # Applying Tags
 
-The following commands are used to apply tags.
+The following commands are used to apply tags. GitHub Actions provides a simple, automatic way of applying tags to your IaC 
+both during pull request review and as part of any build process. In order to integrate Yor into follow the installation 
+[here](../2.Using Yor/installation.md#integrate-yor-with-github-actions)
 
 ## Apply Built-in Tags
 To apply all configured tags run the following commands:
 
-`./yor tag` - apply the built-in tags and any [custom](/docs/3.Custom Taggers/customTagExamples.md) tags on a directory
+`./yor tag` - apply the built-in tags and any [custom](../3.Custom Taggers/customTagExamples.md) tags on a directory
    ```sh
     ./yor tag --directory terraform/
     # Apply all the tags in yor on the directory tree terraform/

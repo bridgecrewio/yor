@@ -63,11 +63,12 @@ func (t *TerraformModule) InitProvider() {
 		logger.MuteLogging()
 		_, diagnostics, err := providerInstaller.Get(pty, constraints.Versions)
 		logger.UnmuteLogging()
-		if diagnostics != nil && diagnostics.HasErrors() {
-			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", t.rootDir, diagnostics.Err()))
-		}
-		if err != nil {
-			logger.Error(fmt.Sprintf("failed to install provider for directory %s because of errors %s", t.rootDir, err))
+		if (diagnostics != nil && diagnostics.HasErrors()) || err != nil {
+			errMsg := diagnostics.Err()
+			if errMsg == nil {
+				errMsg = err
+			}
+			logger.Warning(fmt.Sprintf("failed to install provider \"%v\" for directory %s because of errors %s", provider, t.rootDir, errMsg))
 		}
 	}
 }

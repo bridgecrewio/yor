@@ -242,6 +242,34 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		assert.Equal(t, string(resultStr), string(expectedStr))
 	})
 
+	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/module/module", nil)
+		sourceFilePath := "../../../tests/terraform/module/module/main.tf"
+		expectedFileName := "../../../tests/terraform/module/module/expected.txt"
+		blocks, err := p.ParseFile(sourceFilePath)
+		if err != nil {
+			t.Fail()
+		}
+		assert.Equal(t, 1, len(blocks))
+		mb := blocks[0]
+		assert.Equal(t, "complete_sg", mb.GetResourceID())
+		assert.Equal(t, "tags", mb.(*TerraformBlock).TagsAttributeName)
+		mb.AddNewTags([]tags.ITag{
+			&tags.Tag{Key: tags.YorTraceTagKey, Value: "some-uuid"},
+			&tags.Tag{Key: "mock_tag", Value: "mock_value"},
+		})
+
+		resultFileName := "result.txt"
+		defer func() {
+			_ = os.Remove(resultFileName)
+		}()
+		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
+		resultStr, _ := ioutil.ReadFile(resultFileName)
+		expectedStr, _ := ioutil.ReadFile(expectedFileName)
+		assert.Equal(t, string(resultStr), string(expectedStr))
+	})
+
 	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/resources/attributescenarios", nil)
@@ -249,12 +277,14 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		resultFilePath := "../../../tests/terraform/resources/attributescenarios/main_result.tf"
 		expectedFilePath := "../../../tests/terraform/resources/attributescenarios/expected.txt"
 		blocks, _ := p.ParseFile(filePath)
-		assert.Equal(t, 6, len(blocks))
+		assert.Equal(t, 8, len(blocks))
 		for _, block := range blocks {
-			block.AddNewTags([]tags.ITag{
-				&tags.Tag{Key: "git_repo", Value: "yor"},
-				&tags.Tag{Key: "git_org", Value: "bridgecrewio"},
-			})
+			if block.IsBlockTaggable() {
+				block.AddNewTags([]tags.ITag{
+					&tags.Tag{Key: "git_repo", Value: "yor"},
+					&tags.Tag{Key: "git_org", Value: "bridgecrewio"},
+				})
+			}
 		}
 
 		_ = p.WriteFile(filePath, blocks, resultFilePath)

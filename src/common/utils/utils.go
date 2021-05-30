@@ -123,6 +123,13 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 	return true, field
 }
 
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func IsCharWhitespace(c byte) bool {
 	newStr := strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {

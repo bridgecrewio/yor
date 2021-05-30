@@ -10,7 +10,7 @@ import (
 	"time"
 
 	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
-	"github.com/bridgecrewio/yor/src/common/cli"
+	"github.com/bridgecrewio/yor/src/common/clioptions"
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
@@ -90,7 +90,7 @@ func Test_loadExternalTags(t *testing.T) {
 
 func Test_TagCFNDir(t *testing.T) {
 	t.Run("tag cloudformation yaml with tags", func(t *testing.T) {
-		options := cli.TagOptions{
+		options := clioptions.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
 		}
@@ -139,7 +139,7 @@ func Test_TagCFNDir(t *testing.T) {
 	t.Run("Filter tag groups", func(t *testing.T) {
 		runner := Runner{}
 		allTagGroups := taggingUtils.GetAllTagGroupsNames()
-		_ = runner.Init(&cli.TagOptions{
+		_ = runner.Init(&clioptions.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
 			TagGroups: allTagGroups[:len(allTagGroups)-1],
 		})
@@ -154,7 +154,7 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
-		_ = runner.Init(&cli.TagOptions{
+		_ = runner.Init(&clioptions.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
@@ -189,7 +189,7 @@ func TestRunnerInternals(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
 		output := testingUtils.CaptureOutput(func() {
-			_ = runner.Init(&cli.TagOptions{
+			_ = runner.Init(&clioptions.TagOptions{
 				Directory: rootDir,
 				SkipDirs: []string{
 					"../../../tests/terraform/mixed",

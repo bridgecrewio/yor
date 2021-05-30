@@ -58,4 +58,5 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           ./yor tag -d terragoat -o json --output-json-file result.json
-          go test ./tests/integration/...
+      - name: Run integration tests
+        run: go test ./tests/integration/...

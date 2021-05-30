@@ -61,6 +61,16 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		assert.Equal(t, 15, tagLines.End)
 	})
 
+	t.Run("parse_simple_template", func(t *testing.T) {
+		directory, _ := filepath.Abs("../../../tests/cloudformation/resources/no_tags")
+		cfnParser := CloudformationParser{}
+		cfnParser.Init(directory, nil)
+		sourceFile := directory + "/base.template"
+		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
+		assert.Equal(t, 1, len(cfnBlocks))
+		assert.Equal(t, 2, cfnParser.FileToResourcesLines[sourceFile].Start)
+		assert.Equal(t, 9, cfnParser.FileToResourcesLines[sourceFile].End)
+	})
 }
 
 func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {

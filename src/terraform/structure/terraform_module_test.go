@@ -1,8 +1,11 @@
 package structure
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/bridgecrewio/yor/tests/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,5 +36,15 @@ func TestTerrraformModule(t *testing.T) {
 	t.Run("Test TF Registry Module logic", func(t *testing.T) {
 		isRegistry := isTerraformRegistryModule("terraform-aws-modules/security-group/aws")
 		assert.True(t, isRegistry)
+	})
+
+	t.Run("Handle unsupported providers gracefully", func(t *testing.T) {
+		currentDir, _ := os.Getwd()
+		providersDir, _ := filepath.Abs(currentDir + "../../../../tests/terraform/providers")
+		output := utils.CaptureOutput(func() {
+			_ = NewTerraformModule(providersDir)
+		})
+
+		assert.Equal(t, "", output)
 	})
 }
