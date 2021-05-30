@@ -9,6 +9,29 @@ type Lines struct {
 	End   int
 }
 
+type TagDiff struct {
+	Added   []tags.ITag
+	Updated []*tags.TagDiff
+}
+
+type IBlock interface {
+	Init(filePath string, rawBlock interface{})
+	GetFilePath() string
+	GetLines(...bool) Lines
+	GetExistingTags() []tags.ITag
+	GetNewTags() []tags.ITag
+	GetRawBlock() interface{}
+	GetTraceID() string
+	AddNewTags(newTags []tags.ITag)
+	MergeTags() []tags.ITag
+	CalculateTagsDiff() *TagDiff
+	IsBlockTaggable() bool
+	GetResourceID() string
+	GetTagsLines() Lines
+	GetSeparator() string
+	GetTagsAttributeName() string
+}
+
 type Block struct {
 	FilePath          string
 	ExitingTags       []tags.ITag
@@ -40,28 +63,6 @@ func (b *Block) GetTagsLines() Lines {
 
 func (b *Block) GetSeparator() string {
 	panic("implement me")
-}
-
-type TagDiff struct {
-	Added   []tags.ITag
-	Updated []*tags.TagDiff
-}
-
-type IBlock interface {
-	Init(filePath string, rawBlock interface{})
-	GetFilePath() string
-	GetLines(...bool) Lines
-	GetExistingTags() []tags.ITag
-	GetNewTags() []tags.ITag
-	GetRawBlock() interface{}
-	GetTraceID() string
-	AddNewTags(newTags []tags.ITag)
-	MergeTags() []tags.ITag
-	CalculateTagsDiff() *TagDiff
-	IsBlockTaggable() bool
-	GetResourceID() string
-	GetTagsLines() Lines
-	GetSeparator() string
 }
 
 func (b *Block) AddNewTags(newTags []tags.ITag) {
@@ -181,4 +182,8 @@ func (b *Block) GetTraceID() string {
 		}
 	}
 	return ""
+}
+
+func (b *Block) GetTagsAttributeName() string {
+	return b.TagsAttributeName
 }

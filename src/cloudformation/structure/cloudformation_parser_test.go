@@ -2,6 +2,9 @@ package structure
 
 import (
 	"bufio"
+	"github.com/bridgecrewio/yor/src/common/json"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"io"
 	"io/ioutil"
 	"os"
@@ -10,14 +13,12 @@ import (
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
-	"github.com/bridgecrewio/yor/src/common/tagging/simple"
-	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/yaml"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCloudformationParser_ParseFile(t *testing.T) {
-	t.Run("parse ebs file", func(t *testing.T) {
+	t.Run("parse ebs file yaml", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
@@ -36,6 +37,28 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		assert.Equal(t, "TagValue", existingTag.GetValue())
 		assert.Equal(t, 3, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
 		assert.Equal(t, 13, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
+	})
+	t.Run("parse ebs file json", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/ebs"
+		cfnParser := CloudformationParser{}
+		cfnParser.Init(directory, nil)
+		cfnBlocks, err := cfnParser.ParseFile(directory + "/ebs.json")
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
+		}
+		assert.Equal(t, 1, len(cfnBlocks))
+		newVolumeBlock := cfnBlocks[0]
+		assert.Equal(t, structure.Lines{Start: 5, End: 19}, newVolumeBlock.GetLines())
+		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
+
+		existingTag := newVolumeBlock.GetExistingTags()[0]
+		assert.Equal(t, "MyTag", existingTag.GetKey())
+		assert.Equal(t, "TagValue", existingTag.GetValue())
+
+		tagLines := newVolumeBlock.GetTagsLines()
+		assert.Equal(t, 10, tagLines.Start)
+		assert.Equal(t, 15, tagLines.End)
 	})
 
 }
@@ -75,64 +98,96 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		compareLines(t, expected, actual)
 	})
 
-	t.Run("test CFN writing", func(t *testing.T) {
-		directory := "../../../tests/cloudformation/resources/ebs"
-		f, _ := ioutil.TempFile(directory, "temp.*.yaml")
-		cfnParser := CloudformationParser{}
-		cfnParser.Init(directory, nil)
-		readFilePath := directory + "/ebs.yaml"
-		tagGroup := simple.TagGroup{}
-		extraTags := []tags.ITag{
-			&tags.Tag{
-				Key:   "new_tag",
-				Value: "new_value",
-			},
+	t.Run("test multiple resources json", func(t *testing.T) {
+		filePath := "../../../tests/cloudformation/resources/ec2_untagged/ec2_untagged.json"
+		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
+		expected := map[string]*structure.Lines{
+			"EC2InstanceResource0":       {Start: 4, End: 9},
+			"EC2InstanceResource1":       {Start: 10, End: 25},
+			"EC2LaunchTemplateResource0": {Start: 26, End: 33},
+			"EC2LaunchTemplateResource1": {Start: 34, End: 51},
 		}
-		tagGroup.SetTags(extraTags)
-		tagGroup.InitTagGroup("", []string{})
-		writeFilePath := directory + "/ebs_tagged.yaml"
-		cfnBlocks, err := cfnParser.ParseFile(readFilePath)
-		for _, block := range cfnBlocks {
-			err := tagGroup.CreateTagsForBlock(block)
-			if err != nil {
-				t.Fail()
-			}
-		}
-		if err != nil {
-			t.Fail()
-		}
-		_, err = f.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
-		err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
-		if err != nil {
-			t.Fail()
-		}
-		var expectedHandler, actualHandler *os.File
-		expectedAbs, _ := filepath.Abs(writeFilePath)
-		actualAbs, _ := filepath.Abs(f.Name())
-		expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
-		actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
-		_, err = expectedHandler.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
-		_, err = actualHandler.Seek(0, io.SeekStart)
-		if err != nil {
-			t.Fail()
-		}
-		defer func() {
-			_ = expectedHandler.Close()
-			_ = actualHandler.Close()
-			_ = os.Remove(f.Name())
-		}()
-		actualReader := bufio.NewScanner(actualHandler)
-		expectedReader := bufio.NewScanner(expectedHandler)
-		for actualReader.Scan() && expectedReader.Scan() {
-			actualLine := actualReader.Text()
-			expectedLine := expectedReader.Text()
-			assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
-		}
+		actual, _ := json.MapResourcesLineJSON(filePath, resourcesNames)
+		compareLines(t, expected, actual)
 	})
+}
+
+func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fileType string) {
+	f, _ := ioutil.TempFile(directory, "temp.*."+fileType)
+	cfnParser := CloudformationParser{}
+	cfnParser.Init(directory, nil)
+	readFilePath := directory + "/" + testFileName + "." + fileType
+	tagGroup := simple.TagGroup{}
+	extraTags := []tags.ITag{
+		&tags.Tag{
+			Key:   "new_tag",
+			Value: "new_value",
+		},
+	}
+	tagGroup.SetTags(extraTags)
+	tagGroup.InitTagGroup("", []string{})
+	writeFilePath := directory + "/" + testFileName + "_tagged." + fileType
+	cfnBlocks, err := cfnParser.ParseFile(readFilePath)
+	for _, block := range cfnBlocks {
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			t.Fail()
+		}
+	}
+	if err != nil {
+		t.Fail()
+	}
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		t.Fail()
+	}
+	err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
+	if err != nil {
+		t.Fail()
+	}
+	var expectedHandler, actualHandler *os.File
+	expectedAbs, _ := filepath.Abs(writeFilePath)
+	actualAbs, _ := filepath.Abs(f.Name())
+	expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
+	actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
+	_, err = expectedHandler.Seek(0, io.SeekStart)
+	if err != nil {
+		t.Fail()
+	}
+	_, err = actualHandler.Seek(0, io.SeekStart)
+	if err != nil {
+		t.Fail()
+	}
+	defer func() {
+		_ = expectedHandler.Close()
+		_ = actualHandler.Close()
+		_ = os.Remove(f.Name())
+	}()
+	actualReader := bufio.NewScanner(actualHandler)
+	expectedReader := bufio.NewScanner(expectedHandler)
+	for actualReader.Scan() && expectedReader.Scan() {
+		actualLine := actualReader.Text()
+		expectedLine := expectedReader.Text()
+		assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
+	}
+}
+
+func TestWriteCFN(t *testing.T) {
+
+	t.Run("test CFN yaml writing", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/ebs"
+
+		writeCFNTestHelper(t, directory, "ebs", "yaml")
+	})
+
+	t.Run("test pre-tagged CFN json writing", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/ebs"
+		writeCFNTestHelper(t, directory, "ebs", "json")
+	})
+
+	t.Run("test untagged CFN json writing", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/ec2_untagged"
+		writeCFNTestHelper(t, directory, "ec2_untagged", "json")
+	})
+
 }

@@ -2,23 +2,25 @@ package structure
 
 import (
 	"fmt"
-	"math"
-
 	"github.com/awslabs/goformation/v4"
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common/json"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/types"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/src/common/yaml"
+	"io/ioutil"
+	"math"
 
 	"reflect"
 )
 
 type CloudformationParser struct {
 	*types.YamlParser
+	*types.JSONParser
 }
 
 const TagsAttributeName = "Tags"
@@ -28,6 +30,10 @@ func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser = &types.YamlParser{
 		RootDir:              rootDir,
 		FileToResourcesLines: make(map[string]structure.Lines),
+	}
+	p.JSONParser = &types.JSONParser{
+		RootDir:              rootDir,
+		FileToBracketMapping: make(map[string]map[int]types.BracketPair),
 	}
 }
 
@@ -50,7 +56,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 	}
 
 	resourceNames := make([]string, 0)
-	if template != nil && template.Resources != nil {
+	if template.Resources != nil {
 		for resourceName := range template.Resources {
 			resourceNames = append(resourceNames, resourceName)
 		}
@@ -59,6 +65,10 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		switch utils.GetFileFormat(filePath) {
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 			resourceNamesToLines = yaml.MapResourcesLineYAML(filePath, resourceNames, ResourcesStartToken)
+		case common.JSONFileType.FileFormat:
+			var fileBracketsMapping map[int]types.BracketPair
+			resourceNamesToLines, fileBracketsMapping = json.MapResourcesLineJSON(filePath, resourceNames)
+			p.FileToBracketMapping[filePath] = fileBracketsMapping
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
@@ -122,9 +132,19 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 }
 
 func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	updatedBlocks := yaml.EncodeBlocksToYaml(readFilePath, blocks)
-	return yaml.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName,
-		ResourcesStartToken)
+	for _, block := range blocks {
+		block := block.(*CloudformationBlock)
+		block.UpdateTags()
+	}
+	switch utils.GetFileFormat(readFilePath) {
+	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
+		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName,
+			ResourcesStartToken)
+	case common.JSONFileType.FileFormat:
+		return json.WriteJsonFile(readFilePath, blocks, writeFilePath, p.FileToBracketMapping[readFilePath])
+	default:
+		return fmt.Errorf("unsupported file type %s", utils.GetFileFormat(readFilePath))
+	}
 }
 
 func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines) structure.Lines {
@@ -149,6 +169,16 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 		}()
 		linesInResource, _ := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
 		return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
+	case common.JSONFileType.FileFormat:
+		// #nosec G304
+		file, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
+			return structure.Lines{Start: -1, End: -1}
+		}
+		tagsBrackets := json.FindScopeInJSON(string(file), json.JsonEntry(TagsAttributeName), p.FileToBracketMapping[filePath], resourceLinesRange)
+		tagsLines := &structure.Lines{Start: tagsBrackets.Open.Line, End: tagsBrackets.Close.Line}
+		return *tagsLines
 	default:
 		return structure.Lines{Start: -1, End: -1}
 	}

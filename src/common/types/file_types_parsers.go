@@ -8,3 +8,8 @@ type YamlParser struct {
 	RootDir              string
 	FileToResourcesLines map[string]structure.Lines
 }
+
+type JSONParser struct {
+	RootDir              string
+	FileToBracketMapping map[string]map[int]BracketPair
+}
