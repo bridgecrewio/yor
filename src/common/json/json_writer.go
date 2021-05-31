@@ -20,7 +20,7 @@ import (
 // writeFilePath: destination for writing the updated json
 // fileBracketsPairs: mapping of all brackets in file by their start char index
 // The function updates the content of `readFilePath` with updated tags from `blocks` and writes it to `writeFilePath`
-func WriteJsonFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]types.BracketPair) error {
+func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]types.BracketPair) error {
 
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
@@ -54,7 +54,7 @@ func WriteJsonFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		for c := range newStringsByStartChar {
 			startChars = append(startChars, c)
 		}
-		sort.Sort(sort.IntSlice(startChars))
+		sort.Ints(startChars)
 
 		textToWrite = ""
 		lastReplacedIndex := 0
@@ -235,7 +235,7 @@ func MapBracketsInString(str string) []types.Brackets {
 		case ']':
 			allBrackets = append(allBrackets, types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: lineCounter, CharIndex: cIndex})
 		case '\n':
-			lineCounter += 1
+			lineCounter++
 		}
 	}
 
@@ -271,7 +271,7 @@ func GetBracketsPairs(bracketsInString []types.Brackets) map[int]types.BracketPa
 
 // Find the index of a key in json string and return the start and end brackets of the key scope
 func FindScopeInJSON(str string, key string, bracketsPairs map[int]types.BracketPair, linesRange *structure.Lines) types.BracketPair {
-	indexOfKey := -1
+	var indexOfKey int
 	if linesRange.Start != -1 {
 		fileLines := strings.Split(str, "\n")
 		beforeRange := strings.Join(fileLines[:linesRange.Start], "\n")
@@ -323,7 +323,7 @@ func FindParentIdentifier(str string, childIdentifier string) string {
 	// find the brackets that wrap the "tags"
 	wrappingBracketsScope := FindWrappingBrackets(bracketsPairsInResourceJSON, childScope)
 	// extract the name of the tags' parent (for example, in CFN it will be "Properties")
-	r, _ := regexp.Compile("\"")
+	r := regexp.MustCompile("\"")
 	quoteMarksIndexes := r.FindAllStringIndex(str[:wrappingBracketsScope.Open.CharIndex], -1)
 	indexOfLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-1][0]
 	indexOfSecondToLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-2][0]

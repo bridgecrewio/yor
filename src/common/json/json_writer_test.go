@@ -54,11 +54,11 @@ func TestGetBracketsPairs(t *testing.T) {
 		actualPairs := GetBracketsPairs(bracketsInFile)
 		expectedPairs := map[int]types.BracketPair{
 			0: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 1}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 1}},
 			2: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 2},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 3}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 2},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 3}},
 		}
 
 		assert.Equal(t, expectedPairs, actualPairs)
@@ -71,14 +71,14 @@ func TestGetBracketsPairs(t *testing.T) {
 
 		expectedPairs := map[int]types.BracketPair{
 			0: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 27}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 27}},
 			7: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 7},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 11}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 7},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 11}},
 			20: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 20},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 26}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 20},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 1, CharIndex: 26}},
 		}
 		for index, pair := range expectedPairs {
 			actualPair, ok := actualPairs[index]
@@ -95,14 +95,14 @@ func TestGetBracketsPairs(t *testing.T) {
 
 		expectedPairs := map[int]types.BracketPair{
 			0: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 2, CharIndex: 28}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 0},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 2, CharIndex: 28}},
 			7: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 7},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 11}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 7},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: 1, CharIndex: 11}},
 			21: {
-				types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 2, CharIndex: 21},
-				types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 2, CharIndex: 27}},
+				Open:  types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: 2, CharIndex: 21},
+				Close: types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: 2, CharIndex: 27}},
 		}
 		for index, pair := range expectedPairs {
 			actualPair, ok := actualPairs[index]

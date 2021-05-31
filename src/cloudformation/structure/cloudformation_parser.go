@@ -141,7 +141,7 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName,
 			ResourcesStartToken)
 	case common.JSONFileType.FileFormat:
-		return json.WriteJsonFile(readFilePath, blocks, writeFilePath, p.FileToBracketMapping[readFilePath])
+		return json.WriteJSONFile(readFilePath, blocks, writeFilePath, p.FileToBracketMapping[readFilePath])
 	default:
 		return fmt.Errorf("unsupported file type %s", utils.GetFileFormat(readFilePath))
 	}
