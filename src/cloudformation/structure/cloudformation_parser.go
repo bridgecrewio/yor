@@ -2,6 +2,9 @@ package structure
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math"
+
 	"github.com/awslabs/goformation/v4"
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common"
@@ -12,8 +15,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/types"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/src/common/yaml"
-	"io/ioutil"
-	"math"
 
 	"reflect"
 )

@@ -2,15 +2,16 @@ package structure
 
 import (
 	"bufio"
-	"github.com/bridgecrewio/yor/src/common/json"
-	"github.com/bridgecrewio/yor/src/common/tagging/simple"
-	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/json"
+	"github.com/bridgecrewio/yor/src/common/tagging/simple"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/yaml"

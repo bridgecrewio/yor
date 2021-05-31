@@ -1,8 +1,9 @@
 package json
 
 import (
-	"github.com/bridgecrewio/yor/src/common/types"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/types"
 
 	"github.com/stretchr/testify/assert"
 )

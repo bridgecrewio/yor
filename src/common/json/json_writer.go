@@ -3,12 +3,13 @@ package json
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bridgecrewio/yor/src/common/types"
 	"io/ioutil"
 	"math"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/types"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
