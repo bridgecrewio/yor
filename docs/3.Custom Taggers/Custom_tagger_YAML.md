@@ -4,13 +4,13 @@ published: true
 title: Custom Tagger Using YAML  Configuration Files
 nav_order: 2
 ---
-# Custom Tagger Using YAML  Configuration Files
+# Custom Tagger Using YAML Configuration Files
 
 The Yor framework uses YAML configuration files to support advanced rules when applying custom tags.
 Users can define tagging enforcement rules that are specific to their organization’s needs. 
 YAML based custom tagging enables you to have different tags for different existing resource tags.
 
-## Running YAML based
+## Running YAML based custom tagger
 In the CLI, define the path of the YAML configuration file that you want to apply. For example:
 
 `yor tag --config-file </path/to/file>`
@@ -69,6 +69,43 @@ value:
         yor_trace: 123
    directory: /path/to/some/dir
 ```
+6. You can also create custom tag groups using YAML-based configuration by adding `tag_group` field + adding its `name` and `tags` sequence which includes tag items as mentioned above. In the example below - tag group named `ownership` includes two custom tags: `env` and `team`.
+
+```
+tag_group:
+  name: ownership
+  tags:
+    - name: env
+      value:
+        default: prod
+      filters:
+        tags:
+          git_modifiers: tronxd
+          git_repo: checkov
+        directory: /path/to/some/dir
+    - name: team
+      value:
+        default: interfaces
+        matches:
+          - devops:
+              tags:
+                git_modifiers:
+                  - amyn
+                  - tronxd
+                  - maxg
+                git_commit: asd12f
+                git_repo: yor
+          - dev1:
+              tags:
+                git_modifiers:
+                  - elianf
+                  - donnyk
+      filters:
+        tags:
+          yor_trace: 123
+        directory: /path/to/some/dir
+```
+
 ## Custom tagging using CLI
 
 You can use some YAML configuration capabilities in a CLI command. 
