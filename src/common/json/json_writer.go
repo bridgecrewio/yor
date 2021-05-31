@@ -6,6 +6,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/types"
 	"io/ioutil"
 	"math"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -14,7 +15,13 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 )
 
+// readFilePath: origin file path
+// blocks: resources blocks, some containing updated tags
+// writeFilePath: destination for writing the updated json
+// fileBracketsPairs: mapping of all brackets in file by their start char index
+// The function updates the content of `readFilePath` with updated tags from `blocks` and writes it to `writeFilePath`
 func WriteJsonFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]types.BracketPair) error {
+
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
 	if err != nil {
@@ -22,8 +29,8 @@ func WriteJsonFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	}
 	originFileStr := string(originFileSrc)
 
-	newStringsByStartChar := make(map[int]string)
-	Start2EndCharMap := make(map[int]int)
+	newStringsByStartChar := make(map[int]string) // map between start char index and the string that should be written in that index
+	Start2EndCharMap := make(map[int]int)         // map start index to end index
 	for _, resourceBlock := range blocks {
 		if resourceBlock.IsBlockTaggable() {
 			tagsDiff := resourceBlock.CalculateTagsDiff()
@@ -32,66 +39,73 @@ func WriteJsonFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 				continue
 			}
 
-			resourceBrackets := FindScopeInJSON(originFileStr, JsonEntry(resourceBlock.GetResourceID()), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
+			resourceBrackets := FindScopeInJSON(originFileStr, resourceBlock.GetResourceID(), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
 			Start2EndCharMap[resourceBrackets.Open.CharIndex] = resourceBrackets.Close.CharIndex
 			newResourceLines := AddTagsToResourceStr(originFileStr, resourceBlock, fileBracketsPairs)
 			newStringsByStartChar[resourceBrackets.Open.CharIndex] = newResourceLines
 		}
 	}
 
+	// write changes
 	textToWrite := originFileStr
-
 	if len(newStringsByStartChar) > 0 {
+		// sort start chars in ascending order
 		startChars := make([]int, 0, len(newStringsByStartChar))
 		for c := range newStringsByStartChar {
 			startChars = append(startChars, c)
 		}
-
-		// sort end chars in descending order
 		sort.Sort(sort.IntSlice(startChars))
-		// take all the text after the last resource to edit
-		textToWrite = ""
 
-		lastReplaced := 0
+		textToWrite = ""
+		lastReplacedIndex := 0
 		for _, cIndex := range startChars {
-			textToWrite = textToWrite + originFileStr[lastReplaced:cIndex] + newStringsByStartChar[cIndex]
-			lastReplaced = Start2EndCharMap[cIndex] + 1
+			// write text until next changed string and append new string
+			textToWrite += originFileStr[lastReplacedIndex:cIndex] + newStringsByStartChar[cIndex]
+			// set the pointer of the string continuation to be the end index of the replaced part.
+			lastReplacedIndex = Start2EndCharMap[cIndex] + 1
 		}
-		textToWrite = textToWrite + originFileStr[lastReplaced:]
+		textToWrite += originFileStr[lastReplacedIndex:]
 	}
 
 	err = ioutil.WriteFile(writeFilePath, []byte(textToWrite), 0600)
 	return err
 }
 
-func AddTagsToResourceStr(originFileStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]types.BracketPair) string {
+// The function gets the entire context as a string, and returns a string of a resource with the updated tags
+func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]types.BracketPair) string {
+	logger.Debug(fmt.Sprintf("setting tags to resource %s in path %s", resourceBlock.GetResourceID(), resourceBlock.GetFilePath()))
 	updatedTags := resourceBlock.MergeTags()
-	resourceBrackets := FindScopeInJSON(originFileStr, JsonEntry(resourceBlock.GetResourceID()), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
-	resourceStr := originFileStr[resourceBrackets.Open.CharIndex : resourceBrackets.Close.CharIndex+1]
+
+	// extract the resource's brackets scope and get the origin str for that resource
+	resourceBrackets := FindScopeInJSON(fullOriginStr, resourceBlock.GetResourceID(), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
+	resourceStr := fullOriginStr[resourceBrackets.Open.CharIndex : resourceBrackets.Close.CharIndex+1]
 
 	tagsAttributeName := resourceBlock.GetTagsAttributeName()
-	indexOfTags := strings.Index(resourceStr, JsonEntry(tagsAttributeName))
+	indexOfTags := findJSONKeyIndex(resourceStr, tagsAttributeName) // get the start index of the tags key in the resource string
 
 	if indexOfTags >= 0 {
-		//	tags exists in resource
-		tagBrackets := FindScopeInJSON(originFileStr, JsonEntry(tagsAttributeName), fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
+		// extract the tags' brackets scope and get the origin str for them
+		tagBrackets := FindScopeInJSON(fullOriginStr, tagsAttributeName, fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
+		tagsStr := fullOriginStr[tagBrackets.Open.CharIndex:tagBrackets.Close.CharIndex]
+
 		//	now find the indentation of the first tags entry by searching an indent between "[" and first "{". If there is a newline, restart the indent.
-		tagsStr := originFileStr[tagBrackets.Open.CharIndex:tagBrackets.Close.CharIndex]
-		tagBlockIndent := findIndent(tagsStr, '{', 0)                                                                              // find the indent of each tag block " { "
-		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{"))                                                // find the indent of the key and value entry
-		strUpdatedTags, err := json.MarshalIndent(updatedTags, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent)) // unmarshal updated tags with the indent matching origin file
+		tagBlockIndent := findIndent(tagsStr, '{', 0)                               // find the indent of each tag block " { "
+		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{")) // find the indent of the key and value entry
+
+		// unmarshal updated tags with the indent matching origin file
+		strUpdatedTags, err := json.MarshalIndent(updatedTags, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent))
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", updatedTags, tagBlockIndent, err))
 		}
 		tagsStartRelativeToResource := tagBrackets.Open.CharIndex - resourceBrackets.Open.CharIndex
 		tagsEndRelativeToResource := tagBrackets.Close.CharIndex - resourceBrackets.Open.CharIndex
 
+		// set the resource string with the updated and indented tags
 		resourceStr = resourceStr[:tagsStartRelativeToResource] + string(strUpdatedTags) + resourceStr[tagsEndRelativeToResource+1:]
 	} else {
-		//	tags doesnt exist and we need to add it
-		// step 1 - extract the parent of the tags attriubte
+		// step 1 - extract the parent of the tags attribute from the new resource (not from the file)
 		jsonResourceStr := getJSONStr(resourceBlock.GetRawBlock()) // encode raw block to json
-		identifiersToAdd := []string{}
+		identifiersToAdd := make([]string, 0)
 		parentIdentifier := tagsAttributeName
 
 		// step 2 - find the parent identifier in the origin resource. If not found continue to look for identifiers until reaching the resource name
@@ -99,16 +113,17 @@ func AddTagsToResourceStr(originFileStr string, resourceBlock structure.IBlock, 
 		for indexOfParent < 0 && parentIdentifier != resourceBlock.GetResourceID() {
 			identifiersToAdd = append(identifiersToAdd, parentIdentifier)
 			parentIdentifier = FindParentIdentifier(jsonResourceStr, parentIdentifier)
-			indexOfParent = strings.Index(resourceStr, parentIdentifier)
+			indexOfParent = findJSONKeyIndex(resourceStr, parentIdentifier)
 		}
 
 		// step 3 - find indent from last parent scope start to it's first child
-		topIdentifierScope := FindScopeInJSON(originFileStr, identifiersToAdd[len(identifiersToAdd)-1], fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
-		indent := findIndent(originFileStr, '"', topIdentifierScope.Open.CharIndex)
+		topIdentifierScope := FindScopeInJSON(fullOriginStr, identifiersToAdd[len(identifiersToAdd)-1], fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
+		indent := findIndent(fullOriginStr, '"', topIdentifierScope.Open.CharIndex)
 
 		// step 4 - add the missing data
+
+		// create a map of data to add
 		entriesToAdd := make(map[string]interface{})
-		//var entriesToAdd interface{}
 		for i := len(identifiersToAdd) - 1; i <= 0; i++ {
 			if i > 0 {
 				entriesToAdd[identifiersToAdd[i]] = make(map[string]interface{})
@@ -117,13 +132,17 @@ func AddTagsToResourceStr(originFileStr string, resourceBlock structure.IBlock, 
 			}
 		}
 
+		// marshal the map using the extracted indentation
 		jsonToAdd, err := json.MarshalIndent(entriesToAdd, indent, "\t")
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", entriesToAdd, indent, err))
 		}
-
 		textToAdd := string(jsonToAdd)
+
+		// remove first and last chars, which are '{' and '}' - we already have the top level map and don't need it
 		textToAdd = textToAdd[1 : len(textToAdd)-1]
+
+		// fix indentation after removing the top level map
 		lines := strings.Split(textToAdd, "\n")
 		editedLines := make([]string, 0)
 		for _, l := range lines {
@@ -135,13 +154,19 @@ func AddTagsToResourceStr(originFileStr string, resourceBlock structure.IBlock, 
 				}
 			}
 		}
-		textToAdd = "\n" + strings.Join(editedLines, "\n") + "," // remove open and close brackets
+
+		// add comma after tags
+		textToAdd = "\n" + strings.Join(editedLines, "\n") + ","
+
+		// adding the tags as the first element
 		resourceStr = resourceStr[:(topIdentifierScope.Open.CharIndex+1)-resourceBrackets.Open.CharIndex] + textToAdd + resourceStr[(topIdentifierScope.Open.CharIndex+1)-resourceBrackets.Open.CharIndex:]
 	}
 
 	return resourceStr
 }
 
+// find the indentation in a string `str` from starting char index until `charToStop` is identified
+// if a newline is encountered, restart the indentation to ""
 func findIndent(str string, charToStop byte, startIndex int) string {
 	indent := ""
 	charIndex := startIndex
@@ -163,6 +188,7 @@ func findIndent(str string, charToStop byte, startIndex int) string {
 	return indent
 }
 
+// marshal an interface into json and return a string of that json
 func getJSONStr(rawBlock interface{}) string {
 	jsonBytes, err := json.Marshal(rawBlock)
 	if err != nil {
@@ -172,6 +198,7 @@ func getJSONStr(rawBlock interface{}) string {
 	return string(jsonBytes)
 }
 
+// map the lines of all resources in a file and return it with the brackets mapping
 func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*structure.Lines, map[int]types.BracketPair) {
 	resourceToLines := make(map[string]*structure.Lines)
 	// #nosec G304
@@ -186,21 +213,18 @@ func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*
 	bracketPairs := GetBracketsPairs(bracketsInFile)
 
 	for _, resourceName := range resourceNames {
-		matchingBrackets := FindScopeInJSON(fileStr, JsonEntry(resourceName), bracketPairs, &structure.Lines{Start: -1, End: -1})
+		matchingBrackets := FindScopeInJSON(fileStr, resourceName, bracketPairs, &structure.Lines{Start: -1, End: -1})
 		resourceToLines[resourceName] = &structure.Lines{Start: matchingBrackets.Open.Line, End: matchingBrackets.Close.Line}
 	}
 
 	return resourceToLines, bracketPairs
 }
 
-func JsonEntry(s string) string {
-	return "\"" + s + "\""
-}
-
-func MapBracketsInString(fileStr string) []types.Brackets {
+// find all brackets in a string
+func MapBracketsInString(str string) []types.Brackets {
 	allBrackets := make([]types.Brackets, 0)
 	lineCounter := 1
-	for cIndex, c := range fileStr {
+	for cIndex, c := range str {
 		switch c {
 		case '{':
 			allBrackets = append(allBrackets, types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: lineCounter, CharIndex: cIndex})
@@ -218,6 +242,7 @@ func MapBracketsInString(fileStr string) []types.Brackets {
 	return allBrackets
 }
 
+// given a list of all brackets of pair, map all the pairs correctly and return them ordered by the open char index
 func GetBracketsPairs(bracketsInString []types.Brackets) map[int]types.BracketPair {
 	startCharToBrackets := make(map[int]types.BracketPair)
 	bracketShape2BracketsStacks := make(map[types.BracketShape][]types.Brackets)
@@ -245,16 +270,16 @@ func GetBracketsPairs(bracketsInString []types.Brackets) map[int]types.BracketPa
 }
 
 // Find the index of a key in json string and return the start and end brackets of the key scope
-func FindScopeInJSON(fileStr string, key string, bracketsPairs map[int]types.BracketPair, linesRange *structure.Lines) types.BracketPair {
-	var indexOfKey int
+func FindScopeInJSON(str string, key string, bracketsPairs map[int]types.BracketPair, linesRange *structure.Lines) types.BracketPair {
+	indexOfKey := -1
 	if linesRange.Start != -1 {
-		fileLines := strings.Split(fileStr, "\n")
+		fileLines := strings.Split(str, "\n")
 		beforeRange := strings.Join(fileLines[:linesRange.Start], "\n")
 		rangeLinesStr := strings.Join(fileLines[linesRange.Start:linesRange.End], "\n")
-		indexOfKey = strings.Index(rangeLinesStr, key)
+		indexOfKey = findJSONKeyIndex(rangeLinesStr, key)
 		indexOfKey = len(beforeRange) + indexOfKey
 	} else {
-		indexOfKey = strings.Index(fileStr, key)
+		indexOfKey = findJSONKeyIndex(str, key)
 	}
 
 	foundBracketPair := types.BracketPair{}
@@ -272,6 +297,7 @@ func FindScopeInJSON(fileStr string, key string, bracketsPairs map[int]types.Bra
 	return foundBracketPair
 }
 
+// given a brackets pair, find the pair that wraps them
 func FindWrappingBrackets(allBracketPairs map[int]types.BracketPair, innerBracketPair types.BracketPair) types.BracketPair {
 	wrappingPair := -1
 	for i, bracketsPair := range allBracketPairs {
@@ -285,19 +311,34 @@ func FindWrappingBrackets(allBracketPairs map[int]types.BracketPair, innerBracke
 	return allBracketPairs[wrappingPair]
 }
 
+// find the identifier of the parent of a given child.
+// for example, str = {parent: {child: [...] }} and childIdentifier="child", return "parent"
 func FindParentIdentifier(str string, childIdentifier string) string {
 	// create mapping of all brackets in resource
 	bracketsInResourceJSON := MapBracketsInString(str)
 	bracketsPairsInResourceJSON := GetBracketsPairs(bracketsInResourceJSON)
 
 	// get tags brackets
-	tagsScope := FindScopeInJSON(str, childIdentifier, bracketsPairsInResourceJSON, &structure.Lines{Start: -1, End: -1})
+	childScope := FindScopeInJSON(str, childIdentifier, bracketsPairsInResourceJSON, &structure.Lines{Start: -1, End: -1})
 	// find the brackets that wrap the "tags"
-	wrappingBracketsScope := FindWrappingBrackets(bracketsPairsInResourceJSON, tagsScope)
+	wrappingBracketsScope := FindWrappingBrackets(bracketsPairsInResourceJSON, childScope)
 	// extract the name of the tags' parent (for example, in CFN it will be "Properties")
-	indexOfLastQuoteMark := strings.LastIndex(str[:wrappingBracketsScope.Open.CharIndex], "\"")
-	indexOfSecondToLastQuoteMark := strings.LastIndex(str[:indexOfLastQuoteMark], "\"")
+	r, _ := regexp.Compile("\"")
+	quoteMarksIndexes := r.FindAllStringIndex(str[:wrappingBracketsScope.Open.CharIndex], -1)
+	indexOfLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-1][0]
+	indexOfSecondToLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-2][0]
 	parentIdentifier := str[indexOfSecondToLastQuoteMark+1 : indexOfLastQuoteMark]
 
 	return parentIdentifier
+}
+
+// find the index of an entry in a JSON by wrapping it with "<key>":
+func findJSONKeyIndex(str string, key string) int {
+	r, _ := regexp.Compile("\"" + key + `"\s*:`) // support a case of one or more spaces before colon
+	indexPair := r.FindStringIndex(str)
+	if len(indexPair) == 0 {
+		return -1
+	}
+
+	return indexPair[0]
 }

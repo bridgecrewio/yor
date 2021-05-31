@@ -42,7 +42,7 @@ func (p *CloudformationParser) GetSkippedDirs() []string {
 }
 
 func (p *CloudformationParser) GetSupportedFileExtensions() []string {
-	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension}
+	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension, common.JSONFileType.Extension}
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -179,7 +179,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 			return structure.Lines{Start: -1, End: -1}
 		}
-		tagsBrackets := json.FindScopeInJSON(string(file), json.JsonEntry(TagsAttributeName), p.FileToBracketMapping[filePath], resourceLinesRange)
+		tagsBrackets := json.FindScopeInJSON(string(file), TagsAttributeName, p.FileToBracketMapping[filePath], resourceLinesRange)
 		tagsLines := &structure.Lines{Start: tagsBrackets.Open.Line, End: tagsBrackets.Close.Line}
 		return *tagsLines
 	default:

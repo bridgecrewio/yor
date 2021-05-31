@@ -200,4 +200,9 @@ func TestWriteCFN(t *testing.T) {
 		writeCFNTestHelper(t, directory, "ec2_untagged", "json")
 	})
 
+	t.Run("test untagged CFN json writing with bad indentation", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/json"
+		writeCFNTestHelper(t, directory, "SingleENIwithMultipleEIPs", "json")
+	})
+
 }
