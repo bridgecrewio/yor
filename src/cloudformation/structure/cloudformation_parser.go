@@ -34,7 +34,7 @@ func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	}
 	p.JSONParser = &types.JSONParser{
 		RootDir:              rootDir,
-		FileToBracketMapping: make(map[string]map[int]types.BracketPair),
+		FileToBracketMapping: make(map[string]map[int]json.BracketPair),
 	}
 }
 
@@ -67,7 +67,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
 			resourceNamesToLines = yaml.MapResourcesLineYAML(filePath, resourceNames, ResourcesStartToken)
 		case common.JSONFileType.FileFormat:
-			var fileBracketsMapping map[int]types.BracketPair
+			var fileBracketsMapping map[int]json.BracketPair
 			resourceNamesToLines, fileBracketsMapping = json.MapResourcesLineJSON(filePath, resourceNames)
 			p.FileToBracketMapping[filePath] = fileBracketsMapping
 		default:

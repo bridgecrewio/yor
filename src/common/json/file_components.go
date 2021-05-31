@@ -1,4 +1,4 @@
-package types
+package json
 
 type BracketShape int
 type BracketDirection int

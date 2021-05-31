@@ -9,19 +9,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bridgecrewio/yor/src/common/types"
-
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/utils"
 )
 
-// readFilePath: origin file path
-// blocks: resources blocks, some containing updated tags
-// writeFilePath: destination for writing the updated json
-// fileBracketsPairs: mapping of all brackets in file by their start char index
-// The function updates the content of `readFilePath` with updated tags from `blocks` and writes it to `writeFilePath`
-func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]types.BracketPair) error {
+// WriteJSONFile updates the content of `readFilePath` with updated tags from `blocks` and writes it to `writeFilePath`
+func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]BracketPair) error {
 
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
@@ -72,8 +66,8 @@ func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	return err
 }
 
-// The function gets the entire context as a string, and returns a string of a resource with the updated tags
-func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]types.BracketPair) string {
+// AddTagsToResourceStr gets the entire context as a string, and returns a string of a resource with the updated tags
+func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]BracketPair) string {
 	logger.Debug(fmt.Sprintf("setting tags to resource %s in path %s", resourceBlock.GetResourceID(), resourceBlock.GetFilePath()))
 	updatedTags := resourceBlock.MergeTags()
 
@@ -166,7 +160,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 	return resourceStr
 }
 
-// find the indentation in a string `str` from starting char index until `charToStop` is identified
+// findIndent finds the indentation in a string `str` from starting char index until `charToStop` is identified
 // if a newline is encountered, restart the indentation to ""
 func findIndent(str string, charToStop byte, startIndex int) string {
 	indent := ""
@@ -189,7 +183,7 @@ func findIndent(str string, charToStop byte, startIndex int) string {
 	return indent
 }
 
-// marshal an interface into json and return a string of that json
+// getJSONStr marshals an interface into json and return a string of that json
 func getJSONStr(rawBlock interface{}) string {
 	jsonBytes, err := json.Marshal(rawBlock)
 	if err != nil {
@@ -199,8 +193,8 @@ func getJSONStr(rawBlock interface{}) string {
 	return string(jsonBytes)
 }
 
-// map the lines of all resources in a file and return it with the brackets mapping
-func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*structure.Lines, map[int]types.BracketPair) {
+// MapResourcesLineJSON maps the lines of all resources in a file and return it with the brackets mapping
+func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*structure.Lines, map[int]BracketPair) {
 	resourceToLines := make(map[string]*structure.Lines)
 	// #nosec G304
 	file, err := ioutil.ReadFile(filePath)
@@ -221,20 +215,20 @@ func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*
 	return resourceToLines, bracketPairs
 }
 
-// find all brackets in a string
-func MapBracketsInString(str string) []types.Brackets {
-	allBrackets := make([]types.Brackets, 0)
+// MapBracketsInString finds all brackets in a string
+func MapBracketsInString(str string) []Brackets {
+	allBrackets := make([]Brackets, 0)
 	lineCounter := 1
 	for cIndex, c := range str {
 		switch c {
 		case '{':
-			allBrackets = append(allBrackets, types.Brackets{Type: types.OpenBrackets, Shape: types.CurlyBrackets, Line: lineCounter, CharIndex: cIndex})
+			allBrackets = append(allBrackets, Brackets{Type: OpenBrackets, Shape: CurlyBrackets, Line: lineCounter, CharIndex: cIndex})
 		case '}':
-			allBrackets = append(allBrackets, types.Brackets{Type: types.CloseBrackets, Shape: types.CurlyBrackets, Line: lineCounter, CharIndex: cIndex})
+			allBrackets = append(allBrackets, Brackets{Type: CloseBrackets, Shape: CurlyBrackets, Line: lineCounter, CharIndex: cIndex})
 		case '[':
-			allBrackets = append(allBrackets, types.Brackets{Type: types.OpenBrackets, Shape: types.SquareBrackets, Line: lineCounter, CharIndex: cIndex})
+			allBrackets = append(allBrackets, Brackets{Type: OpenBrackets, Shape: SquareBrackets, Line: lineCounter, CharIndex: cIndex})
 		case ']':
-			allBrackets = append(allBrackets, types.Brackets{Type: types.CloseBrackets, Shape: types.SquareBrackets, Line: lineCounter, CharIndex: cIndex})
+			allBrackets = append(allBrackets, Brackets{Type: CloseBrackets, Shape: SquareBrackets, Line: lineCounter, CharIndex: cIndex})
 		case '\n':
 			lineCounter++
 		}
@@ -243,16 +237,16 @@ func MapBracketsInString(str string) []types.Brackets {
 	return allBrackets
 }
 
-// given a list of all brackets of pair, map all the pairs correctly and return them ordered by the open char index
-func GetBracketsPairs(bracketsInString []types.Brackets) map[int]types.BracketPair {
-	startCharToBrackets := make(map[int]types.BracketPair)
-	bracketShape2BracketsStacks := make(map[types.BracketShape][]types.Brackets)
+// GetBracketsPairs: given a list of all brackets of pair, map all the pairs correctly and return them ordered by the open char index
+func GetBracketsPairs(bracketsInString []Brackets) map[int]BracketPair {
+	startCharToBrackets := make(map[int]BracketPair)
+	bracketShape2BracketsStacks := make(map[BracketShape][]Brackets)
 
 	for _, bracket := range bracketsInString {
 		stack, ok := bracketShape2BracketsStacks[bracket.Shape]
-		if bracket.Type == types.OpenBrackets {
+		if bracket.Type == OpenBrackets {
 			if !ok {
-				stack = make([]types.Brackets, 0)
+				stack = make([]Brackets, 0)
 			}
 			stack = append(stack, bracket)
 			bracketShape2BracketsStacks[bracket.Shape] = stack
@@ -263,15 +257,15 @@ func GetBracketsPairs(bracketsInString []types.Brackets) map[int]types.BracketPa
 			openBracket := stack[len(stack)-1]
 			stack = stack[:len(stack)-1]
 			bracketShape2BracketsStacks[bracket.Shape] = stack
-			startCharToBrackets[openBracket.CharIndex] = types.BracketPair{Open: openBracket, Close: bracket}
+			startCharToBrackets[openBracket.CharIndex] = BracketPair{Open: openBracket, Close: bracket}
 		}
 	}
 
 	return startCharToBrackets
 }
 
-// Find the index of a key in json string and return the start and end brackets of the key scope
-func FindScopeInJSON(str string, key string, bracketsPairs map[int]types.BracketPair, linesRange *structure.Lines) types.BracketPair {
+// FindScopeInJSON finds the index of a key in json string and return the start and end brackets of the key scope
+func FindScopeInJSON(str string, key string, bracketsPairs map[int]BracketPair, linesRange *structure.Lines) BracketPair {
 	var indexOfKey int
 	if linesRange.Start != -1 {
 		fileLines := strings.Split(str, "\n")
@@ -283,7 +277,7 @@ func FindScopeInJSON(str string, key string, bracketsPairs map[int]types.Bracket
 		indexOfKey = findJSONKeyIndex(str, key)
 	}
 
-	foundBracketPair := types.BracketPair{}
+	foundBracketPair := BracketPair{}
 
 	nextIndex := math.MaxInt64
 	for index, bracketPair := range bracketsPairs {
@@ -298,8 +292,8 @@ func FindScopeInJSON(str string, key string, bracketsPairs map[int]types.Bracket
 	return foundBracketPair
 }
 
-// given a brackets pair, find the pair that wraps them
-func FindWrappingBrackets(allBracketPairs map[int]types.BracketPair, innerBracketPair types.BracketPair) types.BracketPair {
+// FindWrappingBrackets: given a brackets pair, find the pair that wraps them
+func FindWrappingBrackets(allBracketPairs map[int]BracketPair, innerBracketPair BracketPair) BracketPair {
 	wrappingPair := -1
 	for i, bracketsPair := range allBracketPairs {
 		if bracketsPair.Open.CharIndex < innerBracketPair.Open.CharIndex && bracketsPair.Close.CharIndex > innerBracketPair.Close.CharIndex {
@@ -312,7 +306,7 @@ func FindWrappingBrackets(allBracketPairs map[int]types.BracketPair, innerBracke
 	return allBracketPairs[wrappingPair]
 }
 
-// find the identifier of the parent of a given child.
+// FindParentIdentifier finds the identifier of the parent of a given child.
 // for example, str = {parent: {child: [...] }} and childIdentifier="child", return "parent"
 func FindParentIdentifier(str string, childIdentifier string) string {
 	// create mapping of all brackets in resource
@@ -333,7 +327,7 @@ func FindParentIdentifier(str string, childIdentifier string) string {
 	return parentIdentifier
 }
 
-// find the index of an entry in a JSON by wrapping it with "<key>":
+// findJSONKeyIndex finds the index of an entry in a JSON by wrapping it with "<key>":
 func findJSONKeyIndex(str string, key string) int {
 	r, _ := regexp.Compile("\"" + key + `"\s*:`) // support a case of one or more spaces before colon
 	indexPair := r.FindStringIndex(str)
