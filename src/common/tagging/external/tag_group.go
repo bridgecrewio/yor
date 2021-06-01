@@ -30,18 +30,17 @@ type Tag struct {
 
 func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
-	blockTags := append(newTags, existingTags...)
+	newTags = append(newTags, existingTags...)
 	satisfyFilters := true
 	for filterKey, filterValue := range t.filters {
 		if filterKey == "tags" {
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
 				strFilterValue := filterTagValue
-				switch val := filterTagValue.(type) {
-				case int:
+				if val, ok := filterTagValue.(int); ok {
 					strFilterValue = strconv.Itoa(val)
 				}
 				foundFilterTag := false
-				for _, blockTag := range blockTags {
+				for _, blockTag := range newTags {
 					if blockTag.GetKey() == filterTagKey && blockTag.GetValue() == strFilterValue {
 						foundFilterTag = true
 						break
@@ -75,9 +74,12 @@ func (t *TagGroup) InitTagGroup(dir string, skippedTags []string) {
 func (t *TagGroup) InitExternalTagGroup() {
 	configMap := make(map[interface{}]interface{})
 	confBytes, err := ioutil.ReadFile(t.configFilePath)
-	err = yaml.Unmarshal(confBytes, &configMap)
 	if err != nil {
 		logger.Error(err.Error())
+	}
+	errYaml := yaml.Unmarshal(confBytes, &configMap)
+	if errYaml != nil {
+		logger.Error(errYaml.Error())
 	}
 	t.config = configMap
 	t.extractExternalTags()
@@ -106,7 +108,6 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var filteredNewTags = make([]tags.ITag, len(newTags))
 	copy(filteredNewTags, newTags)
-	blockTags := make([]tags.ITag, len(newTags)+len(existingTags))
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
 			tagValue, err := t.calculateTagValue(block, groupTag)
@@ -124,8 +125,8 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 			}
 		}
 	}
-	blockTags = append(filteredNewTags, existingTags...)
-	t.SetTags(blockTags)
+	filteredNewTags = append(filteredNewTags, existingTags...)
+	t.SetTags(filteredNewTags)
 	block.AddNewTags(filteredNewTags)
 	return nil
 }
@@ -168,7 +169,7 @@ func (t *TagGroup) calculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	} else if tag.defaultValue != "" {
 		return retTag, nil
 	}
-	return Tag{}, errors.New(fmt.Sprintf("Could not compute external tag %s", tag.GetKey()))
+	return Tag{}, fmt.Errorf("Could not compute external tag %s", tag.GetKey())
 }
 
 func (t *TagGroup) ExtractExternalGroupsTags(rawTags []interface{}) []Tag {
