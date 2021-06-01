@@ -131,7 +131,7 @@ func Test_TagCFNDir(t *testing.T) {
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 10}, {A: 12, B: 26, Size: 2}, {A: 15, B: 28, Size: 0},
+			{A: 0, B: 0, Size: 12}, {A: 12, B: 26, Size: 2}, {A: 15, B: 28, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
