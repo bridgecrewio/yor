@@ -126,9 +126,9 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 				entriesToAdd[identifiersToAdd[i]] = updatedTags
 			}
 		}
-
+		indentStr := "  "
 		// marshal the map using the extracted indentation
-		jsonToAdd, err := json.MarshalIndent(entriesToAdd, indent, "\t")
+		jsonToAdd, err := json.MarshalIndent(entriesToAdd, indent, indentStr)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", entriesToAdd, indent, err))
 		}
@@ -143,7 +143,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		for _, l := range lines {
 			for c := range l {
 				if !utils.IsCharWhitespace(l[c]) {
-					newL := strings.Replace(l, "\t", "", 1)
+					newL := strings.Replace(l, indentStr, "", 1)
 					editedLines = append(editedLines, newL)
 					break
 				}
@@ -184,10 +184,11 @@ func findIndent(str string, charToStop byte, startIndex int) string {
 }
 
 // getJSONStr marshals an interface into json and return a string of that json
-func getJSONStr(rawBlock interface{}) string {
-	jsonBytes, err := json.Marshal(rawBlock)
+func getJSONStr(jsonData interface{}) string {
+	jsonBytes, err := json.Marshal(jsonData)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to marshal resource to json: %s", err))
+		return ""
 	}
 
 	return string(jsonBytes)
@@ -252,7 +253,8 @@ func GetBracketsPairs(bracketsInString []Brackets) map[int]BracketPair {
 			bracketShape2BracketsStacks[bracket.Shape] = stack
 		} else {
 			if !ok {
-				logger.Error("malformed json file", "SILENT")
+				logger.Warning("malformed json file", "SILENT")
+				return startCharToBrackets
 			}
 			openBracket := stack[len(stack)-1]
 			stack = stack[:len(stack)-1]
@@ -266,18 +268,8 @@ func GetBracketsPairs(bracketsInString []Brackets) map[int]BracketPair {
 
 // FindScopeInJSON finds the index of a key in json string and return the start and end brackets of the key scope
 func FindScopeInJSON(str string, key string, bracketsPairs map[int]BracketPair, linesRange *structure.Lines) BracketPair {
-	var indexOfKey int
-	if linesRange.Start != -1 {
-		fileLines := strings.Split(str, "\n")
-		beforeRange := strings.Join(fileLines[:linesRange.Start], "\n")
-		rangeLinesStr := strings.Join(fileLines[linesRange.Start:linesRange.End], "\n")
-		indexOfKey = findJSONKeyIndex(rangeLinesStr, key)
-		indexOfKey = len(beforeRange) + indexOfKey
-	} else {
-		indexOfKey = findJSONKeyIndex(str, key)
-	}
-
 	foundBracketPair := BracketPair{}
+	indexOfKey := getKeyIndex(str, key, linesRange)
 
 	nextIndex := math.MaxInt64
 	for index, bracketPair := range bracketsPairs {
@@ -290,6 +282,42 @@ func FindScopeInJSON(str string, key string, bracketsPairs map[int]BracketPair, 
 	}
 
 	return foundBracketPair
+}
+
+// FindOuterScopeInJSON finds the index of a key in json string and return the start and end brackets wrapping the key
+func FindOuterScopeInJSON(str string, key string, bracketsPairs map[int]BracketPair, linesRange *structure.Lines) BracketPair {
+	foundBracketPair := BracketPair{}
+	indexOfKey := getKeyIndex(str, key, linesRange)
+
+	nextIndex := -1
+	for index, bracketPair := range bracketsPairs {
+		if index < indexOfKey {
+			if bracketPair.Open.CharIndex > nextIndex {
+				nextIndex = bracketPair.Open.CharIndex
+				foundBracketPair = bracketPair
+			}
+		}
+	}
+
+	return foundBracketPair
+}
+
+func getKeyIndex(str string, key string, linesRange *structure.Lines) int {
+	var indexOfKey int
+	if linesRange.Start != -1 {
+		fileLines := strings.Split(str, "\n")
+		beforeRange := strings.Join(fileLines[:linesRange.Start], "\n")
+		rangeLinesStr := fileLines[linesRange.Start]
+		if linesRange.Start < linesRange.End {
+			rangeLinesStr = strings.Join(fileLines[linesRange.Start:linesRange.End], "\n")
+		}
+		indexOfKey = findJSONKeyIndex(rangeLinesStr, key)
+		indexOfKey = len(beforeRange) + indexOfKey + 1 // add 1 for the lost newline
+	} else {
+		indexOfKey = findJSONKeyIndex(str, key)
+	}
+
+	return indexOfKey
 }
 
 // FindWrappingBrackets: given a brackets pair, find the pair that wraps them
@@ -315,8 +343,11 @@ func FindParentIdentifier(str string, childIdentifier string) string {
 
 	// get tags brackets
 	childScope := FindScopeInJSON(str, childIdentifier, bracketsPairsInResourceJSON, &structure.Lines{Start: -1, End: -1})
-	// find the brackets that wrap the "tags"
 	wrappingBracketsScope := FindWrappingBrackets(bracketsPairsInResourceJSON, childScope)
+	if childScope.Open.CharIndex == 0 && childScope.Close.CharIndex == 0 {
+		wrappingBracketsScope = FindOuterScopeInJSON(str, childIdentifier, bracketsPairsInResourceJSON, &structure.Lines{Start: -1, End: -1})
+	}
+	// find the brackets that wrap the "tags"
 	// extract the name of the tags' parent (for example, in CFN it will be "Properties")
 	r := regexp.MustCompile("\"")
 	quoteMarksIndexes := r.FindAllStringIndex(str[:wrappingBracketsScope.Open.CharIndex], -1)
