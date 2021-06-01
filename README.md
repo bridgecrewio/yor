@@ -7,7 +7,9 @@
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
- 
+[![Docker pulls](https://img.shields.io/docker/pulls/bridgecrew/yor.svg)](https://hub.docker.com/r/bridgecrew/yor)
+[![GitHub All Releases](https://img.shields.io/github/downloads/bridgecrewio/yor/total)](https://github.com/bridgecrewio/yor/releases)
+
 Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless. 
 
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
