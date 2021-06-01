@@ -16,7 +16,6 @@ require (
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/sanathkr/yaml v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/thepauleh/goserverless v0.0.0-20210509094513-618ed3018bcd
 	github.com/urfave/cli/v2 v2.3.0
