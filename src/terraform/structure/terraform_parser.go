@@ -377,8 +377,13 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 	case ModuleBlockType:
 		tagsAttributeName = "tags"
 		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
-
-		if !isTaggable {
+		moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
+		// source is always wrapped in " front and back
+		moduleSource = strings.Trim(moduleSource, "\" ")
+		if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) {
+			// Don't use the tags label on local modules - the underlying resources will be tagged by themselves
+			isTaggable = false
+		} else {
 			isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
 		}
 	}
