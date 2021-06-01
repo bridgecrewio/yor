@@ -13,6 +13,7 @@ import (
 type TagGroup struct {
 	tags        []tags.ITag
 	SkippedTags []string
+	Dir         string
 }
 
 var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}

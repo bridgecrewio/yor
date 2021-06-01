@@ -28,7 +28,7 @@ type Tag struct {
 	matches      []interface{}
 }
 
-func (t Tag) SatisfyFilters(block structure.IBlock) bool {
+func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	blockTags := append(newTags, existingTags...)
 	satisfyFilters := true
@@ -51,8 +51,10 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 			}
 		}
 		if filterKey == "directory" {
-			// TODO Filter dir
-			fmt.Println()
+			if tagFilterDir != filterValue {
+				satisfyFilters = false
+				break
+			}
 		}
 	}
 	return satisfyFilters
@@ -65,8 +67,9 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
 
 }
 
-func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string) {
 	t.SkippedTags = skippedTags
+	t.Dir = dir
 }
 
 func (t *TagGroup) InitExternalTagGroup() {
@@ -106,7 +109,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	blockTags := make([]tags.ITag, len(newTags)+len(existingTags))
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
-			tagValue, err := calculateTagValue(block, groupTag)
+			tagValue, err := t.calculateTagValue(block, groupTag)
 			if err != nil {
 				logger.Error(err.Error())
 			}
@@ -127,9 +130,9 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	return nil
 }
 
-func calculateTagValue(block structure.IBlock, tag Tag) (tags.ITag, error) {
+func (t *TagGroup) calculateTagValue(block structure.IBlock, tag Tag) (tags.ITag, error) {
 	var retTag = &tags.Tag{}
-	if !tag.SatisfyFilters(block) {
+	if !tag.SatisfyFilters(block, t.Dir) {
 		return nil, nil
 	}
 	retTag.Key = tag.GetKey()
