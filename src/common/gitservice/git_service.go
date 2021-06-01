@@ -18,7 +18,8 @@ import (
 )
 
 type GitService struct {
-	rootDir          string
+	gitRootDir       string
+	scanPathFromRoot string
 	repository       *git.Repository
 	remoteURL        string
 	organization     string
@@ -30,13 +31,16 @@ type GitService struct {
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
 	var err error
+	scanPathFromRoot := "."
 	for {
 		repository, err = git.PlainOpen(rootDir)
 		if err == nil {
 			break
 		}
-
-		newRootDir := filepath.Dir(rootDir)
+		absRoot, _ := filepath.Abs(rootDir)
+		newRootDir := filepath.Dir(absRoot)
+		relPath, _ := filepath.Rel(newRootDir, absRoot)
+		scanPathFromRoot = filepath.Join(relPath, scanPathFromRoot)
 		if rootDir == newRootDir {
 			break
 		}
@@ -47,9 +51,10 @@ func NewGitService(rootDir string) (*GitService, error) {
 	}
 
 	gitService := GitService{
-		rootDir:     rootDir,
-		repository:  repository,
-		BlameByFile: make(map[string]*git.BlameResult),
+		gitRootDir:       rootDir,
+		scanPathFromRoot: scanPathFromRoot,
+		repository:       repository,
+		BlameByFile:      make(map[string]*git.BlameResult),
 	}
 
 	err = gitService.setOrgAndName()
@@ -75,19 +80,23 @@ func (g *GitService) setOrgAndName() error {
 			}
 			// remove leading '/' from path and trailing '.git. suffix, then split by '/'
 			endpointPathParts := strings.Split(strings.TrimSuffix(strings.TrimLeft(endpoint.Path, "/"), ".git"), "/")
-			if len(endpointPathParts) != 2 {
+			if len(endpointPathParts) < 2 {
 				return fmt.Errorf("invalid format of endpoint path: %s", endpoint.Path)
 			}
 			g.organization = endpointPathParts[0]
-			g.repoName = endpointPathParts[1]
+			g.repoName = strings.Join(endpointPathParts[1:], "/")
 			break
 		}
 	}
 
 	return nil
 }
-func (g *GitService) ComputeRelativeFilePath(filepath string) string {
-	return strings.ReplaceAll(filepath, fmt.Sprintf("%s/", g.rootDir), "")
+
+func (g *GitService) ComputeRelativeFilePath(fp string) string {
+	if strings.HasPrefix(fp, g.gitRootDir) {
+		return strings.ReplaceAll(fp, fmt.Sprintf("%s/", g.gitRootDir), "")
+	}
+	return filepath.Join(g.scanPathFromRoot, fp)
 }
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines) (*GitBlame, error) {

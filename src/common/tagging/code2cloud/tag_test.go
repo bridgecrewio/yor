@@ -50,7 +50,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 			},
 		}
 
-		tagGroup.CreateTagsForBlock(block)
+		_ = tagGroup.CreateTagsForBlock(block)
 		assert.Equal(t, 1, len(block.NewTags))
 	})
 }

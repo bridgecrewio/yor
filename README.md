@@ -1,14 +1,14 @@
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
-[![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
+[![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor) 
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-80%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-83%25-brightgreen.svg?longCache=true&style=flat)</a>
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
  
-Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless.
+Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless. 
 
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
@@ -20,7 +20,9 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
 
 ## Demo
-### Attributing a directory with tags by user input
+[![](docs/yor_tag_and_trace_recording.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_tag_and_trace_recording.gif)
+
+<!-- ### Attributing a directory with tags by user input
 [![](docs/yor_terragoat_simple.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_terragoat_simple.gif)
 
 ### Attributing a resource to an owner
@@ -33,7 +35,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 [![](docs/yor_trace.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_trace.gif)
 
 ### Trace cloud resource to IaC code
-[![](docs/yor_file.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_file.gif)
+[![](docs/yor_file.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_file.gif) -->
 
 ## **Table of contents**
 
@@ -44,6 +46,21 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Getting Started
 
 ### Installation
+MacOS
+```sh
+brew tap bridgecrewio/tap
+brew install bridgecrewio/tap/yor
+```
+__OR__
+
+Docker
+```sh
+docker pull bridgecrew/yor
+
+docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
+```
+
+
 GitHub Action
 ```yaml
 name: IaC trace
@@ -71,19 +88,7 @@ jobs:
         uses: bridgecrewio/yor-action@main
 ```
 
-MacOS
-```sh
-brew tap bridgecrewio/tap
-brew install bridgecrewio/tap/yor
-```
-__OR__
 
-Docker
-```sh
-docker pull bridgecrew/yor
-
-docker run --tty --volume /local/path/to/tf:/tf bridgecrew/yor tag --directory /tf
-```
 
 Pre-commit
 ```yaml
@@ -105,65 +110,65 @@ Pre-commit
 
 ```sh
  # Apply all the tags in yor on the directory tree terraform.
- ./yor tag --directory terraform/
+ yor tag --directory terraform/
 
 # Apply all the tags in yor except the tags git_last_modified_by and yor_trace.
- ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
+ yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
 
 # Apply only the tags under the git tag group.
- ./yor tag --tag-groups git --directory terraform/
+ yor tag --tag-groups git --directory terraform/
 
 # Apply key-value tags on a specific directory
  export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
- ./yor tag --tag-groups simple --directory terraform/dev/
+ yor tag --tag-groups simple --directory terraform/dev/
 
 ```
 
 `-o` : Modify output formats.
 
 ```sh
-./yor tag -d . -o cli
+yor tag -d . -o cli
 # default cli output
 
-./yor tag -d . -o json
+yor tag -d . -o json
 # json output
 
-./yor tag -d . --output cli --output-json-file result.json
+yor tag -d . --output cli --output-json-file result.json
 # print cli output and additional output to file on json file -- enables programmatic analysis alongside printing human readable result
 ```
 
 `--skip-tags`: Specify only named tags (allow list) or run all tags except those listed (deny list).
 
 ```sh
-./yor tag -d . --skip-tags yor_trace
+yor tag -d . --skip-tags yor_trace
 ## Run all but yor_trace
 
-./yor tag -d . --skip-tags yor_trace,git_modifiers
+yor tag -d . --skip-tags yor_trace,git_modifiers
 ## Run all but yor_trace and git_modifiers
 
-./yor tag -d . --skip-tags git*
+yor tag -d . --skip-tags git*
 ## Run all tags except tags with specified patterns
 ```
 
 `skip-dirs` : Skip directory paths you can define paths that will not be tagged.
 
 ```sh
-./yor tag -d path/to/files
+yor tag -d path/to/files
 ## Run on the directory path/to/files
 
-./yor tag -d path/to/files --skip-dirs path/to/files/skip,path/to/files/another/skip2
+yor tag -d path/to/files --skip-dirs path/to/files/skip,path/to/files/another/skip2
 ## Run yor on the directory path/to/files, skipping path/to/files/skip/ and path/to/files/another/skip2/
 ```
 
 `list-tag`
 
 ```sh
-./yor list-tag-groups
+yor list-tag-groups
  # List tag classes that are built into yor.
  
-./yor list-tags
+yor list-tags
  # List all the tags built into yor
-./yor list-tags --tag-groups git
+yor list-tags --tag-groups git
  
  # List all the tags built into yor under the tag group git
 ```

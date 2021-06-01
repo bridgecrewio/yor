@@ -6,12 +6,14 @@ nav_order: 3
 ---
 # Applying Tags
 
-The following commands are used to apply tags. In order to integrate Yor into GitHub Actions which provides a simple, automatic way of applying tags to your IaC both during pull request review and as part of any build process - check implementation [here](/docs/docs/2.Using Yor/installation.md#integrate-yor-with-github-actions)
+The following commands are used to apply tags. GitHub Actions provides a simple, automatic way of applying tags to your IaC 
+both during pull request review and as part of any build process. In order to integrate Yor into follow the installation 
+[here](../2.Using Yor/installation.md#integrate-yor-with-github-actions)
 
 ## Apply Built-in Tags
 To apply all configured tags run the following commands:
 
-`./yor tag` - apply the built-in tags and any [custom](/docs/3.Custom Taggers/customTagExamples.md) tags on a directory
+`./yor tag` - apply the built-in tags and any [custom](../3.Custom Taggers/customTagExamples.md) tags on a directory
    ```sh
     ./yor tag --directory terraform/
     # Apply all the tags in yor on the directory tree terraform/
@@ -51,6 +53,13 @@ Add a hook to your **.pre-commit-config.yaml** and change the args and version n
         types: [terraform]
         pass_filenames: false
 ```
+
+## Use case: module tagging
+Yor supports in terraform [`module` blocks](https://www.terraform.io/docs/language/modules/syntax.html) tagging as follows:
+1. Local module blocks - tags will be applied on resources that were created based on it ans supports tagging.
+2. External module blocks - tags will be applied on such module block and won't be necessarily applied on resources that were created based on it. Such form of tagging is based on external module definition and not gurunteed by Yor.
+
+
 
 ## Skipping Tags
 

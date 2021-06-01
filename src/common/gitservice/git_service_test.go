@@ -35,6 +35,17 @@ func TestNewGitService(t *testing.T) {
 		assert.Equal(t, "terragoat", gitService.GetRepoName())
 	})
 
+	t.Run("Get correct organization and repo name from deeper gitlab", func(t *testing.T) {
+		gitlabPath := utils.CloneRepo("https://gitlab.com/gitlab-org/configure/examples/gitlab-terraform-aws.git", "4e45d0983ec157376b3389f08e565acdc6f49eee")
+		defer os.RemoveAll(gitlabPath)
+		gitService, err := NewGitService(gitlabPath)
+		if err != nil {
+			t.Errorf("could not initialize git service becauses %s", err)
+		}
+		assert.Equal(t, "gitlab-org", gitService.GetOrganization())
+		assert.Equal(t, "configure/examples/gitlab-terraform-aws", gitService.GetRepoName())
+	})
+
 	t.Run("Fail if gotten to root dir", func(t *testing.T) {
 		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
 		defer os.RemoveAll(terragoatPath)

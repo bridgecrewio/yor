@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      Tags:
+      - Key: new_tag
+        Value: new_val
+      - Key: another_tag
+        Value: another_val
+    DeletionPolicy: Retain

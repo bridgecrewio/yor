@@ -129,8 +129,11 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 }
 
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
-	updatedBlocks := yamlUtils.EncodeBlocksToYaml(readFilePath, blocks)
-	return yamlUtils.WriteYAMLFile(readFilePath, updatedBlocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath],
+	for _, block := range blocks {
+		block := block.(*ServerlessBlock)
+		block.UpdateTags()
+	}
+	return yamlUtils.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath],
 		FunctionTagsAttributeName, FunctionsSectionName)
 }
 

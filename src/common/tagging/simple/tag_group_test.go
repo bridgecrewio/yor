@@ -35,7 +35,7 @@ func TestSimpleTagGroup(t *testing.T) {
 			},
 		}
 
-		tagGroup.CreateTagsForBlock(block)
+		_ = tagGroup.CreateTagsForBlock(block)
 		assert.Equal(t, len(block.NewTags), len(extraTags))
 	})
 

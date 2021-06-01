@@ -5,7 +5,7 @@ title: What is Yor?
 nav_order: 1
 ---
 
-# Overview
+# What is Yor?
 
 Yor is an open-source tool that helps to manage tags consistently across infrastructure as code frameworks such as 
 Terraform, Cloudformation, Kubernetes, and Serverless Framework. Auto-tagging in IaC enables you to trace any resource 
@@ -27,9 +27,11 @@ Yor can tag the following IaC file types:
   * Terraform (for AWS, GCP and Azure)
   * CloudFormation (YAML, JSON)
   * Serverless
-  * K8S (YAML, JSON)
 
 # Built-in Taggers
+
+Yor supports a number of different taggers that can be used to trace and identify resources. The following types of tags are
+included with the Yor distribution.
 
 ## Tracing Tagger
 
@@ -43,7 +45,7 @@ The following tags are supported in Yor:
 
 ```yor_trace``` which is a unique ID provided when a resource is tagged.
 
-For examples see [Use Cases](/docs/4.Use Cases/useCases.md).
+For examples see [Use Cases](../4.Use Cases/useCases.md).
 
 ## Git-based Tagger
 Yor collects data from [git-blame](https://git-scm.com/docs/git-blame) logs to create tags which enable the mapping of individual 
@@ -67,7 +69,13 @@ for the git_last_modified_by tag.
 
 # Custom Taggers
 
-Yor supports Custom taggers using [enviornment variable settings](/docs/3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables), [golang settings](/docs/3.Custom Taggers/customTagExamples.md#adding-custom-tags-using-golang), [YAML configuration files](/docs/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files) and [CLI commands](/docs/3.Custom Taggers/Custom_tagger_YAML.md#custom-tagging-using-cli)
-Using custom tags allows organizations to tag resources to match the development cycle, development flow, or the organization's structure.
+Yor supports Custom taggers to enable you to enhance your resource traceability. Yor supports custom taggers using:
+* [Environment variable settings](../3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables) 
+* [Golang settings](../3.Custom Taggers/customTagExamples.md#adding-custom-tags-using-golang)
+* [YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)  
+* [CLI commands](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagging-using-cli)
+
+Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's 
+structure.
 
 

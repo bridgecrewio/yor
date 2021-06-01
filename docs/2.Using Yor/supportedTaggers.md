@@ -4,9 +4,9 @@ published: true
 title: Supported Taggers
 nav_order: 2
 ---
-# Supported Taggers
+# Viewing Supported Taggers in Your Environment
 
-The following commands are used to see the list of Yor supported taggers. 
+The following commands are used to see the list of Yor supported taggers, both [built-in](../1.Welcome/welcome.md#built-in-taggers) and [custom](../3.Custom Taggers/customTagExamples.md) tags. 
 
 `list-tag-groups` - list the groups of tags that are built into yor
    ```sh
@@ -16,6 +16,12 @@ The following commands are used to see the list of Yor supported taggers.
    ```sh
     ./yor list-tags 
     # List all the tags built into yor
+   ```
+![Environment variables after tagging](../yor_list_tags_after_env_var.png)
+   
+   
+   
+   ```sh
    ./yor list-tags --tag-groups git
     # List all the tags built into yor under the tag group git
     ```

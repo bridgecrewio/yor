@@ -1,0 +1,53 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Sample EBS Volume with EC2 instance template",
+  "Resources": {
+    "NewVolume": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "Size": 100,
+        "Encrypted": true,
+        "AvailabilityZone": "us-west-2a",
+        "Tags": [
+          {
+            "Key": "MyTag",
+            "Value": "TagValue"
+          },
+          {
+            "Key": "git_file",
+            "Value": "temp/git/file.yaml"
+          },
+          {
+            "Key": "git_commit",
+            "Value": "old_commit"
+          },
+          {
+            "Key": "git_modifiers",
+            "Value": "not_bana"
+          },
+          {
+            "Key": "git_last_modified_at",
+            "Value": "2019-09-25 19:19:02"
+          },
+          {
+            "Key": "git_last_modified_by",
+            "Value": "not_bana@gmail.com"
+          },
+          {
+            "Key": "yor_trace",
+            "Value": "8c60f755-243e-4a51-9034-342a6757605b"
+          },
+          {
+            "Key": "git_org",
+            "Value": "bridgecrewio"
+          },
+          {
+            "Key": "git_repo",
+            "Value": "yor"
+          }
+        ]
+      },
+      "DeletionPolicy": "Snapshot"
+    }
+  }
+}
