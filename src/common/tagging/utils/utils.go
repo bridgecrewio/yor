@@ -5,6 +5,7 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
+	"github.com/bridgecrewio/yor/src/common/tagging/external"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 )
@@ -15,6 +16,7 @@ const (
 	SimpleTagGroupName TagGroupName = "simple"
 	GitTagGroupName    TagGroupName = "git"
 	Code2Cloud         TagGroupName = "code2cloud"
+	ExternalTagName    TagGroupName = "external"
 )
 
 var tagGroupsByName = map[TagGroupName]tagging.ITagGroup{
@@ -32,6 +34,8 @@ func TagGroupsByName(name TagGroupName) tagging.ITagGroup {
 		tagGroup = &gittag.TagGroup{}
 	case Code2Cloud:
 		tagGroup = &code2cloud.TagGroup{}
+	case ExternalTagName:
+		tagGroup = &external.TagGroup{}
 	}
 
 	return tagGroup
@@ -43,6 +47,6 @@ func GetAllTagGroupsNames() []string {
 		tagGroupNames = append(tagGroupNames, string(name))
 	}
 	sort.Strings(tagGroupNames)
-
+	tagGroupNames = append(tagGroupNames, string(ExternalTagName)) // Add the external tag name as the last tag group
 	return tagGroupNames
 }

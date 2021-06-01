@@ -86,6 +86,7 @@ func tagCommand() *cli.Command {
 	outputArg := "output"
 	tagGroupArg := "tag-groups"
 	outputJSONFileArg := "output-json-file"
+	externalConfPath := "config-file"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -101,6 +102,7 @@ func tagCommand() *cli.Command {
 				Output:         c.String(outputArg),
 				OutputJSONFile: c.String(outputJSONFileArg),
 				TagGroups:      c.StringSlice(tagGroupArg),
+				ConfigFile:     c.String(externalConfPath),
 			}
 
 			options.Validate()
@@ -160,6 +162,11 @@ func tagCommand() *cli.Command {
 				Usage:       "Narrow down results to the matching tag groups",
 				Value:       cli.NewStringSlice(utils.GetAllTagGroupsNames()...),
 				DefaultText: "git,code2cloud",
+			},
+			&cli.StringFlag{
+				Name:        externalConfPath,
+				Usage:       "external tag group configuration file path",
+				DefaultText: "/path/to/conf/file/ (.yml/.yaml extension)",
 			},
 		},
 	}

@@ -2,6 +2,7 @@ package clioptions
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -22,6 +23,7 @@ type TagOptions struct {
 	Output         string `validate:"output"`
 	OutputJSONFile string
 	TagGroups      []string `validate:"tagGroupNames"`
+	ConfigFile     string   `validate:"config-file"`
 }
 
 type ListTagsOptions struct {
@@ -31,6 +33,7 @@ type ListTagsOptions struct {
 func (o *TagOptions) Validate() {
 	_ = validator.SetValidationFunc("output", validateOutput)
 	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
+	_ = validator.SetValidationFunc("config-file", validateConfigFile)
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
@@ -67,5 +70,20 @@ func validateOutput(v interface{}, _ string) error {
 		return fmt.Errorf("unsupported output type [%s]. allowed types: %s", val, allowedOutputTypes)
 	}
 
+	return nil
+}
+
+func validateConfigFile(v interface{}, _ string) error {
+	if v != "" {
+		val, ok := v.(string)
+		if !ok {
+			return validator.ErrUnsupported
+		}
+
+		if _, err := os.Stat(val); err != nil {
+			return fmt.Errorf("configuration file %s does not exist", v)
+		}
+
+	}
 	return nil
 }

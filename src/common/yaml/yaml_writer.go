@@ -11,9 +11,8 @@ import (
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/utils"
-	"github.com/thepauleh/goserverless/serverless"
-
 	"github.com/sanathkr/yaml"
+	"github.com/thepauleh/goserverless/serverless"
 )
 
 const SingleIndent = "  "

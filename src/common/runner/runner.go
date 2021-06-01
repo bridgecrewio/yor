@@ -14,6 +14,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/reports"
 	"github.com/bridgecrewio/yor/src/common/tagging"
+	"github.com/bridgecrewio/yor/src/common/tagging/external"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
@@ -30,6 +31,7 @@ type Runner struct {
 	dir               string
 	skipDirs          []string
 	skippedTags       []string
+	configFilePath    string
 }
 
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
@@ -47,6 +49,8 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		tagGroup.InitTagGroup(dir, commands.SkipTags)
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
 			simpleTagGroup.SetTags(extraTags)
+		} else if externalTagGroup, ok := tagGroup.(*external.TagGroup); ok && commands.ConfigFile != "" {
+			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
 		}
 	}
 	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{}, &slsStructure.ServerlessParser{})
@@ -59,7 +63,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	r.dir = commands.Directory
 	r.skippedTags = commands.SkipTags
 	r.skipDirs = commands.SkipDirs
-
+	r.configFilePath = commands.ConfigFile
 	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
