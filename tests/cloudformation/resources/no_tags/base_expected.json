@@ -6,12 +6,12 @@
       "Properties": {
         "Tags": [
           {
-            "Key": "another_tag",
-            "Value": "another_val"
-          },
-          {
             "Key": "new_tag",
             "Value": "new_value"
+          },
+          {
+            "Key": "another_tag",
+            "Value": "another_val"
           }
         ],
         "AccessControl": "PublicRead",
