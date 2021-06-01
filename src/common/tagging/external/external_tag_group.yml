@@ -6,7 +6,7 @@ tag_group:
         default: dev
       filters:
         tags:
-          git_modifiers: tronxd
+          Name: My bucket
           git_repo: yor
         directory: /path/to/some/dir
     - name: team
@@ -17,10 +17,8 @@ tag_group:
               tags:
                 git_modifiers:
                   - rotemavni
-                  - tronxd
+                  - tron47
                   - nimrodkor
-                git_commit: asd12f
-                git_repo: yor
           - platform:
               tags:
                 git_modifiers:
@@ -28,5 +26,5 @@ tag_group:
                   - nofar
       filters:
         tags:
-          yor_trace: 123
+          git_commit: 00193660c248483862c06e2ae96111adfcb683af
         directory: /path/to/some/dir
