@@ -6,9 +6,8 @@ tag_group:
         default: dev
       filters:
         tags:
-          Name: My bucket
           git_repo: yor
-        directory: /path/to/some/dir
+          git_modifiers: tronxd
     - name: team
       value:
         default: interfaces
@@ -27,4 +26,3 @@ tag_group:
       filters:
         tags:
           git_commit: 00193660c248483862c06e2ae96111adfcb683af
-        directory: /path/to/some/dir

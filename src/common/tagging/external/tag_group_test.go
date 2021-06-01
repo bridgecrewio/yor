@@ -37,7 +37,7 @@ func TestSimpleTagGroup(t *testing.T) {
 			logger.Warning(err.Error())
 			t.Fail()
 		}
-		assert.Equal(t, len(block.ExitingTags)+len(block.NewTags), 3)
+		assert.Equal(t, 3, len(block.ExitingTags)+len(block.NewTags))
 	})
 
 	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestSimpleTagGroup(t *testing.T) {
 			logger.Warning(err.Error())
 			t.Fail()
 		}
-		assert.Equal(t, len(block.ExitingTags)+len(block.NewTags), 6)
+		assert.Equal(t, 5, len(block.ExitingTags)+len(block.NewTags))
 	})
 }
 
