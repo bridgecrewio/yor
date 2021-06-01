@@ -5,9 +5,6 @@ tag_group:
       value:
         default: prod
       filters:
-        resource_types:
-          - aws_ec2_instance
-          - aws_security_group
         tags:
           git_modifiers: tronxd
           git_repo: checkov
@@ -30,9 +27,6 @@ tag_group:
                   - milkana
                   - nofar
       filters:
-        resource_types:
-          - aws_ec2_instance
-          - aws_security_group
         tags:
           yor_trace: 123
         directory: /path/to/some/dir
