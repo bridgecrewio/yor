@@ -34,7 +34,8 @@ func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 	copy(blockTags, append(newTags, existingTags...))
 	satisfyFilters := true
 	for filterKey, filterValue := range t.filters {
-		if filterKey == "tags" {
+		switch filterKey {
+		case "tags":
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
 				strFilterValue := filterTagValue
 				if val, ok := filterTagValue.(int); ok {
@@ -49,8 +50,8 @@ func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 				}
 				satisfyFilters = satisfyFilters && foundFilterTag
 			}
-		}
-		if filterKey == "directory" {
+
+		case "directory":
 			if tagFilterDir != filterValue {
 				satisfyFilters = false
 				break

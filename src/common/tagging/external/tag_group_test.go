@@ -1,6 +1,7 @@
 package external
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -12,7 +13,7 @@ import (
 func TestSimpleTagGroup(t *testing.T) {
 
 	t.Run("test tagGroup CreateTagsForBlock default value", func(t *testing.T) {
-		confPath := "external_tag_group.yml"
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil)
 		tagGroup.InitExternalTagGroups(confPath)
@@ -41,7 +42,7 @@ func TestSimpleTagGroup(t *testing.T) {
 	})
 
 	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
-		confPath := "external_tag_group.yml"
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil)
 		tagGroup.InitExternalTagGroups(confPath)
