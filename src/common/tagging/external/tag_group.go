@@ -17,23 +17,45 @@ import (
 type TagGroup struct {
 	tagging.TagGroup
 	configFilePath  string
-	config          map[interface{}]interface{}
+	config          *Config
 	tagGroupsByName map[string][]Tag
 }
 
 type Tag struct {
 	tags.ITag
 	defaultValue string
-	filters      map[interface{}]interface{}
-	matches      []interface{}
+	filters      FiltersConfig
+	matches      MatchesConfig
 }
+
+type Config struct {
+	TagGroup []struct {
+		TagGroupName string `yaml:"name"`
+		Tags         TagsConfig
+	} `yaml:"tag_group"`
+}
+
+type TagsConfig []struct {
+	TagKey   string         `yaml:"name"`
+	TagValue TagConfigValue `yaml:"value"`
+	Filters  FiltersConfig  `yaml:"filters"`
+}
+
+type TagConfigValue struct {
+	Default string        `yaml:"default"`
+	Matches MatchesConfig `yaml:"matches"`
+}
+
+type MatchesConfig []interface{}
+
+type FiltersConfig struct{ Tags map[string]interface{} }
 
 func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var blockTags = make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(blockTags, append(newTags, existingTags...))
 	satisfyFilters := true
-	for filterKey, filterValue := range t.filters {
+	for filterKey, filterValue := range t.filters.Tags {
 		switch filterKey {
 		case "tags":
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
@@ -74,7 +96,7 @@ func (t *TagGroup) InitTagGroup(dir string, skippedTags []string) {
 }
 
 func (t *TagGroup) InitExternalTagGroup() {
-	configMap := make(map[interface{}]interface{})
+	configMap := Config{}
 	confBytes, err := ioutil.ReadFile(t.configFilePath)
 	if err != nil {
 		logger.Error(err.Error())
@@ -83,22 +105,16 @@ func (t *TagGroup) InitExternalTagGroup() {
 	if errYaml != nil {
 		logger.Error(errYaml.Error())
 	}
-	t.config = configMap
+	t.config = &configMap
 	t.extractExternalTags()
 }
 
 func (t *TagGroup) extractExternalTags() {
-	tagGroups := t.config["tag_group"]
-	switch tgs := tagGroups.(type) {
-	case map[interface{}]interface{}:
-		groupName := tgs["name"].(string)
-		t.tagGroupsByName[groupName] = t.ExtractExternalGroupsTags(tgs["tags"].([]interface{}))
-	case []interface{}:
-		for _, tagGroup := range tgs {
-			tagGroupMap := tagGroup.(map[interface{}]interface{})
-			groupName := tagGroupMap["name"].(string)
-			t.tagGroupsByName[groupName] = t.ExtractExternalGroupsTags(tagGroupMap["tags"].([]interface{}))
-		}
+	tagGroups := t.config.TagGroup
+	for _, tagGroup := range tagGroups {
+		tagGroupTags := tagGroup.Tags
+		tagGroupName := tagGroup.TagGroupName
+		t.tagGroupsByName[tagGroupName] = t.ExtractExternalGroupsTags(tagGroupTags)
 	}
 }
 
@@ -146,26 +162,26 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 		for _, matchEntry := range tag.matches {
 			for matchValue, matchObj := range matchEntry.(map[interface{}]interface{}) {
 				// Currently, we only allow matches on tags
-				if matchTags, ok := matchObj.(map[interface{}]interface{})["tags"]; ok {
-					for tagName, tagMatch := range matchTags.(map[interface{}]interface{}) {
-						switch match := tagMatch.(type) {
-						case string:
-							for _, blockTag := range blockTags {
-								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && blockTagValue == match {
-									retTag.Value = matchValue.(string)
-								}
+				matchMap := matchObj.(map[interface{}]interface{})
+				for tagName, tagMatch := range matchMap["tags"].(map[interface{}]interface{}) {
+					switch match := tagMatch.(type) {
+					case string:
+						for _, blockTag := range blockTags {
+							blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+							if blockTagKey == tagName && blockTagValue == match {
+								retTag.Value = matchValue.(string)
 							}
-						case []interface{}:
-							for _, blockTag := range blockTags {
-								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && utils.InSlice(match, blockTagValue) {
-									retTag.Value = matchValue.(string)
-								}
+						}
+					case []interface{}:
+						for _, blockTag := range blockTags {
+							blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+							if blockTagKey == tagName && utils.InSlice(match, blockTagValue) {
+								retTag.Value = matchValue.(string)
 							}
 						}
 					}
 				}
+
 			}
 		}
 		return retTag, nil
@@ -175,17 +191,13 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	return Tag{}, fmt.Errorf("Could not compute external tag %s", tag.GetKey())
 }
 
-func (t *TagGroup) ExtractExternalGroupsTags(rawTags []interface{}) []Tag {
+func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 	var groupTags []Tag
-	for _, rawTag := range rawTags {
-		var groupFilters map[interface{}]interface{}
-		rawTagMap := rawTag.(map[interface{}]interface{})
-		tagKey := rawTagMap["name"].(string)
-		if _, okFilters := rawTagMap["filters"]; okFilters {
-			groupFilters = rawTagMap["filters"].(map[interface{}]interface{})
-		}
-		tagValueObj := rawTagMap["value"]
-		computedTag, err := parseExternalTag(tagValueObj.(map[interface{}]interface{}), tagKey, groupFilters)
+	for _, tagConfig := range tagsConfig {
+		var groupFilters = tagConfig.Filters
+		tagValueObj := tagConfig.TagValue
+		tagKey := tagConfig.TagKey
+		computedTag, err := parseExternalTag(tagValueObj, tagKey, groupFilters)
 		if err != nil {
 			logger.Error(err.Error())
 		}
@@ -194,19 +206,14 @@ func (t *TagGroup) ExtractExternalGroupsTags(rawTags []interface{}) []Tag {
 	return groupTags
 }
 
-func parseExternalTag(tagValueObj map[interface{}]interface{}, tagKey string, groupFilters map[interface{}]interface{}) (Tag, error) {
+func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters FiltersConfig) (Tag, error) {
 	var parsedTag = Tag{filters: groupFilters}
-	var okDefault, okMatches bool
-	var defaultValue, matches interface{}
-	if defaultValue, okDefault = tagValueObj["default"]; okDefault {
-		parsedTag.defaultValue = defaultValue.(string)
-		parsedTag.ITag = &tags.Tag{Key: tagKey, Value: defaultValue.(string)}
-	}
-	if matches, okMatches = tagValueObj["matches"]; okMatches {
-		parsedTag.matches = matches.([]interface{})
-	}
-	if !okDefault && !okMatches {
+	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
 		return Tag{}, errors.New("please specify either a default tag value and/or a computed tag value")
 	}
+	parsedTag.defaultValue = tagValueObj.Default
+	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: tagValueObj.Default}
+	parsedTag.matches = tagValueObj.Matches
+
 	return parsedTag, nil
 }

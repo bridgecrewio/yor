@@ -1,28 +1,28 @@
 tag_group:
-  name: ownership
-  tags:
-    - name: env
-      value:
-        default: dev
-      filters:
-        tags:
-          git_repo: yor
-          git_modifiers: tronxd
-    - name: team
-      value:
-        default: interfaces
-        matches:
-          - seceng:
-              tags:
-                git_modifiers:
-                  - rotemavni
-                  - tron47
-                  - nimrodkor
-          - platform:
-              tags:
-                git_modifiers:
-                  - milkana
-                  - nofar
-      filters:
-        tags:
-          git_commit: 00193660c248483862c06e2ae96111adfcb683af
+  - name: ownership
+    tags:
+      - name: env
+        value:
+          default: dev
+        filters:
+          tags:
+            git_repo: yor
+            git_modifiers: tronxd
+      - name: team
+        value:
+          default: interfaces
+          matches:
+            - seceng:
+                tags:
+                  git_modifiers:
+                    - rotemavni
+                    - tronxd
+                    - nimrodkor
+            - platform:
+                tags:
+                  git_modifiers:
+                    - milkana
+                    - nofar
+        filters:
+          tags:
+            git_commit: 00193660c248483862c06e2ae96111adfcb683af
