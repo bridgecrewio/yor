@@ -1,12 +1,10 @@
 package structure
 
 import (
-	"bufio"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/json"
@@ -156,31 +154,16 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 	if err != nil {
 		t.Fail()
 	}
-	var expectedHandler, actualHandler *os.File
 	expectedAbs, _ := filepath.Abs(writeFilePath)
 	actualAbs, _ := filepath.Abs(f.Name())
-	expectedHandler, _ = os.OpenFile(expectedAbs, os.O_RDWR, 0755)
-	actualHandler, _ = os.OpenFile(actualAbs, os.O_RDWR|os.O_CREATE, 0755)
-	_, err = expectedHandler.Seek(0, io.SeekStart)
-	if err != nil {
-		t.Fail()
-	}
-	_, err = actualHandler.Seek(0, io.SeekStart)
-	if err != nil {
-		t.Fail()
-	}
+	expectedContent, _ := ioutil.ReadFile(expectedAbs)
+	actualContent, _ := ioutil.ReadFile(actualAbs)
 	defer func() {
-		_ = expectedHandler.Close()
-		_ = actualHandler.Close()
 		_ = os.Remove(f.Name())
 	}()
-	actualReader := bufio.NewScanner(actualHandler)
-	expectedReader := bufio.NewScanner(expectedHandler)
-	for actualReader.Scan() && expectedReader.Scan() {
-		actualLine := actualReader.Text()
-		expectedLine := expectedReader.Text()
-		assert.Equal(t, strings.Trim(actualLine, " \n\t"), strings.Trim(expectedLine, " \n\t"))
-	}
+	expectedString := string(expectedContent)
+	actualString := string(actualContent)
+	assert.Equal(t, expectedString, actualString)
 }
 
 func TestWriteCFN(t *testing.T) {
@@ -204,6 +187,11 @@ func TestWriteCFN(t *testing.T) {
 	t.Run("test untagged CFN json writing with bad indentation", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/json"
 		writeCFNTestHelper(t, directory, "SingleENIwithMultipleEIPs", "json")
+	})
+
+	t.Run("test_multi_resource_tags_last_yaml", func(t *testing.T) {
+		directory, _ := filepath.Abs("../../../tests/cloudformation/resources/issue114")
+		writeCFNTestHelper(t, directory, "template", "yaml")
 	})
 
 }

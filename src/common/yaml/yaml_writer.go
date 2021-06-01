@@ -52,7 +52,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			// get the indentation of the property under the resource name
 			tagAttributeIndent := ExtractIndentationOfLine(oldResourceLines[1])
 			if isCfn {
-				tagAttributeIndent += "  "
+				tagAttributeIndent += SingleIndent
 			}
 			foundPlace := false
 			written := false
@@ -60,7 +60,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 				if len(ExtractIndentationOfLine(line)) < len(tagAttributeIndent) {
 					if foundPlace {
 						resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
-						resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
+						resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent+SingleIndent)...)
 						written = true
 					}
 					resourcesLines = append(resourcesLines, line)
@@ -77,6 +77,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 
 		oldTagsIndent := ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start-oldResourceLinesRange.Start])
+		if isCfn {
+			oldTagsIndent += SingleIndent
+		}
 		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start-oldResourceLinesRange.Start+1]...)                                  // add all the resource's line before the tags
 		resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)...) // add tags
 		// Add any other attributes after the tags
