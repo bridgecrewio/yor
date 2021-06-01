@@ -112,7 +112,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	copy(filteredNewTags, newTags)
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
-			tagValue, err := t.calculateTagValue(block, groupTag)
+			tagValue, err := t.CalculateTagValue(block, groupTag)
 			if err != nil {
 				logger.Error(err.Error())
 			}
@@ -133,7 +133,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	return nil
 }
 
-func (t *TagGroup) calculateTagValue(block structure.IBlock, tag Tag) (tags.ITag, error) {
+func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag, error) {
 	var retTag = &tags.Tag{}
 	if !tag.SatisfyFilters(block, t.Dir) {
 		return nil, nil
