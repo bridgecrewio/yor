@@ -184,10 +184,8 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	}
 	if !tagsExist {
 		tagsLines.Start = tagsLines.End
-	} else {
-		if tagsLines.End == -1 {
-			tagsLines.End = findLastNonEmptyLine(textLines, len(textLines)-1)
-		}
+	} else if tagsLines.End == -1 {
+		tagsLines.End = findLastNonEmptyLine(textLines, len(textLines)-1)
 	}
 	return tagsLines, tagsExist
 }
