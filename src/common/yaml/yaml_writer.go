@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/utils"
@@ -49,7 +48,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 
 		oldResourceTagLines := resourceBlock.GetTagsLines()
-		// if the resource don't contain Tags entry - create it
+		// if the resource doesn't contain Tags entry - create it
 		if oldResourceTagLines.Start == -1 || oldResourceTagLines.End == -1 {
 			// get the indentation of the property under the resource name
 			tagAttributeIndent := ExtractIndentationOfLine(oldResourceLines[1])
@@ -185,19 +184,6 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 		tagsLines.Start = tagsLines.End
 	}
 	return tagsLines, tagsExist
-}
-
-func EncodeBlocksToYaml(readFilePath string, blocks []structure.IBlock) []structure.IBlock {
-	fileFormat := utils.GetFileFormat(readFilePath)
-	if fileFormat == common.YamlFileType.FileFormat || fileFormat == common.YmlFileType.FileFormat {
-		for _, block := range blocks {
-			yamlBlock := block.(IYamlBlock)
-			yamlBlock.UpdateTags()
-		}
-		return blocks
-	}
-	logger.Warning(fmt.Sprintf("unsupported file type %s", fileFormat))
-	return nil
 }
 
 func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) map[string]*structure.Lines {
