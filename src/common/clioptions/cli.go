@@ -74,13 +74,16 @@ func validateOutput(v interface{}, _ string) error {
 }
 
 func validateConfigFile(v interface{}, _ string) error {
-	val, ok := v.(string)
-	if !ok {
-		return validator.ErrUnsupported
-	}
+	if v != "" {
+		val, ok := v.(string)
+		if !ok {
+			return validator.ErrUnsupported
+		}
 
-	if _, err := os.Stat(val); err != nil {
-		return fmt.Errorf("configuration file %s does not exist", v)
+		if _, err := os.Stat(val); err != nil {
+			return fmt.Errorf("configuration file %s does not exist", v)
+		}
+
 	}
 	return nil
 }

@@ -18,6 +18,7 @@ func TestCliArgParsing(t *testing.T) {
 			SkipDirs:       nil,
 			Output:         "cli",
 			OutputJSONFile: "",
+			ConfigFile:     "",
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()
