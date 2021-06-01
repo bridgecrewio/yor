@@ -30,7 +30,8 @@ type Tag struct {
 
 func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
-	newTags = append(newTags, existingTags...)
+	var blockTags = make([]tags.ITag, len(newTags)+len(existingTags))
+	copy(blockTags, append(newTags, existingTags...))
 	satisfyFilters := true
 	for filterKey, filterValue := range t.filters {
 		if filterKey == "tags" {
@@ -40,7 +41,7 @@ func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 					strFilterValue = strconv.Itoa(val)
 				}
 				foundFilterTag := false
-				for _, blockTag := range newTags {
+				for _, blockTag := range blockTags {
 					if blockTag.GetKey() == filterTagKey && blockTag.GetValue() == strFilterValue {
 						foundFilterTag = true
 						break
@@ -107,6 +108,7 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var filteredNewTags = make([]tags.ITag, len(newTags))
+	blockTags := make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(filteredNewTags, newTags)
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
@@ -125,8 +127,8 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 			}
 		}
 	}
-	filteredNewTags = append(filteredNewTags, existingTags...)
-	t.SetTags(filteredNewTags)
+	copy(blockTags, append(filteredNewTags, existingTags...))
+	t.SetTags(blockTags)
 	block.AddNewTags(filteredNewTags)
 	return nil
 }
