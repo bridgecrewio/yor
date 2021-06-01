@@ -3,15 +3,15 @@ tag_group:
   tags:
     - name: env
       value:
-        default: prod
+        default: dev
       filters:
         tags:
           git_modifiers: tronxd
-          git_repo: checkov
+          git_repo: yor
         directory: /path/to/some/dir
     - name: team
       value:
-        default: platform
+        default: interfaces
         matches:
           - seceng:
               tags:

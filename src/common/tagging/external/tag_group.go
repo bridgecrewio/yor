@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -34,9 +35,14 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 	for filterKey, filterValue := range t.filters {
 		if filterKey == "tags" {
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
+				strFilterValue := filterTagValue
+				switch val := filterTagValue.(type) {
+				case int:
+					strFilterValue = strconv.Itoa(val)
+				}
 				foundFilterTag := false
 				for _, blockTag := range blockTags {
-					if blockTag.GetKey() == filterTagKey && blockTag.GetValue() == filterTagValue {
+					if blockTag.GetKey() == filterTagKey && blockTag.GetValue() == strFilterValue {
 						foundFilterTag = true
 						break
 					}

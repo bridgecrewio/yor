@@ -1,60 +1,80 @@
 package external
 
 import (
-	"os"
-	"sort"
 	"testing"
 
+	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSimpleTagGroup(t *testing.T) {
-	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
-		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
+
+	t.Run("test tagGroup CreateTagsForBlock default value", func(t *testing.T) {
+		confPath := "external_tag_group.yml"
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil)
-
-		extraTags := []tags.ITag{
-			&tags.Tag{
-				Key:   "new_tag",
-				Value: "new_value",
-			},
-			&tags.Tag{
-				Key:   "another_custom_value",
-				Value: "custom",
-			},
-		}
-		tagGroup.SetTags(extraTags)
+		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{
-				FilePath:   path,
+				FilePath:   "",
 				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+				},
 			},
 		}
-
-		tagGroup.CreateTagsForBlock(block)
-		assert.Equal(t, len(block.NewTags), len(extraTags))
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		assert.Equal(t, len(block.ExitingTags)+len(block.NewTags), 3)
 	})
 
-	t.Run("Test create tags from env", func(t *testing.T) {
+	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
+		confPath := "external_tag_group.yml"
 		tagGroup := TagGroup{}
-		_ = os.Setenv("YOR_SIMPLE_TAGS", "{\"foo\": \"bar\", \"foo2\": \"bar2\"}")
 		tagGroup.InitTagGroup("", nil)
-		getTags := tagGroup.GetTags()
-
-		expected := []tags.Tag{{Key: "foo", Value: "bar"}, {Key: "foo2", Value: "bar2"}}
-		sort.Slice(getTags, func(i, j int) bool {
-			return getTags[i].GetKey() < getTags[j].GetKey()
-		})
-
-		assert.Equal(t, 2, len(getTags))
-		for i, expectedTag := range expected {
-			assert.Equal(t, expectedTag.Key, getTags[i].GetKey())
-			assert.Equal(t, expectedTag.Value, getTags[i].GetValue())
+		tagGroup.InitExternalTagGroups(confPath)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "asd12f",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
 		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		assert.Equal(t, len(block.ExitingTags)+len(block.NewTags), 6)
 	})
 }
 

@@ -4,7 +4,6 @@ resource "aws_s3_bucket" "a" {
 
   tags = {
     Name = "My bucket"
-    Environment = "Production"
   }
 }
 
@@ -13,8 +12,7 @@ resource "aws_s3_bucket" "b" {
   acl = "private"
 
   tags = {
-    Name = "My bucket"
-    Environment = "Dev"
+    Name = "My other bucket"
   }
 }
 
