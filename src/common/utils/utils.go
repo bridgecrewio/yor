@@ -17,7 +17,7 @@ import (
 )
 
 // RemoveGcpInvalidChars Source of regex: https://cloud.google.com/compute/docs/labeling-resources
-var RemoveGcpInvalidChars = regexp.MustCompile("[^\\p{Ll}\\p{Lo}\\p{N}_-]")
+var RemoveGcpInvalidChars = regexp.MustCompile(`[^\p{Ll}\p{Lo}\p{N}_-]`)
 
 func InSlice(slice interface{}, elem interface{}) bool {
 	for _, e := range convertToInterfaceSlice(slice) {
