@@ -1,3 +1,3 @@
 package common
 
-const Version = "0.1.44"
+const Version = "0.1.45"
