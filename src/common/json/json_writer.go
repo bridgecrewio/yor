@@ -271,7 +271,7 @@ func FindScopeInJSON(str string, key string, bracketsPairs map[int]BracketPair, 
 	foundBracketPair := BracketPair{}
 	indexOfKey := getKeyIndex(str, key, linesRange)
 
-	nextIndex := math.MaxInt64
+	nextIndex := math.MaxInt32
 	for index, bracketPair := range bracketsPairs {
 		if index > indexOfKey {
 			if bracketPair.Open.CharIndex < nextIndex {
