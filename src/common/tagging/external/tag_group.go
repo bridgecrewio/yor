@@ -30,9 +30,9 @@ type Tag struct {
 
 type Config struct {
 	TagGroup []struct {
-		TagGroupName string `yaml:"name"`
-		Tags         TagsConfig
-	} `yaml:"tag_group"`
+		TagGroupName string     `yaml:"name"`
+		Tags         TagsConfig `yaml:"tags"`
+	} `yaml:"tag_groups"`
 }
 
 type TagsConfig []struct {
