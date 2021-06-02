@@ -91,13 +91,15 @@ func (t *TerraformModule) GetModulesDirectories() []string {
 	modulesDirectories := []string{t.rootDir}
 
 	for _, moduleCall := range t.tfModule.ModuleCalls {
-		childModuleDir := path.Join(t.rootDir, moduleCall.Source)
-		childModule := NewTerraformModule(childModuleDir)
-		childModulesDirectories := childModule.GetModulesDirectories()
-		for _, childDirPath := range childModulesDirectories {
-			if _, err := os.Stat(childDirPath); !os.IsNotExist(err) && !utils.InSlice(modulesDirectories, childDirPath) {
-				// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
-				modulesDirectories = append(modulesDirectories, childDirPath)
+		if !isRemoteModule(moduleCall.Source) && !isTerraformRegistryModule(moduleCall.Source) {
+			childModuleDir := path.Join(t.rootDir, moduleCall.Source)
+			childModule := NewTerraformModule(childModuleDir)
+			childModulesDirectories := childModule.GetModulesDirectories()
+			for _, childDirPath := range childModulesDirectories {
+				if _, err := os.Stat(childDirPath); !os.IsNotExist(err) && !utils.InSlice(modulesDirectories, childDirPath) {
+					// if directory exists (local module) and modulesDirectories doesn't contain it yet, add it
+					modulesDirectories = append(modulesDirectories, childDirPath)
+				}
 			}
 		}
 	}
