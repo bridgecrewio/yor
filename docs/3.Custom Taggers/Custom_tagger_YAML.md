@@ -69,10 +69,10 @@ value:
         yor_trace: 123
    directory: /path/to/some/dir
 ```
-6. You can also create custom tag groups using YAML-based configuration by adding `tag_group` field + adding its `name` and `tags` sequence which includes tag items as mentioned above. In the example below - tag group named `ownership` includes two custom tags: `env` and `team`.
+6. You can also create custom tag groups using YAML-based configuration by adding `tag_groups` field + adding its `name` and `tags` sequence which includes tag items as mentioned above. In the example below - tag group named `ownership` includes two custom tags: `env` and `team`.
 
 ```
-tag_group:
+tag_groups:
   name: ownership
   tags:
     - name: env
