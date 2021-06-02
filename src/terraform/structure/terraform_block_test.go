@@ -7,6 +7,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/code2cloud"
 	"github.com/bridgecrewio/yor/src/common/tagging/gittag"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -197,4 +198,11 @@ func TestTerrraformBlock(t *testing.T) {
 		}
 	})
 
+	t.Run("is_gcp_block_test", func(t *testing.T) {
+		gcpBlock := &TerraformBlock{HclSyntaxBlock: &hclsyntax.Block{Labels: []string{"google_storage_bucket", "test_gcs_bucket"}}}
+		awsBlock := &TerraformBlock{HclSyntaxBlock: &hclsyntax.Block{Labels: []string{"aws_s3_bucket", "test_s3_bucket"}}}
+
+		assert.True(t, gcpBlock.IsGCPBlock())
+		assert.False(t, awsBlock.IsGCPBlock())
+	})
 }

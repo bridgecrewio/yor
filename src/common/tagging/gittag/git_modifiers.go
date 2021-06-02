@@ -15,7 +15,7 @@ type GitModifiersTag struct {
 }
 
 func (t *GitModifiersTag) Init() {
-	t.Key = "git_modifiers"
+	t.Key = gitModifiersTagKey
 }
 
 func (t *GitModifiersTag) CalculateValue(data interface{}) (tags.ITag, error) {

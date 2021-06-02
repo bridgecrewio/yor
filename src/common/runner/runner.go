@@ -86,7 +86,7 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	}
 
 	for _, file := range files {
-		logger.Info("Tagging %v\n", file)
+		logger.Info(fmt.Sprintf("Tagging %v\n", file))
 		r.TagFile(file)
 	}
 
@@ -96,7 +96,7 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
-			logger.Info("Skipping", file)
+			logger.Debug(fmt.Sprintf("Skipping %v", file))
 			continue
 		}
 		blocks, err := parser.ParseFile(file)

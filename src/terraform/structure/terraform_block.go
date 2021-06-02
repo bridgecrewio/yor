@@ -55,3 +55,7 @@ func (b *TerraformBlock) GetTagsLines() structure.Lines {
 func (b *TerraformBlock) GetSeparator() string {
 	return "="
 }
+
+func (b *TerraformBlock) IsGCPBlock() bool {
+	return strings.HasPrefix(b.GetResourceID(), "google_")
+}
