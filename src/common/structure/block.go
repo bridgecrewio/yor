@@ -30,6 +30,7 @@ type IBlock interface {
 	GetTagsLines() Lines
 	GetSeparator() string
 	GetTagsAttributeName() string
+	IsGCPBlock() bool
 }
 
 type Block struct {
@@ -186,4 +187,8 @@ func (b *Block) GetTraceID() string {
 
 func (b *Block) GetTagsAttributeName() string {
 	return b.TagsAttributeName
+}
+
+func (b *Block) IsGCPBlock() bool {
+	return false
 }

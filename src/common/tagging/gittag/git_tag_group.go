@@ -3,6 +3,7 @@ package gittag
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/bridgecrewio/yor/src/common/gitservice"
@@ -28,6 +29,11 @@ type fileLineMapper struct {
 	originToGit map[int]int
 	gitToOrigin map[int]int
 }
+
+const gitModifiersTagKey = "git_modifiers"
+const gitLastModifiedAtTagKey = "git_last_modified_at"
+const gitLastModifiedByTagKey = "git_last_modified_by"
+const gitFileTagKey = "git_file"
 
 func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
@@ -88,7 +94,16 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	if !t.hasNonTagChanges(blame, block) {
 		return nil
 	}
-	return t.UpdateBlockTags(block, blame)
+	err = t.UpdateBlockTags(block, blame)
+	if err != nil {
+		return err
+	}
+	if block.IsGCPBlock() {
+		for _, tag := range block.GetNewTags() {
+			t.cleanGCPTagValue(tag)
+		}
+	}
+	return nil
 }
 
 func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) structure.Lines {
@@ -197,4 +212,27 @@ func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.
 	}
 
 	return false
+}
+
+func (t *TagGroup) cleanGCPTagValue(val tags.ITag) {
+	updated := val.GetValue()
+	switch val.GetKey() {
+	case gitModifiersTagKey:
+		modifiers := strings.Split(updated, "/")
+		for i, m := range modifiers {
+			modifiers[i] = utils.RemoveGcpInvalidChars.ReplaceAllString(m, "")
+		}
+		updated = strings.Join(modifiers, "__")
+	case gitLastModifiedAtTagKey:
+		updated = strings.ReplaceAll(updated, " ", "-")
+		updated = strings.ReplaceAll(updated, ":", "-")
+	case gitFileTagKey:
+		updated = strings.ReplaceAll(updated, "/", "__")
+		updated = strings.ReplaceAll(updated, ".", "_")
+	case gitLastModifiedByTagKey:
+		updated = strings.Split(updated, "@")[0]
+		updated = utils.RemoveGcpInvalidChars.ReplaceAllString(updated, "")
+	}
+
+	val.SetValue(updated)
 }

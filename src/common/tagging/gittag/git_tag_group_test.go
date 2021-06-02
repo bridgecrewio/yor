@@ -7,6 +7,8 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
 	"github.com/go-git/go-git/v5"
@@ -61,6 +63,22 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 		gittagGroup.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], gittagGroup.fileLinesMapper[filePath].originToGit)
 		assert.Equal(t, expectedMapping["gitToOrigin"], gittagGroup.fileLinesMapper[filePath].gitToOrigin)
+	})
+	t.Run("test_gcp_tag_cleansing", func(t *testing.T) {
+		gittagGroup := TagGroup{}
+		tagsList := []tags.ITag{
+			&tags.Tag{Key: gitFileTagKey, Value: "test/to/path.tf"},
+			&tags.Tag{Key: gitModifiersTagKey, Value: "bana/shati"},
+			&tags.Tag{Key: gitLastModifiedAtTagKey, Value: "2021-06-02 07:53:27"},
+			&tags.Tag{Key: gitLastModifiedByTagKey, Value: "gandalf@bridgecrew.io"},
+		}
+		for _, tag := range tagsList {
+			gittagGroup.cleanGCPTagValue(tag)
+		}
+		for _, tag := range tagsList {
+			validated := utils.RemoveGcpInvalidChars.ReplaceAllString(tag.GetValue(), "")
+			assert.Equal(t, validated, tag.GetValue())
+		}
 	})
 }
 
