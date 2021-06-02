@@ -1,4 +1,4 @@
-tag_group:
+tag_groups:
   - name: ownership
     tags:
       - name: env
