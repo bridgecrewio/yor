@@ -55,9 +55,9 @@ Add a hook to your **.pre-commit-config.yaml** and change the args and version n
 ```
 
 ## Use case: module tagging
-Yor supports in terraform [`module` blocks](https://www.terraform.io/docs/language/modules/syntax.html) tagging as follows:
-1. Local module blocks - tags will be applied on resources that were created based on it ans supports tagging.
-2. External module blocks - tags will be applied on such module block and won't be necessarily applied on resources that were created based on it. Such form of tagging is based on external module definition and not gurunteed by Yor.
+Yor supports in terraform [`module` blocks](https://www.terraform.io/docs/language/modules/sources.html) tagging as follows:
+1. Local module blocks - tags will be applied on resources that were created based on it and supports tagging.
+2. External module blocks - tags will be applied on such module block and won't be necessarily applied on resources that were created upon it. Such form of tagging is based on external module definition and not gurunteed by Yor.
 
 
 
