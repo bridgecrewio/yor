@@ -73,37 +73,33 @@ value:
 
 ```
 tag_groups:
-  name: ownership
-  tags:
-    - name: env
-      value:
-        default: prod
-      filters:
-        tags:
-          git_modifiers: tronxd
-          git_repo: checkov
-        directory: /path/to/some/dir
-    - name: team
-      value:
-        default: interfaces
-        matches:
-          - devops:
-              tags:
-                git_modifiers:
-                  - amyn
-                  - tronxd
-                  - maxg
-                git_commit: asd12f
-                git_repo: yor
-          - dev1:
-              tags:
-                git_modifiers:
-                  - elianf
-                  - donnyk
-      filters:
-        tags:
-          yor_trace: 123
-        directory: /path/to/some/dir
+  - name: ownership
+    tags:
+      - name: env
+        value:
+          default: dev
+        filters:
+          tags:
+            git_repo: yor
+            git_modifiers: tronxd
+      - name: team
+        value:
+          default: interfaces
+          matches:
+            - seceng:
+                tags:
+                  git_modifiers:
+                    - rotemavni
+                    - tronxd
+                    - nimrodkor
+            - platform:
+                tags:
+                  git_modifiers:
+                    - milkana
+                    - nofar
+        filters:
+          tags:
+            git_commit: 00193660c248483862c06e2ae96111adfcb683af
 ```
 
 ## Custom tagging using CLI
