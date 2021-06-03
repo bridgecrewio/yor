@@ -34,6 +34,7 @@ const gitModifiersTagKey = "git_modifiers"
 const gitLastModifiedAtTagKey = "git_last_modified_at"
 const gitLastModifiedByTagKey = "git_last_modified_by"
 const gitFileTagKey = "git_file"
+const gitRepoTagKey = "git_repo"
 
 func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
@@ -232,6 +233,9 @@ func (t *TagGroup) cleanGCPTagValue(val tags.ITag) {
 	case gitLastModifiedByTagKey:
 		updated = strings.Split(updated, "@")[0]
 		updated = utils.RemoveGcpInvalidChars.ReplaceAllString(updated, "")
+	case gitRepoTagKey:
+		updated = strings.ReplaceAll(updated, "/", "__")
+		updated = strings.ReplaceAll(updated, ".", "_")
 	}
 
 	val.SetValue(updated)

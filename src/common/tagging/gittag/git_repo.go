@@ -13,7 +13,7 @@ type GitRepoTag struct {
 }
 
 func (t *GitRepoTag) Init() {
-	t.Key = "git_repo"
+	t.Key = gitRepoTagKey
 }
 
 func (t *GitRepoTag) CalculateValue(data interface{}) (tags.ITag, error) {
