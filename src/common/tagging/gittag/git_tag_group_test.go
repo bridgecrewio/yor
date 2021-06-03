@@ -71,6 +71,7 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 			&tags.Tag{Key: gitModifiersTagKey, Value: "bana/shati"},
 			&tags.Tag{Key: gitLastModifiedAtTagKey, Value: "2021-06-02 07:53:27"},
 			&tags.Tag{Key: gitLastModifiedByTagKey, Value: "gandalf@bridgecrew.io"},
+			&tags.Tag{Key: gitRepoTagKey, Value: "path/to/repo.git"},
 		}
 		for _, tag := range tagsList {
 			gittagGroup.cleanGCPTagValue(tag)
