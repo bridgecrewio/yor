@@ -69,7 +69,9 @@ value:
         yor_trace: 123
    directory: /path/to/some/dir
 ```
-6. You can also create custom tag groups using YAML-based configuration by adding `tag_groups` field + adding its `name` and `tags` sequence which includes tag items as mentioned above. In the example below - tag group named `ownership` includes two custom tags: `env` and `team`.
+6. You can create custom tag groups using the YAML-based configuration. Add the `tag_groups` field, add a
+   `name`, and a `tags` sequence which includes the tag items mentioned above. In the example below, shows a tag group 
+   named `ownership` which includes the two custom tags: `env` and `team`.
 
 ```
 tag_groups:
@@ -104,7 +106,7 @@ tag_groups:
 
 ## Custom tagging using CLI
 
-You can use some YAML configuration capabilities in a CLI command. 
+Some YAML configuration capabilities are available in the CLI. Some commands available are:
 1. `--tag-name`: define tag name
 2. `--tag-value`: define tag value
 3. `-filter-tags`: tag resources that have tags as defined. Use an array [] to support multiple values and to support `AND` logic between tags
