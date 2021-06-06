@@ -157,6 +157,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,${{ needs.create-release.outputs.version }}"
+      - name: Update Docker Hub README
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: bridgecrew/yor
   formula:
     name: Update Homebrew formula
     needs: create-release
