@@ -21,7 +21,7 @@ Use the following commands to display the tags that are currently used.
 # json output
 
 ./yor tag -d . --output cli --output-json-file result.json
-# will print cli output and additional output to file on json file -- enables programmatic analysis alongside printing human readable result
+# will print cli output and additional output to file on json file -- enables programatic analysis alongside printing human readable result
 ```
 
 For a JSON file example see 
