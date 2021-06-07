@@ -55,6 +55,30 @@ func TestMapBracketsInFile(t *testing.T) {
 	})
 }
 
+func TestTagWriting(t *testing.T) {
+	t.Run("Test UpdateExistingTags", func(t *testing.T) {
+		tagLinesList := []string{
+			"[",
+			"  {",
+			`    "Value":"Reverse",`,
+			`    "Key": "RK"`,
+			"  },",
+			"  {",
+			`    "Key" : "DK",`,
+			`    "Value" : "Direct"`,
+			"  }",
+			"]",
+		}
+		UpdateExistingTags(tagLinesList, []*tags.TagDiff{
+			{Key: "RK", NewValue: "ReverseCorrect", PrevValue: "Reverse"},
+			{Key: "DK", NewValue: "DirectCorrect", PrevValue: "Direct"},
+		})
+
+		assert.Equal(t, `    "Value": "ReverseCorrect",`, tagLinesList[2])
+		assert.Equal(t, `    "Value": "DirectCorrect"`, tagLinesList[7])
+	})
+}
+
 func TestGetBracketsPairs(t *testing.T) {
 	t.Run("one line, no nesting", func(t *testing.T) {
 		str := "{}[] not brackets"

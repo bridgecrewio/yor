@@ -8,18 +8,32 @@
         "Size": 100,
         "Encrypted": true,
         "Tags": [
-            {
-              "Key": "MyTag",
-              "Value": "TagValue"
-            },
-            {
-              "Key": "new_tag",
-              "Value": "new_value"
+          {
+            "Key": "MyTag",
+            "Value": "TagValue"
+          },
+          {
+            "Key": "RegionTag",
+            "Value": {
+              "Ref": "AWS::Region"
             }
-          ],
+          },
+          {
+            "Key": "new_tag",
+            "Value": "new_value"
+          }
+        ],
         "AvailabilityZone": "us-west-2a"
       },
       "DeletionPolicy": "Snapshot"
+    }
+  },
+  "Outputs": {
+    "VolumeId": {
+      "Value": "NewVolume",
+      "Export": {
+        "Name": "NewVolume"
+      }
     }
   }
 }
