@@ -252,7 +252,7 @@ func TestMapResourcesLineJSON(t *testing.T) {
 			},
 			wantLines: map[string]*structure.Lines{"NewVolume": {
 				Start: 5,
-				End:   19,
+				End:   25,
 			}},
 		},
 		{
