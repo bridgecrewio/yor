@@ -6,8 +6,7 @@ nav_order: 1
 ---
 
 # Creating and Applying Custom Tags
-Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's
-structure.
+Using custom tags allows organizations to tag resources to match the development cycle, development flow, or the organization's structure.
 
 Yor supports several ways of adding custom tags:
 1. [Using Environment Variables - Simple tags with constant key-value](#adding-simple-tags-using-environment-variables)
@@ -24,16 +23,15 @@ To add tags with constant key-value pairs, set the environment variable `YOR_SIM
 with a JSON object detailing all key value pairs. For example:
 ```sh
 export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
-# When yor is run, all resources will be tagged with these two tags as well.
+# When yor is run, all resources will be tagged by these two tags as well.
 ```
 
-For example:
+For instance, running -
 ```sh
 export YOR_SIMPLE_TAGS='{"team": "devops", "env": "prod"}'
 ```
-You can see the added tags using the `./yor --list-tags` command.
-
-![Environment variables after tagging](../yor_list_tags_after_env_var.png)
+will add these tags as part of yor run, as shown once running `./yor --list-tags` command:
+![](../yor_list_tags_after_env_var.png)
 
 ## Adding Custom Tags Using Golang
 Use the following code samples to add tags using Go. 
@@ -50,7 +48,7 @@ Use the following code samples to add tags using Go.
     ```
 4. Run `go build -gcflags="all=-N -l" -buildmode=plugin -o <plugin-dir>/extra_tags.so <plugin-dir>/*.go`
 
-For examples see the [example](https://github.com/bridgecrewio/yor/tree/main/tests/yor_plugins/example) file.
+For examples see the [example](../../tests/yor_plugins/example) file.
 
 ### Adding Complex Tags
 1. Create a tagger struct, implementing the `ITagGroup` interface.
@@ -85,10 +83,10 @@ For examples see the [example](https://github.com/bridgecrewio/yor/tree/main/tes
     var ExtraTaggers = []interface{}{&CustomTagger{}}
     ```
 
-For examples see the [example](https://github.com/bridgecrewio/yor/tree/main/tests/yor_plugins/example) file.
+For examples see the [example](../../tests/yor_plugins/example) file.
 
 ## Running Yor with Custom Taggers
-Use the following example to run Yor with custom tags:
+Use the following example to run Yor with the Custom Taggers:
 ```sh
 ./yor tag --custom-tagging tests/yor_plugins/example
 # run yor with custom tags located in tests/yor_plugins/example
