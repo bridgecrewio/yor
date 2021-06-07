@@ -43,7 +43,7 @@ multiple cloud providers.
 ### Supported Yor Trace Tags
 The following tags are supported in Yor:
 
-```yor_trace``` which is a unique ID provided when a resource is tagged.
+```yor_trace``` is a unique ID provided when a resource is tagged.
 
 For examples see [Use Cases](../4.Use Cases/useCases.md).
 
@@ -72,7 +72,7 @@ for the git_last_modified_by tag.
 Yor supports Custom taggers and tag groups to enable you to enhance your resource traceability. Yor supports custom taggers using:
 * [Environment variable settings](../3.Custom Taggers/customTagExamples.md#adding-simple-tags-using-environment-variables) 
 * [Golang settings](../3.Custom Taggers/customTagExamples.md#adding-custom-tags-using-golang)
-* [YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)  
+* [YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml-configuration-files)  
 * [CLI commands](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagging-using-cli)
 
 Using custom tags provides organizations with the ability to tag resources to match the development cycle, development flow, or the organization's 
