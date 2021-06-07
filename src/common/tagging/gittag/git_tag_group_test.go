@@ -39,7 +39,8 @@ func TestGitTagGroup(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		assert.Equal(t, 7, len(block.NewTags))
+		// Repo & Org tag should not be created
+		assert.Equal(t, 5, len(block.NewTags))
 	})
 }
 
