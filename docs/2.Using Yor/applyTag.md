@@ -90,6 +90,34 @@ module "remote_module_2" {
 }
 ```
 
+### Tagging examples:
+#### Module with remote path
+##### Before
+```terraform
+module "remote_module" {
+   # This is a remote module (from the registry). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "terraform-aws-modules/vpc/aws"
+   tags   = {
+      env = var.env
+   }
+}
+```
+
+##### After
+```terraform
+module "remote_module" {
+   # This is a remote module (from the registry). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "terraform-aws-modules/vpc/aws"
+   tags   = {
+      env       = var.env
+      yor_trace = "912066a1-31a3-4a08-911b-0b06d9eac64e"
+      ...
+      ...
+   }
+}
+```
 
 
 ## Skipping Tags
