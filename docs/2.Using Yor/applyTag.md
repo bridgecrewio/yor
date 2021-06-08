@@ -56,7 +56,7 @@ Add a hook to your **.pre-commit-config.yaml** and change the args and version n
 
 ## Use case: module tagging
 Yor supports terraform [`module` blocks](https://www.terraform.io/docs/language/modules/sources.html) tagging using:
-1. modules with a local path - will not be modified.
+1. modules with a local path - will not be modified. The underlying resources will be tagged separately.
 2. modules with a remote path - tags will be added according to the module block metadata.
    Yor does not download the remote module and modify it, but rather considers it as a black box.
    
