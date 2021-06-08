@@ -33,6 +33,12 @@ func TestTerrraformModule(t *testing.T) {
 		assert.False(t, isRegistry)
 	})
 
+	t.Run("Test TF Module private registry", func(t *testing.T) {
+		path := "app.terraform.io/path/to/module/aws"
+		isRemote := isRemoteModule(path)
+		assert.True(t, isRemote)
+	})
+
 	t.Run("Test TF Registry Module logic", func(t *testing.T) {
 		isRegistry := isTerraformRegistryModule("terraform-aws-modules/security-group/aws")
 		assert.True(t, isRegistry)

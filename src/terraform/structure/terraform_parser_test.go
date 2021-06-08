@@ -243,6 +243,21 @@ func TestTerrraformParser_Module(t *testing.T) {
 		assert.Equal(t, string(resultStr), string(expectedStr))
 	})
 
+	t.Run("Test taggable unaccessible module", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/module/tfe_module", nil)
+		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
+		blocks, err := p.ParseFile(sourceFilePath)
+		if err != nil {
+			t.Fail()
+		}
+
+		assert.Equal(t, 1, len(blocks))
+		moduleBlock := blocks[0]
+		assert.True(t, moduleBlock.IsBlockTaggable())
+		assert.NotNil(t, 2, len(moduleBlock.GetExistingTags()))
+	})
+
 	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/module/module", nil)
