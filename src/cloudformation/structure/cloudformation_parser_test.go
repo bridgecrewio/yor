@@ -88,7 +88,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
 		resourcesNames := []string{"NewVolume"}
 		expected := map[string]*structure.Lines{
-			"NewVolume": {Start: 3, End: 13},
+			"NewVolume": {Start: 3, End: 15},
 		}
 		actual := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
