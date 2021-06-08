@@ -166,3 +166,46 @@ func TestExtractIndentationOfLine(t *testing.T) {
 		})
 	}
 }
+
+func TestTagReplacement(t *testing.T) {
+	t.Run("TestCFNTagReplacement", func(t *testing.T) {
+		tagLines := []string{
+			"          Tags:",
+			"            - Key: SomeKey",
+			"              Value: SomeValue",
+			"            - Key: AnotherKey",
+			"              Value: !Ref VariableValue",
+		}
+		UpdateExistingCFNTags(tagLines, []*tags.TagDiff{
+			{Key: "SomeKey", PrevValue: "SomeValue", NewValue: "NewValue"},
+		})
+		assert.Equal(t, tagLines[2], "              Value: NewValue")
+		assert.Equal(t, tagLines[4], "              Value: !Ref VariableValue")
+	})
+	t.Run("TestCFNTagReverseReplacement", func(t *testing.T) {
+		tagLines := []string{
+			"          Tags:",
+			"            - Value: SomeValue",
+			"              Key: SomeKey",
+			"            - Key: AnotherKey",
+			"              Value: !Ref VariableValue",
+		}
+		UpdateExistingCFNTags(tagLines, []*tags.TagDiff{
+			{Key: "SomeKey", PrevValue: "SomeValue", NewValue: "NewValue"},
+		})
+		assert.Equal(t, tagLines[1], "            - Value: NewValue")
+		assert.Equal(t, tagLines[4], "              Value: !Ref VariableValue")
+	})
+	t.Run("TestSLSTagReplacement", func(t *testing.T) {
+		tagLines := []string{
+			"          tags:",
+			"            SomeKey: SomeValue",
+			"            AnotherKey: !Ref VariableValue",
+		}
+		UpdateExistingSLSTags(tagLines, []*tags.TagDiff{
+			{Key: "SomeKey", PrevValue: "SomeValue", NewValue: "NewValue"},
+		})
+		assert.Equal(t, tagLines[1], "            SomeKey: NewValue")
+		assert.Equal(t, tagLines[2], "            AnotherKey: !Ref VariableValue")
+	})
+}

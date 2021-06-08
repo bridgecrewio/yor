@@ -28,14 +28,14 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(cfnBlocks))
 		newVolumeBlock := cfnBlocks[0]
-		assert.Equal(t, structure.Lines{Start: 3, End: 13}, newVolumeBlock.GetLines())
+		assert.Equal(t, structure.Lines{Start: 3, End: 15}, newVolumeBlock.GetLines())
 		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
 
 		existingTag := newVolumeBlock.GetExistingTags()[0]
 		assert.Equal(t, "MyTag", existingTag.GetKey())
 		assert.Equal(t, "TagValue", existingTag.GetValue())
 		assert.Equal(t, 3, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
-		assert.Equal(t, 13, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
+		assert.Equal(t, 15, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
 	})
 	t.Run("parse ebs file json", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
@@ -88,7 +88,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		filePath := "../../../tests/cloudformation/resources/ebs/ebs.yaml"
 		resourcesNames := []string{"NewVolume"}
 		expected := map[string]*structure.Lines{
-			"NewVolume": {Start: 3, End: 13},
+			"NewVolume": {Start: 3, End: 15},
 		}
 		actual := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
