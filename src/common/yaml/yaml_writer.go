@@ -5,11 +5,13 @@ import (
 	"io/ioutil"
 	"math"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/sanathkr/yaml"
 	"github.com/thepauleh/goserverless/serverless"
@@ -80,8 +82,34 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		if isCfn {
 			oldTagsIndent += SingleIndent
 		}
-		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start-oldResourceLinesRange.Start+1]...)                                  // add all the resource's line before the tags
-		resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)...) // add tags
+		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start-oldResourceLinesRange.Start]...) // add all the resource's line before the tags
+		tagLines := oldResourceLines[oldResourceTagLines.Start-resourcesLinesRange.Start : oldResourceTagLines.End-resourcesLinesRange.Start+1]
+		diff := resourceBlock.CalculateTagsDiff()
+		if isCfn {
+			UpdateExistingCFNTags(tagLines, diff.Updated)
+		} else {
+			UpdateExistingSLSTags(tagLines, diff.Updated)
+		}
+		allNewResourceTagLines := IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)
+		var netNewResourceLines []string
+		for i := 0; i < len(allNewResourceTagLines); i += 2 {
+			l := allNewResourceTagLines[i]
+			if strings.Contains(l, " Key:") {
+				key := strings.ReplaceAll(strings.ReplaceAll(l, " ", ""), "-Key:", "")
+				found := false
+				for _, tag := range diff.Added {
+					if tag.GetKey() == key {
+						found = true
+						break
+					}
+				}
+				if found {
+					netNewResourceLines = append(netNewResourceLines, allNewResourceTagLines[i:i+2]...)
+				}
+			}
+		}
+		resourcesLines = append(resourcesLines, tagLines...)            // Add old tags
+		resourcesLines = append(resourcesLines, netNewResourceLines...) // Add new tags
 		// Add any other attributes after the tags
 		resourcesLines = append(resourcesLines, oldResourceLines[oldResourceTagLines.End-oldResourceLinesRange.Start+1:]...)
 	}
@@ -91,14 +119,59 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		allLines = append(allLines, resourcesStartToken+":")
 	}
 	allLines = append(allLines, resourcesLines...)
-	if !isCfn {
-		allLines = append(allLines, originLines[resourcesLinesRange.End+1:]...)
-	}
+	allLines = append(allLines, originLines[resourcesLinesRange.End+1:]...)
 	linesText := strings.Join(allLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 
 	return err
+}
+
+func UpdateExistingCFNTags(tagsLinesList []string, diff []*tags.TagDiff) {
+	currentValueLine := -1
+	valueToSet := ""
+
+	for i, tagLine := range tagsLinesList {
+		if strings.Contains(tagLine, ` Key:`) {
+			for _, tag := range diff {
+				keyr := regexp.MustCompile(`\b` + tag.Key + `\b`)
+				if keyr.Match([]byte(tagLine)) {
+					if currentValueLine > -1 {
+						tagsLinesList[currentValueLine] = ReplaceTagValue(tagsLinesList[currentValueLine], tag.NewValue)
+						currentValueLine = -1
+					} else {
+						valueToSet = tag.NewValue
+					}
+					continue
+				}
+			}
+		}
+		if strings.Contains(tagLine, ` Value:`) {
+			if valueToSet != "" {
+				tagsLinesList[i] = ReplaceTagValue(tagLine, valueToSet)
+				valueToSet = ""
+			} else {
+				currentValueLine = i
+			}
+		}
+	}
+}
+
+func ReplaceTagValue(line string, value string) string {
+	tr := regexp.MustCompile(`\bValue\s*:\s*.*`)
+	return tr.ReplaceAllString(line, `Value: `+value)
+}
+
+func UpdateExistingSLSTags(tagLines []string, diff []*tags.TagDiff) {
+	for i, line := range tagLines {
+		key := strings.Split(strings.ReplaceAll(line, " ", ""), ":")[0]
+		for _, tag := range diff {
+			if key == tag.Key {
+				lineWithoutValue := strings.Split(line, ":")[0]
+				tagLines[i] = lineWithoutValue + ": " + tag.NewValue
+			}
+		}
+	}
 }
 
 func computeResourcesLineRange(originLines []string, blocks []structure.IBlock, isCfn bool) structure.Lines {
