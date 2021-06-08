@@ -111,10 +111,15 @@ module "remote_module" {
    # Yor will add tags to the `tags` attribute of this module
    source = "terraform-aws-modules/vpc/aws"
    tags   = {
-      env       = var.env
-      yor_trace = "912066a1-31a3-4a08-911b-0b06d9eac64e"
-      ...
-      ...
+      env                  = var.env
+      yor_trace            = "912066a1-31a3-4a08-911b-0b06d9eac64e"
+      git_repo             = "example"
+      git_org              = "bridgecrewio"
+      git_file             = "applyTag.md"
+      git_commit           = "COMMITHASH"
+      git_modifiers        = "bana/gandalf"
+      git_last_modified_at = "2021-01-08 00:00:00"
+      git_last_modified_by = "bana@bridgecrew.io"
    }
 }
 ```
