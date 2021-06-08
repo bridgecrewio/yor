@@ -119,7 +119,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		allLines = append(allLines, resourcesStartToken+":")
 	}
 	allLines = append(allLines, resourcesLines...)
-	allLines = append(allLines, originLines[resourcesLinesRange.End+1:]...)
+	allLines = append(allLines, originLines[oldResourcesLineRange.End+1:]...)
 	linesText := strings.Join(allLines, "\n")
 
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
