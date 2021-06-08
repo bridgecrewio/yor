@@ -150,7 +150,7 @@ jobs:
           release_tag: ${{ needs.create-release.outputs.version }}
   publish-dockerhub:
     runs-on: ubuntu-latest
-    needs: create-release
+    needs: linux-windows-matrix
     steps:
       - uses: actions/checkout@master
       - name: Publish to Registry
