@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -80,7 +80,7 @@ jobs:
           ./yor tag -d terragoat -o json --output-json-file result.json
           go test ./tests/integration/...
   create-release:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs:
       - integration-tests
       - test
