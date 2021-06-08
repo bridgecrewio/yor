@@ -10,19 +10,19 @@
           "ErrorDocument": "error.html"
         },
         "Tags": [
-            {
-              "Key": "old_tag",
-              "Value": "old_value"
-            },
-            {
-              "Key": "new_tag",
-              "Value": "new_value"
-            },
-            {
-              "Key": "another_tag",
-              "Value": "another_val"
-            }
-          ]
+          {
+            "Key": "old_tag",
+            "Value": "old_value"
+          },
+          {
+            "Key": "new_tag",
+            "Value": "new_value"
+          },
+          {
+            "Key": "another_tag",
+            "Value": "another_val"
+          }
+        ]
       },
       "DeletionPolicy": "Retain"
     }

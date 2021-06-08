@@ -95,7 +95,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	b.NewTags = append(b.NewTags, newTags...)
 }
 
-// MergeTags merges the tags and returns only the relevant Yor tags.
+// MergeTags merges the tags and returns all the tags.
 func (b *Block) MergeTags() []tags.ITag {
 	existingTagsByKey := map[string]tags.ITag{}
 	newTagsByKey := map[string]tags.ITag{}

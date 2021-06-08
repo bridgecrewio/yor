@@ -11,6 +11,7 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
 )
 
@@ -70,25 +71,34 @@ func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]BracketPair) string {
 	logger.Debug(fmt.Sprintf("setting tags to resource %s in path %s", resourceBlock.GetResourceID(), resourceBlock.GetFilePath()))
 	updatedTags := resourceBlock.MergeTags()
-
+	diff := resourceBlock.CalculateTagsDiff()
 	// extract the resource's brackets scope and get the origin str for that resource
 	resourceBrackets := FindScopeInJSON(fullOriginStr, resourceBlock.GetResourceID(), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
 	resourceStr := fullOriginStr[resourceBrackets.Open.CharIndex : resourceBrackets.Close.CharIndex+1]
 
 	tagsAttributeName := resourceBlock.GetTagsAttributeName()
 	indexOfTags := findJSONKeyIndex(resourceStr, tagsAttributeName) // get the start index of the tags key in the resource string
-
 	if indexOfTags >= 0 {
 		// extract the tags' brackets scope and get the origin str for them
 		tagBrackets := FindScopeInJSON(fullOriginStr, tagsAttributeName, fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
-		tagsStr := fullOriginStr[tagBrackets.Open.CharIndex:tagBrackets.Close.CharIndex]
+		tagsStr := fullOriginStr[tagBrackets.Open.CharIndex : tagBrackets.Close.CharIndex+1]
+		tagsLinesList := strings.Split(tagsStr, "\n")
+		UpdateExistingTags(tagsLinesList, diff.Updated)
 
 		//	now find the indentation of the first tags entry by searching an indent between "[" and first "{". If there is a newline, restart the indent.
 		tagBlockIndent := findIndent(tagsStr, '{', 0)                               // find the indent of each tag block " { "
 		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{")) // find the indent of the key and value entry
+		indentDiff := len(tagEntryIndent) - len(tagBlockIndent)
+		tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-indentDiff]
+		tagEntryIndent = tagEntryIndent[0 : len(tagEntryIndent)-indentDiff]
 
-		// unmarshal updated tags with the indent matching origin file
-		strUpdatedTags, err := json.MarshalIndent(updatedTags, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent))
+		// unmarshal updated tags with the indent matching origin file. This will create the tags with the `[]` wrapping which will be discarded later
+		strAddedTags, err := json.MarshalIndent(diff.Added, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent))
+		netNewTagLines := strings.Split(string(strAddedTags), "\n")
+		finalTagsStr := strings.Join(tagsLinesList[:len(tagsLinesList)-1], "\n") + ",\n" +
+			strings.Join(netNewTagLines[1:len(netNewTagLines)-1], "\n") + "\n" +
+			tagsLinesList[len(tagsLinesList)-1]
+		_ = finalTagsStr
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", updatedTags, tagBlockIndent, err))
 		}
@@ -96,7 +106,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		tagsEndRelativeToResource := tagBrackets.Close.CharIndex - resourceBrackets.Open.CharIndex
 
 		// set the resource string with the updated and indented tags
-		resourceStr = resourceStr[:tagsStartRelativeToResource] + string(strUpdatedTags) + resourceStr[tagsEndRelativeToResource+1:]
+		resourceStr = resourceStr[:tagsStartRelativeToResource] + finalTagsStr + resourceStr[tagsEndRelativeToResource+1:]
 	} else {
 		// step 1 - extract the parent of the tags attribute from the new resource (not from the file)
 		jsonResourceStr := getJSONStr(resourceBlock.GetRawBlock()) // encode raw block to json
@@ -158,6 +168,40 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 	}
 
 	return resourceStr
+}
+
+func UpdateExistingTags(tagsLinesList []string, diff []*tags.TagDiff) {
+	currentValueLine := -1
+	valueToSet := ""
+
+	for i, tagLine := range tagsLinesList {
+		if strings.Contains(tagLine, `"Key"`) {
+			for _, tag := range diff {
+				if strings.Contains(tagLine, fmt.Sprintf(`"%v"`, tag.Key)) {
+					if currentValueLine > -1 {
+						tagsLinesList[currentValueLine] = ReplaceTagValue(tagsLinesList[currentValueLine], tag.NewValue)
+						currentValueLine = -1
+					} else {
+						valueToSet = tag.NewValue
+					}
+					continue
+				}
+			}
+		}
+		if strings.Contains(tagLine, `"Value"`) {
+			if valueToSet != "" {
+				tagsLinesList[i] = ReplaceTagValue(tagLine, valueToSet)
+				valueToSet = ""
+			} else {
+				currentValueLine = i
+			}
+		}
+	}
+}
+
+func ReplaceTagValue(tagLine string, valueToSet string) string {
+	tr := regexp.MustCompile(`"Value"\s*:\s*".*?"`)
+	return tr.ReplaceAllString(tagLine, `"Value": "`+valueToSet+`"`)
 }
 
 // findIndent finds the indentation in a string `str` from starting char index until `charToStop` is identified

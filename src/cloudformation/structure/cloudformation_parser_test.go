@@ -48,7 +48,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(cfnBlocks))
 		newVolumeBlock := cfnBlocks[0]
-		assert.Equal(t, structure.Lines{Start: 5, End: 19}, newVolumeBlock.GetLines())
+		assert.Equal(t, structure.Lines{Start: 5, End: 25}, newVolumeBlock.GetLines())
 		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
 
 		existingTag := newVolumeBlock.GetExistingTags()[0]
@@ -57,7 +57,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 
 		tagLines := newVolumeBlock.GetTagsLines()
 		assert.Equal(t, 10, tagLines.Start)
-		assert.Equal(t, 15, tagLines.End)
+		assert.Equal(t, 21, tagLines.End)
 	})
 
 	t.Run("parse_simple_template", func(t *testing.T) {
