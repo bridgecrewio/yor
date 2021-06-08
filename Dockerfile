@@ -6,6 +6,7 @@ RUN tar -xf /usr/bin/yor.tar.gz -C /usr/bin/
 RUN rm /usr/bin/yor.tar.gz
 RUN chmod +x /usr/bin/yor
 RUN echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
-COPY github_action_entrypoint.sh /github_action_entrypoint.sh
+COPY github_action_entrypoint.sh /usr/bin/github_action_entrypoint.sh
+RUN chmod +x /usr/bin/github_action_entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/yor"]
