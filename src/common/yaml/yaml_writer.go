@@ -83,7 +83,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			oldTagsIndent += SingleIndent
 		}
 		resourcesLines = append(resourcesLines, oldResourceLines[:oldResourceTagLines.Start-oldResourceLinesRange.Start]...) // add all the resource's line before the tags
-		tagLines := oldResourceLines[oldResourceTagLines.Start-resourcesLinesRange.Start : oldResourceTagLines.End-resourcesLinesRange.Start+1]
+		tagLines := oldResourceLines[oldResourceTagLines.Start-oldResourceLinesRange.Start : oldResourceTagLines.End-oldResourceLinesRange.Start+1]
 		diff := resourceBlock.CalculateTagsDiff()
 		if isCfn {
 			UpdateExistingCFNTags(tagLines, diff.Updated)

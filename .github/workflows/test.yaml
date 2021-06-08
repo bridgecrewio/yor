@@ -50,7 +50,6 @@ jobs:
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
           path: 'terragoat'
           ref: 063dc2db3bb036160ed39d3705508ee8293a27c8

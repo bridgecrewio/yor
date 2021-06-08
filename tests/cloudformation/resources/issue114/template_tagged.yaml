@@ -24,7 +24,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: EnvironmentName
+          Value: !Ref EnvironmentName
         - Key: new_tag
           Value: new_value
   InternetGateway:
@@ -32,6 +32,6 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: EnvironmentName
+          Value: !Ref EnvironmentName
         - Key: new_tag
           Value: new_value
