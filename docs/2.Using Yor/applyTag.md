@@ -56,10 +56,73 @@ Add a hook to your **.pre-commit-config.yaml** and change the args and version n
 
 ## Use case: module tagging
 Yor supports terraform [`module` blocks](https://www.terraform.io/docs/language/modules/sources.html) tagging using:
-1. Local module blocks - tags will be applied on resources that were created based on identifiable local module blocks.
-2. External module blocks - tags will be applied indentifiable module blocks but won't be applied on resources that were created by the tagged block. 
-   Because this type of tagging is based on external module definitions, it cannot not be guaranteed by Yor.
+1. modules with a local path - will not be modified. The underlying resources will be tagged separately.
+2. modules with a remote path - tags will be added according to the module block metadata.
+   Yor does not download the remote module and modify it, but rather considers it as a black box.
+   
+Some examples:
+```terraform
+module "local_module" {
+   # This is a local module. Yor will **not** modify this block. 
+   # Instead, Yor will tag the actual resources located at the source dir that is specified in the module block
+   source  = "../../tests/terraform"
+   tags    = {
+      env = var.env
+   }
+}
 
+module "remote_module" {
+   # This is a remote module (from the registry). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "terraform-aws-modules/vpc/aws"
+   tags   = {
+      env = var.env
+   }
+}
+
+module "remote_module_2" {
+   # This is a remote module (from github). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "git@github.com:terraform-aws-modules/terraform-aws-vpc.git"
+   tags   = {
+      env = var.env
+   }
+}
+```
+
+### Tagging examples:
+#### Module with remote path
+##### Before
+```terraform
+module "remote_module" {
+   # This is a remote module (from the registry). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "terraform-aws-modules/vpc/aws"
+   tags   = {
+      env = var.env
+   }
+}
+```
+
+##### After
+```terraform
+module "remote_module" {
+   # This is a remote module (from the registry). 
+   # Yor will add tags to the `tags` attribute of this module
+   source = "terraform-aws-modules/vpc/aws"
+   tags   = {
+      env                  = var.env
+      yor_trace            = "912066a1-31a3-4a08-911b-0b06d9eac64e"
+      git_repo             = "example"
+      git_org              = "bridgecrewio"
+      git_file             = "applyTag.md"
+      git_commit           = "COMMITHASH"
+      git_modifiers        = "bana/gandalf"
+      git_last_modified_at = "2021-01-08 00:00:00"
+      git_last_modified_by = "bana@bridgecrew.io"
+   }
+}
+```
 
 
 ## Skipping Tags
