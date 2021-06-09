@@ -38,6 +38,10 @@ type TerrraformParser struct {
 	moduleInstallDir       string
 }
 
+func (p *TerrraformParser) Name() string {
+	return "Terraform"
+}
+
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.rootDir = rootDir
 	p.providerToClientMap = make(map[string]tfschema.Client)

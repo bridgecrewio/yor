@@ -86,7 +86,6 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	}
 
 	for _, file := range files {
-		logger.Info(fmt.Sprintf("Tagging %v\n", file))
 		r.TagFile(file)
 	}
 
@@ -96,9 +95,10 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
-			logger.Debug(fmt.Sprintf("Skipping %v", file))
+			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
 			continue
 		}
+		logger.Info(fmt.Sprintf("Tagging %v\n", file))
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
 			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
@@ -107,6 +107,7 @@ func (r *Runner) TagFile(file string) {
 		isFileTaggable := false
 		for _, block := range blocks {
 			if block.IsBlockTaggable() {
+				logger.Debug(fmt.Sprintf("Tagging %v:%v", file, block.GetResourceID()))
 				isFileTaggable = true
 				for _, tagGroup := range r.TagGroups {
 					err := tagGroup.CreateTagsForBlock(block)
@@ -115,6 +116,8 @@ func (r *Runner) TagFile(file string) {
 						continue
 					}
 				}
+			} else {
+				logger.Debug(fmt.Sprintf("Block %v:%v is not taggable, skipping", file, block.GetResourceID()))
 			}
 			r.ChangeAccumulator.AccumulateChanges(block)
 		}
