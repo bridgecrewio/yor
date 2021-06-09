@@ -70,7 +70,6 @@ func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 // AddTagsToResourceStr gets the entire context as a string, and returns a string of a resource with the updated tags
 func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, fileBracketsPairs map[int]BracketPair) string {
 	logger.Debug(fmt.Sprintf("setting tags to resource %s in path %s", resourceBlock.GetResourceID(), resourceBlock.GetFilePath()))
-	updatedTags := resourceBlock.MergeTags()
 	diff := resourceBlock.CalculateTagsDiff()
 	// extract the resource's brackets scope and get the origin str for that resource
 	resourceBrackets := FindScopeInJSON(fullOriginStr, resourceBlock.GetResourceID(), fileBracketsPairs, &structure.Lines{Start: -1, End: -1})
@@ -100,7 +99,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			tagsLinesList[len(tagsLinesList)-1]
 		_ = finalTagsStr
 		if err != nil {
-			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", updatedTags, tagBlockIndent, err))
+			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", diff.Added, tagBlockIndent, err))
 		}
 		tagsStartRelativeToResource := tagBrackets.Open.CharIndex - resourceBrackets.Open.CharIndex
 		tagsEndRelativeToResource := tagBrackets.Close.CharIndex - resourceBrackets.Open.CharIndex
@@ -133,7 +132,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			if i > 0 {
 				entriesToAdd[identifiersToAdd[i]] = make(map[string]interface{})
 			} else {
-				entriesToAdd[identifiersToAdd[i]] = updatedTags
+				entriesToAdd[identifiersToAdd[i]] = diff.Added
 			}
 		}
 		indentStr := "  "
