@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -13,6 +15,8 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"gopkg.in/yaml.v2"
 )
+
+var EnvVariableRegex = regexp.MustCompile(`\${env:([^\s]+)}`)
 
 type TagGroup struct {
 	tagging.TagGroup
@@ -29,10 +33,10 @@ type Tag struct {
 }
 
 type Config struct {
-	TagGroup []struct {
+	TagGroups []struct {
 		TagGroupName string `yaml:"name"`
 		Tags         TagsConfig
-	} `yaml:"tag_group"`
+	} `yaml:"tag_groups"`
 }
 
 type TagsConfig []struct {
@@ -110,10 +114,10 @@ func (t *TagGroup) InitExternalTagGroup() {
 }
 
 func (t *TagGroup) extractExternalTags() {
-	tagGroups := t.config.TagGroup
+	tagGroups := t.config.TagGroups
 	for _, tagGroup := range tagGroups {
 		tagGroupTags := tagGroup.Tags
-		tagGroupName := tagGroup.TagGroupName
+		tagGroupName := evaluateTemplateVariable(tagGroup.TagGroupName)
 		t.tagGroupsByName[tagGroupName] = t.ExtractExternalGroupsTags(tagGroupTags)
 	}
 }
@@ -162,26 +166,30 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 		for _, matchEntry := range tag.matches {
 			for matchValue, matchObj := range matchEntry.(map[interface{}]interface{}) {
 				// Currently, we only allow matches on tags
-				matchMap := matchObj.(map[interface{}]interface{})
-				for tagName, tagMatch := range matchMap["tags"].(map[interface{}]interface{}) {
-					switch match := tagMatch.(type) {
-					case string:
-						for _, blockTag := range blockTags {
-							blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-							if blockTagKey == tagName && blockTagValue == match {
-								retTag.Value = matchValue.(string)
+				switch matchObj.(type) {
+				case string:
+					retTag.Value = evaluateTemplateVariable(matchObj.(string))
+				case map[interface{}]interface{}:
+					matchMap := matchObj.(map[interface{}]interface{})
+					for tagName, tagMatch := range matchMap["tags"].(map[interface{}]interface{}) {
+						switch match := tagMatch.(type) {
+						case string:
+							for _, blockTag := range blockTags {
+								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+								if blockTagKey == tagName && blockTagValue == match {
+									retTag.Value = evaluateTemplateVariable(matchValue.(string))
+								}
 							}
-						}
-					case []interface{}:
-						for _, blockTag := range blockTags {
-							blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-							if blockTagKey == tagName && utils.InSlice(match, blockTagValue) {
-								retTag.Value = matchValue.(string)
+						case []interface{}:
+							for _, blockTag := range blockTags {
+								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+								if blockTagKey == tagName && utils.InSlice(match, blockTagValue) {
+									retTag.Value = matchValue.(string)
+								}
 							}
 						}
 					}
 				}
-
 			}
 		}
 		return retTag, nil
@@ -206,6 +214,14 @@ func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 	return groupTags
 }
 
+func evaluateTemplateVariable(val string) string {
+	envVariableMatch := EnvVariableRegex.FindStringSubmatch(val)
+	if envVariableMatch != nil && len(envVariableMatch) == 2 {
+		return os.Getenv(envVariableMatch[1])
+	}
+	return val
+}
+
 func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters FiltersConfig) (Tag, error) {
 	var parsedTag = Tag{filters: groupFilters}
 	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
@@ -214,6 +230,5 @@ func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters Fi
 	parsedTag.defaultValue = tagValueObj.Default
 	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: tagValueObj.Default}
 	parsedTag.matches = tagValueObj.Matches
-
 	return parsedTag, nil
 }

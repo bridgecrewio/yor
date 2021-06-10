@@ -1,9 +1,11 @@
-tag_group:
+tag_groups:
   - name: ownership
     tags:
       - name: env
         value:
           default: dev
+          matches:
+            - prod: ${env:GIT_BRANCH}
         filters:
           tags:
             git_repo: yor
