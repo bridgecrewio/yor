@@ -203,7 +203,7 @@ func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 	for _, tagConfig := range tagsConfig {
 		var groupFilters = tagConfig.Filters
 		tagValueObj := tagConfig.TagValue
-		tagKey := tagConfig.TagKey
+		tagKey := evaluateTemplateVariable(tagConfig.TagKey)
 		computedTag, err := parseExternalTag(tagValueObj, tagKey, groupFilters)
 		if err != nil {
 			logger.Error(err.Error())
@@ -226,8 +226,8 @@ func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters Fi
 	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
 		return Tag{}, errors.New("please specify either a default tag value and/or a computed tag value")
 	}
-	parsedTag.defaultValue = tagValueObj.Default
-	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: tagValueObj.Default}
+	parsedTag.defaultValue = evaluateTemplateVariable(tagValueObj.Default)
+	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: parsedTag.defaultValue}
 	parsedTag.matches = tagValueObj.Matches
 	return parsedTag, nil
 }
