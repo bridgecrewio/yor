@@ -1,6 +1,7 @@
 package external
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 func TestSimpleTagGroup(t *testing.T) {
 
 	t.Run("test tagGroup CreateTagsForBlock default value", func(t *testing.T) {
+		_ = os.Setenv("GIT_BRANCH", "master")
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil)
@@ -37,6 +39,11 @@ func TestSimpleTagGroup(t *testing.T) {
 		if err != nil {
 			logger.Warning(err.Error())
 			t.Fail()
+		}
+		for _, newBlockTag := range block.GetNewTags() {
+			if newBlockTag.GetKey() == "env" {
+				assert.Equal(t, newBlockTag.GetValue(), "master")
+			}
 		}
 		assert.Equal(t, 4, len(block.ExitingTags)+len(block.NewTags))
 	})
