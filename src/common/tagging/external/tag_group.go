@@ -166,24 +166,23 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 		for _, matchEntry := range tag.matches {
 			for matchValue, matchObj := range matchEntry.(map[interface{}]interface{}) {
 				// Currently, we only allow matches on tags
-				switch matchObj.(type) {
+				switch matchType := matchObj.(type) {
 				case string:
-					retTag.Value = evaluateTemplateVariable(matchObj.(string))
+					retTag.Value = evaluateTemplateVariable(matchType)
 				case map[interface{}]interface{}:
-					matchMap := matchObj.(map[interface{}]interface{})
-					for tagName, tagMatch := range matchMap["tags"].(map[interface{}]interface{}) {
-						switch match := tagMatch.(type) {
+					for tagName, tagMatch := range matchType["tags"].(map[interface{}]interface{}) {
+						switch tagMatch.(type) {
 						case string:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && blockTagValue == match {
+								if blockTagKey == tagName && blockTagValue == tagMatch {
 									retTag.Value = evaluateTemplateVariable(matchValue.(string))
 								}
 							}
 						case []interface{}:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && utils.InSlice(match, blockTagValue) {
+								if blockTagKey == tagName && utils.InSlice(tagMatch, blockTagValue) {
 									retTag.Value = matchValue.(string)
 								}
 							}
@@ -216,7 +215,7 @@ func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 
 func evaluateTemplateVariable(val string) string {
 	envVariableMatch := EnvVariableRegex.FindStringSubmatch(val)
-	if envVariableMatch != nil && len(envVariableMatch) == 2 {
+	if len(envVariableMatch) == 2 {
 		return os.Getenv(envVariableMatch[1])
 	}
 	return val
