@@ -218,7 +218,7 @@ func evaluateTemplateVariable(val string) string {
 	if len(envVariableMatch) == 2 {
 		envVal, exists := os.LookupEnv(envVariableMatch[1])
 		if !exists {
-			logger.Info(fmt.Sprintf("environment variable %s is not found", envVariableMatch[1]))
+			logger.Warning(fmt.Sprintf("environment variable %s is not found", envVariableMatch[1]))
 		} else {
 			return envVal
 		}
