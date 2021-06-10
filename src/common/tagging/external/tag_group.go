@@ -216,7 +216,12 @@ func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 func evaluateTemplateVariable(val string) string {
 	envVariableMatch := EnvVariableRegex.FindStringSubmatch(val)
 	if len(envVariableMatch) == 2 {
-		return os.Getenv(envVariableMatch[1])
+		envVal, exists := os.LookupEnv(envVariableMatch[1])
+		if !exists {
+			logger.Info(fmt.Sprintf("environment variable %s is not found", envVariableMatch[1]))
+		} else {
+			return envVal
+		}
 	}
 	return val
 }
