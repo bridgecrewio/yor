@@ -160,7 +160,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 		return nil, nil
 	}
 	retTag.Key = tag.GetKey()
-	retTag.Value = tag.defaultValue
+	retTag.Value = evaluateTemplateVariable(tag.defaultValue)
 	blockTags := append(block.GetExistingTags(), block.GetNewTags()...)
 	if len(tag.matches) > 0 {
 		for _, matchEntry := range tag.matches {
@@ -226,8 +226,8 @@ func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters Fi
 	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
 		return Tag{}, errors.New("please specify either a default tag value and/or a computed tag value")
 	}
-	parsedTag.defaultValue = evaluateTemplateVariable(tagValueObj.Default)
-	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: parsedTag.defaultValue}
+	parsedTag.defaultValue = tagValueObj.Default
+	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: tagValueObj.Default}
 	parsedTag.matches = tagValueObj.Matches
 	return parsedTag, nil
 }
