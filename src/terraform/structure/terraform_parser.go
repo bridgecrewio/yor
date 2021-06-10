@@ -419,7 +419,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 		logger.UnmuteLogging()
 	}
 	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
-	if _, err := os.Stat(expectedModuleDir); !os.IsNotExist(err) {
+	if _, err := os.Stat(expectedModuleDir); os.IsNotExist(err) {
 		return false
 	}
 

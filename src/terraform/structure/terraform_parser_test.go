@@ -270,6 +270,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		assert.Equal(t, 1, len(blocks))
 		mb := blocks[0]
 		assert.Equal(t, "complete_sg", mb.GetResourceID())
+		assert.True(t, mb.IsBlockTaggable())
 		assert.Equal(t, "tags", mb.(*TerraformBlock).TagsAttributeName)
 		mb.AddNewTags([]tags.ITag{
 			&tags.Tag{Key: tags.YorTraceTagKey, Value: "some-uuid"},
@@ -283,7 +284,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
 		resultStr, _ := ioutil.ReadFile(resultFileName)
 		expectedStr, _ := ioutil.ReadFile(expectedFileName)
-		assert.Equal(t, string(resultStr), string(expectedStr))
+		assert.Equal(t, string(expectedStr), string(resultStr))
 	})
 
 	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
