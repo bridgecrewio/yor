@@ -2,6 +2,13 @@
 
 # Actions pass inputs as $INPUT_<input name> environmet variables
 
+if [[ $GITHUB_ACTIONS != "true" ]]
+then
+  /usr/bin/yor $@
+  exit $?
+fi
+
+# Actions pass inputs as $INPUT_<input name> environment variables
 [[ -n "$INPUT_TAG_GROUPS" ]] && TAG_GROUPS="--tag-groups $INPUT_TAG_GROUPS"
 [[ -n "$INPUT_TAG" ]] && TAG_FLAG="--tag $INPUT_TAG"
 [[ -n "$INPUT_SKIP_TAGS" ]] && SKIP_TAG_FLAG="--skip-tags $INPUT_SKIP_TAGS"
@@ -37,5 +44,5 @@ else
   echo "::debug::exiting, yor failed or commit is skipped"
   echo "::debug::yor exit code: $YOR_EXIT_CODE"
   echo "::debug::commit_changes: $INPUT_COMMIT_CHANGES"
-  exit $YOR_EXIT_CODE
 fi
+exit $YOR_EXIT_CODE
