@@ -6,8 +6,6 @@ RUN tar -xf /usr/bin/yor.tar.gz -C /usr/bin/
 RUN rm /usr/bin/yor.tar.gz
 RUN chmod +x /usr/bin/yor
 RUN echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
-COPY github_action_entrypoint.sh /usr/bin/github_action_entrypoint.sh
-RUN chmod +x /usr/bin/github_action_entrypoint.sh
 COPY entrypoint.sh /entrypoint.sh
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
