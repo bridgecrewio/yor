@@ -58,7 +58,7 @@ func TestLogger(t *testing.T) {
 	})
 
 	t.Run("Test mute and unmute", func(t *testing.T) {
-		Logger.SetLogLevel("DEBUG")
+		Logger.SetLogLevel("WARNING")
 		MuteLogging()
 		infoMsg := "Test muted INFO"
 		result := utils.CaptureOutput(func() { Info(infoMsg) })
@@ -70,6 +70,7 @@ func TestLogger(t *testing.T) {
 		result = utils.CaptureOutput(func() { Debug(debugMsg) })
 		assert.Equal(t, "", result)
 		UnmuteLogging()
+		Logger.SetLogLevel("DEBUG")
 		result = utils.CaptureOutput(func() { Info(infoMsg) })
 		assert.True(t, strings.Contains(result, infoMsg))
 		result = utils.CaptureOutput(func() { Warning(warningMsg) })
