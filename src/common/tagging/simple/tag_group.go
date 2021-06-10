@@ -19,6 +19,9 @@ type TagGroup struct {
 func (t *TagGroup) InitTagGroup(_ string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	envTagsStr := os.Getenv("YOR_SIMPLE_TAGS")
+	if envTagsStr == "" {
+		return
+	}
 	logger.Debug(fmt.Sprintf("Simple tags from env: %v", envTagsStr))
 	var extraTagsFromArgs map[string]string
 	if strings.HasPrefix(envTagsStr, "'") {

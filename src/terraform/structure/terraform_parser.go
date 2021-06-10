@@ -36,6 +36,7 @@ type TerrraformParser struct {
 	terraformModule        *TerraformModule
 	moduleImporter         *command.GetCommand
 	moduleInstallDir       string
+	downloadedPaths        []string
 }
 
 func (p *TerrraformParser) Name() string {
@@ -410,15 +411,17 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
 	absRootPath, _ := filepath.Abs(p.rootDir)
 	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
-	logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
-	logger.MuteLogging()
-	exitCode := p.moduleImporter.Run([]string{actualPath})
-	logger.UnmuteLogging()
-	if exitCode != 0 {
-		// Failed to get modules for this repo
-		return false
+	if !utils.InSlice(p.downloadedPaths, fp) {
+		logger.MuteLogging()
+		logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
+		_ = p.moduleImporter.Run([]string{actualPath})
+		p.downloadedPaths = append(p.downloadedPaths, fp)
+		logger.UnmuteLogging()
 	}
 	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
+	if _, err := os.Stat(expectedModuleDir); !os.IsNotExist(err) {
+		return false
+	}
 
 	files, _ := ioutil.ReadDir(expectedModuleDir)
 	for _, f := range files {

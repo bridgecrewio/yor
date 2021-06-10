@@ -116,21 +116,25 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 }
 
 func MuteLogging() {
-	Debug("Mute logging")
-	_, Logger.tempWriter, _ = os.Pipe()
-	os.Stdout = Logger.tempWriter
-	os.Stderr = Logger.tempWriter
-	log.SetOutput(Logger.tempWriter)
-	Logger.enabled = false
+	if Logger.logLevel >= WARNING {
+		Debug("Mute logging")
+		_, Logger.tempWriter, _ = os.Pipe()
+		os.Stdout = Logger.tempWriter
+		os.Stderr = Logger.tempWriter
+		log.SetOutput(Logger.tempWriter)
+		Logger.enabled = false
+	}
 }
 
 func UnmuteLogging() {
-	if Logger.tempWriter != nil {
-		_ = Logger.tempWriter.Close()
+	if Logger.logLevel >= WARNING {
+		if Logger.tempWriter != nil {
+			_ = Logger.tempWriter.Close()
+		}
+		os.Stdout = Logger.stdout
+		os.Stderr = Logger.stderr
+		log.SetOutput(os.Stderr)
+		Logger.enabled = true
+		Debug("Unmute logging")
 	}
-	os.Stdout = Logger.stdout
-	os.Stderr = Logger.stderr
-	log.SetOutput(os.Stderr)
-	Logger.enabled = true
-	Debug("Unmute logging")
 }
