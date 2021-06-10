@@ -21,9 +21,9 @@ func (c customTfLogger) Info(s string) {
 }
 
 func (c customTfLogger) Error(s string) {
-	logger.Error(s)
+	logger.Info(s)
 }
 
 func (c customTfLogger) Warn(s string) {
-	logger.Warning(s)
+	logger.Info(s)
 }
