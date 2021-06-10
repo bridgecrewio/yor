@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Actions pass inputs as $INPUT_<input name> environmet variables
-
+# Leverage the default env variables as described in:
+# https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables
 if [[ $GITHUB_ACTIONS != "true" ]]
 then
   /usr/bin/yor $@
