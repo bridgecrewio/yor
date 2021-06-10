@@ -25,7 +25,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels"}
+var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags"}
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 
 type TerrraformParser struct {
@@ -36,6 +36,10 @@ type TerrraformParser struct {
 	terraformModule        *TerraformModule
 	moduleImporter         *command.GetCommand
 	moduleInstallDir       string
+}
+
+func (p *TerrraformParser) Name() string {
+	return "Terraform"
 }
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
@@ -375,11 +379,19 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			return nil, nil
 		}
 	case ModuleBlockType:
-		tagsAttributeName = "tags"
-		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
-
-		if !isTaggable {
-			isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
+		moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
+		// source is always wrapped in " front and back
+		moduleSource = strings.Trim(moduleSource, "\" ")
+		if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) {
+			// Don't use the tags label on local modules - the underlying resources will be tagged by themselves
+			isTaggable = false
+		} else {
+			// This is a remote module - if it has tags attribute, tag it!
+			tagsAttributeName = "tags"
+			existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
+			if !isTaggable {
+				isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
+			}
 		}
 	}
 

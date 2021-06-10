@@ -41,3 +41,7 @@ func (t *GitOwnerTag) GetValue() string {
 func (t *GitOwnerTag) GetPriority() int {
 	return -1
 }
+
+func (t *GitOwnerTag) SetValue(val string) {
+	t.Value = val
+}

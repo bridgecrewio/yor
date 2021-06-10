@@ -48,11 +48,18 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Getting Started
 
 ### Installation
-MacOS
+MacOS / Linux
 ```sh
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
+__OR__
+
+Windows
+```sh
+choco install yor
+```
+
 __OR__
 
 Docker

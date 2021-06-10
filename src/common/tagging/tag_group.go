@@ -62,7 +62,9 @@ func (t *TagGroup) UpdateBlockTags(block structure.IBlock, data interface{}) err
 		if err != nil {
 			logger.Error(fmt.Sprintf("Failed to create %v tag for block %v", tag.GetKey(), block.GetResourceID()))
 		}
-		newTags = append(newTags, tagVal)
+		if tagVal != nil && tagVal.GetValue() != "" {
+			newTags = append(newTags, tagVal)
+		}
 	}
 	block.AddNewTags(newTags)
 	return err

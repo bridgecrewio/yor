@@ -27,6 +27,10 @@ type CloudformationParser struct {
 const TagsAttributeName = "Tags"
 const ResourcesStartToken = "Resources"
 
+func (p *CloudformationParser) Name() string {
+	return "CloudFormation"
+}
+
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser = &types.YamlParser{
 		RootDir:              rootDir,

@@ -30,3 +30,7 @@ func (t *FooTag) GetPriority() int {
 func (t *FooTag) GetDescription() string {
 	return "Foo bar"
 }
+
+func (t *FooTag) SetValue(val string) {
+	t.Value = val
+}

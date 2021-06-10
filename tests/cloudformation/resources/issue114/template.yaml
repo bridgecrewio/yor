@@ -23,11 +23,11 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
-      - Key: Name
-        Value: EnvironmentName
+        - Key: Name
+          Value: !Ref EnvironmentName
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
-      - Key: Name
-        Value: EnvironmentName
+        - Key: Name
+          Value: !Ref EnvironmentName

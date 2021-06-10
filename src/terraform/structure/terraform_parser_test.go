@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -122,7 +123,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser_GetSourceFiles(t *testing.T) {
+func TestTerrraformParser(t *testing.T) {
 	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
 		directory := "../../../tests/terraform/resources/module1"
 		terraformParser := TerrraformParser{}
@@ -141,7 +142,7 @@ func TestTerrraformParser_GetSourceFiles(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser_WriteFile(t *testing.T) {
+func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources"
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
@@ -242,6 +243,21 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		assert.Equal(t, string(resultStr), string(expectedStr))
 	})
 
+	t.Run("Test taggable unaccessible module", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/module/tfe_module", nil)
+		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
+		blocks, err := p.ParseFile(sourceFilePath)
+		if err != nil {
+			t.Fail()
+		}
+
+		assert.Equal(t, 1, len(blocks))
+		moduleBlock := blocks[0]
+		assert.True(t, moduleBlock.IsBlockTaggable())
+		assert.NotNil(t, 2, len(moduleBlock.GetExistingTags()))
+	})
+
 	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/module/module", nil)
@@ -295,6 +311,28 @@ func TestTerrraformParser_WriteFile(t *testing.T) {
 		result, _ := ioutil.ReadFile(resultFilePath)
 		expected, _ := ioutil.ReadFile(expectedFilePath)
 		assert.Equal(t, string(expected), string(result))
+	})
+
+	t.Run("Module isTaggable local/remote", func(t *testing.T) {
+		directory := "../../../tests/terraform/resources/local_module"
+		terraformParser := TerrraformParser{}
+		terraformParser.Init(directory, nil)
+		expectedFiles := []string{"main.tf", "sub_local_module/main.tf", "sub_local_module/variables.tf"}
+		for _, file := range expectedFiles {
+			filePath := filepath.Join(directory, file)
+			fileBlocks, err := terraformParser.ParseFile(filePath)
+			if err != nil {
+				assert.Fail(t, fmt.Sprintf("Failed to parse file %v", filePath))
+			}
+			for _, b := range fileBlocks {
+				switch b.GetResourceID() {
+				case "sub_module":
+					assert.False(t, b.IsBlockTaggable())
+				case "sg":
+					assert.True(t, b.IsBlockTaggable())
+				}
+			}
+		}
 	})
 }
 

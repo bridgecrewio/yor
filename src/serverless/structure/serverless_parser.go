@@ -25,6 +25,10 @@ type ServerlessParser struct {
 	Template   *serverless.Template
 }
 
+func (p *ServerlessParser) Name() string {
+	return "Serverless"
+}
+
 func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser.RootDir = rootDir
 	p.YamlParser.FileToResourcesLines = make(map[string]structure.Lines)
@@ -74,10 +78,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		return parsedBlocks, nil
 	}
 
-	if err != nil || template == nil {
-		logger.Error(fmt.Sprintf("There was an error processing the serverless template: %s", err), "SILENT")
-
-	}
 	// cfnStackTagsResource := p.template.Provider.CFNTags
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*structure.Lines

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -14,6 +15,9 @@ import (
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 )
+
+// RemoveGcpInvalidChars Source of regex: https://cloud.google.com/compute/docs/labeling-resources
+var RemoveGcpInvalidChars = regexp.MustCompile(`[^\p{Ll}\p{Lo}\p{N}_-]`)
 
 func InSlice(slice interface{}, elem interface{}) bool {
 	for _, e := range convertToInterfaceSlice(slice) {

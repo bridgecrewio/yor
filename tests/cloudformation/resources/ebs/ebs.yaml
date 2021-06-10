@@ -10,5 +10,13 @@ Resources:
       Tags:
         - Key: MyTag
           Value: TagValue
+        - Key: Name
+          Value: !Ref EnvironmentName
       AvailabilityZone: us-west-2a
     DeletionPolicy: Snapshot
+
+Outputs:
+  VolumeId:
+    Value: !Ref NewVolume
+    Export:
+      Name: NewVolumeId

@@ -11,11 +11,25 @@
           {
             "Key": "MyTag",
             "Value": "TagValue"
+          },
+          {
+            "Key": "RegionTag",
+            "Value": {
+              "Ref": "AWS::Region"
+            }
           }
         ],
         "AvailabilityZone": "us-west-2a"
       },
       "DeletionPolicy": "Snapshot"
+    }
+  },
+  "Outputs": {
+    "VolumeId": {
+      "Value": "NewVolume",
+      "Export": {
+        "Name": "NewVolume"
+      }
     }
   }
 }

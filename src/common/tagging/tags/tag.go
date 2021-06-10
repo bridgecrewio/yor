@@ -16,6 +16,7 @@ type ITag interface {
 	Init()
 	CalculateValue(data interface{}) (ITag, error)
 	GetKey() string
+	SetValue(val string)
 	GetValue() string
 	GetPriority() int
 	GetDescription() string
@@ -55,11 +56,15 @@ func (t *Tag) GetKey() string {
 	return t.Key
 }
 
+func (t *Tag) SetValue(val string) {
+	t.Value = val
+}
+
 func (t *Tag) GetValue() string {
 	return t.Value
 }
 
-// Try to match the tag's key name with a potentially quoted string
+// IsTagKeyMatch Try to match the tag's key name with a potentially quoted string
 func IsTagKeyMatch(tag ITag, keyName string) bool {
 	match, _ := regexp.Match(fmt.Sprintf(`\b"?%s"?\b`, regexp.QuoteMeta(keyName)), []byte(tag.GetKey()))
 	return match
