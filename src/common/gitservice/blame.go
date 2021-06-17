@@ -2,6 +2,7 @@ package gitservice
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -40,7 +41,9 @@ func (g *GitBlame) GetLatestCommit() (latestCommit *git.Line) {
 			// This line was added/edited but not committed yet, so latest commit is nil
 			return nil
 		}
-		if latestDate.Before(v.Date) {
+		if latestDate.Before(v.Date) &&
+			// Commit was not made by CI, i.e. github actions (for now)
+			!strings.Contains(v.Author, "[bot]") && !strings.Contains(v.Author, "github-actions") {
 			latestDate = v.Date
 			latestCommit = v
 		}
