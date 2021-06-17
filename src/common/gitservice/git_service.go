@@ -31,24 +31,24 @@ type GitService struct {
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
 	var err error
-	scanPathFromRoot := "."
+	rootDirIter, _ := filepath.Abs(rootDir)
 	for {
-		repository, err = git.PlainOpen(rootDir)
+		repository, err = git.PlainOpen(rootDirIter)
 		if err == nil {
 			break
 		}
-		absRoot, _ := filepath.Abs(rootDir)
-		newRootDir := filepath.Dir(absRoot)
-		relPath, _ := filepath.Rel(newRootDir, absRoot)
-		scanPathFromRoot = filepath.Join(relPath, scanPathFromRoot)
-		if rootDir == newRootDir {
+		newRootDir := filepath.Dir(rootDirIter)
+		if rootDirIter == newRootDir {
 			break
 		}
-		rootDir = newRootDir
+		rootDirIter = newRootDir
 	}
 	if err != nil {
 		return nil, err
 	}
+
+	scanAbsDir, _ := filepath.Abs(rootDir)
+	scanPathFromRoot, _ := filepath.Rel(rootDirIter, scanAbsDir)
 
 	gitService := GitService{
 		gitRootDir:       rootDir,
@@ -94,9 +94,19 @@ func (g *GitService) setOrgAndName() error {
 
 func (g *GitService) ComputeRelativeFilePath(fp string) string {
 	if strings.HasPrefix(fp, g.gitRootDir) {
-		return strings.ReplaceAll(fp, fmt.Sprintf("%s/", g.gitRootDir), "")
+		res, _ := filepath.Rel(g.gitRootDir, fp)
+		return filepath.Join(g.scanPathFromRoot, res)
 	}
-	return filepath.Join(g.scanPathFromRoot, fp)
+	scanPathIter := g.scanPathFromRoot
+	parent := filepath.Dir(fp)
+	for {
+		_, child := filepath.Split(scanPathIter)
+		if parent != child {
+			break
+		}
+		scanPathIter, _ = filepath.Split(scanPathIter)
+	}
+	return filepath.Join(scanPathIter, fp)
 }
 
 func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines) (*GitBlame, error) {
