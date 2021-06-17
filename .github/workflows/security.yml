@@ -8,7 +8,7 @@ on:
 
 jobs:
   gosec:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, public, linux, x64]
     env:
       GO111MODULE: on
     steps:
