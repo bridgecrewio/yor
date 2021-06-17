@@ -21,7 +21,7 @@ jobs:
         with:
           go-version: 1.13
       - name: Checkout code
-        uses: actions/checkout@v2.1.3
+        uses: actions/checkout@v2
       - name: "Terraform Init"
         uses: hashicorp/terraform-github-actions@master
         with:
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2.1.3
+        uses: actions/checkout@v2
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
@@ -61,11 +61,11 @@ jobs:
         with:
           go-version: 1.13
       - name: Checkout code
-        uses: actions/checkout@v2.1.3
+        uses: actions/checkout@v2
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@v2.1.3
+        uses: actions/checkout@v2
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
@@ -89,7 +89,7 @@ jobs:
       - name: Wait for coverage to update
         run: sleep 10s
       - name: Checkout code
-        uses: actions/checkout@v2.1.3
+        uses: actions/checkout@v2
         with:
           ref: main
       - name: version
@@ -136,7 +136,7 @@ jobs:
           - goarch: 386
             goos: darwin
     steps:
-      - uses: actions/checkout@v2.1.3
+      - uses: actions/checkout@v2
       - uses: wangyoucao577/go-release-action@v1.14
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
