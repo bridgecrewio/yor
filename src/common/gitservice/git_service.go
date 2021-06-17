@@ -95,7 +95,7 @@ func (g *GitService) setOrgAndName() error {
 func (g *GitService) ComputeRelativeFilePath(fp string) string {
 	if strings.HasPrefix(fp, g.gitRootDir) {
 		res, _ := filepath.Rel(g.gitRootDir, fp)
-		return res
+		return filepath.Join(g.scanPathFromRoot, res)
 	}
 	scanPathIter := g.scanPathFromRoot
 	parent := filepath.Dir(fp)
