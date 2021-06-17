@@ -14,15 +14,11 @@ jobs:
         with:
           go-version: 1.13
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.1.3
       - name: Prepare external plugin tests
         run: |
           go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
           go build -buildmode=plugin -o tests/yor_plugins/tag_group_example/extra_tag_groups.so tests/yor_plugins/tag_group_example/*.go
-      - name: data
-        run: |
-          go env
-          ls -la /usr/local/go
       - name: Build
         run: go build
       - name: Test
@@ -32,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.1.3
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v1
         with:
@@ -47,11 +43,11 @@ jobs:
         with:
           go-version: 1.13
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.1.3
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.1.3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
