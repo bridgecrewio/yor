@@ -51,7 +51,7 @@ func NewGitService(rootDir string) (*GitService, error) {
 	scanPathFromRoot, _ := filepath.Rel(rootDirIter, scanAbsDir)
 
 	gitService := GitService{
-		gitRootDir:       rootDirIter,
+		gitRootDir:       rootDir,
 		scanPathFromRoot: scanPathFromRoot,
 		repository:       repository,
 		BlameByFile:      make(map[string]*git.BlameResult),
@@ -94,7 +94,8 @@ func (g *GitService) setOrgAndName() error {
 
 func (g *GitService) ComputeRelativeFilePath(fp string) string {
 	if strings.HasPrefix(fp, g.gitRootDir) {
-		return strings.ReplaceAll(fp, fmt.Sprintf("%s/", g.gitRootDir), "")
+		res, _ := filepath.Rel(g.gitRootDir, fp)
+		return res
 	}
 	scanPathIter := g.scanPathFromRoot
 	parent := filepath.Dir(fp)
