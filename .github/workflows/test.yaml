@@ -20,9 +20,9 @@ jobs:
           go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
           go build -buildmode=plugin -o tests/yor_plugins/tag_group_example/extra_tag_groups.so tests/yor_plugins/tag_group_example/*.go
       - name: Build
-        run: go build
-      - name: Test
-        run: go test ./src/...
+        run: |
+          go build
+          go test ./src/...
   linter:
     name: golangci-lint
     runs-on: ubuntu-latest
