@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -44,7 +44,7 @@ jobs:
           git push origin
   linter:
     name: golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
           tool_name: golangci-lint
           fail_on_error: true
   integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -78,7 +78,7 @@ jobs:
           ./yor tag -d terragoat -o json --output-json-file result.json
           go test ./tests/integration/...
   create-release:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs:
       - integration-tests
       - test
@@ -126,7 +126,7 @@ jobs:
     needs:
       - create-release
     name: Release Go Binary
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     strategy:
       matrix:
         # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64
@@ -147,7 +147,7 @@ jobs:
           extra_files: LICENSE README.md
           release_tag: ${{ needs.create-release.outputs.version }}
   publish-dockerhub:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     needs: linux-windows-matrix
     steps:
       - uses: actions/checkout@master
@@ -169,7 +169,7 @@ jobs:
   formula:
     name: Update Homebrew formula
     needs: create-release
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Update the Homebrew formula with latest release
         uses: NSHipster/update-homebrew-formula-action@main
@@ -181,7 +181,7 @@ jobs:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
   update-bridgecrew-projects:
     needs: publish-dockerhub
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: update on yor release
         run: |

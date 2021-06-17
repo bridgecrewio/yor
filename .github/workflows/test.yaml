@@ -7,7 +7,7 @@ on:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -23,7 +23,7 @@ jobs:
         run: go build -v && go test ./src/...
   linter:
     name: golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
           fail_on_error: true
           golangci_lint_flags: "--skip-dirs tests/yor_plugins"
   integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
