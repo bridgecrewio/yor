@@ -148,7 +148,9 @@ jobs:
           release_tag: ${{ needs.create-release.outputs.version }}
   publish-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
-    needs: create-release
+    needs:
+      - linux-windows-matrix
+      - create-release
     steps:
       - uses: actions/checkout@master
       - name: Publish to Registry
