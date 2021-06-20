@@ -21,7 +21,6 @@ fi
 
 echo "running yor on directory: $INPUT_DIRECTORY"
 /usr/bin/yor tag -d "$INPUT_DIRECTORY" "$TAG_FLAG" "$TAG_GROUPS" "$SKIP_TAG_FLAG" "$SKIP_DIR_FLAG" "$EXT_TAGS_FLAG" "$OUTPUT_FLAG"
-rm -rf .yor_plugins
 YOR_EXIT_CODE=$?
 
 _git_is_dirty() {
