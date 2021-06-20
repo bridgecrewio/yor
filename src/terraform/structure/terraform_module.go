@@ -36,8 +36,8 @@ func NewTerraformModule(rootDir string) *TerraformModule {
 	}
 	terraformModule := &TerraformModule{tfModule: tfModule, rootDir: rootDir}
 	// download terraform plugin into local folder if it doesn't exist
-	pwd, _ := os.Getwd()
-	terraformModule.ProvidersInstallDir = path.Join(pwd, PluginsOutputDir)
+	homeDir, _ := os.UserHomeDir()
+	terraformModule.ProvidersInstallDir = path.Join(homeDir, PluginsOutputDir)
 	terraformModule.InitProvider()
 
 	return terraformModule
