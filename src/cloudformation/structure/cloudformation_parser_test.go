@@ -70,6 +70,15 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		assert.Equal(t, 2, cfnParser.FileToResourcesLines[sourceFile].Start)
 		assert.Equal(t, 9, cfnParser.FileToResourcesLines[sourceFile].End)
 	})
+
+	t.Run("parse_special_cases", func(t *testing.T) {
+		directory, _ := filepath.Abs("../../../tests/cloudformation/resources/parsing_spacial_cases")
+		cfnParser := CloudformationParser{}
+		cfnParser.Init(directory, nil)
+		sourceFile := directory + "/cfn.yaml"
+		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
+		assert.Equal(t, 3, len(cfnBlocks))
+	})
 }
 
 func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {
