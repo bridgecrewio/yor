@@ -20,6 +20,46 @@ during pull request review and as part of any build process.
   uses: bridgecrewio/yor-action@main
 ```
 
+## Integrate Yor with GitLab CI
+Integrating Yor into a GitLab CI pipeline provides a simple, automatic way of applying tags to your IaC both
+during pull request review and as part of any build process.
+```yaml
+.git-script: &git-script |
+  cd $CI_PROJECT_DIR
+  git status
+  lines=$(git status -s | wc -l)
+  if [ $lines -gt 0 ];then
+    echo "committing"
+    git config --global user.name "$AUTO_COMMITTER_NAME"
+    git config --global user.email "$AUTO_COMMITTER_EMAIL"
+    echo ".yor_plugins" >> .gitignore
+    git add .
+    git commit -m "YOR: Auto add/update yor.io tags."
+    git push -o ci.skip "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
+  else
+    echo "no updated resources, nothing to commit."
+  fi
+
+stages:
+  - yor
+
+run-yor:    
+  stage: yor
+  script:
+    - git checkout ${CI_COMMIT_REF_NAME}
+    - export YOR_VERSION=0.1.62
+    - wget -q -O - https://github.com/bridgecrewio/yor/releases/download/${YOR_VERSION}/yor-${YOR_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
+    - /tmp/yor tag -d .
+    - *git-script
+```
+
+You will need to set the following variables in `Settings > CI/CD > Variables` in order to use the pipeline.
+`AUTO_COMMITTER_EMAIL`: Configure the author's e-mail for the git commit of new tags.
+`AUTO_COMMITTER_NAME`: Configure the authors name for the git commit of new tags.
+`GITLAB_USER_NAME`: The GitLab username for authenticating the git push of new tags, must match a valid users `GIT_PUSH_TOKEN`.
+`GIT_PUSH_TOKEN`: A GitLab personal access token with permissions to commit to the repository.
+
+
 ## MacOS
 Run the following commands to install Yor on MacOS:
 ```sh
