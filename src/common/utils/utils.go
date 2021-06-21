@@ -146,3 +146,15 @@ func IsCharWhitespace(c byte) bool {
 
 	return newStr != string(c)
 }
+
+func SplitStringByComma(input []string) []string {
+	var ans []string
+	for _, i := range input {
+		if strings.Contains(i, ",") {
+			ans = append(ans, strings.Split(i, ",")...)
+		} else {
+			ans = append(ans, i)
+		}
+	}
+	return ans
+}

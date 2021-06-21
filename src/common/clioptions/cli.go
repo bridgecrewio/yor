@@ -37,6 +37,12 @@ func (o *TagOptions) Validate() {
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
+
+	o.Tag = utils.SplitStringByComma(o.Tag)
+	o.SkipTags = utils.SplitStringByComma(o.SkipTags)
+	o.CustomTagging = utils.SplitStringByComma(o.CustomTagging)
+	o.SkipDirs = utils.SplitStringByComma(o.SkipDirs)
+	o.TagGroups = utils.SplitStringByComma(o.TagGroups)
 }
 
 func (l *ListTagsOptions) Validate() {

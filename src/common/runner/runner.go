@@ -62,7 +62,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
 	r.skippedTags = commands.SkipTags
-	r.skipDirs = commands.SkipDirs
+	r.skipDirs = append(commands.SkipDirs, ".git")
 	r.configFilePath = commands.ConfigFile
 	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
@@ -202,8 +202,9 @@ func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}
 }
 
 func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
+	relPath, _ := filepath.Rel(r.dir, file)
 	for _, sp := range r.skipDirs {
-		if strings.HasPrefix(file, sp) {
+		if strings.HasPrefix(relPath, sp) {
 			return true
 		}
 	}

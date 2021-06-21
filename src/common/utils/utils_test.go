@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -133,4 +134,37 @@ func TestMinInt(t *testing.T) {
 		ans := MinInt(3, 4)
 		assert.Equal(t, 3, ans)
 	})
+}
+
+func TestSplitStringByComma(t *testing.T) {
+	tests := []struct {
+		name string
+		arg  []string
+		want int
+	}{
+		{
+			name: "Test no comma",
+			arg:  []string{"Hello"},
+			want: 1,
+		},
+		{
+			name: "Test actual list",
+			arg:  []string{"Hello", "World"},
+			want: 2,
+		},
+		{
+			name: "Test comma delimited list",
+			arg:  []string{"tests,.git,node_modules"},
+			want: 3,
+		},
+		{
+			name: "Test combined",
+			arg:  []string{"tests,.git,node_modules", ".github"},
+			want: 4,
+		},
+	}
+	for _, tt := range tests {
+		got := len(SplitStringByComma(tt.arg))
+		assert.Equal(t, tt.want, got, fmt.Sprintf("Expected to get %v, got %v for \"%v\"", tt.want, got, tt.name))
+	}
 }
