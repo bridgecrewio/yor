@@ -85,7 +85,7 @@ jobs:
       - test
       - linter
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.new_tag }}
     steps:
       - name: Wait for coverage to update
         run: sleep 10s
@@ -94,31 +94,18 @@ jobs:
         with:
           ref: main
       - name: version
-        run: |
-          git pull
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b, $3+1)}')
-          echo "new tag: $new_tag"
-          echo "package common" > src/common/version.go
-          echo "" >> src/common/version.go
-          echo "const Version = \"$new_tag\"" >> src/common/version.go
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Tag new version" src/common/version.go
-          git push origin
-          git tag $new_tag
-          git push origin --tags
-          echo "::set-output name=version::$new_tag"
-        id: version
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false  
+        id: version  
       - name: release
         uses: actions/create-release@v1
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
+          release_name: ${{ steps.version.outputs.new_tag }}
+          tag_name: ${{ steps.version.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Update go reportcard
@@ -138,6 +125,13 @@ jobs:
             goos: darwin
     steps:
       - uses: actions/checkout@v2
+      - name: version
+        run: |
+          new_tag=${{ needs.create-release.outputs.version }}
+          echo "new tag: $new_tag"
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
       - uses: wangyoucao577/go-release-action@v1.14
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
