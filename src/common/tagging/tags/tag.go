@@ -11,6 +11,11 @@ type Tag struct {
 }
 
 const YorTraceTagKey = "yor_trace"
+const GitFileTagKey = "git_file"
+const GitModifiersTagKey = "git_modifiers"
+const GitLastModifiedAtTagKey = "git_last_modified_at"
+const GitLastModifiedByTagKey = "git_last_modified_by"
+const GitRepoTagKey = "git_repo"
 
 type ITag interface {
 	Init()
