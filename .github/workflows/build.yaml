@@ -75,6 +75,7 @@ jobs:
       - name: Run yor
         run: |
           git config --local user.email "action@github.com"
+          ./yor list-tags -g code2cloud,git > list-tags-result.txt
           ./yor tag -d terragoat -o json --output-json-file result.json
           go test ./tests/integration/...
   create-release:
