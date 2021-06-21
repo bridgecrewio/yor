@@ -68,9 +68,11 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	template, err := goserverlessParse(filePath)
 	p.Template = template
 	if err != nil || template == nil || template.Functions == nil {
-		logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
+		if err != nil {
+			logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
+		}
 		if err == nil {
-			err = fmt.Errorf("failed to parse file")
+			err = fmt.Errorf("failed to parse file %v", filePath)
 		}
 		return nil, err
 	}

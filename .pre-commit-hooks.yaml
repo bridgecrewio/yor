@@ -1,0 +1,7 @@
+- id: yor
+  name: yor
+  description: Yor gets your tagging done.
+  language: golang
+  entry: yor tag -d
+  types: [terraform]
+

@@ -13,7 +13,7 @@ type GitFileTag struct {
 }
 
 func (t *GitFileTag) Init() {
-	t.Key = gitFileTagKey
+	t.Key = tags.GitFileTagKey
 }
 
 func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {
