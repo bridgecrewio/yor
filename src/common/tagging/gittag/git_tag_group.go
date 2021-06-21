@@ -30,12 +30,6 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-const gitModifiersTagKey = "git_modifiers"
-const gitLastModifiedAtTagKey = "git_last_modified_at"
-const gitLastModifiedByTagKey = "git_last_modified_by"
-const gitFileTagKey = "git_file"
-const gitRepoTagKey = "git_repo"
-
 func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
 	t.SkippedTags = skippedTags
 	if path != "" {
@@ -218,22 +212,22 @@ func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.
 func (t *TagGroup) cleanGCPTagValue(val tags.ITag) {
 	updated := val.GetValue()
 	switch val.GetKey() {
-	case gitModifiersTagKey:
+	case tags.GitModifiersTagKey:
 		modifiers := strings.Split(updated, "/")
 		for i, m := range modifiers {
 			modifiers[i] = utils.RemoveGcpInvalidChars.ReplaceAllString(m, "")
 		}
 		updated = strings.Join(modifiers, "__")
-	case gitLastModifiedAtTagKey:
+	case tags.GitLastModifiedAtTagKey:
 		updated = strings.ReplaceAll(updated, " ", "-")
 		updated = strings.ReplaceAll(updated, ":", "-")
-	case gitFileTagKey:
+	case tags.GitFileTagKey:
 		updated = strings.ReplaceAll(updated, "/", "__")
 		updated = strings.ReplaceAll(updated, ".", "_")
-	case gitLastModifiedByTagKey:
+	case tags.GitLastModifiedByTagKey:
 		updated = strings.Split(updated, "@")[0]
 		updated = utils.RemoveGcpInvalidChars.ReplaceAllString(updated, "")
-	case gitRepoTagKey:
+	case tags.GitRepoTagKey:
 		updated = strings.ReplaceAll(updated, "/", "__")
 		updated = strings.ReplaceAll(updated, ".", "_")
 	}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -50,7 +51,7 @@ type TagConfigValue struct {
 	Matches MatchesConfig `yaml:"matches"`
 }
 
-type MatchesConfig []interface{}
+type MatchesConfig []map[string]interface{}
 
 type FiltersConfig struct{ Tags map[string]interface{} }
 
@@ -164,7 +165,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	blockTags := append(block.GetExistingTags(), block.GetNewTags()...)
 	if len(tag.matches) > 0 {
 		for _, matchEntry := range tag.matches {
-			for matchValue, matchObj := range matchEntry.(map[interface{}]interface{}) {
+			for matchValue, matchObj := range matchEntry {
 				// Currently, we only allow matches on tags
 				switch matchType := matchObj.(type) {
 				case string:
@@ -176,14 +177,23 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
 								if blockTagKey == tagName && blockTagValue == tagMatch {
-									retTag.Value = evaluateTemplateVariable(matchValue.(string))
+									retTag.Value = evaluateTemplateVariable(matchValue)
 								}
 							}
 						case []interface{}:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && utils.InSlice(tagMatch, blockTagValue) {
-									retTag.Value = matchValue.(string)
+								if blockTagKey == tagName {
+									if blockTagKey == tags.GitModifiersTagKey {
+										for _, val := range strings.Split(blockTagValue, "/") {
+											if utils.InSlice(tagMatch, val) {
+												retTag.Value = matchValue
+												break
+											}
+										}
+									} else if utils.InSlice(tagMatch, blockTagValue) {
+										retTag.Value = matchValue
+									}
 								}
 							}
 						}
@@ -195,7 +205,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	} else if tag.defaultValue != "" {
 		return retTag, nil
 	}
-	return Tag{}, fmt.Errorf("Could not compute external tag %s", tag.GetKey())
+	return Tag{}, fmt.Errorf("could not compute external tag %s", tag.GetKey())
 }
 
 func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
