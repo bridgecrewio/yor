@@ -181,6 +181,27 @@ func TestRunResults(t *testing.T) {
 		assert.LessOrEqual(t, 160, taggedAzure)
 		assert.Equal(t, report.Summary.NewResources, len(resourceSet))
 	})
+
+	t.Run("Test cli arg parsing", func(t *testing.T) {
+		resultFile := "../../list-tags-result.txt"
+		content, _ := ioutil.ReadFile(resultFile)
+		defer func() {
+			_ = os.Remove(resultFile)
+		}()
+		lines := strings.Split(string(content), "\n")
+		var filtered []string
+		for _, line := range lines {
+			if len(line) > 3 && line[2] != ' ' && line[2] != '-' {
+				filtered = append(filtered, line)
+			}
+		}
+		if len(filtered) == 2 {
+			assert.True(t, (strings.HasPrefix(filtered[0], "| code2cloud") && strings.HasPrefix(filtered[1], "| git")) ||
+				(strings.HasPrefix(filtered[0], "| git") && strings.HasPrefix(filtered[1], "| code2cloud")))
+		} else {
+			assert.Fail(t, fmt.Sprintf("Number of filtered lines is %v, should be %v", len(filtered), 2))
+		}
+	})
 }
 
 func TestTagUncommittedResults(t *testing.T) {

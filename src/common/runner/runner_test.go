@@ -182,7 +182,7 @@ func TestRunnerInternals(t *testing.T) {
 			return nil
 		})
 
-		assert.Equal(t, 0, len(skippedFiles), "Some files were not skipped")
+		assert.Equal(t, 2, len(skippedFiles), "Some files were not skipped")
 	})
 
 	t.Run("Test skip entire dir", func(t *testing.T) {

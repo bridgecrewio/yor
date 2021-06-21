@@ -34,6 +34,13 @@ func (o *TagOptions) Validate() {
 	_ = validator.SetValidationFunc("output", validateOutput)
 	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
 	_ = validator.SetValidationFunc("config-file", validateConfigFile)
+
+	o.Tag = utils.SplitStringByComma(o.Tag)
+	o.SkipTags = utils.SplitStringByComma(o.SkipTags)
+	o.CustomTagging = utils.SplitStringByComma(o.CustomTagging)
+	o.SkipDirs = utils.SplitStringByComma(o.SkipDirs)
+	o.TagGroups = utils.SplitStringByComma(o.TagGroups)
+
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
 	}
@@ -41,6 +48,8 @@ func (o *TagOptions) Validate() {
 
 func (l *ListTagsOptions) Validate() {
 	_ = validator.SetValidationFunc("tagGroupNames", validateTagGroupNames)
+	l.TagGroups = utils.SplitStringByComma(l.TagGroups)
+
 	if err := validator.Validate(l); err != nil {
 		logger.Error(err.Error())
 	}
