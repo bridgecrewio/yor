@@ -1,0 +1,11 @@
+---
+repos:
+  - repo: local
+    hooks:
+      - id: yor
+        name: yor
+        entry: yor tag -d
+        args: ["tests/terraform/mixed/"]
+        language: golang
+        types: [terraform]
+        pass_filenames: false        
