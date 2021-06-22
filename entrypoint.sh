@@ -20,17 +20,6 @@ fi
 
 [[ -d ".yor_plugins" ]] && echo "Directory .yor_plugins exists, and will be overwritten by yor. Please rename this directory."
 
-echo "running yor on directory: $INPUT_DIRECTORY"
-echo "params"
-echo INPUT_TAG_GROUPS "$INPUT_TAG_GROUPS"
-echo INPUT_TAG "$INPUT_TAG"
-echo INPUT_SKIP_TAGS "$INPUT_SKIP_TAGS"
-echo INPUT_SKIP_DIRS "$INPUT_SKIP_DIRS"
-echo INPUT_CUSTOM_TAGS "$INPUT_CUSTOM_TAGS"
-echo INPUT_OUTPUT_FORMAT "$INPUT_OUTPUT_FORMAT"
-echo INPUT_CONFIG_FILE "$INPUT_CONFIG_FILE"
-echo INPUT_LOG_LEVEL "$INPUT_LOG_LEVEL"
-
 echo "running command:"
 echo yor tag -d "$INPUT_DIRECTORY" "$TAG_FLAG" "$TAG_GROUPS" "$SKIP_TAG_FLAG" "$SKIP_DIR_FLAG" "$EXT_TAGS_FLAG" "$OUTPUT_FLAG" "$CONFIG_FILE_FLAG"
 
