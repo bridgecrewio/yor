@@ -1,7 +1,6 @@
 package external
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -117,6 +116,7 @@ func (t *TagGroup) InitExternalTagGroup() {
 func (t *TagGroup) extractExternalTags() {
 	tagGroups := t.config.TagGroups
 	for _, tagGroup := range tagGroups {
+		logger.Info(fmt.Sprintf("extracting tag group named %v from yaml", tagGroup))
 		tagGroupTags := tagGroup.Tags
 		tagGroupName := evaluateTemplateVariable(tagGroup.TagGroupName)
 		t.tagGroupsByName[tagGroupName] = t.ExtractExternalGroupsTags(tagGroupTags)
@@ -128,16 +128,19 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 }
 
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
+	logger.Info(fmt.Sprintf("extrnal tag group creating tags for block %v", block.GetResourceID()))
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var filteredNewTags = make([]tags.ITag, len(newTags))
 	blockTags := make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(filteredNewTags, newTags)
+	newTagsNum := 0
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
 			tagValue, err := t.CalculateTagValue(block, groupTag)
 			if err != nil {
 				logger.Error(err.Error())
 			}
+			newTagsNum++
 			if tagValue == nil {
 				for i, newTag := range newTags {
 					if newTag.GetKey() == groupTag.GetKey() {
@@ -149,6 +152,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 			}
 		}
 	}
+	logger.Info(fmt.Sprintf("Created %d new tags", newTagsNum))
 	copy(blockTags, append(filteredNewTags, existingTags...))
 	t.SetTags(blockTags)
 	block.AddNewTags(filteredNewTags)
@@ -239,7 +243,7 @@ func evaluateTemplateVariable(val string) string {
 func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters FiltersConfig) (Tag, error) {
 	var parsedTag = Tag{filters: groupFilters}
 	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
-		return Tag{}, errors.New("please specify either a default tag value and/or a computed tag value")
+		return Tag{}, fmt.Errorf("please specify either a default tag value and/or a computed tag value")
 	}
 	parsedTag.defaultValue = tagValueObj.Default
 	parsedTag.ITag = &tags.Tag{Key: tagKey, Value: tagValueObj.Default}
