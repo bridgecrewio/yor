@@ -12,7 +12,7 @@ fi
 [[ -n "$INPUT_TAG_GROUPS" ]] && TAG_GROUPS="--tag-groups $INPUT_TAG_GROUPS"
 [[ -n "$INPUT_TAG" ]] && TAG_FLAG="--tag $INPUT_TAG"
 [[ -n "$INPUT_SKIP_TAGS" ]] && SKIP_TAG_FLAG="--skip-tags $INPUT_SKIP_TAGS"
-[[ -n "$INPUT_SKIP_DIRS" ]] && SKIP_DIR_FLAG="--framework $INPUT_SKIP_TAGS"
+[[ -n "$INPUT_SKIP_DIRS" ]] && SKIP_DIR_FLAG="--skip-dirs $INPUT_SKIP_TAGS"
 [[ -n "$INPUT_CUSTOM_TAGS" ]] && EXT_TAGS_FLAG="--custom-tagging $INPUT_CUSTOM_TAGS"
 [[ -n "$INPUT_OUTPUT_FORMAT" ]] && OUTPUT_FLAG="--output $INPUT_OUTPUT_FORMAT"
 [[ -n "$INPUT_CONFIG_FILE" ]] && CONFIG_FILE_FLAG="--config-file $INPUT_CONFIG_FILE"
