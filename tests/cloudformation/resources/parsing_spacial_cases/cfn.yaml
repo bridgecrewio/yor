@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Resources with special parsing cases
+Mappings:
+  MyMap:
+    Key: "Value"
+Resources:
+  ExampleFindInMap:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: An example template
+      Environment:
+        Variables:
+          BROKEN_FIND_IN_MAP: !FindInMap [ Mappings, MyMap, Key ]
+  ExampleInt:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: An example template
+      Environment:
+        Variables:
+          BROKEN_INT: 10
+  ExampleJoin:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: An example template
+      Environment:
+        Variables:
+          BROKEN_JOIN: !Join [ '-', [ 'a', 'b', 'c' ] ]

@@ -3,7 +3,8 @@ module github.com/bridgecrewio/yor
 go 1.13
 
 require (
-	github.com/awslabs/goformation/v4 v4.19.1
+	github.com/awslabs/goformation/v4 v4.19.5
+	github.com/bridgecrewio/goformation/v4 v4.19.6-0.20210621143756-9668f0a46c85
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-hclog v0.9.2
@@ -22,7 +23,6 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/zclconf/go-cty v1.7.0
 	go.opencensus.io v0.22.0
-	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4 // indirect
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gopkg.in/yaml.v2 v2.4.0
 )

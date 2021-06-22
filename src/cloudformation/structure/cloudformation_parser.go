@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"math"
 
-	"github.com/awslabs/goformation/v4"
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
+	"github.com/bridgecrewio/goformation/v4"
+	"github.com/bridgecrewio/goformation/v4/intrinsics"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/json"
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -26,6 +27,7 @@ type CloudformationParser struct {
 
 const TagsAttributeName = "Tags"
 const ResourcesStartToken = "Resources"
+const EnvVarsPath = "Resources/*/Properties/Environment/Variables/*"
 
 func (p *CloudformationParser) Name() string {
 	return "CloudFormation"
@@ -51,7 +53,9 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	template, err := goformation.Open(filePath)
+	template, err := goformation.OpenWithOptions(filePath, &intrinsics.ProcessorOptions{
+		StringifyPaths: []string{EnvVarsPath},
+	})
 	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
 		if err == nil {
