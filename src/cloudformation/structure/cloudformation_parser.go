@@ -27,6 +27,7 @@ type CloudformationParser struct {
 
 const TagsAttributeName = "Tags"
 const ResourcesStartToken = "Resources"
+const EnvVarsPath = "Resources/*/Properties/Environment/Variables/*"
 
 func (p *CloudformationParser) Name() string {
 	return "CloudFormation"
@@ -53,9 +54,7 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	template, err := goformation.OpenWithOptions(filePath, &intrinsics.ProcessorOptions{
-		StringifyPaths: []string{
-			"Resources/*/Properties/Environment/Variables/*",
-		},
+		StringifyPaths: []string{EnvVarsPath},
 	})
 	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
