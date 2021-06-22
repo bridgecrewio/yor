@@ -156,6 +156,7 @@ jobs:
           name: bridgecrew/yor
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          buildoptions: "--no-cache"
           tags: "latest,${{ needs.create-release.outputs.version }}"
       - name: Update Docker Hub README
         uses: peter-evans/dockerhub-description@v2
