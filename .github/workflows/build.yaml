@@ -98,6 +98,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false  
+          RELEASE_BRANCHES: main
+          DEFAULT_BUMP: patch
         id: version  
       - name: release
         uses: actions/create-release@v1
