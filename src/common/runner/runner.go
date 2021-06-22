@@ -45,6 +45,9 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		r.TagGroups = append(r.TagGroups, tagGroup)
 	}
 	r.TagGroups = append(r.TagGroups, extraTagGroups...)
+	if commands.ConfigFile == "" {
+		logger.Info("Did not get an external config file")
+	}
 	for _, tagGroup := range r.TagGroups {
 		tagGroup.InitTagGroup(dir, commands.SkipTags)
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
