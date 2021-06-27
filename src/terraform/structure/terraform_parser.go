@@ -505,6 +505,11 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 
 func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
 	resourceType := hclBlock.Labels()[0]
+	if resourceType == "aws_autoscaling_group" {
+		// This resource specifically supports tags with a different structure, see:
+		// https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
+		return false, nil
+	}
 	if val, ok := p.taggableResourcesCache[resourceType]; ok {
 		return val, nil
 	}
