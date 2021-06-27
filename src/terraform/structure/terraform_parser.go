@@ -30,6 +30,7 @@ var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 var unsupportedTerraformBlocks = []string{
 	"aws_autoscaling_group", // This resource specifically supports tags with a different structure, see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
 	"aws_lb_listener",       // This resource does not support tags, although docs state otherwise.
+	"aws_lb_listener_rule",  // This resource does not support tags, although docs state otherwise.
 }
 
 type TerrraformParser struct {
