@@ -147,8 +147,7 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 	}
 	switch utils.GetFileFormat(readFilePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.FileToResourcesLines[readFilePath], TagsAttributeName,
-			ResourcesStartToken)
+		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, TagsAttributeName, ResourcesStartToken)
 	case common.JSONFileType.FileFormat:
 		return json.WriteJSONFile(readFilePath, blocks, writeFilePath, p.FileToBracketMapping[readFilePath])
 	default:

@@ -19,8 +19,7 @@ import (
 
 const SingleIndent = "  "
 
-func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string,
-	resourcesLinesRange structure.Lines, tagsAttributeName string, resourcesStartToken string) error {
+func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
 	// read file bytes
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
@@ -35,6 +34,10 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	sort.Slice(blocks, func(i, j int) bool {
 		return blocks[i].GetLines().Start < blocks[j].GetLines().Start
 	})
+	linesPerTag := 1
+	if isCfn {
+		linesPerTag = 2
+	}
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
 		newResourceLines := getYAMLLines(rawBlock, isCfn)
@@ -56,25 +59,9 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			if isCfn {
 				tagAttributeIndent += SingleIndent
 			}
-			foundPlace := false
-			written := false
-			for _, line := range oldResourceLines {
-				if len(ExtractIndentationOfLine(line)) < len(tagAttributeIndent) {
-					if foundPlace {
-						resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
-						resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent+SingleIndent)...)
-						written = true
-					}
-					resourcesLines = append(resourcesLines, line)
-					continue
-				}
-				foundPlace = true
-				resourcesLines = append(resourcesLines, line)
-			}
-			if !written {
-				resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
-				resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent)...)
-			}
+			resourcesLines = append(resourcesLines, oldResourceLines...)
+			resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":")
+			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent+SingleIndent)...)
 			continue
 		}
 
@@ -92,20 +79,21 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		}
 		allNewResourceTagLines := IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)
 		var netNewResourceLines []string
-		for i := 0; i < len(allNewResourceTagLines); i += 2 {
+		for i := 0; i < len(allNewResourceTagLines); i += linesPerTag {
 			l := allNewResourceTagLines[i]
-			if strings.Contains(l, " Key:") {
-				key := strings.ReplaceAll(strings.ReplaceAll(l, " ", ""), "-Key:", "")
-				found := false
-				for _, tag := range diff.Added {
-					if tag.GetKey() == key {
-						found = true
-						break
-					}
+			key := getKeyFromLine(l, isCfn)
+			if key == "" {
+				continue
+			}
+			found := false
+			for _, tag := range diff.Added {
+				if tag.GetKey() == key {
+					found = true
+					break
 				}
-				if found {
-					netNewResourceLines = append(netNewResourceLines, allNewResourceTagLines[i:i+2]...)
-				}
+			}
+			if found {
+				netNewResourceLines = append(netNewResourceLines, allNewResourceTagLines[i:i+linesPerTag]...)
 			}
 		}
 		resourcesLines = append(resourcesLines, tagLines...)            // Add old tags
@@ -125,6 +113,17 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
 
 	return err
+}
+
+func getKeyFromLine(l string, isCfn bool) string {
+	if isCfn {
+		if strings.Contains(l, " Key:") {
+			return strings.ReplaceAll(strings.ReplaceAll(l, " ", ""), "-Key:", "")
+		}
+	} else {
+		return strings.Split(strings.ReplaceAll(strings.ReplaceAll(l, " ", ""), "-", ""), ":")[0]
+	}
+	return ""
 }
 
 func UpdateExistingCFNTags(tagsLinesList []string, diff []*tags.TagDiff) {
