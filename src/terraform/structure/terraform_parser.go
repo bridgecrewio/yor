@@ -433,7 +433,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 		if strings.HasSuffix(f.Name(), ".tf") {
 			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
 			for _, b := range blocks {
-				if b.(*TerraformBlock).HclSyntaxBlock.Type == VarBlockType && b.GetResourceID() == "tags" {
+				if b.(*TerraformBlock).HclSyntaxBlock.Type == VariableBlockType && b.GetResourceID() == "tags" {
 					return true
 				}
 			}
