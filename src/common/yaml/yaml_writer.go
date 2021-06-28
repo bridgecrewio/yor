@@ -59,9 +59,21 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			if isCfn {
 				tagAttributeIndent += SingleIndent
 			}
-			resourcesLines = append(resourcesLines, oldResourceLines...)
-			resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":")
-			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagAttributeIndent+SingleIndent)...)
+			lastIndex := -1
+			for i, line := range oldResourceLines {
+				if len(ExtractIndentationOfLine(line)) < len(tagAttributeIndent) {
+					continue
+				}
+				lastIndex = i
+			}
+			resourcesLines = append(resourcesLines, oldResourceLines[:lastIndex+1]...)
+			resourcesLines = append(resourcesLines, tagAttributeIndent+tagsAttributeName+":") // add the 'Tags:' line
+			tagIndent := tagAttributeIndent
+			if isCfn {
+				tagIndent += SingleIndent
+			}
+			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagIndent)...)
+			resourcesLines = append(resourcesLines, oldResourceLines[lastIndex+1:]...)
 			continue
 		}
 
