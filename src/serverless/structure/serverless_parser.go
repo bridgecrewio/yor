@@ -135,14 +135,14 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 		block := block.(*ServerlessBlock)
 		block.UpdateTags()
 	}
-	return yamlUtils.WriteYAMLFile(readFilePath, blocks, writeFilePath, p.YamlParser.FileToResourcesLines[readFilePath],
-		FunctionTagsAttributeName, FunctionsSectionName)
+	return yamlUtils.WriteYAMLFile(readFilePath, blocks, writeFilePath, FunctionTagsAttributeName, FunctionsSectionName)
 }
 
 func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *structure.Lines) structure.Lines {
 	nonFoundLines := structure.Lines{Start: -1, End: -1}
 	fileFormat := utils.GetFileFormat(filePath)
 	tagsLines := structure.Lines{Start: -1, End: -1}
+	lineCounter := 0
 	switch fileFormat {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
@@ -150,7 +150,6 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 			_ = file.Close()
 		}()
 		// iterate file line by line
-		lineCounter := 0
 		tagsIndentSize := 0
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -171,6 +170,9 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 			}
 			lineCounter++
 		}
+	}
+	if tagsLines.Start >= 0 && tagsLines.End == -1 {
+		tagsLines.End = lineCounter - 1
 	}
 	return tagsLines
 }

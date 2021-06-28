@@ -64,7 +64,7 @@ func TestServerlessWriting(t *testing.T) {
 			},
 		}
 		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
-		err := WriteYAMLFile(readFilePath, slsBlocks, f.Name(), structure.Lines{Start: 13, End: 18}, "tags", "functions")
+		err := WriteYAMLFile(readFilePath, slsBlocks, f.Name(), "tags", "functions")
 		if err != nil {
 			assert.Fail(t, err.Error())
 		}
@@ -122,7 +122,7 @@ func TestCFNWriting(t *testing.T) {
 			},
 		}
 		f, _ := ioutil.TempFile(directory, "base.*.template")
-		err := WriteYAMLFile(readFilePath, blocks, f.Name(), structure.Lines{Start: 2, End: 8}, "Tags", "Resources")
+		err := WriteYAMLFile(readFilePath, blocks, f.Name(), "Tags", "Resources")
 		if err != nil {
 			assert.Fail(t, err.Error())
 		}
