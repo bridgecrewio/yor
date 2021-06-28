@@ -16,9 +16,11 @@ type TerraformBlock struct {
 const ResourceBlockType = "resource"
 const ModuleBlockType = "module"
 const DataBlockType = "data"
-const VarBlockType = "variable"
+const LocalBlockType = "local"
+const VarBlockType = "var"
+const VariableBlockType = "variable"
 
-var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType, VarBlockType}
+var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType, VariableBlockType}
 
 func (b *TerraformBlock) GetResourceID() string {
 	return strings.Join(b.HclSyntaxBlock.Labels, ".")
