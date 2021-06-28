@@ -220,7 +220,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 				isMergeOpExists = true
 				break
 			}
-			if i == 0 && utils.InSlice([]string{"var", "local"}, tokenStr) {
+			if i == 0 && utils.InSlice([]string{VarBlockType, LocalBlockType, ModuleBlockType, DataBlockType}, tokenStr) {
 				isRenderedAttribute = true
 				break
 			}

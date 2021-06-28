@@ -16,6 +16,7 @@ type TerraformBlock struct {
 const ResourceBlockType = "resource"
 const ModuleBlockType = "module"
 const DataBlockType = "data"
+const LocalBlockType = "local"
 const VarBlockType = "variable"
 
 var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType, VarBlockType}
