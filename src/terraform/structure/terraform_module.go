@@ -171,9 +171,11 @@ func isRemoteModule(s string) bool {
 func isTerraformRegistryModule(source string) bool {
 	// All terraform registry modules are of the following structure:
 	// terraform-<PROVIDER>-modules/<MODULE_NAME>/<PROVIDER>
-	parts := strings.Split(source, "/")
+	// OR
+	// oracle-terraform-modules/<MODULE_NAME>/<PROVIDER>
+	parts := strings.Split(strings.Split(source, "//")[0], "/")
 	if len(parts) == 3 {
-		if "terraform-"+parts[2]+"-modules" == parts[0] {
+		if _, ok := ProviderToTagAttribute[parts[2]]; "terraform-"+parts[2]+"-modules" == parts[0] || ok {
 			return true
 		}
 	}

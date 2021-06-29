@@ -393,10 +393,20 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			isTaggable = false
 		} else {
 			// This is a remote module - if it has tags attribute, tag it!
-			tagsAttributeName = "tags"
-			existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
+			moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
+			possibleTagAttributeNames := []string{"extra_tags", "tags"}
+			if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
+				possibleTagAttributeNames = append(possibleTagAttributeNames, val)
+			}
+			for _, tan := range possibleTagAttributeNames {
+				existingTags, isTaggable = p.getExistingTags(hclBlock, tan)
+				if isTaggable {
+					tagsAttributeName = tan
+					break
+				}
+			}
 			if !isTaggable {
-				isTaggable = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."))
+				isTaggable, tagsAttributeName = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."), possibleTagAttributeNames)
 			}
 		}
 	}
@@ -412,7 +422,30 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 	return &terraformBlock, nil
 }
 
-func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
+func ExtractProviderFromModuleSrc(source string) string {
+	withoutRef := strings.Split(source, "//")[0]
+	if strings.HasPrefix(withoutRef, "app.terraform.io") {
+		// Terraform modules in private registry follow this structure: <HOSTNAME>/<ORGANIZATION>/<MODULE NAME>/<PROVIDER>
+		// https://www.terraform.io/docs/cloud/registry/using.html
+		return strings.Split(withoutRef, "/")[3]
+	}
+	registryParts := strings.Split(withoutRef, "/")
+	if len(registryParts) == 3 {
+		if _, ok := ProviderToTagAttribute[registryParts[2]]; ok {
+			return registryParts[2]
+		}
+	}
+	parts := strings.Split(strings.TrimRight(withoutRef, ".git"), "/")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "terraform-") {
+			return strings.Split(part, "-")[1]
+		}
+	}
+	return ""
+}
+
+func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtts []string) (bool, string) {
+	logger.Info(fmt.Sprintf("Searching module %v for %v", moduleName, tagAtts))
 	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
 	absRootPath, _ := filepath.Abs(p.rootDir)
 	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
@@ -425,7 +458,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 	}
 	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
 	if _, err := os.Stat(expectedModuleDir); os.IsNotExist(err) {
-		return false
+		return false, ""
 	}
 
 	files, _ := ioutil.ReadDir(expectedModuleDir)
@@ -433,14 +466,18 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string) bool {
 		if strings.HasSuffix(f.Name(), ".tf") {
 			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
 			for _, b := range blocks {
-				if b.(*TerraformBlock).HclSyntaxBlock.Type == VariableBlockType && b.GetResourceID() == "tags" {
-					return true
+				if b.(*TerraformBlock).HclSyntaxBlock.Type == VariableBlockType {
+					for _, tagAtt := range tagAtts {
+						if b.GetResourceID() == tagAtt {
+							return true, tagAtt
+						}
+					}
 				}
 			}
 		}
 	}
 
-	return false
+	return false, ""
 }
 
 func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttributeName string, resourceScheme *tfschema.Block) bool {

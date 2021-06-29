@@ -17,7 +17,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
 )
@@ -335,6 +334,43 @@ func TestTerrraformParser_Module(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Test isModuleTaggable on remote modules", func(t *testing.T) {
+		directory := "../../../tests/terraform/module/provider_modules"
+		terraformParser := TerrraformParser{}
+		terraformParser.Init(directory, nil)
+		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
+		assert.Equal(t, 8, len(blocks))
+		for _, block := range blocks {
+			assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("Block %v should be taggable", block.GetResourceID()))
+		}
+	})
+}
+
+func TestExtractProviderFromModuleSrc(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+		want   string
+	}{
+		{name: "registry_aws_module", source: "terraform-aws-modules/security-group/aws", want: "aws"},
+		{name: "git_aws_module", source: "git@github.com:terraform-aws-modules/terraform-aws-vpc.git", want: "aws"},
+		{name: "github_aws_module", source: "github.com/terraform-aws-modules/terraform-aws-vpc", want: "aws"},
+		{name: "private_registry_aws_module", source: "app.terraform.io/acme/rds/aws", want: "aws"},
+		{name: "registry_google_module", source: "terraform-google-modules/network/google", want: "google"},
+		{name: "git_google_module", source: "git@github.com:terraform-google-modules/terraform-google-network.git", want: "google"},
+		{name: "github_google_module", source: "github.com/terraform-google-modules/terraform-google-network.git", want: "google"},
+		{name: "private_registry_google_module", source: "app.terraform.io/acme/network/google", want: "google"},
+		{name: "azure_github", source: "git@github.com:aztfmod/terraform-azurerm-caf.git", want: "azurerm"},
+		{name: "repo_with_ref", source: "claranet/run-common/azurerm//modules/logs", want: "azurerm"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ExtractProviderFromModuleSrc(tt.source); got != tt.want {
+				t.Errorf("ExtractProviderFromModuleSrc() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
 var layout = "2006-01-02 15:04:05"
