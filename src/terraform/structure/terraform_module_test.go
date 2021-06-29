@@ -49,6 +49,11 @@ func TestTerrraformModule(t *testing.T) {
 		assert.True(t, isRegistry)
 	})
 
+	t.Run("Test TF registry with inner path", func(t *testing.T) {
+		isRegistry := isTerraformRegistryModule("claranet/run-common/azurerm//modules/logs")
+		assert.True(t, isRegistry)
+	})
+
 	t.Run("Handle unsupported providers gracefully", func(t *testing.T) {
 		currentDir, _ := os.Getwd()
 		providersDir, _ := filepath.Abs(currentDir + "../../../../tests/terraform/providers")

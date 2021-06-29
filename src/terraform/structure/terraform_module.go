@@ -22,8 +22,7 @@ import (
 const PluginsOutputDir = ".yor_plugins"
 
 var SkippedProviders = []string{"null", "random", "tls", "local"}
-var registryModuleRegex = regexp.MustCompile("terraform-[^-]-modules/.*/(?P<PROVIDER>[a-z]+)")
-var ociRegistryModuleRegex = regexp.MustCompile("oracle-terraform-modules/.*/(?P<PROVIDER>oci)")
+var RegistryModuleRegex = regexp.MustCompile("^(?P<MODULE_WRITER>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
 
 type TerraformModule struct {
 	tfModule            *tfconfig.Module
@@ -172,5 +171,14 @@ func isRemoteModule(s string) bool {
 }
 
 func isTerraformRegistryModule(source string) bool {
-	return registryModuleRegex.Match([]byte(source)) || ociRegistryModuleRegex.Match([]byte(source))
+	matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
+	if matches == nil {
+		return false
+	}
+	if provider, ok := matches["PROVIDER"]; ok {
+		if _, okTag := ProviderToTagAttribute[provider]; okTag {
+			return true
+		}
+	}
+	return false
 }

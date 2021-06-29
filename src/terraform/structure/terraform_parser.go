@@ -423,16 +423,17 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 }
 
 func ExtractProviderFromModuleSrc(source string) string {
-	withoutRef := strings.Split(source, "//")[0]
-	if strings.HasPrefix(withoutRef, "app.terraform.io") {
+	if strings.HasPrefix(source, "app.terraform.io") {
 		// Terraform modules in private registry follow this structure: <HOSTNAME>/<ORGANIZATION>/<MODULE NAME>/<PROVIDER>
 		// https://www.terraform.io/docs/cloud/registry/using.html
-		return strings.Split(withoutRef, "/")[3]
+		return strings.Split(source, "/")[3]
 	}
 	if isTerraformRegistryModule(source) {
-		// Terraform modules in public registry follow this structure: <PREFIX>/<MODULE NAME>/<PROVIDER>
-		return strings.Split(withoutRef, "/")[2]
+		matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
+		val, _ := matches["PROVIDER"]
+		return val
 	}
+	withoutRef := strings.Split(source, "//")[0]
 	parts := strings.Split(strings.TrimRight(withoutRef, ".git"), "/")
 	for _, part := range parts {
 		if strings.HasPrefix(part, "terraform-") {
