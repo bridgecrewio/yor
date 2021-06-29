@@ -429,11 +429,9 @@ func ExtractProviderFromModuleSrc(source string) string {
 		// https://www.terraform.io/docs/cloud/registry/using.html
 		return strings.Split(withoutRef, "/")[3]
 	}
-	registryParts := strings.Split(withoutRef, "/")
-	if len(registryParts) == 3 {
-		if _, ok := ProviderToTagAttribute[registryParts[2]]; ok {
-			return registryParts[2]
-		}
+	if isTerraformRegistryModule(source) {
+		// Terraform modules in public registry follow this structure: <PREFIX>/<MODULE NAME>/<PROVIDER>
+		return strings.Split(withoutRef, "/")[2]
 	}
 	parts := strings.Split(strings.TrimRight(withoutRef, ".git"), "/")
 	for _, part := range parts {
