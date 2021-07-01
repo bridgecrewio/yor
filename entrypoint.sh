@@ -23,9 +23,9 @@ flags=""
 [[ -d ".yor_plugins" ]] && echo "Directory .yor_plugins exists, and will be overwritten by yor. Please rename this directory."
 
 echo "running command:"
-echo yor tag -d "$INPUT_DIRECTORY $flags"
+echo yor tag -d $INPUT_DIRECTORY $flags
 
-/usr/bin/yor tag -d "$INPUT_DIRECTORY $flags"
+/usr/bin/yor tag -d $INPUT_DIRECTORY $flags
 YOR_EXIT_CODE=$?
 
 _git_is_dirty() {
