@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -21,6 +22,7 @@ import (
 const PluginsOutputDir = ".yor_plugins"
 
 var SkippedProviders = []string{"null", "random", "tls", "local"}
+var RegistryModuleRegex = regexp.MustCompile("^(?P<MODULE_WRITER>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
 
 type TerraformModule struct {
 	tfModule            *tfconfig.Module
@@ -169,11 +171,12 @@ func isRemoteModule(s string) bool {
 }
 
 func isTerraformRegistryModule(source string) bool {
-	// All terraform registry modules are of the following structure:
-	// terraform-<PROVIDER>-modules/<MODULE_NAME>/<PROVIDER>
-	parts := strings.Split(source, "/")
-	if len(parts) == 3 {
-		if "terraform-"+parts[2]+"-modules" == parts[0] {
+	matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
+	if matches == nil {
+		return false
+	}
+	if provider, ok := matches["PROVIDER"]; ok {
+		if _, okTag := ProviderToTagAttribute[provider]; okTag {
 			return true
 		}
 	}

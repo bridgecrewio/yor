@@ -158,3 +158,18 @@ func SplitStringByComma(input []string) []string {
 	}
 	return ans
 }
+
+func FindSubMatchByGroup(r *regexp.Regexp, str string) map[string]string {
+	match := r.FindStringSubmatch(str)
+	if match == nil {
+		return nil
+	}
+	subMatchMap := make(map[string]string)
+	for i, name := range r.SubexpNames() {
+		if i != 0 {
+			subMatchMap[name] = match[i]
+		}
+	}
+
+	return subMatchMap
+}
