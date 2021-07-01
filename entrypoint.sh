@@ -8,22 +8,24 @@ then
   exit $?
 fi
 
+flags=""
+
 # Actions pass inputs as $INPUT_<input name> environment variables
-[[ -n "$INPUT_TAG_GROUPS" ]] && TAG_GROUPS="--tag-groups $INPUT_TAG_GROUPS"
-[[ -n "$INPUT_TAG" ]] && TAG_FLAG="--tag $INPUT_TAG"
-[[ -n "$INPUT_SKIP_TAGS" ]] && SKIP_TAG_FLAG="--skip-tags $INPUT_SKIP_TAGS"
-[[ -n "$INPUT_SKIP_DIRS" ]] && SKIP_DIR_FLAG="--skip-dirs $INPUT_SKIP_DIRS"
-[[ -n "$INPUT_CUSTOM_TAGS" ]] && EXT_TAGS_FLAG="--custom-tagging $INPUT_CUSTOM_TAGS"
-[[ -n "$INPUT_OUTPUT_FORMAT" ]] && OUTPUT_FLAG="--output $INPUT_OUTPUT_FORMAT"
-[[ -n "$INPUT_CONFIG_FILE" ]] && CONFIG_FILE_FLAG="--config-file $INPUT_CONFIG_FILE"
+[[ -n "$INPUT_TAG_GROUPS" ]] && flags="$flags--tag-groups $INPUT_TAG_GROUPS "
+[[ -n "$INPUT_TAG" ]] && flags="$flags--tag $INPUT_TAG "
+[[ -n "$INPUT_SKIP_TAGS" ]] && flags="$flags--skip-tags $INPUT_SKIP_TAGS "
+[[ -n "$INPUT_SKIP_DIRS" ]] && flags="$flags--skip-dirs $INPUT_SKIP_DIRS "
+[[ -n "$INPUT_CUSTOM_TAGS" ]] && flags="$flags--custom-tagging $INPUT_CUSTOM_TAGS "
+[[ -n "$INPUT_OUTPUT_FORMAT" ]] && flags="$flags--output $INPUT_OUTPUT_FORMAT "
+[[ -n "$INPUT_CONFIG_FILE" ]] && flags="$flags--config-file $INPUT_CONFIG_FILE "
 [[ -n "$INPUT_LOG_LEVEL" ]] && export LOG_LEVEL=$INPUT_LOG_LEVEL
 
 [[ -d ".yor_plugins" ]] && echo "Directory .yor_plugins exists, and will be overwritten by yor. Please rename this directory."
 
 echo "running command:"
-echo yor tag -d "$INPUT_DIRECTORY" "$TAG_FLAG" "$TAG_GROUPS" "$SKIP_TAG_FLAG" "$SKIP_DIR_FLAG" "$EXT_TAGS_FLAG" "$OUTPUT_FLAG" "$CONFIG_FILE_FLAG"
+echo yor tag -d "$INPUT_DIRECTORY $flags"
 
-/usr/bin/yor tag -d "$INPUT_DIRECTORY" "$TAG_FLAG" "$TAG_GROUPS" "$SKIP_TAG_FLAG" "$SKIP_DIR_FLAG" "$EXT_TAGS_FLAG" "$OUTPUT_FLAG" "$CONFIG_FILE_FLAG"
+/usr/bin/yor tag -d "$INPUT_DIRECTORY $flags"
 YOR_EXIT_CODE=$?
 
 _git_is_dirty() {

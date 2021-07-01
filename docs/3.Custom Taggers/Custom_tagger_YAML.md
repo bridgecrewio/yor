@@ -13,7 +13,7 @@ YAML based custom tagging enables you to have different tags for different exist
 ## Running YAML based custom tagger
 In the CLI, define the path of the YAML configuration file that you want to apply. For example:
 
-`yor tag --config-file </path/to/file>`
+`yor tag -d . --config-file </path/to/file>`
 
 The YAML based custom tagging configuration file includes the following options:
 1. Name key definition (required)
