@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"os"
+	"path/filepath"
 
 	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
 	"github.com/bridgecrewio/goformation/v4"
@@ -145,6 +147,26 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 		block := block.(*CloudformationBlock)
 		block.UpdateTags()
 	}
+	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
+	defer func() {
+		_ = os.Remove(tempFile.Name())
+	}()
+	if err != nil {
+		return err
+	}
+	err = p.writeToFile(readFilePath, blocks, tempFile.Name())
+	if err != nil {
+		return err
+	}
+
+	_, err = p.ParseFile(tempFile.Name())
+	if err != nil {
+		return fmt.Errorf("editing file %v resulted in a malformed template, please open a github issue with the relevant details", readFilePath)
+	}
+	return p.writeToFile(readFilePath, blocks, writeFilePath)
+}
+
+func (p *CloudformationParser) writeToFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	switch utils.GetFileFormat(readFilePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, TagsAttributeName, ResourcesStartToken)

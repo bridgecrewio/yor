@@ -2,7 +2,9 @@ package structure
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -134,6 +136,21 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 	for _, block := range blocks {
 		block := block.(*ServerlessBlock)
 		block.UpdateTags()
+	}
+	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.yaml")
+	defer func() {
+		_ = os.Remove(tempFile.Name())
+	}()
+	if err != nil {
+		return err
+	}
+	err = yamlUtils.WriteYAMLFile(readFilePath, blocks, tempFile.Name(), FunctionTagsAttributeName, FunctionsSectionName)
+	if err != nil {
+		return err
+	}
+	_, err = p.ParseFile(tempFile.Name())
+	if err != nil {
+		return fmt.Errorf("editing file %v resulted in a malformed template, please open a github issue with the relevant details", readFilePath)
 	}
 	return yamlUtils.WriteYAMLFile(readFilePath, blocks, writeFilePath, FunctionTagsAttributeName, FunctionsSectionName)
 }
