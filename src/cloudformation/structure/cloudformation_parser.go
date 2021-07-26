@@ -147,7 +147,7 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 		block := block.(*CloudformationBlock)
 		block.UpdateTags()
 	}
-	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
+	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.template")
 	defer func() {
 		_ = os.Remove(tempFile.Name())
 	}()
