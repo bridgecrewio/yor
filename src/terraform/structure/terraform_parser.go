@@ -185,6 +185,28 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 			}
 		}
 	}
+
+	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
+	defer func() {
+		_ = os.Remove(tempFile.Name())
+	}()
+	if err != nil {
+		return err
+	}
+	fd, err := os.OpenFile(tempFile.Name(), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, err = hclFile.WriteTo(fd)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.ParseFile(tempFile.Name())
+	if err != nil {
+		return fmt.Errorf("editing file %v resulted in malformed terraform, please open a github issue with the relevant details", readFilePath)
+	}
+
 	// #nosec G304
 	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
