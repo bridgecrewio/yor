@@ -22,6 +22,8 @@ brews:
     # Default is empty.
     homepage: "https://github.com/bridgecrewio/yor"
 
+    skip_upload: false
+
 
     # So you can `brew test` your formula.
     test: |
