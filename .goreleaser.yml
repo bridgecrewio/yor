@@ -1,38 +1,32 @@
-name: goreleaser
+brews:
+  -
+    name: yor
 
-permissions:
-  contents: write
-
-jobs:
-  brews:
-    -
-      name: yor
-
-      tap:
-        owner: rotemavni
-        name: homebrew-tap
-        # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-        token: "{{ .Env.GITHUB_TOKEN }}"
+    tap:
+      owner: rotemavni
+      name: homebrew-tap
+      # Optionally a token can be provided, if it differs from the token provided to GoReleaser
+      token: "{{ .Env.GITHUB_TOKEN }}"
 
 
-      url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .ENV.TEST_TAG }}/yor-{{ .ENV.TEST_TAG }}-darwin-amd64.tar.gz"
-  #    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Tag }}/yor-{{ .Tag }}-darwin-amd64.tar.gz"
+    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .ENV.TEST_TAG }}/yor-{{ .ENV.TEST_TAG }}-darwin-amd64.tar.gz"
+#    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Tag }}/yor-{{ .Tag }}-darwin-amd64.tar.gz"
 
-      commit_author:
-        name: rotemavni
-        email: rotemavn@gmail.com
+    commit_author:
+      name: rotemavni
+      email: rotemavn@gmail.com
 
-      homepage: "https://www.bridgecrew.io"
+    homepage: "https://www.bridgecrew.io"
 
-      description: "Extensible auto-tagger for your IaC files"
-      license: "Apache-2.0"
+    description: "Extensible auto-tagger for your IaC files"
+    license: "Apache-2.0"
 
-      skip_upload: false
+    skip_upload: false
 
 
-      install: |
-        bin.install "yor"
+    install: |
+      bin.install "yor"
 
-      test: |
-        system "#{bin}/yor", "--help"
+    test: |
+      system "#{bin}/yor", "--help"
 
