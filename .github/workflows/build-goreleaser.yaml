@@ -1,4 +1,4 @@
-name: build
+name: build-goreleaser
 
 on:
   push:
@@ -15,7 +15,6 @@ on:
 jobs:
   formula:
     name: Update Homebrew formula
-    needs: create-release
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Update the Homebrew formula with latest release
