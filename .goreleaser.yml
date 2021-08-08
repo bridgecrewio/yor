@@ -21,9 +21,6 @@ brews:
     description: "Extensible auto-tagger for your IaC files"
     license: "Apache-2.0"
 
-    skip_upload: false
-
-
     install: |
       bin.install "yor"
 
