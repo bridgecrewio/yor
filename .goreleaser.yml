@@ -4,7 +4,7 @@ brews:
       owner: rotemavni
       name: homebrew-tap
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-      token: "{{ secrets.PAT }}"
+      token: "{{ .Env.GH_PERSONAL_ACCESS_TOKEN }}"
 
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
