@@ -27,4 +27,3 @@ brews:
     test: |
       system "#{bin}/program --version"
 
-
