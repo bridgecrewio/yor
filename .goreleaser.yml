@@ -1,0 +1,29 @@
+brews:
+  -
+    tap:
+      owner: rotemavni
+      name: homebrew-tap
+      # Optionally a token can be provided, if it differs from the token provided to GoReleaser
+      token: "{{ secrets.PAT }}"
+
+    # Template for the url which is determined by the given Token (github or gitlab)
+    # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
+    # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{.Version}}/yor-{{.Version}}-darwin-amd64.tar.gz"
+
+    # Git author used to commit to the repository.
+    # Defaults are shown.
+    commit_author:
+      name: rotemavni
+      email: rotemavn@gmail.com
+
+    # Your app's homepage.
+    # Default is empty.
+    homepage: "https://github.com/bridgecrewio/yor"
+
+
+    # So you can `brew test` your formula.
+    test: |
+      system "#{bin}/program --version"
+

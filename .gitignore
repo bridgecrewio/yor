@@ -3,3 +3,6 @@
 .plugins
 *.so
 .gobuild
+dist/
+
+dist/

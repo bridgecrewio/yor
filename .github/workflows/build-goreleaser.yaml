@@ -1,0 +1,27 @@
+name: build
+
+on:
+  push:
+    branches:
+      - release-changes
+    paths-ignore:
+      - 'docs/**'
+      - 'INTHEWILD.md'
+      - 'README.md'
+      - '.github/**'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  formula:
+    name: Update Homebrew formula
+    needs: create-release
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - name: Update the Homebrew formula with latest release
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
