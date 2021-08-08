@@ -30,7 +30,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release --rm-dist --skip-publish=false
+          args: release --rm-dist --skip-publish=false --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           GORELEASER_CURRENT_TAG: 0.1.85
