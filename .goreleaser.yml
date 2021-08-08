@@ -9,7 +9,7 @@ brews:
       token: "{{ .Env.GITHUB_TOKEN }}"
 
 
-    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Env.TEST_TAG }}/yor-{{ .Env.TEST_TAG }}-darwin-amd64.tar.gz"
+    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Env.GORELEASER_CURRENT_TAG }}/yor-{{ .Env.GORELEASER_CURRENT_TAG }}-darwin-amd64.tar.gz"
 #    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Tag }}/yor-{{ .Tag }}-darwin-amd64.tar.gz"
 
     commit_author:
@@ -26,5 +26,4 @@ brews:
 
     test: |
       system "#{bin}/yor", "--help"
-
 

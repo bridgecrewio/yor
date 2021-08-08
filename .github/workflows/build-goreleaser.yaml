@@ -33,4 +33,4 @@ jobs:
           args: release --rm-dist --skip-publish=false
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          TEST_TAG: 0.1.85
+          GORELEASER_CURRENT_TAG: 0.1.85
