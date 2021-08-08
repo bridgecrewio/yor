@@ -1,5 +1,4 @@
-permissions:
-  contents: write
+name: goreleaser
 
 brews:
   -
