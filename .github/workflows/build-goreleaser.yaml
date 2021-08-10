@@ -35,8 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
-          ref: 4b31cf4
+          ref: release-changes
       - name: version
         uses: anothrNick/github-tag-action@1.26.0
         env:
@@ -44,6 +43,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: release-changes
           DEFAULT_BUMP: patch
+          CUSTOM_TAG: 0.1.85-3
         id: version
 #      - name: release
 #        uses: actions/create-release@v1
