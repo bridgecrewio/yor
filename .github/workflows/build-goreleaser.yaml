@@ -30,29 +30,29 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     needs: prepare
     outputs:
-      version: ${{ steps.version.outputs.new_tag }}
+      version: 0.1.85
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           ref: release-changes
-      - name: version
-        uses: anothrNick/github-tag-action@1.26.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false
-          RELEASE_BRANCHES: release-changes
-          DEFAULT_BUMP: patch
-        id: version
-      - name: release
-        uses: actions/create-release@v1
-        with:
-          draft: true
-          prerelease: false
-          release_name: ${{ steps.version.outputs.new_tag }}
-          tag_name: ${{ steps.version.outputs.new_tag }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+#      - name: version
+#        uses: anothrNick/github-tag-action@1.26.0
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          WITH_V: false
+#          RELEASE_BRANCHES: release-changes
+#          DEFAULT_BUMP: patch
+#        id: version
+#      - name: release
+#        uses: actions/create-release@v1
+#        with:
+#          draft: true
+#          prerelease: false
+#          release_name: ${{ steps.version.outputs.new_tag }}
+#          tag_name: ${{ steps.version.outputs.new_tag }}
+#        env:
+#          GITHUB_TOKEN: ${{ github.token }}
   formula:
     name: Update Homebrew formula
     needs: create-release
@@ -71,4 +71,4 @@ jobs:
           args: release --rm-dist --skip-publish=false --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.new_tag }}
+          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
