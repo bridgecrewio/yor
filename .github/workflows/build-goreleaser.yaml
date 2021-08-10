@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   prepare:
-    name: Update Homebrew formula
+    name: Prepare
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - name: Install Go
@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v2
   create-release:
     runs-on: [ self-hosted, public, linux, x64 ]
+    needs: prepare
     outputs:
       version: ${{ steps.version.outputs.new_tag }}
     steps:
@@ -54,6 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
   formula:
     name: Update Homebrew formula
+    needs: create-release
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: goreleaser/goreleaser-action@v2
