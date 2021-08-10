@@ -1,6 +1,6 @@
 brews:
   -
-    name: yor-goreleaser
+    name: yor
 
     tap:
       owner: bridgecrewio

@@ -171,14 +171,20 @@ jobs:
     needs: create-release
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - name: Update the Homebrew formula with latest release
-        uses: NSHipster/update-homebrew-formula-action@main
+      - name: Install Go
+        uses: actions/setup-go@v2
         with:
-          repository: bridgecrewio/yor
-          tap: bridgecrewio/homebrew-formulae
-          formula: yor.rb
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: goreleaser/goreleaser-action@v2
+        name: goreleaser
+        with:
+          version: latest
+          args: release --rm-dist
         env:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
   update-bridgecrew-projects:
     needs: publish-dockerhub
     runs-on: [self-hosted, public, linux, x64]
