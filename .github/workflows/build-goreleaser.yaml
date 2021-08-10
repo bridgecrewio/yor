@@ -35,15 +35,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: release-changes
-#      - name: version
-#        uses: anothrNick/github-tag-action@1.26.0
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          WITH_V: false
-#          RELEASE_BRANCHES: release-changes
-#          DEFAULT_BUMP: patch
-#        id: version
+          ref: 0.1.85
+      - name: version
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          RELEASE_BRANCHES: release-changes
+          DEFAULT_BUMP: patch
+        id: version
 #      - name: release
 #        uses: actions/create-release@v1
 #        with:
