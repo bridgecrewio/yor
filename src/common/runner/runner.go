@@ -89,9 +89,8 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
-	filesCount := len(files)
 	var wg sync.WaitGroup
-	wg.Add(filesCount)
+	wg.Add(len(files))
 
 	for _, file := range files {
 		go r.TagFile(file, &wg)
