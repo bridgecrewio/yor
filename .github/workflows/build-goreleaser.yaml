@@ -35,6 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           ref: 4b31cf4
       - name: version
         uses: anothrNick/github-tag-action@1.26.0
