@@ -168,7 +168,9 @@ jobs:
 
   formula:
     name: Update Homebrew formula
-    needs: create-release
+    needs:
+      - linux-windows-matrix
+      - create-release
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Install Go
