@@ -1,0 +1,27 @@
+brews:
+  -
+    name: yor
+
+    tap:
+      owner: bridgecrewio
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+
+
+    url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Env.GORELEASER_CURRENT_TAG }}/yor-{{ .Env.GORELEASER_CURRENT_TAG }}-darwin-amd64.tar.gz"
+
+    commit_author:
+      name: "GitHub Action"
+      email: action@github.com
+
+    homepage: "https://www.yor.io"
+
+    description: "Extensible auto-tagger for your IaC files"
+    license: "Apache-2.0"
+
+    install: |
+      bin.install "yor"
+
+    test: |
+      system "#{bin}/yor", "--help"
+
