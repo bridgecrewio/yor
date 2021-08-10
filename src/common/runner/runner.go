@@ -7,6 +7,7 @@ import (
 	"plugin"
 	"reflect"
 	"strings"
+	"sync"
 
 	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common"
@@ -88,14 +89,19 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
+	filesCount := len(files)
+	var wg sync.WaitGroup
+	wg.Add(filesCount)
+
 	for _, file := range files {
-		r.TagFile(file)
+		go r.TagFile(file, &wg)
 	}
+	wg.Wait()
 
 	return r.reportingService, nil
 }
 
-func (r *Runner) TagFile(file string) {
+func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
@@ -131,6 +137,7 @@ func (r *Runner) TagFile(file string) {
 			}
 		}
 	}
+	wg.Done()
 
 }
 
