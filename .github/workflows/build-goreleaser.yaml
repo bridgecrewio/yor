@@ -30,7 +30,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
 #    needs: prepare
     outputs:
-      version: 0.1.85
+      version: ${{ steps.version.outputs.new_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: release-changes
           DEFAULT_BUMP: patch
-          CUSTOM_TAG: 0.1.85-3
+          CUSTOM_TAG: 0.1.85-4
         id: version
 #      - name: release
 #        uses: actions/create-release@v1

@@ -24,4 +24,3 @@ brews:
 
     test: |
       system "#{bin}/yor", "--help"
-
