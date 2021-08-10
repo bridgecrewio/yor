@@ -68,7 +68,7 @@ jobs:
         name: goreleaser
         with:
           version: latest
-          args: release --rm-dist --skip-publish=false --snapshot
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
