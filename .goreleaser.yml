@@ -3,7 +3,7 @@ brews:
     name: yor
 
     tap:
-      owner: rotemavni
+      owner: bridgecrewio
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
 
@@ -13,6 +13,8 @@ brews:
     commit_author:
       name: rotemavni
       email: rotemavn@gmail.com
+
+    folder: goreleaser
 
     homepage: "https://www.bridgecrew.io"
 
