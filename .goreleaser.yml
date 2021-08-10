@@ -1,6 +1,6 @@
 brews:
   -
-    name: yor
+    name: yor-goreleaser
 
     tap:
       owner: bridgecrewio
@@ -13,8 +13,6 @@ brews:
     commit_author:
       name: rotemavni
       email: rotemavn@gmail.com
-
-    folder: goreleaser
 
     homepage: "https://www.bridgecrew.io"
 
