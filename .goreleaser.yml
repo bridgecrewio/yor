@@ -16,7 +16,6 @@ builds:
         goos: darwin
 
 
-
 brews:
   -
     name: yor-gorelease
