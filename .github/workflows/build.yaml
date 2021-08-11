@@ -97,10 +97,10 @@ jobs:
         uses: anothrNick/github-tag-action@1.26.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false  
+          WITH_V: false
           RELEASE_BRANCHES: main
           DEFAULT_BUMP: patch
-        id: version  
+        id: version
       - name: release
         uses: actions/create-release@v1
         with:

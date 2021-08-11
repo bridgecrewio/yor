@@ -87,12 +87,12 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.new_tag }}
     steps:
-      - name: Wait for coverage to update
-        run: sleep 10s
+#      - name: Wait for coverage to update
+#        run: sleep 10s
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: release-changes
       - name: version
         uses: anothrNick/github-tag-action@1.26.0
         env:
@@ -113,13 +113,6 @@ jobs:
 #          GITHUB_TOKEN: ${{ github.token }}
 #      - name: Update go reportcard
 #        uses: creekorful/goreportcard-action@v1.0
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.13
-      - name: Git Fetch Repo
-        run: |
-          git fetch
       - name: update version
         run: |
           new_tag=${{ needs.create-release.outputs.version }}
@@ -127,6 +120,13 @@ jobs:
           echo "package common" > src/common/version.go
           echo "" >> src/common/version.go
           echo "const Version = \"$new_tag\"" >> src/common/version.go
+      - name: Install Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: 1.13
+      - name: Git Fetch Repo
+        run: |
+          git fetch
       - uses: goreleaser/goreleaser-action@v2
         name: goreleaser
         with:
