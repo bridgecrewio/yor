@@ -61,10 +61,16 @@ You will need to set the following variables in `Settings > CI/CD > Variables` i
 
 
 ## MacOS
-Run the following commands to install Yor on MacOS:
+Run the following commands to install Yor on MacOS with [Homebrew](https://brew.sh/):
 ```sh
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
+```
+
+## Windows
+Run the following command to install Yor on Windows with [Chocolatey](https://chocolatey.org/install):
+```sh
+choco install yor
 ```
 
 ## Docker
