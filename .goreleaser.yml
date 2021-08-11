@@ -1,9 +1,7 @@
-before:
-  hooks:
-    - ./set-version.sh
-
 builds:
   - id: yor
+    hooks:
+      pre: ./set-version.sh
     goos:
       - linux
       - darwin
