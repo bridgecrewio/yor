@@ -1,6 +1,6 @@
 before:
   hooks:
-  - sh -c 'echo "Updating version file with new tag: {{ .Env.GORELEASER_CURRENT_TAG }}"'
+  - sh -c 'echo "Updating version file with new tag {{ .Env.GORELEASER_CURRENT_TAG }}"'
   - sh -c 'echo "package common" > src/common/version.go'
   - sh -c 'echo "" >> src/common/version.go'
   - sh -c 'echo "const Version = \"{{ .Env.GORELEASER_CURRENT_TAG }}\"" >> src/common/version.go'

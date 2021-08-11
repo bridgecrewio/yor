@@ -100,7 +100,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: release-changes
           DEFAULT_BUMP: patch
-          CUSTOM_TAG: 0.1.88-21
+          CUSTOM_TAG: 0.1.88-22
         id: version
 #      - name: release
 #        uses: actions/create-release@v1
