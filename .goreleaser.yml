@@ -1,3 +1,19 @@
+builds:
+  - id: yor
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - 386
+      - amd64
+    ignore:
+      - goarch: 386
+        goos: darwin
+
+    gobinary: "go1.13.15"
+
+
 brews:
   -
     name: yor

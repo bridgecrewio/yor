@@ -1,0 +1,227 @@
+name: build-goreleaser
+
+on:
+  push:
+    branches:
+      - release-changes
+    paths-ignore:
+      - 'docs/**'
+      - 'INTHEWILD.md'
+      - 'README.md'
+      - '.github/**'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+#  test:
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - name: Install Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.13
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: "Terraform Init"
+#        uses: hashicorp/terraform-github-actions@master
+#        with:
+#          tf_actions_version: 0.14.5
+#          tf_actions_subcommand: "init"
+#          tf_actions_working_dir: "tests/terraform/resources"
+#      - name: Prepare external plugin tests
+#        run: |
+#          go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
+#          go build -buildmode=plugin -o tests/yor_plugins/tag_group_example/extra_tag_groups.so tests/yor_plugins/tag_group_example/*.go
+#      - name: Test
+#        run: |
+#          go get github.com/jpoles1/gopherbadger
+#          gopherbadger -root="./src" -md="README.md"
+#      - name: Update coverage
+#        run: |
+#          git config --local user.email "action@github.com"
+#          git config --local user.name "GitHub Action"
+#          git commit -m "Update coverage" README.md || echo "No changes to commit"
+#          git push origin
+#  linter:
+#    name: golangci-lint
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - name: Check out code into the Go module directory
+#        uses: actions/checkout@v2
+#      - name: golangci-lint
+#        uses: reviewdog/action-golangci-lint@v1
+#        with:
+#          tool_name: golangci-lint
+#          fail_on_error: true
+#  integration-tests:
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - name: Install Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.13
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: build
+#        run: go build
+#      - name: Clone Terragoat - vulnerable terraform
+#        uses: actions/checkout@v2
+#        with:
+#          repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
+#          fetch-depth: 0
+#          clean: false
+#          path: 'terragoat'
+#          ref: 063dc2db3bb036160ed39d3705508ee8293a27c8
+#      - name: Run yor
+#        run: |
+#          git config --local user.email "action@github.com"
+#          ./yor list-tags -g code2cloud,git > list-tags-result.txt
+#          ./yor tag -d terragoat -o json --output-json-file result.json
+#          go test ./tests/integration/...
+  create-release:
+    runs-on: [self-hosted, public, linux, x64]
+#    needs:
+#      - integration-tests
+#      - test
+#      - linter
+    outputs:
+      version: ${{ steps.version.outputs.new_tag }}
+    steps:
+      - name: Wait for coverage to update
+        run: sleep 10s
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: version
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          RELEASE_BRANCHES: release-changes
+          DEFAULT_BUMP: patch
+          CUSTOM_TAG: 0.1.88-1
+        id: version
+#      - name: release
+#        uses: actions/create-release@v1
+#        with:
+#          draft: true
+#          prerelease: false
+#          release_name: ${{ steps.version.outputs.new_tag }}
+#          tag_name: ${{ steps.version.outputs.new_tag }}
+#        env:
+#          GITHUB_TOKEN: ${{ github.token }}
+#      - name: Update go reportcard
+#        uses: creekorful/goreportcard-action@v1.0
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+      - name: Git Fetch Repo
+        run: |
+          git fetch
+      - name: update version
+        run: |
+          new_tag=${{ needs.create-release.outputs.version }}
+          echo "new tag: $new_tag"
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
+      - uses: goreleaser/goreleaser-action@v2
+        name: goreleaser
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
+
+
+#  linux-windows-matrix:
+#    needs:
+#      - create-release
+#    name: Release Go Binary
+#    runs-on: [self-hosted, public, linux, x64]
+#    strategy:
+#      matrix:
+#        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64
+#        goos: [linux, windows, darwin]
+#        goarch: ["386", amd64]
+#        exclude:
+#          - goarch: 386
+#            goos: darwin
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: version
+#        run: |
+#          new_tag=${{ needs.create-release.outputs.version }}
+#          echo "new tag: $new_tag"
+#          echo "package common" > src/common/version.go
+#          echo "" >> src/common/version.go
+#          echo "const Version = \"$new_tag\"" >> src/common/version.go
+#      - uses: wangyoucao577/go-release-action@v1.14
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          goos: ${{ matrix.goos }}
+#          goarch: ${{ matrix.goarch }}
+#          goversion: "https://dl.google.com/go/go1.13.15.linux-amd64.tar.gz"
+#          binary_name: "yor"
+#          extra_files: LICENSE README.md
+#          release_tag: ${{ needs.create-release.outputs.version }}
+#  publish-dockerhub:
+#    runs-on: [self-hosted, public, linux, x64]
+#    needs:
+##      - linux-windows-matrix
+#      - create-release
+#    steps:
+#      - uses: actions/checkout@master
+#      - name: Publish to Registry
+#        uses: elgohr/Publish-Docker-Github-Action@master
+#        with:
+#          name: bridgecrew/yor
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#          buildoptions: "--no-cache"
+#          tags: "latest,${{ needs.create-release.outputs.version }}"
+#      - name: Update Docker Hub README
+#        uses: peter-evans/dockerhub-description@v2
+#        with:
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#          repository: bridgecrew/yor
+#          short-description: ${{ github.event.repository.description }}
+
+#  formula:
+#    name: Update Homebrew formula
+#    needs:
+#      - linux-windows-matrix
+#      - create-release
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - name: Install Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.13
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Git Fetch Repo
+#        run: |
+#          git fetch
+#      - uses: goreleaser/goreleaser-action@v2
+#        name: goreleaser
+#        with:
+#          version: latest
+#          args: release --rm-dist
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.PAT }}
+#          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
+
+
+#  update-bridgecrew-projects:
+#    needs: publish-dockerhub
+#    runs-on: [self-hosted, public, linux, x64]
+#    steps:
+#      - name: update on yor release
+#        run: |
+#          curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-action/dispatches --data '{"event_type": "build"}'
+#          curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-choco/dispatches --data '{"event_type": "build"}'
