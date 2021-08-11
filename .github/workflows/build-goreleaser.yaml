@@ -100,7 +100,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: release-changes
           DEFAULT_BUMP: patch
-          CUSTOM_TAG: 0.1.88-12
+          CUSTOM_TAG: 0.1.88-13
         id: version
 #      - name: release
 #        uses: actions/create-release@v1
@@ -141,7 +141,7 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
+          GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.new_tag }}
 
 
 #  linux-windows-matrix:
