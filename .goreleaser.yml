@@ -2,7 +2,7 @@ builds:
   - id: yor
     hooks:
       pre:
-        - cmd: set-version.sh
+        - cmd: ./set-version.sh
           dir: "."
           env:
             - HOOK_SPECIFIC_VAR={{ .Env.GORELEASER_CURRENT_TAG }}
