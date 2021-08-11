@@ -1,6 +1,6 @@
-before:
-  hooks:
-    - ./set-version.sh
+#before:
+#  hooks:
+#    - ./set-version.sh
 
 builds:
   - id: yor
