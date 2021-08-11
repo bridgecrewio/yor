@@ -11,8 +11,6 @@ builds:
       - goarch: 386
         goos: darwin
 
-#    gobinary: "go1.13.15"
-
 
 
 
