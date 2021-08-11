@@ -113,13 +113,13 @@ jobs:
 #          GITHUB_TOKEN: ${{ github.token }}
 #      - name: Update go reportcard
 #        uses: creekorful/goreportcard-action@v1.0
-      - name: update version
-        run: |
-          new_tag=${{ needs.create-release.outputs.version }}
-          echo "new tag: $new_tag"
-          echo "package common" > src/common/version.go
-          echo "" >> src/common/version.go
-          echo "const Version = \"$new_tag\"" >> src/common/version.go
+#      - name: update version
+#        run: |
+#          new_tag=${{ needs.create-release.outputs.version }}
+#          echo "new tag: $new_tag"
+#          echo "package common" > src/common/version.go
+#          echo "" >> src/common/version.go
+#          echo "const Version = \"$new_tag\"" >> src/common/version.go
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -136,7 +136,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
 
-
+  update-version:
+    runs-on: [ self-hosted, public, linux, x64 ]
+    needs: create-release
+    steps:
+      - name: update version
+        run: |
+          new_tag=${{ needs.create-release.outputs.version }}
+          echo "new tag: $new_tag"
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
 #  linux-windows-matrix:
 #    needs:
 #      - create-release
