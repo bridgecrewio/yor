@@ -93,6 +93,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: release-changes
+      - name: update version.go
+        run: |
+          new_tag=${{ needs.create-release.outputs.version }}
+          echo "new tag: $new_tag"
+          echo "package common" > src/common/version.go
+          echo "" >> src/common/version.go
+          echo "const Version = \"$new_tag\"" >> src/common/version.go
+          git add src/common/version.go
+          git commit -m "update version.go"
       - name: version
         uses: anothrNick/github-tag-action@1.26.0
         env:
@@ -100,7 +109,7 @@ jobs:
           WITH_V: false
           RELEASE_BRANCHES: release-changes
           DEFAULT_BUMP: patch
-          CUSTOM_TAG: 0.1.88-14
+          CUSTOM_TAG: 0.1.88-15
         id: version
 #      - name: release
 #        uses: actions/create-release@v1
@@ -127,14 +136,6 @@ jobs:
       - name: Git Fetch Repo
         run: |
           git fetch
-      - name: update version.go
-        run: |
-          new_tag=${{ needs.create-release.outputs.version }}
-          echo "new tag: $new_tag"
-          echo "package common" > src/common/version.go
-          echo "" >> src/common/version.go
-          echo "const Version = \"$new_tag\"" >> src/common/version.go
-          git commit -m "update version.go"
       - uses: goreleaser/goreleaser-action@v2
         name: goreleaser
         with:
