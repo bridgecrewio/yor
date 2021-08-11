@@ -1,7 +1,9 @@
 before:
   hooks:
-  - cmd: |
-    sh -c "echo \"Updating version file with new tag: $GORELEASER_CURRENT_TAG\";echo \"package common\" > src/common/version.go;echo \"\" >> src/common/version.go;echo \"const Version = \\"$GORELEASER_CURRENT_TAG\\"\" >> src/common/version.go"
+  - sh -c 'echo "Updating version file with new tag: {{ .Env.GORELEASER_CURRENT_TAG }}"'
+  - sh -c 'echo "package common" > src/common/version.go'
+  - sh -c 'echo "" >> src/common/version.go'
+  - sh -c 'echo "const Version = \"{{ .Env.GORELEASER_CURRENT_TAG }}\"" >> src/common/version.go'
 
 builds:
   - id: yor
