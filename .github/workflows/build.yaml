@@ -101,52 +101,27 @@ jobs:
           RELEASE_BRANCHES: main
           DEFAULT_BUMP: patch
         id: version
-      - name: release
-        uses: actions/create-release@v1
+      - name: Install Go
+        uses: actions/setup-go@v2
         with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.new_tag }}
-          tag_name: ${{ steps.version.outputs.new_tag }}
+          go-version: 1.13
+      - name: Git Fetch Repo
+        run: |
+          git fetch
+      - uses: goreleaser/goreleaser-action@v2
+        name: goreleaser
+        with:
+          version: latest
+          args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.new_tag }}
       - name: Update go reportcard
         uses: creekorful/goreportcard-action@v1.0
-  linux-windows-matrix:
-    needs:
-      - create-release
-    name: Release Go Binary
-    runs-on: [self-hosted, public, linux, x64]
-    strategy:
-      matrix:
-        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64
-        goos: [linux, windows, darwin]
-        goarch: ["386", amd64]
-        exclude:
-          - goarch: 386
-            goos: darwin
-    steps:
-      - uses: actions/checkout@v2
-      - name: version
-        run: |
-          new_tag=${{ needs.create-release.outputs.version }}
-          echo "new tag: $new_tag"
-          echo "package common" > src/common/version.go
-          echo "" >> src/common/version.go
-          echo "const Version = \"$new_tag\"" >> src/common/version.go
-      - uses: wangyoucao577/go-release-action@v1.14
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: ${{ matrix.goos }}
-          goarch: ${{ matrix.goarch }}
-          goversion: "https://dl.google.com/go/go1.13.15.linux-amd64.tar.gz"
-          binary_name: "yor"
-          extra_files: LICENSE README.md
-          release_tag: ${{ needs.create-release.outputs.version }}
+
   publish-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs:
-      - linux-windows-matrix
       - create-release
     steps:
       - uses: actions/checkout@master
@@ -166,30 +141,6 @@ jobs:
           repository: bridgecrew/yor
           short-description: ${{ github.event.repository.description }}
 
-  formula:
-    name: Update Homebrew formula
-    needs:
-      - linux-windows-matrix
-      - create-release
-    runs-on: [self-hosted, public, linux, x64]
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.13
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Git Fetch Repo
-        run: |
-          git fetch
-      - uses: goreleaser/goreleaser-action@v2
-        name: goreleaser
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GORELEASER_CURRENT_TAG: ${{ needs.create-release.outputs.version }}
   update-bridgecrew-projects:
     needs: publish-dockerhub
     runs-on: [self-hosted, public, linux, x64]
