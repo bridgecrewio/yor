@@ -11,10 +11,10 @@ brews:
     url_template: "https://github.com/bridgecrewio/yor/releases/download/{{ .Env.GORELEASER_CURRENT_TAG }}/yor-{{ .Env.GORELEASER_CURRENT_TAG }}-darwin-amd64.tar.gz"
 
     commit_author:
-      name: rotemavni
-      email: rotemavn@gmail.com
+      name: "GitHub Action"
+      email: action@github.com
 
-    homepage: "https://www.bridgecrew.io"
+    homepage: "https://www.yor.io"
 
     description: "Extensible auto-tagger for your IaC files"
     license: "Apache-2.0"
