@@ -1,11 +1,12 @@
+before:
+  hooks:
+    - cmd: ./set-version.sh
+      dir: "."
+      env:
+        - HOOK_SPECIFIC_VAR={{ .Env.GORELEASER_CURRENT_TAG }}
+
 builds:
   - id: yor
-    hooks:
-      pre:
-        - cmd: ./set-version.sh
-          dir: "."
-          env:
-            - HOOK_SPECIFIC_VAR={{ .Env.GORELEASER_CURRENT_TAG }}
     goos:
       - linux
       - darwin
