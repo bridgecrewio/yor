@@ -1,3 +1,7 @@
+before:
+  hooks:
+    - ./set-version.sh
+
 builds:
   - id: yor
     goos:
@@ -19,7 +23,7 @@ builds:
 
 brews:
   -
-    name: yor
+    name: yor-gorelease
 
     tap:
       owner: bridgecrewio
