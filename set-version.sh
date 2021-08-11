@@ -1,5 +1,5 @@
-new_tag=${{ needs.create-release.outputs.version }}
-echo "new tag: $new_tag"
+#!/bin/sh
+echo "new tag: $GORELEASER_CURRENT_TAG"
 echo "package common" > src/common/version.go
 echo "" >> src/common/version.go
-echo "const Version = \"$new_tag\"" >> src/common/version.go
+echo "const Version = \"$GORELEASER_CURRENT_TAG\"" >> src/common/version.go
