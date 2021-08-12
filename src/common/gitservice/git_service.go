@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -27,6 +28,8 @@ type GitService struct {
 	BlameByFile      map[string]*git.BlameResult
 	currentUserEmail string
 }
+
+var lock sync.Mutex
 
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
@@ -145,6 +148,8 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	var selectedCommit *object.Commit
 
+	lock.Lock() // Git is a graph, different files can lead to graph scans interfering with each other
+	defer lock.Unlock()
 	head, err := g.repository.Head()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository HEAD for file %s because of error %s", filePath, err)
