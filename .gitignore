@@ -4,5 +4,4 @@
 *.so
 .gobuild
 dist/
-
-dist/
+/yor
