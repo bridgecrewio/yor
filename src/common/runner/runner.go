@@ -58,7 +58,25 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
 		}
 	}
-	r.parsers = append(r.parsers, &tfStructure.TerrraformParser{}, &cfnStructure.CloudformationParser{}, &slsStructure.ServerlessParser{})
+	for _, value := range commands.Parsers {
+		if value == "Terraform" {
+			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+			break
+		}
+	}
+	for _, value := range commands.Parsers {
+		if value == "CloudFormation" {
+			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
+			break
+		}
+	}
+	for _, value := range commands.Parsers {
+		if value == "Serverless" {
+			r.parsers = append(r.parsers, &slsStructure.ServerlessParser{})
+			break
+		}
+	}
+
 	for _, parser := range r.parsers {
 		parser.Init(dir, nil)
 	}
