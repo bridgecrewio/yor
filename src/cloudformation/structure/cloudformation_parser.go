@@ -64,22 +64,29 @@ func (p *CloudformationParser) ValidFile(filePath string) bool {
 		logger.Warning(fmt.Sprintf("Error opening file %s, skipping: %v", filePath, err))
 		return false
 	}
-	defer file.Close()
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Error reading file %s, skipping: %v", filePath, err))
+		return false
+	}
+	if err = file.Close(); err != nil {
+		logger.Warning(fmt.Sprintf("Error closing file %s, skipping: %v", filePath, err))
 		return false
 	}
 
 	if !strings.HasSuffix(filePath, ".json") {
 		bytes, err = sanathyaml.YAMLToJSON(bytes)
 		if err != nil {
-			logger.Warning(fmt.Sprintf("Error converting YAML to JSON, skipping: %v", err))
+			logger.Warning(fmt.Sprintf("Error converting YAML to JSON for file %s, skipping: %v", filePath, err))
 			return false
 		}
 	}
 	var result map[string]interface{}
-	stdjson.Unmarshal([]byte(bytes), &result)
+	err = stdjson.Unmarshal([]byte(bytes), &result)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("Error unmarshalling JSON for file %s, skipping: %v", filePath, err))
+		return false
+	}
 	_, hasHeader := result["AWSTemplateFormatVersion"]
 	return hasHeader
 }
