@@ -59,7 +59,7 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 
 // Validate file has AWSTemplateFormatVersion
 func (p *CloudformationParser) ValidFile(filePath string) bool {
-	file, err := os.Open("users.json")
+	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Error opening file %s, skipping: %v", filePath, err))
 		return false
