@@ -25,14 +25,15 @@ import (
 )
 
 type Runner struct {
-	TagGroups         []tagging.ITagGroup
-	parsers           []common.IParser
-	ChangeAccumulator *reports.TagChangeAccumulator
-	reportingService  *reports.ReportService
-	dir               string
-	skipDirs          []string
-	skippedTags       []string
-	configFilePath    string
+	TagGroups            []tagging.ITagGroup
+	parsers              []common.IParser
+	ChangeAccumulator    *reports.TagChangeAccumulator
+	reportingService     *reports.ReportService
+	dir                  string
+	skipDirs             []string
+	skippedTags          []string
+	configFilePath       string
+	skippedResourceTypes []string
 }
 
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
@@ -71,6 +72,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
+	r.skippedResourceTypes = commands.SkipResourceTypes
 	return nil
 }
 
@@ -100,6 +102,15 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	return r.reportingService, nil
 }
 
+func (r *Runner) isSkippedResourceType(resourceType string) bool {
+	for _, skippedResourceType := range r.skippedResourceTypes {
+		if resourceType == skippedResourceType {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
@@ -114,6 +125,9 @@ func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
 		}
 		isFileTaggable := false
 		for _, block := range blocks {
+			if r.isSkippedResourceType(block.GetResourceType()) {
+				continue
+			}
 			if block.IsBlockTaggable() {
 				logger.Debug(fmt.Sprintf("Tagging %v:%v", file, block.GetResourceID()))
 				isFileTaggable = true
