@@ -24,7 +24,6 @@ const FunctionsSectionName = "functions"
 
 type ServerlessParser struct {
 	YamlParser types.YamlParser
-	Template   *serverless.Template
 }
 
 func (p *ServerlessParser) Name() string {
