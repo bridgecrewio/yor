@@ -100,6 +100,10 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
+func (p *TerrraformParser) ValidFile(filePath string) bool {
+	return true
+}
+
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// read file bytes
 	// #nosec G304
