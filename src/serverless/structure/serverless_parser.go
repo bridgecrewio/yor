@@ -34,7 +34,6 @@ func (p *ServerlessParser) Name() string {
 func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser.RootDir = rootDir
 	p.YamlParser.FileToResourcesLines = make(map[string]structure.Lines)
-	p.Template = &serverless.Template{}
 }
 
 func (p *ServerlessParser) GetSkippedDirs() []string {
@@ -68,7 +67,6 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	}
 	// #nosec G304 - file is from user
 	template, err := goserverlessParse(filePath)
-	p.Template = template
 	if err != nil || template == nil || template.Functions == nil {
 		if err != nil {
 			logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
@@ -78,14 +76,14 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		}
 		return nil, err
 	}
-	if p.Template.Functions == nil && p.Template.Resources.Resources == nil {
+	if template.Functions == nil && template.Resources.Resources == nil {
 		return parsedBlocks, nil
 	}
 
 	// cfnStackTagsResource := p.template.Provider.CFNTags
 	resourceNames := make([]string, 0)
 	var resourceNamesToLines map[string]*structure.Lines
-	for funcName := range p.Template.Functions {
+	for funcName := range template.Functions {
 		resourceNames = append(resourceNames, funcName)
 	}
 	switch utils.GetFileFormat(filePath) {
@@ -101,7 +99,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		var slsBlock *ServerlessBlock
 		tagsLines := structure.Lines{Start: -1, End: -1}
 		var lines *structure.Lines
-		slsFunction := p.Template.Functions[funcName]
+		slsFunction := template.Functions[funcName]
 		lines = resourceNamesToLines[funcName]
 		minResourceLine = int(math.Min(float64(minResourceLine), float64(lines.Start)))
 		maxResourceLine = int(math.Max(float64(maxResourceLine), float64(lines.End)))
