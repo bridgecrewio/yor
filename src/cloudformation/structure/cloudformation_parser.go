@@ -59,6 +59,7 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 
 // Validate file has AWSTemplateFormatVersion
 func (p *CloudformationParser) ValidFile(filePath string) bool {
+	// #nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Error opening file %s, skipping: %v", filePath, err))
