@@ -63,7 +63,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		if _, exists := processedParsers[p]; exists {
 			continue
 		}
-		switch p; p {
+		switch p {
 		case "Terraform":
 			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 		case "CloudFormation":
