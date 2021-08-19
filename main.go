@@ -182,7 +182,7 @@ func tagCommand() *cli.Command {
 				Name:        parsersArgs,
 				Aliases:     []string{"i"},
 				Usage:       "IAC types to tag",
-				Value:       "Terraform,CloudFormation,Serverless",
+				Value:       cli.NewStringSlice("Terraform", "CloudFormation", "Serverless"),
 				DefaultText: "Terraform,CloudFormation,Serverless",
 			},
 		},
