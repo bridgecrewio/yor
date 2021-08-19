@@ -58,23 +58,22 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
 		}
 	}
-	for _, value := range commands.Parsers {
-		if value == "Terraform" {
+	processedParsers := map[string]struct{}{}
+	for _, p := range commands.Parsers {
+		if _, exists := processedParsers[p]; exists {
+			continue
+		}
+		switch p; p {
+		case "Terraform":
 			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
-			break
-		}
-	}
-	for _, value := range commands.Parsers {
-		if value == "CloudFormation" {
+		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
-			break
-		}
-	}
-	for _, value := range commands.Parsers {
-		if value == "Serverless" {
+		case "Serverless":
 			r.parsers = append(r.parsers, &slsStructure.ServerlessParser{})
-			break
+		default:
+			logger.Warning(fmt.Sprintf("ignoring unknown parser %#v", err))
 		}
+		processedParsers[p] = struct{}{}
 	}
 
 	for _, parser := range r.parsers {
