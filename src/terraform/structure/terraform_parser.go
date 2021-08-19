@@ -374,9 +374,10 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 	var existingTags []tags.ITag
 	isTaggable := false
 	var tagsAttributeName string
+	var resourceType string
 	switch hclBlock.Type() {
 	case ResourceBlockType:
-		resourceType := hclBlock.Labels()[0]
+		resourceType = hclBlock.Labels()[0]
 		providerName := getProviderFromResourceType(resourceType)
 		if utils.InSlice(SkippedProviders, providerName) {
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
@@ -407,6 +408,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			return nil, nil
 		}
 	case ModuleBlockType:
+		resourceType = "module"
 		moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
 		// source is always wrapped in " front and back
 		moduleSource = strings.Trim(moduleSource, "\" ")
@@ -438,6 +440,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			ExitingTags:       existingTags,
 			IsTaggable:        isTaggable,
 			TagsAttributeName: tagsAttributeName,
+			Type:              resourceType,
 		},
 	}
 

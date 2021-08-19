@@ -15,15 +15,16 @@ import (
 var allowedOutputTypes = []string{"cli", "json"}
 
 type TagOptions struct {
-	Directory      string
-	Tag            []string
-	SkipTags       []string
-	CustomTagging  []string
-	SkipDirs       []string
-	Output         string `validate:"output"`
-	OutputJSONFile string
-	TagGroups      []string `validate:"tagGroupNames"`
-	ConfigFile     string   `validate:"config-file"`
+	Directory         string
+	Tag               []string
+	SkipTags          []string
+	CustomTagging     []string
+	SkipDirs          []string
+	Output            string `validate:"output"`
+	OutputJSONFile    string
+	TagGroups         []string `validate:"tagGroupNames"`
+	ConfigFile        string   `validate:"config-file"`
+	SkipResourceTypes []string
 }
 
 type ListTagsOptions struct {

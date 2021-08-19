@@ -31,6 +31,7 @@ type IBlock interface {
 	GetSeparator() string
 	GetTagsAttributeName() string
 	IsGCPBlock() bool
+	GetResourceType() string
 }
 
 type Block struct {
@@ -43,6 +44,7 @@ type Block struct {
 	Lines             Lines
 	TagLines          Lines
 	Name              string
+	Type              string
 }
 
 func (b *Block) Init(filePath string, rawBlock interface{}) {
@@ -56,6 +58,10 @@ func (b *Block) GetLines(_ ...bool) Lines {
 
 func (b *Block) GetResourceID() string {
 	return b.Name
+}
+
+func (b *Block) GetResourceType() string {
+	return b.Type
 }
 
 func (b *Block) GetTagsLines() Lines {

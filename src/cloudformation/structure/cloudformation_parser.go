@@ -89,6 +89,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		parsedBlocks := make([]structure.IBlock, 0)
 		for resourceName := range template.Resources {
 			resource := template.Resources[resourceName]
+			resourceType := resource.AWSCloudFormationType()
 			lines := resourceNamesToLines[resourceName]
 			isTaggable, tagsValue := utils.StructContainsProperty(resource, TagsAttributeName)
 			tagsLines := structure.Lines{Start: -1, End: -1}
@@ -109,6 +110,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 					Lines:             *lines,
 					TagLines:          tagsLines,
 					Name:              resourceName,
+					Type:              resourceType,
 				},
 			}
 			parsedBlocks = append(parsedBlocks, cfnBlock)
