@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	goformationTags "github.com/awslabs/goformation/v4/cloudformation/tags"
-	"github.com/bridgecrewio/goformation/v4"
-	"github.com/bridgecrewio/goformation/v4/intrinsics"
+	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
+	"github.com/bridgecrewio/goformation/v5"
+	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/json"
 	"github.com/bridgecrewio/yor/src/common/logger"

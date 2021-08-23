@@ -3,8 +3,8 @@ module github.com/bridgecrewio/yor
 go 1.13
 
 require (
-	github.com/awslabs/goformation/v4 v4.19.5
-	github.com/bridgecrewio/goformation/v4 v4.19.6-0.20210621143756-9668f0a46c85
+	github.com/awslabs/goformation/v5 v5.2.7
+	github.com/bridgecrewio/goformation/v5 v5.0.0-20210823083242-84a6d242099f
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-hclog v0.9.2
@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/hashicorp/terraform v0.14.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -27,4 +28,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-replace github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
+replace (
+	github.com/awslabs/goformation/v5 => github.com/bridgecrewio/goformation/v5 v5.0.0-20210823081757-99ed9bf3c0e5
+	github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
+)

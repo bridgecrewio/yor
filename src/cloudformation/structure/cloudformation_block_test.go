@@ -7,8 +7,8 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
-	"github.com/awslabs/goformation/v4"
-	"github.com/awslabs/goformation/v4/cloudformation/ec2"
+	"github.com/awslabs/goformation/v5"
+	"github.com/awslabs/goformation/v5/cloudformation/ec2"
 	"github.com/stretchr/testify/assert"
 )
 
