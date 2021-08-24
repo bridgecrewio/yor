@@ -25,6 +25,7 @@ type TagOptions struct {
 	TagGroups         []string `validate:"tagGroupNames"`
 	ConfigFile        string   `validate:"config-file"`
 	SkipResourceTypes []string
+	Parsers           []string
 }
 
 type ListTagsOptions struct {

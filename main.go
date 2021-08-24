@@ -88,6 +88,7 @@ func tagCommand() *cli.Command {
 	outputJSONFileArg := "output-json-file"
 	externalConfPath := "config-file"
 	skipResourceTypesArg := "skip-resource-types"
+	parsersArgs := "parsers"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -105,6 +106,7 @@ func tagCommand() *cli.Command {
 				TagGroups:         c.StringSlice(tagGroupArg),
 				ConfigFile:        c.String(externalConfPath),
 				SkipResourceTypes: c.StringSlice(skipResourceTypesArg),
+				Parsers:           c.StringSlice(parsersArgs),
 			}
 
 			options.Validate()
@@ -175,6 +177,13 @@ func tagCommand() *cli.Command {
 				Usage:       "skip resource types for tagging",
 				Value:       cli.NewStringSlice(),
 				DefaultText: "aws_rds_instance,AWS::S3::Bucket",
+			},
+			&cli.StringSliceFlag{
+				Name:        parsersArgs,
+				Aliases:     []string{"i"},
+				Usage:       "IAC types to tag",
+				Value:       cli.NewStringSlice("Terraform", "CloudFormation", "Serverless"),
+				DefaultText: "Terraform,CloudFormation,Serverless",
 			},
 		},
 	}
