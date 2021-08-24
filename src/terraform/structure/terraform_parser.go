@@ -100,7 +100,7 @@ func (p *TerrraformParser) GetSourceFiles(directory string) ([]string, error) {
 	return files, nil
 }
 
-func (p *TerrraformParser) ValidFile(filePath string) bool {
+func (p *TerrraformParser) ValidFile(_ string) bool {
 	return true
 }
 
@@ -577,6 +577,9 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	resourceType := hclBlock.Labels()[0]
 	if utils.InSlice(unsupportedTerraformBlocks, resourceType) {
 		return false, nil
+	}
+	if utils.InSlice(TfTaggableResourceTypes, resourceType) {
+		return true, nil
 	}
 	if val, ok := p.taggableResourcesCache[resourceType]; ok {
 		return val, nil
