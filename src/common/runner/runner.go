@@ -263,5 +263,8 @@ func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 			return true
 		}
 	}
+	if !p.ValidFile(file) {
+		return true
+	}
 	return false
 }

@@ -57,6 +57,10 @@ func goserverlessParse(file string) (*serverless.Template, error) {
 	return template, err
 }
 
+func (p *ServerlessParser) ValidFile(filePath string) bool {
+	return true
+}
+
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)

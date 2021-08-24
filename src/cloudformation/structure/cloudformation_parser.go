@@ -1,11 +1,13 @@
 package structure
 
 import (
+	stdjson "encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/goformation/v5"
@@ -18,6 +20,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/types"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/src/common/yaml"
+	sanathyaml "github.com/sanathkr/yaml"
 
 	"reflect"
 )
@@ -52,6 +55,41 @@ func (p *CloudformationParser) GetSkippedDirs() []string {
 
 func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension, common.JSONFileType.Extension}
+}
+
+// Validate file has AWSTemplateFormatVersion
+func (p *CloudformationParser) ValidFile(filePath string) bool {
+	// #nosec G304
+	file, err := os.Open(filePath)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("Error opening file %s, skipping: %v", filePath, err))
+		return false
+	}
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("Error reading file %s, skipping: %v", filePath, err))
+		return false
+	}
+	if err = file.Close(); err != nil {
+		logger.Warning(fmt.Sprintf("Error closing file %s, skipping: %v", filePath, err))
+		return false
+	}
+
+	if !strings.HasSuffix(filePath, ".json") {
+		bytes, err = sanathyaml.YAMLToJSON(bytes)
+		if err != nil {
+			logger.Warning(fmt.Sprintf("Error converting YAML to JSON for file %s, skipping: %v", filePath, err))
+			return false
+		}
+	}
+	var result map[string]interface{}
+	err = stdjson.Unmarshal([]byte(bytes), &result)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("Error unmarshalling JSON for file %s, skipping: %v", filePath, err))
+		return false
+	}
+	_, hasHeader := result["AWSTemplateFormatVersion"]
+	return hasHeader
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
