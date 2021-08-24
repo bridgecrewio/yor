@@ -386,17 +386,7 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 		if utils.InSlice(SkippedProviders, providerName) {
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
 		}
-		client := p.getClient(providerName)
-		if client == nil {
-			return nil, fmt.Errorf("could not find client of %s", providerName)
-		}
-		logger.MuteLogging()
-		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
-		logger.UnmuteLogging()
-		if err != nil {
-			return nil, err
-		}
-		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
+		tagsAttributeName, err := p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
 		}
@@ -404,12 +394,22 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 
 		if !isTaggable {
 			isTaggable, err = p.isBlockTaggable(hclBlock)
+		}
+		if !isTaggable {
+			client := p.getClient(providerName)
+			if client == nil {
+				return nil, fmt.Errorf("could not find client of %s", providerName)
+			}
+			logger.MuteLogging()
+			resourceScheme, err := client.GetResourceTypeSchema(resourceType)
+			logger.UnmuteLogging()
+
 			if err != nil {
 				return nil, err
 			}
-		}
-		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
-			return nil, nil
+			if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
+				return nil, nil
+			}
 		}
 	case ModuleBlockType:
 		resourceType = "module"
