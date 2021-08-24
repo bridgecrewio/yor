@@ -393,22 +393,9 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 		existingTags, isTaggable = p.getExistingTags(hclBlock, tagsAttributeName)
 
 		if !isTaggable {
-			isTaggable, err = p.isBlockTaggable(hclBlock)
-		}
-		if !isTaggable {
-			client := p.getClient(providerName)
-			if client == nil {
-				return nil, fmt.Errorf("could not find client of %s", providerName)
-			}
-			logger.MuteLogging()
-			resourceScheme, err := client.GetResourceTypeSchema(resourceType)
-			logger.UnmuteLogging()
-
+			isTaggable, err = p.isBlockTaggable(hclBlock, tagsAttributeName)
 			if err != nil {
 				return nil, err
-			}
-			if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
-				return nil, nil
 			}
 		}
 	case ModuleBlockType:
@@ -573,7 +560,7 @@ func (p *TerrraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribu
 	return existingTags, isTaggable
 }
 
-func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, error) {
+func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block, tagsAttributeName string) (bool, error) {
 	resourceType := hclBlock.Labels()[0]
 	if utils.InSlice(unsupportedTerraformBlocks, resourceType) {
 		return false, nil
@@ -607,6 +594,10 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 
 		if _, ok := typeSchema.Attributes[tagAtt]; ok {
 			taggable = true
+		}
+
+		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, typeSchema); isSchemeViolated {
+			return false, nil
 		}
 	}
 	p.taggableResourcesCache[resourceType] = taggable
