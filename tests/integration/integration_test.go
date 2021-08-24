@@ -337,6 +337,7 @@ func tagDirectory(t *testing.T, path string) {
 	err := yorRunner.Init(&clioptions.TagOptions{
 		Directory: path,
 		TagGroups: getTagGroups(),
+		Parsers:   []string{"Terraform", "CloudFormation", "Serverless"},
 	})
 	failIfErr(t, err)
 	_, err = yorRunner.TagDirectory()

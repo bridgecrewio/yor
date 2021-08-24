@@ -93,6 +93,7 @@ func Test_TagCFNDir(t *testing.T) {
 		options := clioptions.TagOptions{
 			Directory: "../../../tests/cloudformation/resources/ebs",
 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			Parsers:   []string{"Terraform", "CloudFormation", "Serverless"},
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
