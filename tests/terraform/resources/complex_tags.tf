@@ -60,3 +60,20 @@ resource "aws_instance" "instance_no_tags" {
   ami = ""
   instance_type = ""
 }
+
+resource "aws_autoscaling_group" "autoscaling_group_tagged" {
+  // This resource should not be tagged
+  tag {
+    key = "Name"
+    propagate_at_launch = false
+    value = "Mine"
+  }
+  max_size = 0
+  min_size = 0
+}
+
+resource "aws_autoscaling_group" "autoscaling_group" {
+  // This resource should not be tagged as well
+  max_size = 0
+  min_size = 0
+}
