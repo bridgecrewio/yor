@@ -172,6 +172,9 @@ func TestTerrraformParser_Module(t *testing.T) {
 		}
 
 		for _, block := range parsedBlocks {
+			if utils.InSlice([]string{"aws_autoscaling_group.autoscaling_group", "aws_autoscaling_group.autoscaling_group_tagged"}, block.GetResourceID()) {
+				assert.False(t, block.IsBlockTaggable())
+			}
 			if block.IsBlockTaggable() {
 				_ = tagGroup.CreateTagsForBlock(block)
 				_ = c2cTagGroup.CreateTagsForBlock(block)

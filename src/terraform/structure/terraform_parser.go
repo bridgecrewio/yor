@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -386,16 +385,8 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 		if utils.InSlice(SkippedProviders, providerName) {
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
 		}
-		client := p.getClient(providerName)
-		if client == nil {
-			return nil, fmt.Errorf("could not find client of %s", providerName)
-		}
-		logger.MuteLogging()
-		resourceScheme, err := client.GetResourceTypeSchema(resourceType)
-		logger.UnmuteLogging()
-		if err != nil {
-			return nil, err
-		}
+
+		var err error
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
@@ -407,9 +398,6 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			if err != nil {
 				return nil, err
 			}
-		}
-		if isSchemeViolated := p.isSchemeViolated(hclBlock, tagsAttributeName, resourceScheme); isSchemeViolated {
-			return nil, nil
 		}
 	case ModuleBlockType:
 		resourceType = "module"
@@ -506,28 +494,6 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtt
 	}
 
 	return false, ""
-}
-
-func (p *TerrraformParser) isSchemeViolated(hclBlock *hclwrite.Block, tagsAttributeName string, resourceScheme *tfschema.Block) bool {
-	bodyTokens := hclBlock.Body().BuildTokens(hclwrite.Tokens{})
-	foundTagToken := false
-	tagTokenRegex := regexp.MustCompile(`^tag[\d]?$`)
-	foundTagsToken := false
-	tagsTokensRegex := regexp.MustCompile(fmt.Sprintf(`^%s$`, tagsAttributeName))
-	for _, token := range bodyTokens {
-		if matched := tagTokenRegex.Match(token.Bytes); matched {
-			foundTagToken = true
-		}
-		if matched := tagsTokensRegex.Match(token.Bytes); matched {
-			foundTagsToken = true
-		}
-	}
-	if foundTagToken && foundTagsToken {
-		if _, okTags := resourceScheme.Attributes[tagsAttributeName]; okTags {
-			return true
-		}
-	}
-	return false
 }
 
 func (p *TerrraformParser) getTagsAttributeName(hclBlock *hclwrite.Block) (string, error) {
