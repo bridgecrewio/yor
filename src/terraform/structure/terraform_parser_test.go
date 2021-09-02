@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -152,11 +151,8 @@ func TestTerrraformParser_Module(t *testing.T) {
 		}()
 		p := &TerrraformParser{}
 		blameLines := CreateComplexTagsLines()
-		var blamByFile sync.Map
-		blamByFile.Store(filePath, &git.BlameResult{Lines: blameLines})
-		gitService := &gitservice.GitService{
-			BlameByFile: &blamByFile,
-		}
+		gitService := &gitservice.GitService{}
+		gitService.BlameByFile.Store(filePath, &git.BlameResult{Lines: blameLines})
 		tagGroup := &gittag.TagGroup{GitService: gitService}
 		c2cTagGroup := &code2cloud.TagGroup{}
 		tagGroup.InitTagGroup(rootDir, nil)

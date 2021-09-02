@@ -25,7 +25,7 @@ type GitService struct {
 	remoteURL        string
 	organization     string
 	repoName         string
-	BlameByFile      *sync.Map
+	BlameByFile      sync.Map
 	currentUserEmail string
 }
 
