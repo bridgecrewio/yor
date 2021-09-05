@@ -3,6 +3,7 @@ package gittag
 import (
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/gitservice"
@@ -16,10 +17,12 @@ import (
 
 func TestGitTagGroup(t *testing.T) {
 	path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
-	_ = blameutils.SetupBlameResults(t, path, 3)
+	blame := blameutils.SetupBlameResults(t, path, 3)
 
 	t.Run("test git tagGroup CreateTagsForBlock", func(t *testing.T) {
-		gitService := &gitservice.GitService{}
+		var blameByFile sync.Map
+		blameByFile.Store(path, blame)
+		gitService := &gitservice.GitService{BlameByFile: &blameByFile}
 		tagGroup := TagGroup{}
 
 		wd, _ := os.Getwd()
