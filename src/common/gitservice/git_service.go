@@ -57,8 +57,8 @@ func NewGitService(rootDir string) (*GitService, error) {
 		gitRootDir:       rootDir,
 		scanPathFromRoot: scanPathFromRoot,
 		repository:       repository,
+		BlameByFile:      &sync.Map{},
 	}
-
 	err = gitService.setOrgAndName()
 	gitService.currentUserEmail = GetGitUserEmail()
 
