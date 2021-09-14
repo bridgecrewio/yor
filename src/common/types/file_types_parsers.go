@@ -1,16 +1,15 @@
 package types
 
 import (
-	"github.com/bridgecrewio/yor/src/common/json"
-	"github.com/bridgecrewio/yor/src/common/structure"
+	"sync"
 )
 
 type YamlParser struct {
 	RootDir              string
-	FileToResourcesLines map[string]structure.Lines
+	FileToResourcesLines sync.Map
 }
 
 type JSONParser struct {
 	RootDir              string
-	FileToBracketMapping map[string]map[int]json.BracketPair
+	FileToBracketMapping sync.Map
 }
