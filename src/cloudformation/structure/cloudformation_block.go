@@ -4,8 +4,6 @@ import (
 	"reflect"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
-
-	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 )
 
 type CloudformationBlock struct {
@@ -18,16 +16,13 @@ func (b *CloudformationBlock) UpdateTags() {
 	}
 
 	mergedTags := b.MergeTags()
-	cfnMergedTags := make([]goformationTags.Tag, 0)
+	cfnTags := make(map[string]string, len(mergedTags))
 	for _, t := range mergedTags {
-		cfnMergedTags = append(cfnMergedTags, goformationTags.Tag{
-			Key:   t.GetKey(),
-			Value: t.GetValue(),
-		})
+		cfnTags[t.GetKey()] = t.GetValue()
 	}
 
 	// set the tags attribute with the new tags
-	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(cfnMergedTags))
+	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(cfnTags))
 }
 
 func (b *CloudformationBlock) GetTagsLines() structure.Lines {
