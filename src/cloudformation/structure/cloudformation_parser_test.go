@@ -31,11 +31,14 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		assert.Equal(t, structure.Lines{Start: 3, End: 15}, newVolumeBlock.GetLines())
 		assert.Equal(t, "NewVolume", newVolumeBlock.GetResourceID())
 
+		rawFileLines, _ := cfnParser.FileToResourcesLines.Load(directory + "/ebs.yaml")
+		resourceLines := rawFileLines.(structure.Lines)
+
 		existingTag := newVolumeBlock.GetExistingTags()[0]
 		assert.Equal(t, "MyTag", existingTag.GetKey())
 		assert.Equal(t, "TagValue", existingTag.GetValue())
-		assert.Equal(t, 3, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].Start)
-		assert.Equal(t, 15, cfnParser.FileToResourcesLines[directory+"/ebs.yaml"].End)
+		assert.Equal(t, 3, resourceLines.Start)
+		assert.Equal(t, 15, resourceLines.End)
 	})
 	t.Run("parse ebs file json", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
@@ -66,9 +69,13 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		cfnParser.Init(directory, nil)
 		sourceFile := directory + "/base.template"
 		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
+
+		rawFileLines, _ := cfnParser.FileToResourcesLines.Load(sourceFile)
+		resourceLines := rawFileLines.(structure.Lines)
+
 		assert.Equal(t, 1, len(cfnBlocks))
-		assert.Equal(t, 2, cfnParser.FileToResourcesLines[sourceFile].Start)
-		assert.Equal(t, 9, cfnParser.FileToResourcesLines[sourceFile].End)
+		assert.Equal(t, 2, resourceLines.Start)
+		assert.Equal(t, 9, resourceLines.End)
 	})
 
 	t.Run("parse_special_cases", func(t *testing.T) {
