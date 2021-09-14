@@ -118,7 +118,6 @@ jobs:
           GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.new_tag }}
       - name: Update go reportcard
         uses: creekorful/goreportcard-action@v1.0
-
   publish-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs:
