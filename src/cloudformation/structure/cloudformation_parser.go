@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/goformation/v5"
@@ -34,18 +35,18 @@ const TagsAttributeName = "Tags"
 const ResourcesStartToken = "Resources"
 const EnvVarsPath = "Resources/*/Properties/Environment/Variables/*"
 
+var goformationLock sync.Mutex
+
 func (p *CloudformationParser) Name() string {
 	return "CloudFormation"
 }
 
 func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser = &types.YamlParser{
-		RootDir:              rootDir,
-		FileToResourcesLines: make(map[string]structure.Lines),
+		RootDir: rootDir,
 	}
 	p.JSONParser = &types.JSONParser{
-		RootDir:              rootDir,
-		FileToBracketMapping: make(map[string]map[int]json.BracketPair),
+		RootDir: rootDir,
 	}
 }
 
@@ -83,7 +84,7 @@ func (p *CloudformationParser) ValidFile(filePath string) bool {
 		}
 	}
 	var result map[string]interface{}
-	err = stdjson.Unmarshal([]byte(bytes), &result)
+	err = stdjson.Unmarshal(bytes, &result)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Error unmarshalling JSON for file %s, skipping: %v", filePath, err))
 		return false
@@ -93,15 +94,22 @@ func (p *CloudformationParser) ValidFile(filePath string) bool {
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+	goformationLock.Lock()
 	template, err := goformation.OpenWithOptions(filePath, &intrinsics.ProcessorOptions{
 		StringifyPaths: []string{EnvVarsPath},
 	})
+	goformationLock.Unlock()
 	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
 		if err == nil {
 			err = fmt.Errorf("failed to parse template %v", filePath)
 		}
 		return nil, err
+	}
+
+	if template.Transform != nil {
+		logger.Info(fmt.Sprintf("Skipping CFN template %s as SAM templates are not yet supported", filePath))
+		return nil, nil
 	}
 
 	resourceNames := make([]string, 0)
@@ -117,7 +125,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		case common.JSONFileType.FileFormat:
 			var fileBracketsMapping map[int]json.BracketPair
 			resourceNamesToLines, fileBracketsMapping = json.MapResourcesLineJSON(filePath, resourceNames)
-			p.FileToBracketMapping[filePath] = fileBracketsMapping
+			p.FileToBracketMapping.Store(filePath, fileBracketsMapping)
 		default:
 			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
@@ -154,7 +162,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 			parsedBlocks = append(parsedBlocks, cfnBlock)
 		}
 
-		p.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
+		p.FileToResourcesLines.Store(filePath, structure.Lines{Start: minResourceLine, End: maxResourceLine})
 
 		return parsedBlocks, nil
 	}
@@ -211,7 +219,8 @@ func (p *CloudformationParser) writeToFile(readFilePath string, blocks []structu
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		return yaml.WriteYAMLFile(readFilePath, blocks, writeFilePath, TagsAttributeName, ResourcesStartToken)
 	case common.JSONFileType.FileFormat:
-		return json.WriteJSONFile(readFilePath, blocks, writeFilePath, p.FileToBracketMapping[readFilePath])
+		bracketMapping, _ := p.FileToBracketMapping.Load(readFilePath)
+		return json.WriteJSONFile(readFilePath, blocks, writeFilePath, bracketMapping.(map[int]json.BracketPair))
 	default:
 		return fmt.Errorf("unsupported file type %s", utils.GetFileFormat(readFilePath))
 	}
@@ -249,7 +258,8 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 			return structure.Lines{Start: -1, End: -1}
 		}
-		tagsBrackets := json.FindScopeInJSON(string(file), TagsAttributeName, p.FileToBracketMapping[filePath], resourceLinesRange)
+		bracketMapping, _ := p.FileToBracketMapping.Load(filePath)
+		tagsBrackets := json.FindScopeInJSON(string(file), TagsAttributeName, bracketMapping.(map[int]json.BracketPair), resourceLinesRange)
 		tagsLines := &structure.Lines{Start: tagsBrackets.Open.Line, End: tagsBrackets.Close.Line}
 		return *tagsLines
 	default:

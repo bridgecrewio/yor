@@ -32,7 +32,6 @@ func (p *ServerlessParser) Name() string {
 
 func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser.RootDir = rootDir
-	p.YamlParser.FileToResourcesLines = make(map[string]structure.Lines)
 }
 
 func (p *ServerlessParser) GetSkippedDirs() []string {
@@ -57,7 +56,7 @@ func goserverlessParse(file string) (*serverless.Template, error) {
 	return template, err
 }
 
-func (p *ServerlessParser) ValidFile(filePath string) bool {
+func (p *ServerlessParser) ValidFile(_ string) bool {
 	return true
 }
 
@@ -127,7 +126,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 		}
 
 		parsedBlocks = append(parsedBlocks, slsBlock)
-		p.YamlParser.FileToResourcesLines[filePath] = structure.Lines{Start: minResourceLine, End: maxResourceLine}
+		p.YamlParser.FileToResourcesLines.Store(filePath, structure.Lines{Start: minResourceLine, End: maxResourceLine})
 
 	}
 	return parsedBlocks, nil

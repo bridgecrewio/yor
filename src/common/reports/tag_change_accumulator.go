@@ -24,8 +24,8 @@ func init() {
 // Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
 func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
 	accumulatorLock.Lock()
+	defer accumulatorLock.Unlock()
 	a.ScannedBlocks = append(a.ScannedBlocks, block)
-	accumulatorLock.Unlock()
 	diff := block.CalculateTagsDiff()
 	// If only tags are new, add to newly traced. If some updates - add to updated. Otherwise will be added to
 	// ScannedBlocks.
