@@ -112,7 +112,7 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	wg.Add(len(files))
 
 	for _, file := range files {
-		r.TagFile(file, &wg)
+		go r.TagFile(file, &wg)
 	}
 	wg.Wait()
 

@@ -25,11 +25,11 @@ type GitService struct {
 	remoteURL        string
 	organization     string
 	repoName         string
-	BlameByFile      map[string]*git.BlameResult
+	BlameByFile      *sync.Map
 	currentUserEmail string
 }
 
-var lock sync.Mutex
+var gitGraphLock sync.Mutex
 
 func NewGitService(rootDir string) (*GitService, error) {
 	var repository *git.Repository
@@ -57,9 +57,8 @@ func NewGitService(rootDir string) (*GitService, error) {
 		gitRootDir:       rootDir,
 		scanPathFromRoot: scanPathFromRoot,
 		repository:       repository,
-		BlameByFile:      make(map[string]*git.BlameResult),
+		BlameByFile:      &sync.Map{},
 	}
-
 	err = gitService.setOrgAndName()
 	gitService.currentUserEmail = GetGitUserEmail()
 
@@ -115,9 +114,9 @@ func (g *GitService) ComputeRelativeFilePath(fp string) string {
 func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines) (*GitBlame, error) {
 	logger.Info(fmt.Sprintf("Getting git blame for %v (%v:%v)", filePath, lines.Start, lines.End))
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
-	blame, ok := g.BlameByFile[filePath]
+	blame, ok := g.BlameByFile.Load(filePath)
 	if ok {
-		return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
+		return NewGitBlame(relativeFilePath, lines, blame.(*git.BlameResult), g.organization, g.repoName, g.currentUserEmail), nil
 	}
 
 	var err error
@@ -126,9 +125,9 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
 
-	g.BlameByFile[filePath] = blame
+	g.BlameByFile.Store(filePath, blame)
 
-	return NewGitBlame(relativeFilePath, lines, blame, g.organization, g.repoName, g.currentUserEmail), nil
+	return NewGitBlame(relativeFilePath, lines, blame.(*git.BlameResult), g.organization, g.repoName, g.currentUserEmail), nil
 }
 
 func (g *GitService) GetOrganization() string {
@@ -140,16 +139,16 @@ func (g *GitService) GetRepoName() string {
 }
 
 func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
-	blame, ok := g.BlameByFile[filePath]
+	blame, ok := g.BlameByFile.Load(filePath)
 	if ok {
-		return blame, nil
+		return blame.(*git.BlameResult), nil
 	}
 
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	var selectedCommit *object.Commit
 
-	lock.Lock() // Git is a graph, different files can lead to graph scans interfering with each other
-	defer lock.Unlock()
+	gitGraphLock.Lock() // Git is a graph, different files can lead to graph scans interfering with each other
+	defer gitGraphLock.Unlock()
 	head, err := g.repository.Head()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repository HEAD for file %s because of error %s", filePath, err)
@@ -163,9 +162,9 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
-	g.BlameByFile[filePath] = blame
+	g.BlameByFile.Store(filePath, blame)
 
-	return blame, nil
+	return blame.(*git.BlameResult), nil
 }
 
 func GetGitUserEmail() string {

@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
+	"sync/atomic"
 )
 
 type loggingService struct {
@@ -12,11 +14,13 @@ type loggingService struct {
 	stdout     *os.File
 	stderr     *os.File
 	tempWriter *os.File
-	enabled    bool
+	disabled   int32
 }
 
 type LogLevel int
 type ErrorType int
+
+var MuteLock sync.Mutex
 
 const (
 	DEBUG LogLevel = iota
@@ -44,7 +48,7 @@ var Logger loggingService
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
-	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr, enabled: true}
+	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr, disabled: 0}
 
 	val, ok := os.LookupEnv("LOG_LEVEL")
 	if ok {
@@ -64,7 +68,7 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
 		case DEBUG, INFO, WARNING:
-			if e.enabled {
+			if e.disabled == 0 {
 				log.Println(strArgs)
 			}
 		case ERROR:
@@ -118,23 +122,27 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 func MuteLogging() {
 	if Logger.logLevel >= WARNING {
 		Debug("Mute logging")
+		MuteLock.Lock()
+		defer MuteLock.Unlock()
 		_, Logger.tempWriter, _ = os.Pipe()
 		os.Stdout = Logger.tempWriter
 		os.Stderr = Logger.tempWriter
 		log.SetOutput(Logger.tempWriter)
-		Logger.enabled = false
+		atomic.AddInt32(&Logger.disabled, 1)
 	}
 }
 
 func UnmuteLogging() {
 	if Logger.logLevel >= WARNING {
+		MuteLock.Lock()
+		defer MuteLock.Unlock()
 		if Logger.tempWriter != nil {
 			_ = Logger.tempWriter.Close()
 		}
 		os.Stdout = Logger.stdout
 		os.Stderr = Logger.stderr
 		log.SetOutput(os.Stderr)
-		Logger.enabled = true
+		atomic.AddInt32(&Logger.disabled, -1)
 		Debug("Unmute logging")
 	}
 }

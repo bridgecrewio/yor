@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -32,9 +33,12 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener_rule",  // This resource does not support tags, although docs state otherwise.
 }
 
+var taggableResourcesLock sync.RWMutex
+var hclWriteLock sync.Mutex
+
 type TerrraformParser struct {
 	rootDir                string
-	providerToClientMap    map[string]tfschema.Client
+	providerToClientMap    sync.Map
 	taggableResourcesCache map[string]bool
 	tagModules             bool
 	terraformModule        *TerraformModule
@@ -49,7 +53,6 @@ func (p *TerrraformParser) Name() string {
 
 func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.rootDir = rootDir
-	p.providerToClientMap = make(map[string]tfschema.Client)
 	p.taggableResourcesCache = make(map[string]bool)
 	p.tagModules = true
 	p.terraformModule = NewTerraformModule(rootDir)
@@ -200,6 +203,8 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
+	hclWriteLock.Lock()
+	defer hclWriteLock.Unlock()
 	_, err = hclFile.WriteTo(fd)
 	if err != nil {
 		return err
@@ -342,6 +347,8 @@ func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
 		tagsMap[tag.GetKey()] = cty.StringVal(tag.GetValue())
 	}
 	if len(tagsMap) > 0 {
+		hclWriteLock.Lock()
+		defer hclWriteLock.Unlock()
 		return hclwrite.TokensForValue(cty.MapVal(tagsMap))
 	}
 	return nil
@@ -547,7 +554,10 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	if utils.InSlice(TfTaggableResourceTypes, resourceType) {
 		return true, nil
 	}
-	if val, ok := p.taggableResourcesCache[resourceType]; ok {
+	taggableResourcesLock.RLock()
+	val, ok := p.taggableResourcesCache[resourceType]
+	taggableResourcesLock.RUnlock()
+	if ok {
 		return val, nil
 	}
 	tagAtt, err := getTagAttributeByResourceType(resourceType)
@@ -575,7 +585,9 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 			taggable = true
 		}
 	}
+	taggableResourcesLock.Lock()
 	p.taggableResourcesCache[resourceType] = taggable
+	taggableResourcesLock.Unlock()
 	return taggable, nil
 }
 
@@ -661,15 +673,17 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		Level:  hclog.Error,
 		Output: hclog.DefaultOutput,
 	})
-	client, exists := p.providerToClientMap[providerName]
+	client, exists := p.providerToClientMap.Load(providerName)
 	if exists {
-		return client
+		return client.(tfschema.Client)
 	}
 	logger.MuteLogging()
+	logger.MuteLock.Lock()
 	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
 		RootDir: p.terraformModule.ProvidersInstallDir,
 		Logger:  hclLogger,
 	})
+	logger.MuteLock.Unlock()
 	logger.UnmuteLogging()
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
@@ -679,6 +693,6 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		return nil
 	}
 
-	p.providerToClientMap[providerName] = newClient
+	p.providerToClientMap.Store(providerName, newClient)
 	return newClient
 }

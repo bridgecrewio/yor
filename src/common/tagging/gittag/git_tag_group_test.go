@@ -3,6 +3,7 @@ package gittag
 import (
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/gitservice"
@@ -11,7 +12,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,9 +20,9 @@ func TestGitTagGroup(t *testing.T) {
 	blame := blameutils.SetupBlameResults(t, path, 3)
 
 	t.Run("test git tagGroup CreateTagsForBlock", func(t *testing.T) {
-		gitService := &gitservice.GitService{
-			BlameByFile: map[string]*git.BlameResult{path: blame},
-		}
+		var blameByFile sync.Map
+		blameByFile.Store(path, blame)
+		gitService := &gitservice.GitService{BlameByFile: &blameByFile}
 		tagGroup := TagGroup{}
 
 		wd, _ := os.Getwd()
@@ -51,9 +51,9 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 		filePath := "../../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
 		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
-		gittagGroup.mapOriginFileToGitFile(filePath, &blame)
-		assert.Equal(t, expectedMapping["originToGit"], gittagGroup.fileLinesMapper[filePath].originToGit)
-		assert.Equal(t, expectedMapping["gitToOrigin"], gittagGroup.fileLinesMapper[filePath].gitToOrigin)
+		mapper := gittagGroup.mapOriginFileToGitFile(filePath, &blame)
+		assert.Equal(t, expectedMapping["originToGit"], mapper.originToGit)
+		assert.Equal(t, expectedMapping["gitToOrigin"], mapper.gitToOrigin)
 	})
 	t.Run("map kms with deleted lines", func(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
@@ -61,9 +61,9 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 		filePath := "../../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
 		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
-		gittagGroup.mapOriginFileToGitFile(filePath, &blame)
-		assert.Equal(t, expectedMapping["originToGit"], gittagGroup.fileLinesMapper[filePath].originToGit)
-		assert.Equal(t, expectedMapping["gitToOrigin"], gittagGroup.fileLinesMapper[filePath].gitToOrigin)
+		mapper := gittagGroup.mapOriginFileToGitFile(filePath, &blame)
+		assert.Equal(t, expectedMapping["originToGit"], mapper.originToGit)
+		assert.Equal(t, expectedMapping["gitToOrigin"], mapper.gitToOrigin)
 	})
 	t.Run("test_gcp_tag_cleansing", func(t *testing.T) {
 		gittagGroup := TagGroup{}

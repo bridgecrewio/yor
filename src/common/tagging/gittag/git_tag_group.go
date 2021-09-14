@@ -21,8 +21,7 @@ import (
 
 type TagGroup struct {
 	tagging.TagGroup
-	GitService      *gitservice.GitService
-	fileLinesMapper map[string]fileLineMapper
+	GitService *gitservice.GitService
 }
 
 type fileLineMapper struct {
@@ -56,27 +55,23 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 	}
 }
 
-func (t *TagGroup) initFileMapping(path string) bool {
+func (t *TagGroup) initFileMapping(path string) fileLineMapper {
 	fileBlame, err := t.GitService.GetFileBlame(path)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Unable to get git blame for file %s: %s", path, err))
-		return false
+		return fileLineMapper{}
 	}
 
-	t.mapOriginFileToGitFile(path, fileBlame)
-
-	return true
+	return t.mapOriginFileToGitFile(path, fileBlame)
 }
 
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
-	if _, ok := t.fileLinesMapper[block.GetFilePath()]; !ok {
-		t.initFileMapping(block.GetFilePath())
-	}
-	linesInGit := t.getBlockLinesInGit(block)
+	fileLinesMap := t.initFileMapping(block.GetFilePath())
+	linesInGit := t.getBlockLinesInGit(block, fileLinesMap)
 	if linesInGit.Start < 0 || linesInGit.End < 0 {
 		return nil
 	}
-	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), t.getBlockLinesInGit(block))
+	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), linesInGit)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Failed to tag %v with git tags, err: %v", block.GetResourceID(), err.Error()))
 		return nil
@@ -85,7 +80,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 		logger.Warning(fmt.Sprintf("Failed to tag %s with git tags, file must be unstaged", block.GetFilePath()))
 		return nil
 	}
-	t.updateBlameForOriginLines(block, blame)
+	t.updateBlameForOriginLines(block, blame, fileLinesMap.originToGit)
 	if !t.hasNonTagChanges(blame, block) {
 		return nil
 	}
@@ -101,9 +96,9 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	return nil
 }
 
-func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) structure.Lines {
+func (t *TagGroup) getBlockLinesInGit(block structure.IBlock, linesMap fileLineMapper) structure.Lines {
 	blockLines := block.GetLines()
-	originToGit := t.fileLinesMapper[block.GetFilePath()].originToGit
+	originToGit := linesMap.originToGit
 	originStart := blockLines.Start
 	originEnd := blockLines.End
 	gitStart := -1
@@ -125,10 +120,7 @@ func (t *TagGroup) getBlockLinesInGit(block structure.IBlock) structure.Lines {
 }
 
 // The function maps between the scanned file lines to the lines in the git blame
-func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) {
-	if t.fileLinesMapper == nil {
-		t.fileLinesMapper = make(map[string]fileLineMapper)
-	}
+func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResult) fileLineMapper {
 	mapper := fileLineMapper{
 		originToGit: make(map[int]int),
 		gitToOrigin: make(map[int]int),
@@ -141,7 +133,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 
 	originFileText, err := ioutil.ReadFile(path)
 	if err != nil {
-		return
+		return fileLineMapper{}
 	}
 
 	originLines := utils.GetLinesFromBytes(originFileText)
@@ -172,14 +164,13 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		currGitStart = startInGit + match.Size
 	}
 
-	t.fileLinesMapper[path] = mapper
+	return mapper
 }
 
-func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame) {
+func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gitservice.GitBlame, fileMapping map[int]int) {
 	gitBlameLines := blame.BlamesByLine
 	blockLines := block.GetLines(true)
 	newBlameByLines := make(map[int]*git.Line)
-	fileMapping := t.fileLinesMapper[block.GetFilePath()].originToGit
 
 	for blockLine := blockLines.Start; blockLine <= blockLines.End; blockLine++ {
 		if fileMapping[blockLine] == -1 {

@@ -210,7 +210,7 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 	for filePath := range filesToBlames {
 		blameSrc, _ := ioutil.ReadFile(filesToBlames[filePath])
 		blame := blameutils.CreateMockBlame(blameSrc)
-		gitService.BlameByFile[filePath] = &blame
+		gitService.BlameByFile.Store(filePath, &blame)
 	}
 
 	gitTagGroup := gittag.TagGroup{}

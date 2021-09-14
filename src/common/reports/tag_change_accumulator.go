@@ -1,6 +1,8 @@
 package reports
 
 import (
+	"sync"
+
 	"github.com/bridgecrewio/yor/src/common/structure"
 )
 
@@ -11,6 +13,7 @@ type TagChangeAccumulator struct {
 }
 
 var TagChangeAccumulatorInstance *TagChangeAccumulator
+var accumulatorLock sync.Mutex
 
 func init() {
 	TagChangeAccumulatorInstance = &TagChangeAccumulator{}
@@ -20,7 +23,9 @@ func init() {
 // If a block has no changes, it will be saved only to ScannedBlocks
 // Otherwise it will be saved to NewBlockTraces if it is new or to UpdatedBlockTraces otherwise
 func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
+	accumulatorLock.Lock()
 	a.ScannedBlocks = append(a.ScannedBlocks, block)
+	accumulatorLock.Unlock()
 	diff := block.CalculateTagsDiff()
 	// If only tags are new, add to newly traced. If some updates - add to updated. Otherwise will be added to
 	// ScannedBlocks.
@@ -35,6 +40,7 @@ func (a *TagChangeAccumulator) AccumulateChanges(block structure.IBlock) {
 func (a *TagChangeAccumulator) GetBlockChanges() ([]structure.IBlock, []structure.IBlock) {
 	return a.NewBlockTraces, a.UpdatedBlockTraces
 }
+
 func (a *TagChangeAccumulator) GetScannedBlocks() []structure.IBlock {
 	return a.ScannedBlocks
 }
