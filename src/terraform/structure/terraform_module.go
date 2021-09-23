@@ -33,7 +33,7 @@ type TerraformModule struct {
 func NewTerraformModule(rootDir string) *TerraformModule {
 	tfModule, diagnostics := tfconfig.LoadModule(rootDir)
 	if diagnostics != nil && diagnostics.HasErrors() {
-		logger.Error(diagnostics.Error())
+		logger.Warning(diagnostics.Error())
 		return nil
 	}
 	terraformModule := &TerraformModule{tfModule: tfModule, rootDir: rootDir}

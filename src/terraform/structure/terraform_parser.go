@@ -200,6 +200,9 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 		return err
 	}
 	fd, err := os.OpenFile(tempFile.Name(), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
+	defer func() {
+		_ = fd.Close()
+	}()
 	if err != nil {
 		return err
 	}
@@ -217,6 +220,9 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 
 	// #nosec G304
 	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
+	defer func() {
+		_ = f.Close()
+	}()
 	if err != nil {
 		return err
 	}
