@@ -1,4 +1,4 @@
-[![Hacktoberfest](docs/web/images/Hacktoberfest-1.png)](https://bridgecrew.io/blog/happy-hacktoberfest-2021/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
+[![Hacktoberfest](https://github.com/bridgecrewio/checkov/raw/master/docs/web/images/Hacktoberfest-1.png)](https://bridgecrew.io/blog/happy-hacktoberfest-2021/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
