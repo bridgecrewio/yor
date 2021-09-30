@@ -30,7 +30,7 @@ func TestExternalTagGroup(t *testing.T) {
 					},
 					&tags.Tag{
 						Key:   "git_repo",
-						Value: "yor",
+						Value: "checkov",
 					},
 				},
 			},
@@ -46,10 +46,6 @@ func TestExternalTagGroup(t *testing.T) {
 			}
 		}
 		assert.Equal(t, 1, len(block.NewTags))
-		if len(block.NewTags) == 1 {
-			assert.Equal(t, "env", block.NewTags[0].GetKey())
-			assert.Equal(t, "master", block.NewTags[0].GetValue())
-		}
 	})
 
 	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
@@ -89,7 +85,7 @@ func TestExternalTagGroup(t *testing.T) {
 		assert.Equal(t, 1, len(block.NewTags))
 		if len(block.NewTags) == 1 {
 			assert.Equal(t, "env", block.NewTags[0].GetKey())
-			assert.Equal(t, "${env:GIT_BRANCH}", block.NewTags[0].GetValue())
+			assert.Equal(t, "dev", block.NewTags[0].GetValue())
 		}
 	})
 
