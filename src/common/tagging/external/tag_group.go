@@ -28,7 +28,7 @@ type TagGroup struct {
 type Tag struct {
 	tags.ITag
 	defaultValue string
-	filters      FiltersConfig
+	filters      map[string]interface{}
 	matches      MatchesConfig
 }
 
@@ -40,9 +40,9 @@ type Config struct {
 }
 
 type TagsConfig []struct {
-	TagKey   string         `yaml:"name"`
-	TagValue TagConfigValue `yaml:"value"`
-	Filters  FiltersConfig  `yaml:"filters"`
+	TagKey   string                 `yaml:"name"`
+	TagValue TagConfigValue         `yaml:"value"`
+	Filters  map[string]interface{} `yaml:"filters"`
 }
 
 type TagConfigValue struct {
@@ -52,14 +52,12 @@ type TagConfigValue struct {
 
 type MatchesConfig []map[string]interface{}
 
-type FiltersConfig struct{ Filters map[string]interface{} }
-
 func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var blockTags = make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(blockTags, append(newTags, existingTags...))
 	satisfyFilters := true
-	for filterKey, filterValue := range t.filters.Filters {
+	for filterKey, filterValue := range t.filters {
 		switch filterKey {
 		case "tags":
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
@@ -78,19 +76,25 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 			}
 
 		case "directory":
-			var prefixes []string
+			prefixes := make([]string, 0)
 			switch filterValue.(type) {
-			case []string:
-				prefixes = filterValue.([]string)
-			case string:
-				prefixes = []string{filterValue.(string)}
+			case []interface{}:
+				for _, e := range filterValue.([]interface{}) {
+					prefixes = append(prefixes, e.(string))
+				}
+			case interface{}:
+				prefixes = append(prefixes, filterValue.(string))
 			}
-
+			found := false
+			blockFP := block.GetFilePath()
 			for _, p := range prefixes {
-				if strings.HasPrefix(p, block.GetFilePath()) {
-					satisfyFilters = false
+				if strings.HasPrefix(blockFP, p) {
+					found = true
 					break
 				}
+			}
+			if !found {
+				satisfyFilters = false
 			}
 		}
 	}
@@ -250,7 +254,7 @@ func evaluateTemplateVariable(val string) string {
 	return val
 }
 
-func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters FiltersConfig) (Tag, error) {
+func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters map[string]interface{}) (Tag, error) {
 	var parsedTag = Tag{filters: groupFilters}
 	if tagValueObj.Matches == nil && tagValueObj.Default == "" {
 		return Tag{}, fmt.Errorf("please specify either a default tag value and/or a computed tag value")
