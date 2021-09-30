@@ -78,7 +78,14 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 			}
 
 		case "directory":
-			prefixes := filterValue.([]string)
+			var prefixes []string
+			switch filterValue.(type) {
+			case []string:
+				prefixes = filterValue.([]string)
+			case string:
+				prefixes = []string{filterValue.(string)}
+			}
+
 			for _, p := range prefixes {
 				if strings.HasPrefix(p, block.GetFilePath()) {
 					satisfyFilters = false
