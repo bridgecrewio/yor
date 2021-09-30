@@ -84,6 +84,53 @@ func TestSimpleTagGroup(t *testing.T) {
 		}
 		assert.Equal(t, 6, len(block.ExitingTags)+len(block.NewTags))
 	})
+
+	t.Run("test tagGroup CreateTagsForBlock matches with directory filter", func(t *testing.T) {
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitExternalTagGroups(confPath)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "src/account/main.tf",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "asd12f",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		assert.Equal(t, 7, len(block.ExitingTags)+len(block.NewTags))
+		var dirTag tags.ITag
+		for _, t := range block.NewTags {
+			if t.GetKey() == "stack" {
+				dirTag = t
+				break
+			}
+		}
+		assert.NotNil(t, dirTag)
+		assert.Equal(t, dirTag.GetKey(), "stack")
+		assert.Equal(t, dirTag.GetValue(), "account")
+	})
 }
 
 type MockTestBlock struct {

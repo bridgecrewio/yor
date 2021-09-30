@@ -52,14 +52,14 @@ type TagConfigValue struct {
 
 type MatchesConfig []map[string]interface{}
 
-type FiltersConfig struct{ Tags map[string]interface{} }
+type FiltersConfig struct{ Filters map[string]interface{} }
 
-func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
+func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var blockTags = make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(blockTags, append(newTags, existingTags...))
 	satisfyFilters := true
-	for filterKey, filterValue := range t.filters.Tags {
+	for filterKey, filterValue := range t.filters.Filters {
 		switch filterKey {
 		case "tags":
 			for filterTagKey, filterTagValue := range filterValue.(map[interface{}]interface{}) {
@@ -78,9 +78,12 @@ func (t Tag) SatisfyFilters(block structure.IBlock, tagFilterDir string) bool {
 			}
 
 		case "directory":
-			if tagFilterDir != filterValue {
-				satisfyFilters = false
-				break
+			prefixes := filterValue.([]string)
+			for _, p := range prefixes {
+				if strings.HasPrefix(p, block.GetFilePath()) {
+					satisfyFilters = false
+					break
+				}
 			}
 		}
 	}
@@ -161,7 +164,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 
 func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag, error) {
 	var retTag = &tags.Tag{}
-	if !tag.SatisfyFilters(block, t.Dir) {
+	if !tag.SatisfyFilters(block) {
 		return nil, nil
 	}
 	retTag.Key = tag.GetKey()

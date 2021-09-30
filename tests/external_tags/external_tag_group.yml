@@ -28,3 +28,9 @@ tag_groups:
         filters:
           tags:
             git_commit: 00193660c248483862c06e2ae96111adfcb683af
+      - name: stack
+        value:
+          default: account
+        filters:
+          directory:
+            - src/account/
