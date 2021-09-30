@@ -3,13 +3,12 @@ tag_groups:
     tags:
       - name: env
         value:
-          default: dev
+          default: ${env:GIT_BRANCH}
           matches:
-            - prod: ${env:GIT_BRANCH}
-        filters:
-          tags:
-            git_repo: yor
-            git_modifiers: tronxd
+            - dev:
+                tags:
+                  git_repo: yor
+                  git_modifiers: tronxd
       - name: team
         value:
           default: interfaces

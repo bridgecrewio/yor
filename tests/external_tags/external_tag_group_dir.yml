@@ -1,0 +1,17 @@
+tag_groups:
+  - name: ownership
+    tags:
+      - name: env
+        value:
+          default: ${env:GIT_BRANCH}
+          matches:
+            - dev:
+                tags:
+                  git_repo: yor
+                  git_modifiers: tronxd
+      - name: stack
+        value:
+          default: account
+        filters:
+          directory:
+            - src/account/
