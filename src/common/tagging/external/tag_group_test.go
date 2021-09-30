@@ -45,7 +45,11 @@ func TestExternalTagGroup(t *testing.T) {
 				assert.Equal(t, newBlockTag.GetValue(), "master")
 			}
 		}
-		assert.Equal(t, 4, len(block.ExitingTags)+len(block.NewTags))
+		assert.Equal(t, 1, len(block.NewTags))
+		if len(block.NewTags) == 1 {
+			assert.Equal(t, "env", block.NewTags[0].GetKey())
+			assert.Equal(t, "master", block.NewTags[0].GetValue())
+		}
 	})
 
 	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
@@ -82,7 +86,11 @@ func TestExternalTagGroup(t *testing.T) {
 			logger.Warning(err.Error())
 			t.Fail()
 		}
-		assert.Equal(t, 6, len(block.ExitingTags)+len(block.NewTags))
+		assert.Equal(t, 1, len(block.NewTags))
+		if len(block.NewTags) == 1 {
+			assert.Equal(t, "env", block.NewTags[0].GetKey())
+			assert.Equal(t, "${env:GIT_BRANCH}", block.NewTags[0].GetValue())
+		}
 	})
 
 	t.Run("test tagGroup CreateTagsForBlock matches with directory filter", func(t *testing.T) {
