@@ -15,6 +15,13 @@ builds:
       - goarch: 386
         goos: darwin
 
+archives:
+  - id: yor
+    builds:
+    - yor
+    format_overrides:
+      - goos: windows
+        format: zip
 
 brews:
   -
