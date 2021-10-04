@@ -255,7 +255,7 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	for i, line := range textLines {
 		lineIndent = ExtractIndentationOfLine(line)
 		switch {
-		case strings.Contains(line, tagsAttributeName+":"):
+		case strings.HasPrefix(strings.TrimSpace(line), tagsAttributeName+":"):
 			tagsLines.Start = i
 			tagsIndent = lineIndent
 			tagsExist = true

@@ -86,6 +86,25 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
 		assert.Equal(t, 3, len(cfnBlocks))
 	})
+
+	t.Run("parse Policy_PolicyTag", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/special_tags"
+		cfnParser := CloudformationParser{}
+		cfnParser.Init(directory, nil)
+		cfnBlocks, err := cfnParser.ParseFile(directory + "/cfn.yaml")
+		if err != nil {
+			t.Errorf("ParseFile() error = %v", err)
+			return
+		}
+		assert.Equal(t, 1, len(cfnBlocks))
+		testPolicy := cfnBlocks[0]
+		assert.Equal(t, structure.Lines{Start: 4, End: 10}, testPolicy.GetLines())
+		assert.Equal(t, "testPolicy", testPolicy.GetResourceID())
+
+		existingTag := testPolicy.GetExistingTags()[0]
+		assert.Equal(t, "isSpecial", existingTag.GetKey())
+		assert.Equal(t, "true", existingTag.GetValue())
+	})
 }
 
 func compareLines(t *testing.T, expected map[string]*structure.Lines, actual map[string]*structure.Lines) {
@@ -208,6 +227,11 @@ func TestWriteCFN(t *testing.T) {
 	t.Run("test_multi_resource_tags_last_yaml", func(t *testing.T) {
 		directory, _ := filepath.Abs("../../../tests/cloudformation/resources/issue114")
 		writeCFNTestHelper(t, directory, "template", "yaml")
+	})
+
+	t.Run("test_non_cfn_tags", func(t *testing.T) {
+		directory, _ := filepath.Abs("../../../tests/cloudformation/resources/special_tags")
+		writeCFNTestHelper(t, directory, "cfn", "yaml")
 	})
 
 }

@@ -1,11 +1,11 @@
 package structure
 
 import (
-	"reflect"
-
-	"github.com/bridgecrewio/yor/src/common/structure"
-
+	"encoding/json"
+	"fmt"
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
+	"github.com/bridgecrewio/yor/src/common/logger"
+	"github.com/bridgecrewio/yor/src/common/structure"
 )
 
 type CloudformationBlock struct {
@@ -26,8 +26,16 @@ func (b *CloudformationBlock) UpdateTags() {
 		})
 	}
 
-	// set the tags attribute with the new tags
-	reflect.ValueOf(b.RawBlock).Elem().FieldByName(b.TagsAttributeName).Set(reflect.ValueOf(cfnMergedTags))
+	blockBytes, _ := json.Marshal(b.RawBlock)
+	var blockAsMap map[string]interface{}
+	err := json.Unmarshal(blockBytes, &blockAsMap)
+	if err != nil {
+		logger.Warning(fmt.Sprintf("failed to marshal block to json: %s", err))
+		return
+	}
+
+	blockAsMap["Properties"].(map[string]interface{})["Tags"] = cfnMergedTags
+	b.RawBlock = blockAsMap
 }
 
 func (b *CloudformationBlock) GetTagsLines() structure.Lines {
