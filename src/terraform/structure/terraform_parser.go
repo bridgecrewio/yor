@@ -391,6 +391,8 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 	isTaggable := false
 	var tagsAttributeName string
 	var resourceType string
+	var err error
+
 	switch hclBlock.Type() {
 	case ResourceBlockType:
 		resourceType = hclBlock.Labels()[0]
@@ -399,7 +401,6 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 			return nil, fmt.Errorf("resource belongs to skipped provider %s", providerName)
 		}
 
-		var err error
 		tagsAttributeName, err = p.getTagsAttributeName(hclBlock)
 		if err != nil {
 			return nil, err
@@ -414,30 +415,13 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 		}
 	case ModuleBlockType:
 		resourceType = "module"
-		moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
-		// source is always wrapped in " front and back
-		moduleSource = strings.Trim(moduleSource, "\" ")
-		if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) {
-			// Don't use the tags label on local modules - the underlying resources will be tagged by themselves
-			isTaggable = false
-		} else {
-			// This is a remote module - if it has tags attribute, tag it!
-			moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
-			possibleTagAttributeNames := []string{"extra_tags", "tags"}
-			if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
-				possibleTagAttributeNames = append(possibleTagAttributeNames, val)
+		defer func() {
+			if e := recover(); e != nil {
+				logger.Warning(fmt.Sprintf("Failed to parse module module.%v (%v)", strings.Join(hclBlock.Labels(), "."), filePath))
+				err = fmt.Errorf("failed to parse module.%v", strings.Join(hclBlock.Labels(), "."))
 			}
-			for _, tan := range possibleTagAttributeNames {
-				existingTags, isTaggable = p.getExistingTags(hclBlock, tan)
-				if isTaggable {
-					tagsAttributeName = tan
-					break
-				}
-			}
-			if !isTaggable {
-				isTaggable, tagsAttributeName = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."), possibleTagAttributeNames)
-			}
-		}
+		}()
+		isTaggable, existingTags, tagsAttributeName = p.extractTagsFromModule(hclBlock, filePath, isTaggable, existingTags, tagsAttributeName)
 	}
 
 	terraformBlock := TerraformBlock{
@@ -449,7 +433,35 @@ func (p *TerrraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string)
 		},
 	}
 
-	return &terraformBlock, nil
+	return &terraformBlock, err
+}
+
+func (p *TerrraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, filePath string, isTaggable bool, existingTags []tags.ITag, tagsAttributeName string) (bool, []tags.ITag, string) {
+	moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
+	// source is always wrapped in " front and back
+	moduleSource = strings.Trim(moduleSource, "\" ")
+	if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) {
+		// Don't use the tags label on local modules - the underlying resources will be tagged by themselves
+		isTaggable = false
+	} else {
+		// This is a remote module - if it has tags attribute, tag it!
+		moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
+		possibleTagAttributeNames := []string{"extra_tags", "tags"}
+		if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
+			possibleTagAttributeNames = append(possibleTagAttributeNames, val)
+		}
+		for _, tan := range possibleTagAttributeNames {
+			existingTags, isTaggable = p.getExistingTags(hclBlock, tan)
+			if isTaggable {
+				tagsAttributeName = tan
+				break
+			}
+		}
+		if !isTaggable {
+			isTaggable, tagsAttributeName = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."), possibleTagAttributeNames)
+		}
+	}
+	return isTaggable, existingTags, tagsAttributeName
 }
 
 func ExtractProviderFromModuleSrc(source string) string {
