@@ -116,6 +116,10 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	}
 	wg.Wait()
 
+	for _, parser := range r.parsers {
+		parser.Close()
+	}
+
 	return r.reportingService, nil
 }
 

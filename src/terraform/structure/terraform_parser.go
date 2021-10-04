@@ -64,6 +64,14 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.moduleInstallDir = filepath.Join(pwd, ".terraform", "modules")
 }
 
+func (p *TerrraformParser) Close() {
+	p.providerToClientMap.Range(func(provider, iClient interface{}) bool {
+		client := iClient.(tfschema.Client)
+		client.Close()
+		return true
+	})
+}
+
 func (p *TerrraformParser) GetSkippedDirs() []string {
 	return ignoredDirs
 }
