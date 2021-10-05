@@ -2,7 +2,7 @@ name: Feature Request
 description: File a feature request
 title: "[Feat]: "
 labels: []
-assignees:
+assignees: []
 body:
   - type: markdown
     attributes:
