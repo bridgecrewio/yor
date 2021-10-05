@@ -34,6 +34,10 @@ func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser.RootDir = rootDir
 }
 
+func (p *ServerlessParser) Close() {
+	return
+}
+
 func (p *ServerlessParser) GetSkippedDirs() []string {
 	return []string{}
 }
