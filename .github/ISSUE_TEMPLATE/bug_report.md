@@ -1,29 +1,73 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
 
----
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Detailed Description
+      description: Add a detailed description of the bug report.
+      placeholder: A detailed description of the bug report.
+      value: "I found this error in this project where ..."
+    validations:
+      required: true
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: What should be expected?
+      value: "I expected that..."
+    validations:
+      required: true
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Run cli command  '....'
-3. See error
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: What actually happened?
+      placeholder: What should be happen?
+      value: "Instead of [what should happen](#expected-behavior), I find..."
+    validations:
+      required: true
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How can someone reproduce the behavior?
+      description: Steps to reproduce the behavior you were facing.
+      placeholder: How can someone reproduce the behavior you were facing?
+      value: |
+        1. Goto...
+        2. Do...
+        3. Now...
+        4. Finally...
+    validations:
+        required: true
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+  - type: input
+    id: environment
+    attributes:
+      label: What was you environment (os, browser, runtime, etc)?
+      description: The environment (os, browser, runtime, etc) which faced the bug described
+      placeholder: What was environment (os, browser, runtime, etc) while you were facing the issue?
+      value: "Ubuntu Latest, Chrome Latest, Node14..."
+    validations:
+        required: true
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Yor Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here (e.g. code snippets).
+  - type: textarea
+    attributes:
+        label: Anything else?
+        description: |
+          Links? References? Anything that will give us more context about the issue you are encountering!
+      
+          Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+    validations:
+        required: false
