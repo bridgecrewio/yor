@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Test FMS Policy tags
+
+Resources:
+  testPolicy:
+    Type: AWS::FMS::Policy
+    Properties:
+      Tags:
+        - Key: "isSpecial"
+          Value: "true"
+      ResourceType: AWS::ElasticLoadBalancingV2::LoadBalancer

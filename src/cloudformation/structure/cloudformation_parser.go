@@ -178,7 +178,20 @@ func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *struc
 func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.ITag {
 	existingTags := make([]goformationTags.Tag, 0)
 	if tagsValue.Kind() == reflect.Slice {
-		existingTags = tagsValue.Interface().([]goformationTags.Tag)
+		ok := true
+		existingTags, ok = tagsValue.Interface().([]goformationTags.Tag)
+		if !ok {
+			for i := 0; i < tagsValue.Len(); i++ {
+				iTag := tagsValue.Index(i)
+
+				hasKey, tagKey := utils.StructContainsProperty(iTag.Interface(), "Key")
+				hasValue, tagValue := utils.StructContainsProperty(iTag.Interface(), "Value")
+				if hasKey && hasValue {
+					existingTag := goformationTags.Tag{Key: tagKey.String(), Value: tagValue.String()}
+					existingTags = append(existingTags, existingTag)
+				}
+			}
+		}
 	}
 
 	iTags := make([]tags.ITag, 0)
