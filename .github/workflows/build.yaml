@@ -148,3 +148,4 @@ jobs:
         run: |
           curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-action/dispatches --data '{"event_type": "build"}'
           curl -XPOST -H "Authorization: token ${{ secrets.PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/yor-choco/dispatches --data '{"event_type": "build"}'
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-yor&token=${{ secrets.BC_JENKINS_TOKEN }}"
