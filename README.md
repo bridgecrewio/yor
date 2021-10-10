@@ -17,6 +17,13 @@ Yor is an open-source tool that helps add informative and consistent tags across
 
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
+## **Table of contents**
+
+- [Getting Started](#getting-started)
+- [Support](#support)
+- [Customizing Yor](CUSTOMIZE.md)
+
+
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
@@ -41,12 +48,6 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 
 ### Trace cloud resource to IaC code
 [![](docs/yor_file.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_file.gif) -->
-
-## **Table of contents**
-
-- [Getting Started](#getting-started)
-- [Support](#support)
-- [Customizing Yor](CUSTOMIZE.md)
 
 ## Getting Started
 
