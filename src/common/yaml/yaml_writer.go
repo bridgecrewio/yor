@@ -300,7 +300,8 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 
 		if readResources {
 			for _, resName := range resourceNames {
-				if strings.Contains(line, " "+resName+":") {
+				resNameRegex := regexp.MustCompile(fmt.Sprintf(" {1,5}%v:", resName))
+				if resNameRegex.Match([]byte(line)) {
 					if latestResourceName != "" {
 						// Complete previous function block
 						resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i-1)
