@@ -87,6 +87,7 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 			}
 			found := false
 			blockFP := block.GetFilePath()
+			logger.Debug(fmt.Sprintf("Testing if block in path %v matches filter [%v]", blockFP, strings.Join(prefixes, ", ")))
 			for _, p := range prefixes {
 				if strings.HasPrefix(blockFP, p) {
 					found = true
@@ -142,19 +143,19 @@ func (t *TagGroup) GetDefaultTags() []tags.ITag {
 }
 
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
-	logger.Info(fmt.Sprintf("extrnal tag group creating tags for block %v", block.GetResourceID()))
+	logger.Info(fmt.Sprintf("external tag group creating tags for block %v", block.GetResourceID()))
 	newTags, existingTags := block.GetNewTags(), block.GetExistingTags()
 	var filteredNewTags = make([]tags.ITag, len(newTags))
 	blockTags := make([]tags.ITag, len(newTags)+len(existingTags))
 	copy(filteredNewTags, newTags)
 	newTagsNum := 0
+	var newTagKeys []string
 	for _, groupTags := range t.tagGroupsByName {
 		for _, groupTag := range groupTags {
 			tagValue, err := t.CalculateTagValue(block, groupTag)
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			newTagsNum++
 			if tagValue == nil {
 				for i, newTag := range newTags {
 					if newTag.GetKey() == groupTag.GetKey() {
@@ -163,13 +164,17 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 				}
 			} else {
 				filteredNewTags = append(filteredNewTags, tagValue)
+				newTagsNum++
+				newTagKeys = append(newTagKeys, groupTag.GetKey())
 			}
 		}
 	}
-	logger.Info(fmt.Sprintf("Created %d new tags", newTagsNum))
-	copy(blockTags, append(filteredNewTags, existingTags...))
-	t.SetTags(blockTags)
-	block.AddNewTags(filteredNewTags)
+	if newTagsNum > 0 {
+		logger.Info(fmt.Sprintf("Created %d new tags: [%v]", newTagsNum, strings.Join(newTagKeys, ", ")))
+		copy(blockTags, append(filteredNewTags, existingTags...))
+		t.SetTags(blockTags)
+		block.AddNewTags(filteredNewTags)
+	}
 	return nil
 }
 
