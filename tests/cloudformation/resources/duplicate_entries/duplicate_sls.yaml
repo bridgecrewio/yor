@@ -1,0 +1,61 @@
+service: my-service
+
+provider:
+  name: aws
+  region: us-west-2
+
+functions:
+  apiVersion:
+    handler: handler.apiVersion
+    events:
+      - http:
+          path: v1
+          method: get
+
+  customer:
+    handler: handler.customer
+    events:
+      - http:
+          path: v1/{customer}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                customer: true
+
+  zone:
+    handler: handler.zone
+    events:
+      - http:
+          path: v1/{customer}/{facility}/{zone}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                customer: true
+                facility: true
+                zone: true
+
+  attribute:
+    handler: handler.attribute
+    events:
+      - http:
+          path: v1/{customer}/{facility}/{zone}/{attr}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                customer: true
+                facility: true
+                zone: true
+                attribute: attr
+
+custom:
+  customDomain:
+    domainName: "consumer.divconcontrols.com" # Change this to your domain.
+    basePath: "api" # This will be prefixed to all routes
+    stage: ${self:provider.stage}
+    createRoute53Record: true
