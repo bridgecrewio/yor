@@ -211,8 +211,8 @@ func TestTagReplacement(t *testing.T) {
 
 	t.Run("Test line computation with duplicate - CFN", func(t *testing.T) {
 		res := MapResourcesLineYAML("../../../tests/cloudformation/resources/duplicate_entries/duplicate_cfn.yaml", []string{"S3Bucket", "CloudFrontDistribution"}, "Resources")
-		assert.Equal(t, *res["S3Bucket"], structure.Lines{Start: 14, End: 20})
-		assert.Equal(t, *res["CloudFrontDistribution"], structure.Lines{Start: 21, End: 66})
+		assert.Equal(t, *res["S3Bucket"], structure.Lines{Start: 14, End: 17})
+		assert.Equal(t, *res["CloudFrontDistribution"], structure.Lines{Start: 18, End: 60})
 	})
 
 	t.Run("Test line computation with duplicate - SLS", func(t *testing.T) {
