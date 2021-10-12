@@ -1,0 +1,69 @@
+  ---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: >
+    protects access to content hosted on CloudFront with KeyCloak authentication using Lambda@Edge
+  
+  Parameters:
+    DomainName:
+      Type: String
+      Default: ""
+    AlternateDomainCertArn:
+      Type: String
+      Default: ""
+  
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: Private
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            - !Ref DomainName
+          HttpVersion: http2
+          ViewerCertificate:
+            AcmCertificateArn: !Ref AlternateDomainCertArn
+            MinimumProtocolVersion: TLSv1.2_2018
+            SslSupportMethod: sni-only
+          DefaultCacheBehavior:
+            Compress: true
+            ForwardedValues:
+              QueryString: true
+            TargetOriginId: protected-bucket
+            ViewerProtocolPolicy: redirect-to-https
+          Enabled: true
+          DefaultRootObject: index.html
+    CloudFrontOriginAccessIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: "CloudFront OAI"
+    CloudfrontBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3Bucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - "s3:GetObject"
+              Effect: "Allow"
+              Resource: !Join ["/", [!GetAtt S3Bucket.Arn, "*"]]
+              Principal:
+                CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+            - Action:
+                - "s3:ListBucket"
+              Effect: "Allow"
+              Resource: !GetAtt S3Bucket.Arn
+              Principal:
+                CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+  
+  Outputs:
+    S3Bucket:
+      Description: s3 bucket
+      Value: !Ref S3Bucket
+    CloudFrontDistribution:
+      Description: cdn id
+      Value: !Ref CloudFrontDistribution
