@@ -16,9 +16,6 @@
       Type: AWS::S3::Bucket
       Properties:
         AccessControl: Private
-        Tags:
-          - Key: yor_trace
-            Value: c494eb83-6d83-4a45-9eb9-c2aae6d99335
     CloudFrontDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -38,9 +35,6 @@
             ViewerProtocolPolicy: redirect-to-https
           Enabled: true
           DefaultRootObject: index.html
-        Tags:
-          - Key: yor_trace
-            Value: 56f91065-52c4-4d7e-a040-24fd16397cee
     CloudFrontOriginAccessIdentity:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
       Properties:
