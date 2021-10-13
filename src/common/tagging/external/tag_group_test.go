@@ -42,7 +42,7 @@ func TestExternalTagGroup(t *testing.T) {
 		}
 		for _, newBlockTag := range block.GetNewTags() {
 			if newBlockTag.GetKey() == "env" {
-				assert.Equal(t, newBlockTag.GetValue(), "master")
+				assert.Equal(t, "master", newBlockTag.GetValue())
 			}
 		}
 		assert.Equal(t, 1, len(block.NewTags))

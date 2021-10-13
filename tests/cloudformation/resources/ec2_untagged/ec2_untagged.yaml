@@ -14,11 +14,13 @@ Resources:
           GroupSet:
             - "myVPCEC2SecurityGroup"
           SubnetId: "PublicSubnet"
+# Some unindented comment
   EC2LaunchTemplateResource0:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
         ImageId: ami-04169656fea786776
+    # Some indented comment
   EC2LaunchTemplateResource1:
     Type: AWS::EC2::LaunchTemplate
     Properties:
