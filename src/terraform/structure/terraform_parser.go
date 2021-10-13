@@ -313,7 +313,14 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 
 		if !isMergeOpExists && !isRenderedAttribute {
 			newTagsTokens := buildTagsTokens(newTags)
-			rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
+			if len(rawTagsTokens) == 1 {
+				// The line is:
+				//    tags = null
+				// => we should replace it!
+				rawTagsTokens = newTagsTokens
+			} else {
+				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
+			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
 		}
