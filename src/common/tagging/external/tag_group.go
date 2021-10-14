@@ -204,9 +204,6 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 									matching = matching && blockTagValue == tagMatch
 								}
 							}
-							if matching {
-								retTag.Value = evaluateTemplateVariable(matchValue)
-							}
 						case []interface{}:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
@@ -224,6 +221,9 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 								}
 							}
 						}
+					}
+					if matching {
+						retTag.Value = evaluateTemplateVariable(matchValue)
 					}
 				}
 			}

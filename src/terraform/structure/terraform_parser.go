@@ -507,7 +507,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtt
 	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
 	absRootPath, _ := filepath.Abs(p.rootDir)
 	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
-	if !utils.InSlice(p.downloadedPaths, fp) {
+	if !utils.InSlice(p.downloadedPaths, fp) && os.Getenv("YOR_DISABLE_TF_MODULE_DOWNLOAD") != "TRUE" {
 		logger.MuteLogging()
 		logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
 		_ = p.moduleImporter.Run([]string{actualPath})
