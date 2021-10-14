@@ -7,7 +7,7 @@ tag_groups:
           matches:
             - dev:
                 tags:
-                  git_repo: checkov
+                  git_repo: yor
                   git_modifiers: tronxd
       - name: stack
         value:
