@@ -134,9 +134,9 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		resourcesNames := []string{"EC2InstanceResource0", "EC2InstanceResource1", "EC2LaunchTemplateResource0", "EC2LaunchTemplateResource1"}
 		expected := map[string]*structure.Lines{
 			"EC2InstanceResource0":       {Start: 2, End: 5},
-			"EC2InstanceResource1":       {Start: 6, End: 16},
-			"EC2LaunchTemplateResource0": {Start: 17, End: 22},
-			"EC2LaunchTemplateResource1": {Start: 23, End: 33},
+			"EC2InstanceResource1":       {Start: 7, End: 17},
+			"EC2LaunchTemplateResource0": {Start: 18, End: 23},
+			"EC2LaunchTemplateResource1": {Start: 24, End: 34},
 		}
 		actual := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
