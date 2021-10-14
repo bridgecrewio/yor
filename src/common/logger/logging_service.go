@@ -121,28 +121,28 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 
 func MuteLogging() {
 	if Logger.logLevel >= WARNING {
-		Debug("Mute logging")
-		MuteLock.Lock()
-		defer MuteLock.Unlock()
-		_, Logger.tempWriter, _ = os.Pipe()
-		os.Stdout = Logger.tempWriter
-		os.Stderr = Logger.tempWriter
-		log.SetOutput(Logger.tempWriter)
+		if atomic.LoadInt32(&Logger.disabled) == 0 {
+			Debug("Mute logging")
+			_, Logger.tempWriter, _ = os.Pipe()
+			os.Stdout = Logger.tempWriter
+			os.Stderr = Logger.tempWriter
+			log.SetOutput(Logger.tempWriter)
+		}
 		atomic.AddInt32(&Logger.disabled, 1)
 	}
 }
 
 func UnmuteLogging() {
 	if Logger.logLevel >= WARNING {
-		MuteLock.Lock()
-		defer MuteLock.Unlock()
-		if Logger.tempWriter != nil {
-			_ = Logger.tempWriter.Close()
-		}
-		os.Stdout = Logger.stdout
-		os.Stderr = Logger.stderr
-		log.SetOutput(os.Stderr)
 		atomic.AddInt32(&Logger.disabled, -1)
-		Debug("Unmute logging")
+		if atomic.LoadInt32(&Logger.disabled) == 0 {
+			if Logger.tempWriter != nil {
+				_ = Logger.tempWriter.Close()
+			}
+			os.Stdout = Logger.stdout
+			os.Stderr = Logger.stderr
+			log.SetOutput(os.Stderr)
+			Debug("Unmute logging")
+		}
 	}
 }
