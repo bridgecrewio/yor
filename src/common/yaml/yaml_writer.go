@@ -302,7 +302,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 
 		if readResources {
 			lineIndent := countLeadingSpaces(line)
-			if lineIndent <= resourcesIndent && line != "" && !strings.Contains(line, "#") {
+			if lineIndent <= resourcesIndent && strings.TrimSpace(line) != "" && !strings.Contains(line, "#") {
 				// No longer inside resources block, get the last line of the previous resource if exists
 				readResources = false
 				if latestResourceName != "" {
@@ -322,7 +322,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 					break
 				}
 			}
-			if !strings.HasPrefix(line, " ") && line != "" && readResources && latestResourceName != "" && !strings.HasPrefix(line, "#") {
+			if !strings.HasPrefix(line, " ") && strings.TrimSpace(line) != "" && readResources && latestResourceName != "" && !strings.HasPrefix(line, "#") {
 				// This is no longer in the functions block, complete last function block
 				resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i-1)
 				break
