@@ -4,6 +4,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-04169656fea786776
+
   EC2InstanceResource1:
     Type: AWS::EC2::Instance
     Properties:
