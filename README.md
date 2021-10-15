@@ -13,12 +13,12 @@
 [![Chocolatey downloads](https://img.shields.io/chocolatey/dt/yor?label=chocolatey_downloads)](https://community.chocolatey.org/packages/yor)
 [![GitHub All Releases](https://img.shields.io/github/downloads/bridgecrewio/yor/total)](https://github.com/bridgecrewio/yor/releases)
 
-Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless. 
+Yor is an open-source tool that strives to add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless. 
 
-Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
+Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action), automatically adding consistent tagging logics to your IaC. Yor can also run Yor as a pre-commit hook and a standalone CLI.
 
 ## Features
-* Apply tags and labels on infrastructure as code directory
+* Apply tags and labels on infrastructure as code directory.
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
 * Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
@@ -185,22 +185,22 @@ yor list-tags --tag-groups git
  # List all the tags built into yor under the tag group git
 ```
 ### What is Yor trace?
-yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
+yor_trace is a magical tag creating an unique identifier for an IaC resource code block.
 
-Having a yor_trace in place can help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
+Having a yor_trace in place could help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
 
 See demo [here](#Trace-IaC-code-to-cloud-resource)
 ## Contributing
 
 Contribution is welcomed! 
 
-We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
+We are constantly working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
 
-To maintain our conventions, please run lint on your branch before opening a PR. To run lint:
+To continue maintaining our conventions, please run lint on your branch before opening a PR. To run lint:
 ```sh
 golangci-lint run --fix --skip-dirs tests/yor_plugins
 ```
 
 ## Support
 
-For more support contact us at https://slack.bridgecrew.io/.
+For more support, kindly contact us at https://slack.bridgecrew.io/.
