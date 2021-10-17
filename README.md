@@ -17,14 +17,14 @@ Yor is an open-source tool that helps add informative and consistent tags across
 
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
-## Features
+## Features:-
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
 * Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
 
-## Demo
+## A Demo
 [![](docs/yor_tag_and_trace_recording.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_tag_and_trace_recording.gif)
 
 <!-- ### Attributing a directory with tags by user input
@@ -48,7 +48,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 - [Support](#support)
 - [Customizing Yor](CUSTOMIZE.md)
 
-## Getting Started
+## Getting Started:-
 
 ### Installation
 MacOS / Linux
@@ -116,7 +116,7 @@ Pre-commit
         pass_filenames: false
 ```
 
-### Usage
+### Usage:-
 
 `tag` : Apply tagging on a given directory.
 
@@ -190,17 +190,17 @@ yor_trace is a magical tag creating a unique identifier for an IaC resource code
 Having a yor_trace in place can help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
 
 See demo [here](#Trace-IaC-code-to-cloud-resource)
-## Contributing
+## Contributing:-
 
-Contribution is welcomed! 
+Contribution is Welcomed! 
 
-We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
+We are working hard on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
 
 To maintain our conventions, please run lint on your branch before opening a PR. To run lint:
 ```sh
 golangci-lint run --fix --skip-dirs tests/yor_plugins
 ```
 
-## Support
+## Support:-
 
-For more support contact us at https://slack.bridgecrew.io/.
+For More Support, Contact us anytime at https://slack.bridgecrew.io/.
