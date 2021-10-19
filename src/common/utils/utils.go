@@ -75,15 +75,15 @@ func convertToInterfaceSlice(origin interface{}) []interface{} {
 	return ret
 }
 
-func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*os.File, *bufio.Scanner, *structure.Lines) {
+func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*bufio.Scanner, *structure.Lines) {
 	//#nosec G304
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return file, nil, nonFoundLines
+		return nil, nonFoundLines
 	}
 	scanner := bufio.NewScanner(file)
-	return file, scanner, nonFoundLines
+	return scanner, nonFoundLines
 }
 
 func GetFileFormat(filePath string) string {

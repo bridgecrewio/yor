@@ -207,6 +207,61 @@ func TestTerrraformParser_Module(t *testing.T) {
 		}
 	})
 
+	t.Run("Parse a file with escaped tags, tag its blocks, and write them to the file", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources/k8s_tf"
+		filePath := "../../../tests/terraform/resources/k8s_tf/main.tf"
+		originFileBytes, _ := ioutil.ReadFile(filePath)
+		defer func() {
+			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+		}()
+		p := &TerrraformParser{}
+		c2cTagGroup := &code2cloud.TagGroup{}
+		c2cTagGroup.InitTagGroup("", nil)
+		p.Init(rootDir, nil)
+		writeFilePath := "../../../tests/terraform/resources/k8s_tf/main.tf"
+		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		defer func() {
+			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+		}()
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+
+		for _, block := range parsedBlocks {
+			if block.IsBlockTaggable() {
+				_ = c2cTagGroup.CreateTagsForBlock(block)
+			} else {
+				assert.Fail(t, fmt.Sprintf("Block %v should be taggable!", block.GetResourceID()))
+			}
+		}
+
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		for _, block := range parsedTaggedFileTags {
+			if block.IsBlockTaggable() {
+				isYorTagExists := false
+				yorTagKey := tags.YorTraceTagKey
+				for _, tag := range block.GetExistingTags() {
+					if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
+						isYorTagExists = true
+					}
+					assert.NotEqualf(t, "kubernetes.io/cluster/$${local.prefix}", tag.GetKey(), "Bad tag exists!")
+				}
+				if !isYorTagExists {
+					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+				}
+			}
+		}
+	})
+
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/mixed", nil)
