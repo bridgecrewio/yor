@@ -260,13 +260,10 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			}
 			lineCounter++
 		}
-		defer func() {
-			err := file.Close()
-			if err != nil {
-				logger.Error(err.Error())
-			}
-		}()
 		linesInResource, tagsExist := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
+		if err := file.Close(); err != nil {
+			logger.Error(err.Error())
+		}
 		if tagsExist {
 			return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
 		}
