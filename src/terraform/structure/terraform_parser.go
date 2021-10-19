@@ -274,11 +274,12 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 
 		var replacedTags []tags.ITag
 		var newTags []tags.ITag
+		possibleTagKeys := p.extractTagKeysFromRawTokens(rawTagsTokens)
 		for _, tag := range mergedTags {
 			tagReplaced := false
 			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
-			for _, rawTagsToken := range rawTagsTokens {
-				if string(rawTagsToken.Bytes) == tag.GetKey() || string(rawTagsToken.Bytes) == strippedTagKey {
+			for _, t := range possibleTagKeys {
+				if t == tag.GetKey() || t == strippedTagKey {
 					replacedTags = append(replacedTags, tag)
 					tagReplaced = true
 					break
@@ -362,6 +363,44 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 		// Set the body's tags to the new built tokens
 		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 	}
+}
+
+func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.Tokens) []string {
+	var tokens []string
+	for _, t := range rawTagsTokens {
+		tokens = append(tokens, string(t.Bytes))
+	}
+	var possibleTagKeys []string
+	var currentToken string
+	var inInterpolation bool
+	for _, t := range tokens {
+		switch t {
+		case "{":
+			continue
+		case "${":
+			currentToken = fmt.Sprintf("%v%v", currentToken, t)
+			inInterpolation = true
+		case "}":
+			if inInterpolation {
+				currentToken = fmt.Sprintf("%v%v", currentToken, t)
+				inInterpolation = false
+			} else {
+				continue
+			}
+		case "=", "\n":
+			possibleTagKeys = append(possibleTagKeys, currentToken)
+			currentToken = ""
+		default:
+			currentToken = fmt.Sprintf("%v%v", currentToken, t)
+		}
+	}
+	// Cleanup unnecessary quotes around tag name
+	for i, t := range possibleTagKeys {
+		if strings.HasPrefix(t, "\"") && strings.HasSuffix(t, "\"") {
+			possibleTagKeys[i] = t[1 : len(t)-1]
+		}
+	}
+	return possibleTagKeys
 }
 
 func buildTagsTokens(tags []tags.ITag) hclwrite.Tokens {
