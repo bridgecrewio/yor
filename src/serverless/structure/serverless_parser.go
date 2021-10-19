@@ -168,7 +168,10 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
 		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		defer func() {
-			_ = file.Close()
+			err := file.Close()
+			if err != nil {
+				logger.Error(err.Error())
+			}
 		}()
 		// iterate file line by line
 		tagsIndentSize := 0

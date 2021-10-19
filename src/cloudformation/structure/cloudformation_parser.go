@@ -261,7 +261,10 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			lineCounter++
 		}
 		defer func() {
-			_ = file.Close()
+			err := file.Close()
+			if err != nil {
+				logger.Error(err.Error())
+			}
 		}()
 		linesInResource, tagsExist := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
 		if tagsExist {

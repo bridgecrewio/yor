@@ -211,7 +211,10 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	}
 	fd, err := os.OpenFile(tempFile.Name(), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 	defer func() {
-		_ = fd.Close()
+		err := fd.Close()
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	}()
 	if err != nil {
 		return err
@@ -231,7 +234,10 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	// #nosec G304
 	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
 	defer func() {
-		_ = f.Close()
+		err := f.Close()
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	}()
 	if err != nil {
 		return err
@@ -387,7 +393,7 @@ func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.To
 			} else {
 				continue
 			}
-		case "=", "\n":
+		case "=", "\n", ",":
 			possibleTagKeys = append(possibleTagKeys, currentToken)
 			currentToken = ""
 		default:
