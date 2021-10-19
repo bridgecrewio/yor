@@ -62,7 +62,7 @@ func (p *CloudformationParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension, common.CFTFileType.Extension, common.JSONFileType.Extension}
 }
 
-// Validate file has AWSTemplateFormatVersion
+// ValidFile Validate file has AWSTemplateFormatVersion
 func (p *CloudformationParser) ValidFile(filePath string) bool {
 	// #nosec G304
 	file, err := os.Open(filePath)
@@ -247,7 +247,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 	nonFoundLines := structure.Lines{Start: -1, End: -1}
 	switch utils.GetFileFormat(filePath) {
 	case common.YamlFileType.FileFormat, common.YmlFileType.FileFormat:
-		file, scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
+		scanner, _ := utils.GetFileScanner(filePath, &nonFoundLines)
 		resourceLinesText := make([]string, 0)
 		// iterate file line by line
 		lineCounter := 0
@@ -261,9 +261,6 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 			lineCounter++
 		}
 		linesInResource, tagsExist := yaml.FindTagsLinesYAML(resourceLinesText, TagsAttributeName)
-		if err := file.Close(); err != nil {
-			logger.Error(err.Error())
-		}
 		if tagsExist {
 			return structure.Lines{Start: linesInResource.Start + resourceLinesRange.Start, End: linesInResource.Start + resourceLinesRange.Start + (linesInResource.End - linesInResource.Start)}
 		}
