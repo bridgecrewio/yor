@@ -27,7 +27,7 @@ To apply all configured tags run the following commands:
    ```
 ## Tagging Docker Files
 
-To add tags to your Dockerfile, run the following commands after the file has been built.
+To run Yor as a Docker container, run the following commands after the file has been built.
 ```sh
 docker pull bridgecrew/yor
 
