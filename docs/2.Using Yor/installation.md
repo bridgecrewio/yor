@@ -74,7 +74,7 @@ choco install yor
 ```
 
 ## Docker
-To install Yor and add tags to your Dockerfile, run the following commands after the file has been built.
+To install and run Yor using a Docker image, run the following commands after the file has been built.
 ```sh
 docker pull bridgecrew/yor
 
