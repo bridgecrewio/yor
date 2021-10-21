@@ -117,22 +117,37 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		for indexOfParent < 0 && parentIdentifier != resourceBlock.GetResourceID() {
 			identifiersToAdd = append(identifiersToAdd, parentIdentifier)
 			parentIdentifier = FindParentIdentifier(jsonResourceStr, parentIdentifier)
+			if parentIdentifier == "" {
+				identifiersToAdd = append(identifiersToAdd, resourceBlock.GetResourceID())
+				parentIdentifier = resourceBlock.GetResourceID()
+				break
+			}
 			indexOfParent = findJSONKeyIndex(resourceStr, parentIdentifier)
 		}
 
 		// step 3 - find indent from last parent scope start to it's first child
 		topIdentifierScope := FindScopeInJSON(fullOriginStr, identifiersToAdd[len(identifiersToAdd)-1], fileBracketsPairs, &structure.Lines{Start: resourceBrackets.Open.Line, End: resourceBrackets.Close.Line})
-		indent := findIndent(fullOriginStr, '"', topIdentifierScope.Open.CharIndex)
-
+		var indent string
+		if indexOfParent == -1 {
+			// Need to extract the indent of "Type", not of the Resource
+			indent = findIndent(resourceStr, '"', 0)
+		} else {
+			indent = findIndent(fullOriginStr, '"', topIdentifierScope.Open.CharIndex)
+		}
 		// step 4 - add the missing data
 
 		// create a map of data to add
 		entriesToAdd := make(map[string]interface{})
-		for i := len(identifiersToAdd) - 1; i <= 0; i++ {
+		iterator := entriesToAdd
+		for i := len(identifiersToAdd) - 1; i >= 0; i-- {
+			if identifiersToAdd[i] == resourceBlock.GetResourceID() {
+				continue
+			}
 			if i > 0 {
-				entriesToAdd[identifiersToAdd[i]] = make(map[string]interface{})
+				iterator[identifiersToAdd[i]] = make(map[string]interface{})
+				iterator = iterator[identifiersToAdd[i]].(map[string]interface{})
 			} else {
-				entriesToAdd[identifiersToAdd[i]] = diff.Added
+				iterator[identifiersToAdd[i]] = diff.Added
 			}
 		}
 		indentStr := "  "
@@ -163,6 +178,11 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		textToAdd = "\n" + strings.Join(editedLines, "\n") + ","
 
 		// adding the tags as the first element
+		if indexOfParent == -1 {
+			// Properties attribute does not exist on this resource, need to add it
+			topIdentifierScope.Open.CharIndex = resourceBrackets.Open.CharIndex
+			topIdentifierScope.Close.CharIndex = resourceBrackets.Open.CharIndex
+		}
 		resourceStr = resourceStr[:(topIdentifierScope.Open.CharIndex+1)-resourceBrackets.Open.CharIndex] + textToAdd + resourceStr[(topIdentifierScope.Open.CharIndex+1)-resourceBrackets.Open.CharIndex:]
 	}
 
@@ -393,6 +413,9 @@ func FindParentIdentifier(str string, childIdentifier string) string {
 	// find the brackets that wrap the "tags"
 	// extract the name of the tags' parent (for example, in CFN it will be "Properties")
 	r := regexp.MustCompile("\"")
+	if wrappingBracketsScope.Open.CharIndex == 0 {
+		return ""
+	}
 	quoteMarksIndexes := r.FindAllStringIndex(str[:wrappingBracketsScope.Open.CharIndex], -1)
 	indexOfLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-1][0]
 	indexOfSecondToLastQuoteMark := quoteMarksIndexes[len(quoteMarksIndexes)-2][0]
