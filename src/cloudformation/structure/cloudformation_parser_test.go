@@ -209,6 +209,12 @@ func TestWriteCFN(t *testing.T) {
 		writeCFNTestHelper(t, directory, "ebs", "yaml")
 	})
 
+	t.Run("test CFN yaml writing only type", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/onlyType"
+
+		writeCFNTestHelper(t, directory, "ecs", "json")
+	})
+
 	t.Run("test pre-tagged CFN json writing", func(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
 		writeCFNTestHelper(t, directory, "ebs", "json")
