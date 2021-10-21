@@ -203,9 +203,6 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	}
 
 	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
-	defer func() {
-		_ = os.Remove(tempFile.Name())
-	}()
 	if err != nil {
 		return err
 	}
@@ -223,6 +220,14 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	_, err = p.ParseFile(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("editing file %v resulted in malformed terraform, please open a github issue with the relevant details", readFilePath)
+	}
+	err = tempFile.Close()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(tempFile.Name())
+	if err != nil {
+		return err
 	}
 
 	// #nosec G304
