@@ -15,13 +15,13 @@
 
 Yor is an open-source tool that helps add informative and consistent tags across infrastructure-as-code frameworks such as Terraform, CloudFormation, and Serverless.
 
-Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
+Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logic to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
-* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
-* Custom taggers: user-defined tagging logics can be added to run using Yor.
+* Change management: git-based tags automatically add org, repo, commit, and modifier details on every resource block.  
+* Custom taggers: user-defined tagging logic can be added to run using Yor.
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
 
 ## Demo
