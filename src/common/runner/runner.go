@@ -97,7 +97,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	var convErr error
 	r.workersNum, convErr = strconv.Atoi(utils.GetEnv(WorkersNumEnvKey, "10"))
 	if convErr != nil {
-		logger.Error(fmt.Sprintf("Got an invalid value for YOR_WORKERS_NUM, %v", os.Getenv(WorkersNumEnvKey)))
+		logger.Error(fmt.Sprintf("Got an invalid value for YOR_WORKERS_NUM, %v. If you didn't mean to leverage this option, please unset %v", os.Getenv(WorkersNumEnvKey), WorkersNumEnvKey))
 	}
 	return nil
 }
