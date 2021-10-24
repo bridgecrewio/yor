@@ -36,6 +36,8 @@ type Runner struct {
 	skippedResourceTypes []string
 }
 
+const WorkersNum = 10
+
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	dir := commands.Directory
 	extraTags, extraTagGroups, err := loadExternalResources(commands.CustomTagging)
@@ -93,6 +95,13 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	return nil
 }
 
+func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for file := range fileChan {
+		r.TagFile(file)
+	}
+}
+
 func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	var files []string
 	err := filepath.Walk(r.dir, func(path string, info os.FileInfo, err error) error {
@@ -108,12 +117,18 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(files))
+	wg := new(sync.WaitGroup)
+	wg.Add(WorkersNum)
+	fileChan := make(chan string)
+
+	for i := 0; i < WorkersNum; i++ {
+		go r.worker(fileChan, wg)
+	}
 
 	for _, file := range files {
-		go r.TagFile(file, &wg)
+		fileChan <- file
 	}
+	close(fileChan)
 	wg.Wait()
 
 	for _, parser := range r.parsers {
@@ -132,7 +147,7 @@ func (r *Runner) isSkippedResourceType(resourceType string) bool {
 	return false
 }
 
-func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
+func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
@@ -171,8 +186,6 @@ func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
 			}
 		}
 	}
-	wg.Done()
-
 }
 
 func loadExternalResources(externalPaths []string) ([]tags.ITag, []tagging.ITagGroup, error) {
