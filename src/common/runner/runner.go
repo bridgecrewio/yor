@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"plugin"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -34,9 +35,10 @@ type Runner struct {
 	skippedTags          []string
 	configFilePath       string
 	skippedResourceTypes []string
+	workersNum           int
 }
 
-const WorkersNum = 10
+const WorkersNumEnvKey = "YOR_WORKER_NUM"
 
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	dir := commands.Directory
@@ -92,6 +94,11 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	r.skippedResourceTypes = commands.SkipResourceTypes
+	var convErr error
+	r.workersNum, convErr = strconv.Atoi(utils.GetEnv(WorkersNumEnvKey, "10"))
+	if convErr != nil {
+		logger.Error(fmt.Sprintf("Got an invalid value for YOR_WORKERS_NUM, %v", os.Getenv(WorkersNumEnvKey)))
+	}
 	return nil
 }
 
@@ -118,10 +125,10 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	}
 
 	wg := new(sync.WaitGroup)
-	wg.Add(WorkersNum)
+	wg.Add(r.workersNum)
 	fileChan := make(chan string)
 
-	for i := 0; i < WorkersNum; i++ {
+	for i := 0; i < r.workersNum; i++ {
 		go r.worker(fileChan, wg)
 	}
 
