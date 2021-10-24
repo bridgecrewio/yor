@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"plugin"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -34,7 +35,10 @@ type Runner struct {
 	skippedTags          []string
 	configFilePath       string
 	skippedResourceTypes []string
+	workersNum           int
 }
+
+const WorkersNumEnvKey = "YOR_WORKER_NUM"
 
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	dir := commands.Directory
@@ -90,7 +94,19 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	r.skippedResourceTypes = commands.SkipResourceTypes
+	var convErr error
+	r.workersNum, convErr = strconv.Atoi(utils.GetEnv(WorkersNumEnvKey, "10"))
+	if convErr != nil {
+		logger.Error(fmt.Sprintf("Got an invalid value for YOR_WORKERS_NUM, %v. If you didn't mean to leverage this option, please unset %v", os.Getenv(WorkersNumEnvKey), WorkersNumEnvKey))
+	}
 	return nil
+}
+
+func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup) {
+	for file := range fileChan {
+		r.TagFile(file)
+		wg.Done()
+	}
 }
 
 func (r *Runner) TagDirectory() (*reports.ReportService, error) {
@@ -110,10 +126,16 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 
 	var wg sync.WaitGroup
 	wg.Add(len(files))
+	fileChan := make(chan string)
+
+	for i := 0; i < r.workersNum; i++ {
+		go r.worker(fileChan, &wg)
+	}
 
 	for _, file := range files {
-		go r.TagFile(file, &wg)
+		fileChan <- file
 	}
+	close(fileChan)
 	wg.Wait()
 
 	for _, parser := range r.parsers {
@@ -132,7 +154,7 @@ func (r *Runner) isSkippedResourceType(resourceType string) bool {
 	return false
 }
 
-func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
+func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
@@ -171,8 +193,6 @@ func (r *Runner) TagFile(file string, wg *sync.WaitGroup) {
 			}
 		}
 	}
-	wg.Done()
-
 }
 
 func loadExternalResources(externalPaths []string) ([]tags.ITag, []tagging.ITagGroup, error) {

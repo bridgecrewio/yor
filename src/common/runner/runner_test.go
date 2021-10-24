@@ -113,6 +113,7 @@ func Test_TagCFNDir(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		assert.Equal(t, 10, runner.workersNum)
 		runner.TagGroups[0] = mockGitTagGroup
 		_, err = runner.TagDirectory()
 		if err != nil {

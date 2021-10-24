@@ -168,3 +168,17 @@ func TestSplitStringByComma(t *testing.T) {
 		assert.Equal(t, tt.want, got, fmt.Sprintf("Expected to get %v, got %v for \"%v\"", tt.want, got, tt.name))
 	}
 }
+
+func TestGetEnv(t *testing.T) {
+	t.Run("TestExistingEnvVar", func(t *testing.T) {
+		_ = os.Setenv("test", "20")
+		assert.Equal(t, "20", GetEnv("test", "1"))
+		_ = os.Unsetenv("test")
+	})
+
+	t.Run("TestExistingEnvVar", func(t *testing.T) {
+		_ = os.Setenv("test2", "20")
+		assert.Equal(t, "1", GetEnv("test", "1"))
+		_ = os.Unsetenv("test2")
+	})
+}

@@ -173,3 +173,10 @@ func FindSubMatchByGroup(r *regexp.Regexp, str string) map[string]string {
 
 	return subMatchMap
 }
+
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
