@@ -103,9 +103,9 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 }
 
 func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
 	for file := range fileChan {
 		r.TagFile(file)
+		wg.Done()
 	}
 }
 
@@ -124,12 +124,12 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
-	wg := new(sync.WaitGroup)
-	wg.Add(r.workersNum)
+	var wg sync.WaitGroup
+	wg.Add(len(files))
 	fileChan := make(chan string)
 
 	for i := 0; i < r.workersNum; i++ {
-		go r.worker(fileChan, wg)
+		go r.worker(fileChan, &wg)
 	}
 
 	for _, file := range files {
