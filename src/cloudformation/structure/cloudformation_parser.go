@@ -10,8 +10,11 @@ import (
 	"strings"
 	"sync"
 
+	"reflect"
+
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/goformation/v5"
+	"github.com/bridgecrewio/goformation/v5/cloudformation"
 	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/json"
@@ -22,8 +25,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/src/common/yaml"
 	sanathyaml "github.com/sanathkr/yaml"
-
-	"reflect"
 )
 
 type CloudformationParser struct {
@@ -97,11 +98,25 @@ func (p *CloudformationParser) ValidFile(filePath string) bool {
 	return hasHeader
 }
 
-func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	goformationLock.Lock()
-	template, err := goformation.OpenWithOptions(filePath, &intrinsics.ProcessorOptions{
+func goformationParse(file string) (*cloudformation.Template, error) {
+	var template *cloudformation.Template
+	var err error
+	defer func() {
+		if e := recover(); e != nil {
+			logger.Warning(fmt.Sprintf("Failed to parser cfn file at %v due to: %v", file, e))
+			err = fmt.Errorf("failed to parse cfn file %v: %v", file, e)
+		}
+	}()
+
+	template, err = goformation.OpenWithOptions(file, &intrinsics.ProcessorOptions{
 		StringifyPaths: []string{EnvVarsPath},
 	})
+	return template, err
+}
+
+func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+	goformationLock.Lock()
+	template, err := goformationParse(filePath)
 	goformationLock.Unlock()
 	if err != nil || template == nil {
 		logger.Warning(fmt.Sprintf("There was an error processing the cloudformation template %v: %s", filePath, err))
