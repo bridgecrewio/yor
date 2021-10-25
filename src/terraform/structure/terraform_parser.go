@@ -530,7 +530,7 @@ func ExtractProviderFromModuleSrc(source string) string {
 	}
 	if isTerraformRegistryModule(source) {
 		matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
-		val, _ := matches["PROVIDER"]
+		val := matches["PROVIDER"]
 		return val
 	}
 	withoutRef := strings.Split(source, "//")[0]
