@@ -398,7 +398,7 @@ func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.To
 	}
 	// Cleanup unnecessary quotes around tag name
 	for i, t := range possibleTagKeys {
-		if strings.HasPrefix(t, "\"") && strings.HasSuffix(t, "\"") {
+		if strings.HasPrefix(t, "\"") && strings.HasSuffix(t, "\"") && len(t) > 2 {
 			possibleTagKeys[i] = t[1 : len(t)-1]
 		}
 	}
