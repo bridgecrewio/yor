@@ -13,8 +13,8 @@ Yor supports several ways of adding custom tags:
 2. Using Go built-in classes -
 	1. [Simple code-based tags](#adding-simple-code-based-tags)
 	2. [Complex tags that rely on different inputs](#adding-complex-tags)
-3. [Using YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
-4. [Using CLI commands](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml--configuration-files)
+3. [Using YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml-configuration-files)
+4. [Using CLI commands](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml-configuration-files)
        
 Examples can be found in [`tests/yor_plugins`](https://github.com/bridgecrewio/yor/tree/main/tests/yor_plugins)
 
