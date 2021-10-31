@@ -192,7 +192,7 @@ Having a yor_trace in place can help with tracing code block to its cloud provis
 See demo [here](https://yor.io/4.Use%2520Cases/useCases.html)
 ## Contributing
 
-Contribution is welcomed!
+Contributions are Welcome!
 
 We are working on extending Yor and adding more parsers (to support additional IaC frameworks) and more taggers (to tag using other contextual data).
 
