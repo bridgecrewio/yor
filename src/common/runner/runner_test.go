@@ -155,7 +155,11 @@ func TestRunnerInternals(t *testing.T) {
 	t.Run("Test isFileSkipped", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/terraform"
-		skippedFiles := []string{"../../../tests/terraform/mixed/mixed.tf", "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"}
+		skippedFiles := []string{
+			"../../../tests/terraform/mixed/mixed.tf",
+			"../../../tests/terraform/resources/tagged/complex_tags_tagged.tf",
+			"../../../tests/terraform/resources/tagged/expected.txt",
+		}
 		_ = runner.Init(&clioptions.TagOptions{
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
@@ -184,7 +188,7 @@ func TestRunnerInternals(t *testing.T) {
 			return nil
 		})
 
-		assert.Equal(t, 2, len(skippedFiles), "Some files were not skipped")
+		assert.Equal(t, 1, len(skippedFiles), "Some files were not skipped")
 	})
 
 	t.Run("Test skip entire dir", func(t *testing.T) {

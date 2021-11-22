@@ -268,7 +268,7 @@ func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}
 func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 	relPath, _ := filepath.Rel(r.dir, file)
 	for _, sp := range r.skipDirs {
-		if strings.HasPrefix(relPath, sp) {
+		if strings.HasPrefix(r.dir+"/"+relPath, sp) {
 			return true
 		}
 	}
