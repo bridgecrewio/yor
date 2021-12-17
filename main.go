@@ -89,6 +89,7 @@ func tagCommand() *cli.Command {
 	externalConfPath := "config-file"
 	skipResourceTypesArg := "skip-resource-types"
 	parsersArgs := "parsers"
+	dryRunArgs := "dry-run"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -107,6 +108,7 @@ func tagCommand() *cli.Command {
 				ConfigFile:        c.String(externalConfPath),
 				SkipResourceTypes: c.StringSlice(skipResourceTypesArg),
 				Parsers:           c.StringSlice(parsersArgs),
+				DryRun:            c.Bool(dryRunArgs),
 			}
 
 			options.Validate()
@@ -184,6 +186,12 @@ func tagCommand() *cli.Command {
 				Usage:       "IAC types to tag",
 				Value:       cli.NewStringSlice("Terraform", "CloudFormation", "Serverless"),
 				DefaultText: "Terraform,CloudFormation,Serverless",
+			},
+			&cli.BoolFlag{
+				Name:        dryRunArgs,
+				Usage:       "skip resource tagging",
+				Value:       false,
+				DefaultText: "false",
 			},
 		},
 	}

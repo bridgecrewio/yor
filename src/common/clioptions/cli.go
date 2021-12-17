@@ -26,6 +26,7 @@ type TagOptions struct {
 	ConfigFile        string   `validate:"config-file"`
 	SkipResourceTypes []string
 	Parsers           []string
+	DryRun            bool
 }
 
 type ListTagsOptions struct {
