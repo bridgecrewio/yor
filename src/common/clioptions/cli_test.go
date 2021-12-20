@@ -45,7 +45,6 @@ func TestCliArgParsing(t *testing.T) {
 			Output:         "cli",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "code2cloud"},
-			DryRun:         true,
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()
