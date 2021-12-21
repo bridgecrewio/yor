@@ -20,8 +20,8 @@ import (
 const SingleIndent = "  "
 
 func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
-	// read file bytes
 	// #nosec G304
+	// read file bytes
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
