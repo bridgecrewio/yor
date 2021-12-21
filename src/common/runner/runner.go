@@ -36,6 +36,7 @@ type Runner struct {
 	configFilePath       string
 	skippedResourceTypes []string
 	workersNum           int
+	dryRun               bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -90,6 +91,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	r.skippedTags = commands.SkipTags
 	r.skipDirs = append(commands.SkipDirs, ".git")
 	r.configFilePath = commands.ConfigFile
+	r.dryRun = commands.DryRun
 	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
@@ -186,7 +188,7 @@ func (r *Runner) TagFile(file string) {
 			}
 			r.ChangeAccumulator.AccumulateChanges(block)
 		}
-		if isFileTaggable {
+		if isFileTaggable && !r.dryRun {
 			err = parser.WriteFile(file, blocks, file)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))

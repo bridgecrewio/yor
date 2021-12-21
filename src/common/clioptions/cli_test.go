@@ -19,6 +19,7 @@ func TestCliArgParsing(t *testing.T) {
 			Output:         "cli",
 			OutputJSONFile: "",
 			ConfigFile:     "",
+			DryRun:         true,
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()
@@ -89,6 +90,7 @@ func TestOutputCrasher(t *testing.T) {
 			Output:         "junitxml",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
+			DryRun:         true,
 		}
 		options.Validate()
 	}
@@ -105,6 +107,7 @@ func TestTagGroupCrasher(t *testing.T) {
 			Output:         "cli",
 			OutputJSONFile: "",
 			TagGroups:      []string{"git", "custom"},
+			DryRun:         true,
 		}
 		options.Validate()
 	}
