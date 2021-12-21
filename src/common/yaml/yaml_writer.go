@@ -21,6 +21,7 @@ const SingleIndent = "  "
 
 func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
 	// read file bytes
+
 	// #nosec G304
 	originFileSrc, err := ioutil.ReadFile(readFilePath)
 	if err != nil {

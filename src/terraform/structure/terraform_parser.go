@@ -118,6 +118,7 @@ func (p *TerrraformParser) ValidFile(_ string) bool {
 
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// read file bytes
+
 	// #nosec G304
 	src, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -172,6 +173,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 
 func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	// read file bytes
+
 	// #nosec G304
 	src, err := ioutil.ReadFile(readFilePath)
 	if err != nil {
