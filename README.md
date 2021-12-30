@@ -23,6 +23,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 * Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
+* Dry-Run: get a preview of what tags will be added without applying any.
 
 ## Demo
 [![](docs/yor_tag_and_trace_recording.gif)](https://raw.githubusercontent.com/bridgecrewio/yor/main/docs/yor_tag_and_trace_recording.gif)
@@ -183,6 +184,12 @@ yor list-tags
 yor list-tags --tag-groups git
 
  # List all the tags built into yor under the tag group git
+```
+
+`dry-run`
+```sh
+yor tag -d . --dry-run
+# Perform a dry run to get a preview in the CLI output of all of the tags that will be added using Yor without applying any changes to your IaC files.
 ```
 ### What is Yor trace?
 yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
