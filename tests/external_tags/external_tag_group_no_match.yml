@@ -1,0 +1,20 @@
+tag_groups:
+  - name: ownership
+    tags:
+      - name: env
+        value:
+          default: ${env:GIT_BRANCH}
+          matches:
+            - not_exist_match1:
+                tags:
+                  git_modifiers: tronxd
+                  not_exist_str_val1: not_exist_val
+            - not_exist_match2:
+                tags:
+                  not_exist_array_val:
+                    - not_exist_val1
+                    - not_exist_val2
+                  git_repo: yor
+            - not_exist_match3:
+                tags:
+                  not_exist_str_val2: not_exist_val2
