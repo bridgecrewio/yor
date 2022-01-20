@@ -176,6 +176,39 @@ func TestExternalTagGroup(t *testing.T) {
 		assert.Equal(t, 1, len(block.NewTags))
 	})
 
+	t.Run("test tagGroup CreateTagsForBlock no matches", func(t *testing.T) {
+		_ = os.Setenv("GIT_BRANCH", "master")
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_no_match.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitExternalTagGroups(confPath)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "src/base/main.tf",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		for _, newBlockTag := range block.GetNewTags() {
+			if newBlockTag.GetKey() == "env" {
+				assert.Equal(t, "master", newBlockTag.GetValue())
+			}
+		}
+	})
 }
 
 type MockTestBlock struct {
