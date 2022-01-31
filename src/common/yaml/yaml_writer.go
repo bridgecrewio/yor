@@ -329,7 +329,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 			}
 		}
 	}
-	if resourceToLines[latestResourceName].End == -1 {
+	if latestResourceName != "" && resourceToLines[latestResourceName].End == -1 {
 		// Handle last line of resource is last line of file
 		resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, len(fileLines)-1)
 	}
