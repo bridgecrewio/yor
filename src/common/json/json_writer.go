@@ -85,11 +85,28 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		UpdateExistingTags(tagsLinesList, diff.Updated)
 
 		//	now find the indentation of the first tags entry by searching an indent between "[" and first "{". If there is a newline, restart the indent.
-		tagBlockIndent := findIndent(tagsStr, '{', 0)                               // find the indent of each tag block " { "
+		tagBlockIndent := findIndent(tagsStr, '{', 0) // find the indent of each tag block " { "
+		firstTagIndex := strings.Index(tagsStr[1:], "{") + 2
+		firstTagStr := tagsStr[firstTagIndex : firstTagIndex+strings.Index(tagsStr[firstTagIndex+1:], "\"")]
 		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{")) // find the indent of the key and value entry
-		indentDiff := len(tagEntryIndent) - len(tagBlockIndent)
-		tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-indentDiff]
-		tagEntryIndent = tagEntryIndent[0 : len(tagEntryIndent)-indentDiff]
+		if strings.Contains(firstTagStr, "\n") {
+			// If the tag string has a newline, it means the indent needs to be re-evaluated. Example for this use case:
+			// "Tags": [
+			//   {
+			//     "Key": "some-key",
+			//     "Value": "some-val"
+			//   }
+			// ]
+			indentDiff := len(tagEntryIndent) - len(tagBlockIndent)
+			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-indentDiff]
+			tagEntryIndent = tagEntryIndent[0 : len(tagEntryIndent)-indentDiff]
+		} else {
+			// Otherwise, need to take the indent of the "{" character. This case handles:
+			// "Tags": [
+			//   { "Key": "some-key", "Value": "some-val" }
+			// ]
+			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-1]
+		}
 
 		// unmarshal updated tags with the indent matching origin file. This will create the tags with the `[]` wrapping which will be discarded later
 		strAddedTags, err := json.MarshalIndent(diff.Added, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent))

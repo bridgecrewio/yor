@@ -493,4 +493,8 @@ func TestCFNWriting(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/json"
 		writeJSONTestHelper(t, directory, "base", []tags.Tag{{Key: "old_tag", Value: "old_value"}})
 	})
+	t.Run("test CFN writing tagged", func(t *testing.T) {
+		directory := "../../../tests/cloudformation/resources/single_line"
+		writeJSONTestHelper(t, directory, "cfn", []tags.Tag{{Key: "old_tag1", Value: "old_val1"}, {Key: "old_tag2", Value: "old_val2"}})
+	})
 }

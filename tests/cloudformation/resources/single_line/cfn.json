@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Parameters": {
+    "BucketName": {
+      "Type": "String",
+      "Default": "bucket-name"
+    }
+  },
+
+  "Resources": {
+    "CLOUDFORMATIONNP": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "BucketName": { "Ref": "BucketName" },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "Tags": [
+          { "Key": "old_tag1", "Value": "old_val1" },
+          { "Key": "old_tag2", "Value": "old_val2" }
+        ]
+      }
+    }
+  }
+}
