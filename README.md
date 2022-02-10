@@ -196,7 +196,7 @@ yor_trace is a magical tag creating a unique identifier for an IaC resource code
 
 Having a yor_trace in place can help with tracing code block to its cloud provisioned resources without access to sensitive data such as plan or state files.
 
-See demo [here](https://yor.io/4.Use%2520Cases/useCases.html)
+See demo [here](https://yor.io/4.Use%20Cases/useCases.html)
 ## Contributing
 
 Contribution is welcomed!
