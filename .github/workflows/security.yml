@@ -28,7 +28,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.17'
+          go-version: '1.15' # To match codeql go version
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
