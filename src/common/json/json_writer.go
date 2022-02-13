@@ -443,10 +443,7 @@ func FindParentIdentifier(str string, childIdentifier string) string {
 
 // findJSONKeyIndex finds the index of an entry in a JSON by wrapping it with "<key>":
 func findJSONKeyIndex(str string, key string) int {
-	if strings.Contains(key, "\"") {
-		logger.Error(fmt.Sprintf("Found key with quotes, this is not valid, skipping. Key: '%v'", key))
-	}
-	r, _ := regexp.Compile("\"" + key + `"\s*:`) // support a case of one or more spaces before colon
+	r, _ := regexp.Compile("\"" + strings.ReplaceAll(key, "\"", "\\\"") + `"\s*:`) // support a case of one or more spaces before colon
 	indexPair := r.FindStringIndex(str)
 	if len(indexPair) == 0 {
 		return -1
