@@ -328,6 +328,14 @@ func Test_findJSONKeyIndex(t *testing.T) {
 			},
 			want: -1,
 		},
+		{
+			name: "bad key",
+			args: args{
+				str: "{\"parent\":{\"child\": 3}}",
+				key: "par\"e\"nt",
+			},
+			want: -1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
