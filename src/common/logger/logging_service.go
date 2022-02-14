@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"sync/atomic"
 )
 
 type loggingService struct {
@@ -14,13 +13,12 @@ type loggingService struct {
 	stdout     *os.File
 	stderr     *os.File
 	tempWriter *os.File
-	disabled   int32
+	disabled   bool
+	muteLock   sync.Mutex
 }
 
 type LogLevel int
 type ErrorType int
-
-var MuteLock sync.Mutex
 
 const (
 	DEBUG LogLevel = iota
@@ -48,7 +46,7 @@ var Logger loggingService
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
-	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr, disabled: 0}
+	Logger = loggingService{logLevel: WARNING, stdout: os.Stdout, stderr: os.Stderr}
 
 	val, ok := os.LookupEnv("LOG_LEVEL")
 	if ok {
@@ -68,7 +66,7 @@ func (e *loggingService) log(logLevel LogLevel, args ...string) {
 		strArgs = fmt.Sprintf("[%s] ", strLogLevels[logLevel]) + strArgs
 		switch logLevel {
 		case DEBUG, INFO, WARNING:
-			if e.disabled == 0 {
+			if !e.disabled {
 				log.Println(strArgs)
 			}
 		case ERROR:
@@ -119,30 +117,32 @@ func (e *loggingService) SetLogLevel(inputLogLevel string) {
 	e.logLevel = logLevel
 }
 
-func MuteLogging() {
-	if Logger.logLevel >= WARNING {
-		if atomic.LoadInt32(&Logger.disabled) == 0 {
-			Debug("Mute logging")
-			_, Logger.tempWriter, _ = os.Pipe()
-			os.Stdout = Logger.tempWriter
-			os.Stderr = Logger.tempWriter
-			log.SetOutput(Logger.tempWriter)
-		}
-		atomic.AddInt32(&Logger.disabled, 1)
+func MuteOutputBlock(fn func()) {
+	if Logger.logLevel < WARNING {
+		fn()
+		return
 	}
-}
 
-func UnmuteLogging() {
-	if Logger.logLevel >= WARNING {
-		atomic.AddInt32(&Logger.disabled, -1)
-		if atomic.LoadInt32(&Logger.disabled) == 0 {
-			if Logger.tempWriter != nil {
-				_ = Logger.tempWriter.Close()
-			}
-			os.Stdout = Logger.stdout
-			os.Stderr = Logger.stderr
-			log.SetOutput(os.Stderr)
-			Debug("Unmute logging")
-		}
-	}
+	Logger.muteLock.Lock()
+	defer Logger.muteLock.Unlock()
+
+	Logger.disabled = true
+	Debug("Mute logging")
+	w, _ := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	stdout := os.Stdout
+	stderr := os.Stderr
+	os.Stdout = w
+	os.Stderr = w
+	log.SetOutput(w)
+	defer func() {
+		_ = w.Close()
+		os.Stdout = stdout
+		os.Stderr = stderr
+		log.SetOutput(os.Stderr)
+		Logger.disabled = false
+	}()
+
+	fn()
+
+	Debug("Unmute logging")
 }
