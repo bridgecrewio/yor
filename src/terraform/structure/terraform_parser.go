@@ -45,6 +45,7 @@ type TerrraformParser struct {
 	moduleImporter         *command.GetCommand
 	moduleInstallDir       string
 	downloadedPaths        []string
+	tfClientLock           sync.Mutex
 }
 
 func (p *TerrraformParser) Name() string {
@@ -745,15 +746,19 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		return nil
 	}
 
+	p.tfClientLock.Lock()
+	defer p.tfClientLock.Unlock()
+
+	client, exists := p.providerToClientMap.Load(providerName)
+	if exists {
+		return client.(tfschema.Client)
+	}
+
 	hclLogger := hclog.New(&hclog.LoggerOptions{
 		Name:   "plugin",
 		Level:  hclog.Error,
 		Output: hclog.DefaultOutput,
 	})
-	client, exists := p.providerToClientMap.Load(providerName)
-	if exists {
-		return client.(tfschema.Client)
-	}
 	var err error
 	var newClient tfschema.Client
 	logger.MuteOutputBlock(func() {

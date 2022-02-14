@@ -26,6 +26,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/resources/", nil)
+		defer p.Close()
 		filePath := "../../../tests/terraform/resources/eks.tf"
 		taggableResources := [][]string{{"aws_vpc", "eks_vpc"}, {"aws_subnet", "eks_subnet1"}, {"aws_subnet", "eks_subnet2"}, {"aws_iam_role", "iam_for_eks"}, {"aws_eks_cluster", "eks_cluster"}}
 		expectedTags := map[string]map[string]string{
@@ -83,6 +84,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("parse complex tags", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
+		defer p.Close()
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
 		expectedTags := map[string]map[string]string{
 			"vpc_tags_one_line":                         {"Name": "tag-for-s3", "Environment": "prod"},
@@ -117,6 +119,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	t.Run("Skip collision tags block", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
+		defer p.Close()
 		filePath := "../../../tests/terraform/resources/collision/main.tf"
 		parsedBlocks, err := p.ParseFile(filePath)
 		assert.Nil(t, parsedBlocks)
@@ -265,6 +268,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/mixed", nil)
+		defer p.Close()
 		blocks, err := p.ParseFile("../../../tests/terraform/mixed/mixed.tf")
 		if err != nil {
 			t.Fail()
@@ -276,6 +280,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Test reading & writing of module block", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/module/module_with_tags", nil)
+		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module_with_tags/main.tf"
 		expectedFileName := "../../../tests/terraform/module/module_with_tags/expected.txt"
 		blocks, err := p.ParseFile(sourceFilePath)
@@ -304,6 +309,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Test taggable unaccessible module", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/module/tfe_module", nil)
+		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
 		blocks, err := p.ParseFile(sourceFilePath)
 		if err != nil {
@@ -319,6 +325,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/module/module", nil)
+		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module/main.tf"
 		expectedFileName := "../../../tests/terraform/module/module/expected.txt"
 		blocks, err := p.ParseFile(sourceFilePath)
@@ -348,6 +355,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
 		p := &TerrraformParser{}
 		p.Init("../../../tests/terraform/resources/attributescenarios", nil)
+		defer p.Close()
 		filePath := "../../../tests/terraform/resources/attributescenarios/main.tf"
 		resultFilePath := "../../../tests/terraform/resources/attributescenarios/main_result.tf"
 		expectedFilePath := "../../../tests/terraform/resources/attributescenarios/expected.txt"
@@ -376,6 +384,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		directory := "../../../tests/terraform/resources/local_module"
 		terraformParser := TerrraformParser{}
 		terraformParser.Init(directory, nil)
+		defer terraformParser.Close()
 		expectedFiles := []string{"main.tf", "sub_local_module/main.tf", "sub_local_module/variables.tf"}
 		for _, file := range expectedFiles {
 			filePath := filepath.Join(directory, file)
@@ -398,6 +407,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		directory := "../../../tests/terraform/module/provider_modules"
 		terraformParser := TerrraformParser{}
 		terraformParser.Init(directory, nil)
+		defer terraformParser.Close()
 		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
 		assert.Equal(t, 8, len(blocks))
 		for _, block := range blocks {
