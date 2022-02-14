@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hashicorp/terraform/tfdiags"
+
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/utils"
 
@@ -64,9 +66,11 @@ func (t *TerraformModule) InitProvider() {
 			return
 		}
 		pty := addrs.NewLegacyProvider(provider)
-		logger.MuteLogging()
-		_, diagnostics, err := providerInstaller.Get(pty, constraints.Versions)
-		logger.UnmuteLogging()
+		var err error
+		var diagnostics tfdiags.Diagnostics
+		logger.MuteOutputBlock(func() {
+			_, diagnostics, err = providerInstaller.Get(pty, constraints.Versions)
+		})
 		if (diagnostics != nil && diagnostics.HasErrors()) || err != nil {
 			errMsg := diagnostics.Err()
 			if errMsg == nil {

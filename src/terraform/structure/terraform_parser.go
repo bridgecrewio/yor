@@ -65,12 +65,12 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 }
 
 func (p *TerrraformParser) Close() {
-	p.providerToClientMap.Range(func(provider, iClient interface{}) bool {
-		client := iClient.(tfschema.Client)
-		logger.MuteLogging()
-		client.Close()
-		logger.UnmuteLogging()
-		return true
+	logger.MuteOutputBlock(func() {
+		p.providerToClientMap.Range(func(provider, iClient interface{}) bool {
+			client := iClient.(tfschema.Client)
+			client.Close()
+			return true
+		})
 	})
 }
 
@@ -549,11 +549,11 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtt
 	absRootPath, _ := filepath.Abs(p.rootDir)
 	actualPath, _ = filepath.Abs(filepath.Join(absRootPath, actualPath))
 	if !utils.InSlice(p.downloadedPaths, fp) && os.Getenv("YOR_DISABLE_TF_MODULE_DOWNLOAD") != "TRUE" {
-		logger.MuteLogging()
-		logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
-		_ = p.moduleImporter.Run([]string{actualPath})
-		p.downloadedPaths = append(p.downloadedPaths, fp)
-		logger.UnmuteLogging()
+		logger.MuteOutputBlock(func() {
+			logger.Info(fmt.Sprintf("Downloading modules for dir %v\n", actualPath))
+			_ = p.moduleImporter.Run([]string{actualPath})
+			p.downloadedPaths = append(p.downloadedPaths, fp)
+		})
 	}
 	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
 	if _, err := os.Stat(expectedModuleDir); os.IsNotExist(err) {
@@ -646,9 +646,10 @@ func (p *TerrraformParser) isBlockTaggable(hclBlock *hclwrite.Block) (bool, erro
 	client := p.getClient(providerName)
 	taggable := false
 	if client != nil {
-		logger.MuteLogging()
-		typeSchema, err := client.GetResourceTypeSchema(resourceType)
-		logger.UnmuteLogging()
+		var typeSchema *tfschema.Block
+		logger.MuteOutputBlock(func() {
+			typeSchema, err = client.GetResourceTypeSchema(resourceType)
+		})
 		if err != nil {
 			if strings.Contains(err.Error(), "Failed to find resource type") {
 				// Resource Type doesn't have schema yet in the provider
@@ -753,14 +754,14 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	if exists {
 		return client.(tfschema.Client)
 	}
-	logger.MuteLogging()
-	logger.MuteLock.Lock()
-	newClient, err := tfschema.NewClient(providerName, tfschema.Option{
-		RootDir: p.terraformModule.ProvidersInstallDir,
-		Logger:  hclLogger,
+	var err error
+	var newClient tfschema.Client
+	logger.MuteOutputBlock(func() {
+		newClient, err = tfschema.NewClient(providerName, tfschema.Option{
+			RootDir: p.terraformModule.ProvidersInstallDir,
+			Logger:  hclLogger,
+		})
 	})
-	logger.MuteLock.Unlock()
-	logger.UnmuteLogging()
 	if err != nil {
 		if strings.Contains(err.Error(), "Failed to find plugin") {
 			logger.Warning(fmt.Sprintf("Could not load provider %v, resources from this provider will not be tagged", providerName))

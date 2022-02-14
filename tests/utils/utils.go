@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -19,29 +18,24 @@ func CaptureOutput(f func()) string {
 	if err != nil {
 		panic(err)
 	}
+
 	stdout := os.Stdout
 	stderr := os.Stderr
 	defer func() {
 		os.Stdout = stdout
 		os.Stderr = stderr
-		log.SetOutput(os.Stderr)
+		log.SetOutput(stderr)
 	}()
 	os.Stdout = writer
 	os.Stderr = writer
 	log.SetOutput(writer)
-	out := make(chan string)
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		var buf bytes.Buffer
-		wg.Done()
-		_, _ = io.Copy(&buf, reader)
-		out <- buf.String()
-	}()
-	wg.Wait()
+
 	f()
 	_ = writer.Close()
-	return <-out
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, reader)
+	_ = reader.Close()
+	return buf.String()
 }
 
 func CloneRepo(repoPath string, commitHash string) string {
