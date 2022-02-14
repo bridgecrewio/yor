@@ -45,7 +45,7 @@ type TerrraformParser struct {
 	moduleImporter         *command.GetCommand
 	moduleInstallDir       string
 	downloadedPaths        []string
-	lock                   sync.Mutex
+	tfClientLock           sync.Mutex
 }
 
 func (p *TerrraformParser) Name() string {
@@ -746,8 +746,8 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 		return nil
 	}
 
-	p.lock.Lock()
-	defer p.lock.Unlock()
+	p.tfClientLock.Lock()
+	defer p.tfClientLock.Unlock()
 
 	client, exists := p.providerToClientMap.Load(providerName)
 	if exists {
