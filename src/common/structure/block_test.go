@@ -120,6 +120,82 @@ func TestTagsNewResource(t *testing.T) {
 		block.NewTags = nil
 	})
 
+	t.Run("Test limit on aws_db_proxy to be 10 tags", func(t *testing.T) {
+		b := Block{
+			FilePath: "",
+			ExitingTags: []tags.ITag{
+				&tags.Tag{Key: "Name", Value: "NameVal"},
+				&tags.Tag{Key: "stack", Value: "acount"},
+				&tags.Tag{Key: "team", Value: "unknown"},
+			},
+			NewTags:           nil,
+			RawBlock:          nil,
+			IsTaggable:        true,
+			TagsAttributeName: "tags",
+			Lines:             Lines{},
+			TagLines:          Lines{},
+			Name:              "db_proxy",
+			Type:              "aws_db_proxy",
+		}
+		b.AddNewTags([]tags.ITag{
+			&tags.Tag{Key: "yor_trace", Value: "yor_trace_val"},
+			&tags.Tag{Key: "git_repo", Value: "repo_val"},
+			&tags.Tag{Key: "git_org", Value: "org_val"},
+			&tags.Tag{Key: "git_commit", Value: "commit_val"},
+			&tags.Tag{Key: "git_file", Value: "file_val"},
+			&tags.Tag{Key: "git_last_modified_at", Value: "modified_at_val"},
+			&tags.Tag{Key: "git_last_modified_by", Value: "modified_by_val"},
+			&tags.Tag{Key: "git_modifiers", Value: "modifiers_val"},
+		})
+		finalTags := b.MergeTags()
+		assert.Equal(t, 10, len(finalTags))
+		var found bool
+		for _, val := range finalTags {
+			if val.GetKey() == "yor_trace" {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "The yor_trace tag was not found")
+	})
+
+	t.Run("Test limit on aws_db_proxy to be 10 tags", func(t *testing.T) {
+		b := Block{
+			FilePath: "",
+			ExitingTags: []tags.ITag{
+				&tags.Tag{Key: "Name", Value: "NameVal"},
+			},
+			NewTags:           nil,
+			RawBlock:          nil,
+			IsTaggable:        true,
+			TagsAttributeName: "tags",
+			Lines:             Lines{},
+			TagLines:          Lines{},
+			Name:              "db_proxy",
+			Type:              "aws_db_proxy",
+		}
+		b.AddNewTags([]tags.ITag{
+			&tags.Tag{Key: "yor_trace", Value: "yor_trace_val"},
+			&tags.Tag{Key: "git_repo", Value: "repo_val"},
+			&tags.Tag{Key: "git_org", Value: "org_val"},
+			&tags.Tag{Key: "git_commit", Value: "commit_val"},
+			&tags.Tag{Key: "git_file", Value: "file_val"},
+			&tags.Tag{Key: "git_last_modified_at", Value: "modified_at_val"},
+			&tags.Tag{Key: "git_last_modified_by", Value: "modified_by_val"},
+			&tags.Tag{Key: "git_modifiers", Value: "modifiers_val"},
+		})
+		finalTags := b.MergeTags()
+		assert.Equal(t, 9, len(finalTags))
+		var found bool
+		for _, val := range finalTags {
+			if val.GetKey() == "yor_trace" {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "The yor_trace tag was not found")
+	})
+
 	t.Run("Test add new tags - add trace tag", func(t *testing.T) {
 		block.AddNewTags(newTags)
 		blockTags := block.MergeTags()
