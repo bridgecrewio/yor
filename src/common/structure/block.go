@@ -109,7 +109,7 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 	sort.Slice(b.NewTags[:], func(i, j int) bool {
 		return b.NewTags[i].GetKey() > b.NewTags[j].GetKey()
 	})
-	if limit, ok := SpecialResourceTypes[b.GetResourceType()]; ok {
+	if limit, ok := SpecialResourceTypes[b.GetResourceType()]; ok && len(b.NewTags)+len(b.ExitingTags) > limit {
 		b.NewTags = b.NewTags[0 : limit-len(b.ExitingTags)]
 	}
 }
