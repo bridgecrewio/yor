@@ -1,6 +1,8 @@
 package structure
 
 import (
+	"sort"
+
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 )
 
@@ -12,6 +14,11 @@ type Lines struct {
 type TagDiff struct {
 	Added   []tags.ITag
 	Updated []*tags.TagDiff
+}
+
+var SpecialResourceTypes = map[string]int{
+	"aws_db_proxy":      10,
+	"AWS::RDS::DBProxy": 10,
 }
 
 type IBlock interface {
@@ -99,6 +106,12 @@ func (b *Block) AddNewTags(newTags []tags.ITag) {
 		}
 	}
 	b.NewTags = append(b.NewTags, newTags...)
+	sort.Slice(b.NewTags[:], func(i, j int) bool {
+		return b.NewTags[i].GetKey() > b.NewTags[j].GetKey()
+	})
+	if limit, ok := SpecialResourceTypes[b.GetResourceType()]; ok && len(b.NewTags)+len(b.ExitingTags) > limit {
+		b.NewTags = b.NewTags[0 : limit-len(b.ExitingTags)]
+	}
 }
 
 // MergeTags merges the tags and returns all the tags.
