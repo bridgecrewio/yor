@@ -25,7 +25,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags"}
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
 var unsupportedTerraformBlocks = []string{
 	"aws_autoscaling_group", // This resource specifically supports tags with a different structure, see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags

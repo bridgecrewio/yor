@@ -13,6 +13,8 @@ type TerraformBlock struct {
 	HclSyntaxBlock *hclsyntax.Block
 }
 
+var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags"}
+
 const ResourceBlockType = "resource"
 const ModuleBlockType = "module"
 const DataBlockType = "data"
@@ -59,5 +61,5 @@ func (b *TerraformBlock) GetSeparator() string {
 }
 
 func (b *TerraformBlock) IsGCPBlock() bool {
-	return strings.HasPrefix(b.GetResourceID(), "google_")
+	return strings.HasPrefix(b.GetResourceID(), "google_") || b.GetTagsAttributeName() == ProviderToTagAttribute["google"]
 }

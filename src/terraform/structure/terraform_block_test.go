@@ -205,4 +205,13 @@ func TestTerrraformBlock(t *testing.T) {
 		assert.True(t, gcpBlock.IsGCPBlock())
 		assert.False(t, awsBlock.IsGCPBlock())
 	})
+
+	t.Run("is_gcp_module_test", func(t *testing.T) {
+		gcpBlock := &TerraformBlock{
+			HclSyntaxBlock: &hclsyntax.Block{Labels: []string{"test_gcs_bucket"}},
+			Block:          structure.Block{TagsAttributeName: "labels"},
+		}
+
+		assert.True(t, gcpBlock.IsGCPBlock())
+	})
 }
