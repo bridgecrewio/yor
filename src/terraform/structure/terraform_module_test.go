@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/tests/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,7 +59,9 @@ func TestTerrraformModule(t *testing.T) {
 		currentDir, _ := os.Getwd()
 		providersDir, _ := filepath.Abs(currentDir + "../../../../tests/terraform/providers")
 		output := utils.CaptureOutput(func() {
+			logger.Logger.SetLogLevel("ERROR")
 			_ = NewTerraformModule(providersDir)
+			logger.Logger.SetLogLevel("WARNING")
 		})
 
 		assert.Equal(t, "", output)
