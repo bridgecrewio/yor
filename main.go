@@ -63,7 +63,7 @@ func listTagsCommand() *cli.Command {
 			listTagsOptions.Validate()
 			return listTags(&listTagsOptions)
 		},
-		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the gitHub action as well via entrypoint.sh
+		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the GitHub action as well via entrypoint.sh
 			&cli.StringSliceFlag{
 				Name:        tagGroupsArg,
 				Aliases:     []string{"g"},
