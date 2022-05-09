@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/hashicorp/terraform v0.14.0
-	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7
+	github.com/hashicorp/terraform-config-inspect v0.0.0-20211115214459-90acf1ca460f
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -135,6 +135,7 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
+	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/svanharmelen/jsonapi v0.0.0-20180618144545-0c0828c3f16d // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.82+incompatible // indirect
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20190808065407-f07404cefc8c // indirect
