@@ -115,7 +115,7 @@ func tagCommand() *cli.Command {
 
 			return tag(&options)
 		},
-		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the gitHub action as well via entrypoint.sh
+		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the GitHub action as well via entrypoint.sh
 			&cli.StringFlag{
 				Name:        directoryArg,
 				Aliases:     []string{"d"},
