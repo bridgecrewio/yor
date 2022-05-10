@@ -16,6 +16,11 @@ func TestTerrraformModule(t *testing.T) {
 		assert.True(t, isRemote)
 	})
 
+	t.Run("Test TF Module remote scalr logic", func(t *testing.T) {
+		isRemote := isRemoteModule("jameswoolfenden.scalr.io/acc-u1ksa0vgdflusgo/cloudfront/aws")
+		assert.True(t, isRemote)
+	})
+
 	t.Run("Test TF Module remote github logic", func(t *testing.T) {
 		isRemote := isRemoteModule("github.com/terraform-aws-modules/terraform-aws-vpc.git")
 		assert.True(t, isRemote)
