@@ -42,7 +42,7 @@ You need to have the pre-commit package manager installed before you can run Pre
 Add a hook to your **.pre-commit-config.yaml** and change the args and version number.
 
 ```yaml
-  - repo: git://github.com/bridgecrewio/yor
+  - repo: https://github.com/bridgecrewio/yor
     rev: 0.0.44
     hooks:
       - id: yor
