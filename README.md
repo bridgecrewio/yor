@@ -103,13 +103,13 @@ jobs:
 
 Pre-commit
 ```yaml
-  - repo: git://github.com/bridgecrewio/yor
-    rev: 0.0.44
+  - repo: https://github.com/bridgecrewio/yor
+    rev: 0.1.143
     hooks:
       - id: yor
         name: yor
         entry: yor tag -d
-        args: ["example/examplea"]
+        args: ["."]
         language: golang
         types: [terraform]
         pass_filenames: false
