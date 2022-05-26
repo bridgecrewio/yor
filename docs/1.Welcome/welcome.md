@@ -22,7 +22,7 @@ Yor enables version-controlled owner assignment and resource tracing based on gi
 into the CI/CD pipeline. 
 
 Yor can tag the following IaC file types:
-  * Terraform (for AWS, GCP and Azure)
+  * Terraform (for AWS, GCP, Azure, AliCloud, OCI)
   * CloudFormation (YAML, JSON)
   * AWS Serverless Framework
 
