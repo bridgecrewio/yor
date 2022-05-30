@@ -25,6 +25,7 @@ type TagOptions struct {
 	TagGroups         []string `validate:"tagGroupNames"`
 	ConfigFile        string   `validate:"config-file"`
 	SkipResourceTypes []string
+	SkipResources     []string
 	Parsers           []string
 	DryRun            bool
 }
@@ -44,6 +45,7 @@ func (o *TagOptions) Validate() {
 	o.SkipDirs = utils.SplitStringByComma(o.SkipDirs)
 	o.TagGroups = utils.SplitStringByComma(o.TagGroups)
 	o.SkipResourceTypes = utils.SplitStringByComma(o.SkipResourceTypes)
+	o.SkipResources = utils.SplitStringByComma(o.SkipResources)
 
 	if err := validator.Validate(o); err != nil {
 		logger.Error(err.Error())
