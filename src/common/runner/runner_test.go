@@ -223,20 +223,20 @@ func TestRunnerInternals(t *testing.T) {
 		assert.NotContains(t, output, "aws_s3_bucket.test-bucket")
 	})
 
-	// t.Run("Test skip resource - cloudformation", func(t *testing.T) {
-	// 	runner := Runner{}
-	// 	rootDir := "../../../tests/cloudformation"
-	// 	output := testingUtils.CaptureOutput(func() {
-	// 		_ = runner.Init(&clioptions.TagOptions{
-	// 			Directory: rootDir,
-	// 			SkipResources: []string{
-	// 				"EC2InstanceResource0",
-	// 			},
-	// 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
-	// 		})
-	// 	})
-	// 	assert.NotContains(t, output, "EC2InstanceResource0")
-	// })
+	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/cloudformation"
+		output := testingUtils.CaptureOutput(func() {
+			_ = runner.Init(&clioptions.TagOptions{
+				Directory: rootDir,
+				SkipResources: []string{
+					"EC2InstanceResource0",
+				},
+				TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			})
+		})
+		assert.NotContains(t, output, "EC2InstanceResource0")
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
