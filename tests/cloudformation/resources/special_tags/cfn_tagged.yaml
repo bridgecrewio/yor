@@ -10,6 +10,4 @@ Resources:
           Value: "true"
         - Key: new_tag
           Value: new_value
-        - Key: yor_trace
-          Value: 26e7441e-34e6-40ba-a370-cd1bccd1af0c
       ResourceType: AWS::ElasticLoadBalancingV2::LoadBalancer

@@ -11,9 +11,6 @@ Resources:
       Environment:
         Variables:
           BROKEN_FIND_IN_MAP: !FindInMap [ Mappings, MyMap, Key ]
-      Tags:
-        - Key: yor_trace
-          Value: dbec9155-8257-4d75-a6d3-b03412571126
   ExampleInt:
     Type: AWS::Lambda::Function
     Properties:
@@ -21,9 +18,6 @@ Resources:
       Environment:
         Variables:
           BROKEN_INT: 10
-      Tags:
-        - Key: yor_trace
-          Value: 5f29a001-26f1-4f8a-ab54-72d0ce5383cf
   ExampleJoin:
     Type: AWS::Lambda::Function
     Properties:
@@ -31,6 +25,3 @@ Resources:
       Environment:
         Variables:
           BROKEN_JOIN: !Join [ '-', [ 'a', 'b', 'c' ] ]
-      Tags:
-        - Key: yor_trace
-          Value: bad88f2e-fe1f-4ab6-9602-2e195d0e490c

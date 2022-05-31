@@ -11,6 +11,4 @@ Resources:
       Tags:
         - Key: MyTag
           Value: TagValue
-        - Key: yor_trace
-          Value: d803a995-bbcb-4ca4-8041-ec981c948589
     DeletionPolicy: Snapshot
