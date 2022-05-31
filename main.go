@@ -186,7 +186,7 @@ func tagCommand() *cli.Command {
 				Name:        skipResourcesArg,
 				Usage:       "skip resources for tagging",
 				Value:       cli.NewStringSlice(),
-				DefaultText: "my_bucket,my_second_bucket",
+				DefaultText: "aws_s3_bucket.test-bucket,EC2InstanceResource0",
 			},
 			&cli.StringSliceFlag{
 				Name:        parsersArgs,
