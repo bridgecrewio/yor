@@ -14,4 +14,7 @@ resource "aws_s3_bucket" "my-bucket" {
 
 module "sg" {
   source = "terraform-aws-modules/vpc/aws"
+  tags = {
+    yor_trace = "bb1e4a74-94f5-4226-bf07-127ba92c2b89"
+  }
 }

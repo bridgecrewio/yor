@@ -7,6 +7,7 @@ module "complete_sg" {
   ingress_rules       = ["https-443-tcp"]
 
   tags = {
-    Name = "test-sg"
+    Name      = "test-sg"
+    yor_trace = "c8f514ca-29cd-479d-bee0-faead1d8ac2e"
   }
 }

@@ -12,6 +12,8 @@ resource "aws_instance" "many_instance_tags" {
       git_last_modified_by = "schosterbarak@gmail.com"
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
+      }, {
+      Name = "tag-for-instance"
   })
 }
 
@@ -25,6 +27,8 @@ resource "aws_alb" "alb_with_merged_tags" {
       git_last_modified_by = "schosterbarak@gmail.com"
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
+      }, {
+      Name = "tag-for-alb"
   })
 }
 
@@ -39,6 +43,8 @@ resource "aws_vpc" "vpc_tags_one_line" {
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
     yor_trace            = "85da7acc-b505-49e4-8f42-bb5e708c1aa3"
+    }, {
+    Name = "tag-for-s3"
   })
 }
 

@@ -4,12 +4,24 @@
     "EC2InstanceResource0": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
+        "Tags": [
+          {
+            "Key": "yor_trace",
+            "Value": "7824f089-a386-42ca-8b85-8d1e4546d865"
+          }
+        ],
         "ImageId": "ami-04169656fea786776"
       }
     },
     "EC2InstanceResource1": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
+        "Tags": [
+          {
+            "Key": "yor_trace",
+            "Value": "92ba24cb-f3ad-4151-a688-5645ea8bcf60"
+          }
+        ],
         "ImageId": "ami-04169656fea786776",
         "NetworkInterfaces": [
           {
