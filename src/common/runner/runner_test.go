@@ -207,6 +207,36 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.Contains(t, output, "[WARNING] Selected dir, ../../../tests/terraform, is skipped - expect an empty result")
 	})
+
+	t.Run("Test skip resource - terraform", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform"
+		output := testingUtils.CaptureOutput(func() {
+			_ = runner.Init(&clioptions.TagOptions{
+				Directory: rootDir,
+				SkipResources: []string{
+					"aws_s3_bucket.test-bucket",
+				},
+				TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			})
+		})
+		assert.NotContains(t, output, "aws_s3_bucket.test-bucket")
+	})
+
+	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/cloudformation"
+		output := testingUtils.CaptureOutput(func() {
+			_ = runner.Init(&clioptions.TagOptions{
+				Directory: rootDir,
+				SkipResources: []string{
+					"EC2InstanceResource0",
+				},
+				TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			})
+		})
+		assert.NotContains(t, output, "EC2InstanceResource0")
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {

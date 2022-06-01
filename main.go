@@ -88,6 +88,7 @@ func tagCommand() *cli.Command {
 	outputJSONFileArg := "output-json-file"
 	externalConfPath := "config-file"
 	skipResourceTypesArg := "skip-resource-types"
+	skipResourcesArg := "skip-resources"
 	parsersArgs := "parsers"
 	dryRunArgs := "dry-run"
 	return &cli.Command{
@@ -107,6 +108,7 @@ func tagCommand() *cli.Command {
 				TagGroups:         c.StringSlice(tagGroupArg),
 				ConfigFile:        c.String(externalConfPath),
 				SkipResourceTypes: c.StringSlice(skipResourceTypesArg),
+				SkipResources:     c.StringSlice(skipResourcesArg),
 				Parsers:           c.StringSlice(parsersArgs),
 				DryRun:            c.Bool(dryRunArgs),
 			}
@@ -179,6 +181,12 @@ func tagCommand() *cli.Command {
 				Usage:       "skip resource types for tagging",
 				Value:       cli.NewStringSlice(),
 				DefaultText: "aws_rds_instance,AWS::S3::Bucket",
+			},
+			&cli.StringSliceFlag{
+				Name:        skipResourcesArg,
+				Usage:       "skip resources for tagging",
+				Value:       cli.NewStringSlice(),
+				DefaultText: "aws_s3_bucket.test-bucket,EC2InstanceResource0",
 			},
 			&cli.StringSliceFlag{
 				Name:        parsersArgs,

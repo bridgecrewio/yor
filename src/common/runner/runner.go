@@ -35,6 +35,7 @@ type Runner struct {
 	skippedTags          []string
 	configFilePath       string
 	skippedResourceTypes []string
+	skippedResources     []string
 	workersNum           int
 	dryRun               bool
 }
@@ -96,6 +97,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
 	r.skippedResourceTypes = commands.SkipResourceTypes
+	r.skippedResources = commands.SkipResources
 	var convErr error
 	r.workersNum, convErr = strconv.Atoi(utils.GetEnv(WorkersNumEnvKey, "10"))
 	if convErr != nil {
@@ -156,6 +158,15 @@ func (r *Runner) isSkippedResourceType(resourceType string) bool {
 	return false
 }
 
+func (r *Runner) isSkippedResource(resource string) bool {
+	for _, skippedResource := range r.skippedResources {
+		if resource == skippedResource {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
@@ -171,6 +182,9 @@ func (r *Runner) TagFile(file string) {
 		isFileTaggable := false
 		for _, block := range blocks {
 			if r.isSkippedResourceType(block.GetResourceType()) {
+				continue
+			}
+			if r.isSkippedResource(block.GetResourceID()) {
 				continue
 			}
 			if block.IsBlockTaggable() {
