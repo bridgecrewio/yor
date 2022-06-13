@@ -18,7 +18,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sanathkr/yaml v1.0.0
 	github.com/stretchr/testify v1.6.1
-	github.com/thepauleh/goserverless v0.0.0-20210622112336-072bc6dc2ca0
+	github.com/thepauleh/goserverless v0.0.0-20220613122947-21ff7c8de24c
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/zclconf/go-cty v1.7.0
 	go.opencensus.io v0.22.0
@@ -135,7 +135,6 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
-	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/svanharmelen/jsonapi v0.0.0-20180618144545-0c0828c3f16d // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.82+incompatible // indirect
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20190808065407-f07404cefc8c // indirect
