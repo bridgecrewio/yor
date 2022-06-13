@@ -7,9 +7,7 @@ nav_order: 1
 
 # Overview
 
-Yor is an open-source tool that helps to manage tags consistently across infrastructure as code frameworks such as 
-Terraform, Cloudformation, Kubernetes, and Serverless Framework. Auto-tagging in IaC enables you to trace any resource 
-from code to cloud.
+Yor is an open-source tool that helps to manage tags consistently across infrastructure as code (IaC) frameworks. Auto-tagging in IaC enables you to trace any resource from code to cloud.
 
 IaC resource tagging provides added benefits which include:
 * **Security Risk Management** - identify resources that require heightened security
@@ -24,9 +22,9 @@ Yor enables version-controlled owner assignment and resource tracing based on gi
 into the CI/CD pipeline. 
 
 Yor can tag the following IaC file types:
-  * Terraform (for AWS, GCP and Azure)
+  * Terraform (for AWS, GCP, Azure, AliCloud, OCI)
   * CloudFormation (YAML, JSON)
-  * Serverless
+  * Serverless Framework
 
 # Built-in Taggers
 
