@@ -760,6 +760,10 @@ func (p *TerrraformParser) getClient(providerName string) tfschema.Client {
 	})
 	var err error
 	var newClient tfschema.Client
+	if p.terraformModule == nil {
+		logger.Warning(fmt.Sprintf("Failed to initialize terraform module, it might be due to a malformed file in the given root dir: [%s]", p.rootDir))
+		return nil
+	}
 	logger.MuteOutputBlock(func() {
 		newClient, err = tfschema.NewClient(providerName, tfschema.Option{
 			RootDir: p.terraformModule.ProvidersInstallDir,
