@@ -125,6 +125,16 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 		assert.Nil(t, parsedBlocks)
 		assert.NotNil(t, err)
 	})
+
+	t.Run("Do not crash if getting malformed file", func(t *testing.T) {
+		p := &TerrraformParser{}
+		p.Init("../../../tests/terraform/malformed_file_in_dir", nil)
+		defer p.Close()
+		filePath := "../../../tests/terraform/resources/malformed_file_in_dir/trail.tf"
+		parsedBlocks, err := p.ParseFile(filePath)
+		assert.Nil(t, parsedBlocks)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestTerrraformParser(t *testing.T) {
