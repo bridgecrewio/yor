@@ -95,6 +95,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 			"instance_merged_override":                  {"Environment": "new_env"},
 			"aurora_cluster_bastion_auto_scaling_group": {"git_org": "bridgecrewio", "git_repo": "platform", "yor_trace": "48564943-4cfc-403c-88cd-cbb207e0d33e", "Name": "bc-aurora-bastion"},
 			"instance_null_tags":                        nil,
+			"nested_brace_tags":                         {"Name": `lookup({Name = "tag-for-vpc", Environment = "prod", yor_trace = "should_not_use_this_id" }, "Name", "default")`},
 		}
 
 		parsedBlocks, err := p.ParseFile(filePath)

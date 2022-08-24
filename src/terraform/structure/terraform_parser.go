@@ -673,13 +673,20 @@ func (p *TerrraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite
 	// example: tokens: "merge({a=1, b=2}, {c=3})", return: ["a=1, b=2", "c=3"]
 	hclMaps := make([]hclwrite.Tokens, 0)
 	bracketOpenIndex := -1
+	depth := 0
 
 	for i, token := range tokens {
 		if token.Type == hclsyntax.TokenOBrace {
-			bracketOpenIndex = i
+			if depth == 0 {
+				bracketOpenIndex = i
+			}
+			depth++
 		}
 		if token.Type == hclsyntax.TokenCBrace {
-			hclMaps = append(hclMaps, tokens[bracketOpenIndex+1:i])
+			if depth == 1 {
+				hclMaps = append(hclMaps, tokens[bracketOpenIndex+1:i])
+			}
+			depth--
 		}
 	}
 
@@ -689,11 +696,27 @@ func (p *TerrraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite
 func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tokens {
 	// The function gets tokens and returns an array of tokens that represent key and value
 	// example: tokens: "a=1\n b=2, c=3", returns: ["a=1", "b=2", "c=3"]
+
 	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline}
 	tagPairs := make([]hclwrite.Tokens, 0)
 	startIndex := 0
 	hasEq := false
+	depth := 0
 	for i, token := range tokens {
+		switch token.Type {
+		case hclsyntax.TokenOParen:
+			fallthrough
+		case hclsyntax.TokenOBrace:
+			depth++
+		case hclsyntax.TokenCParen:
+			fallthrough
+		case hclsyntax.TokenCBrace:
+			depth--
+		}
+		if depth > 0 {
+			continue
+		}
+
 		if utils.InSlice(separatorTokens, token.Type) {
 			if hasEq {
 				tagPairs = append(tagPairs, tokens[startIndex:i])
@@ -724,7 +747,16 @@ func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]
 	for _, entry := range tagPairs {
 		eqIndex := -1
 		var key string
+		depth := 0
 		for j, token := range entry {
+			if token.Type == hclsyntax.TokenOBrace {
+				depth = depth + 1
+			} else if token.Type == hclsyntax.TokenCBrace {
+				depth = depth - 1
+			}
+			if depth > 0 {
+				continue
+			}
 			if token.Type == hclsyntax.TokenEqual {
 				eqIndex = j + 1
 				key = strings.TrimSpace(string(entry[:j].Bytes()))

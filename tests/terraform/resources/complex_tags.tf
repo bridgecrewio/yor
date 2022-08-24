@@ -83,3 +83,8 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   max_size = 0
   min_size = 0
 }
+
+resource "aws_vpc" "nested_brace_tags" {
+  cidr_block = ""
+  tags = {Name = lookup({Name = "tag-for-vpc", Environment = "prod", yor_trace = "should_not_use_this_id" }, "Name", "default")}
+}
