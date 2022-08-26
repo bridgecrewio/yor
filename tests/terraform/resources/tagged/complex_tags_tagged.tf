@@ -127,3 +127,8 @@ resource "aws_instance" "instance_no_tags" {
     yor_trace            = "a51f6e65-cd2d-4f53-962c-0d2894fc6418"
   }
 }
+
+resource "aws_vpc" "nested_brace_tags" {
+  cidr_block = ""
+  tags = {Name = lookup({Name = "tag-for-vpc", Environment = "prod", yor_trace = "should_not_use_this_id" }, "Name", "default")}
+}

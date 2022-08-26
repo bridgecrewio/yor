@@ -216,6 +216,10 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
+	err = fd.Close()
+	if err != nil {
+		return err
+	}
 
 	_, err = p.ParseFile(tempFile.Name())
 	if err != nil {
@@ -240,9 +244,6 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 		return fmt.Errorf("failed to write HCL file %s, %s", readFilePath, err.Error())
 	}
 	if err = f.Close(); err != nil {
-		return err
-	}
-	if err = fd.Close(); err != nil {
 		return err
 	}
 	return nil
@@ -375,9 +376,11 @@ func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.To
 	var possibleTagKeys []string
 	var currentToken string
 	var inInterpolation bool
+	depth := 0
 	for _, t := range tokens {
 		switch t {
 		case "{":
+			depth++
 			continue
 		case "${":
 			currentToken = fmt.Sprintf("%v%v", currentToken, t)
@@ -387,11 +390,14 @@ func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.To
 				currentToken = fmt.Sprintf("%v%v", currentToken, t)
 				inInterpolation = false
 			} else {
+				depth--
 				continue
 			}
 		case "=", "\n", ",":
-			possibleTagKeys = append(possibleTagKeys, currentToken)
-			currentToken = ""
+			if depth == 0 {
+				possibleTagKeys = append(possibleTagKeys, currentToken)
+				currentToken = ""
+			}
 		default:
 			currentToken = fmt.Sprintf("%v%v", currentToken, t)
 		}
