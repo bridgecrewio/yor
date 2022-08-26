@@ -394,7 +394,7 @@ func (p *TerrraformParser) extractTagKeysFromRawTokens(rawTagsTokens hclwrite.To
 				continue
 			}
 		case "=", "\n", ",":
-			if depth == 0 {
+			if depth == 1 {
 				possibleTagKeys = append(possibleTagKeys, currentToken)
 				currentToken = ""
 			}
