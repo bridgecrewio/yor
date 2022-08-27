@@ -147,7 +147,7 @@ func TestTerrraformParser(t *testing.T) {
 		actualFiles, err := terraformParser.GetSourceFiles(directory)
 		assert.Equal(t, len(expectedFiles), len(actualFiles))
 		for _, file := range actualFiles {
-			splitFile := strings.Split(file, "/")
+			splitFile := strings.Split(file, string(os.PathSeparator))
 			lastTwoParts := splitFile[len(splitFile)-2:]
 			assert.True(t, utils.InSlice(expectedFiles, strings.Join(lastTwoParts, "/")), fmt.Sprintf("expected file %s to be in directory\n", file))
 		}
