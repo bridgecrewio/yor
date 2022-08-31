@@ -44,6 +44,8 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## **Table of contents**
 
 - [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Usage](#usage)
 - [Support](#support)
 - [Customizing Yor](CUSTOMIZE.md)
 
@@ -120,75 +122,78 @@ Pre-commit
 `tag` : Apply tagging on a given directory.
 
 ```sh
- # Apply all the tags in yor on the directory tree terraform.
- yor tag --directory terraform/
+# Apply all the tags in yor on the directory tree terraform.
+yor tag --directory terraform/
 
-# Apply all the tags in yor except the tags git_last_modified_by and yor_trace.
- yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
+# Apply only the specified tags git_file and git_org
+yor tag --directory terraform/ --tags git_file,git_org
 
-# Apply only the tags under the git tag group.
- yor tag --tag-groups git --directory terraform/
+# Apply all the tags in yor except the tags starting with git and yor_trace
+yor tag --directory terraform/ --skip-tags git*,yor_trace
+
+# Apply only the tags under the git tag group
+yor tag --tag-groups git --directory terraform/
 
 # Apply key-value tags on a specific directory
- export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
- yor tag --tag-groups simple --directory terraform/dev/
+export YOR_SIMPLE_TAGS='{ "Environment" : "Dev" }'
+yor tag --tag-groups simple --directory terraform/dev/
 
+# Perform a dry run to get a preview in the CLI output of all of the tags that will be added using Yor without applying any changes to your IaC files.
+yor tag -d . --dry-run
+
+# Use an external tag group configuration file path
+yor tag -d . --config-file /path/to/conf/file/
+
+# Apply tags to all resources except of a specified type
+yor tag -d . --skip-resource-types aws_s3_bucket
+
+# Apply tags to all resources except with the specified name
+yor tag -d . --skip-resources aws_s3_bucket.operations
+
+# Apply tags to only the specified frameworks
+yor tag -d . --parsers Terraform,CloudFormation
+
+# Run yor with custom tags located in tests/yor_plugins/example and custom taggers located in tests/yor_plugins/tag_group_example
+yor tag -d . --custom-tagging tests/yor_plugins/example,tests/yor_plugins/tag_group_example
 ```
 
 `-o` : Modify output formats.
 
 ```sh
+# Default cli output
 yor tag -d . -o cli
-# default cli output
 
-yor tag -d . -o json
 # json output
+yor tag -d . -o json
 
+# Print CLI output and additional output to a JSON file -- enables programmatic analysis alongside printing human readable results
 yor tag -d . --output cli --output-json-file result.json
-# print cli output and additional output to file on json file -- enables programmatic analysis alongside printing human readable result
 ```
 
-`--skip-tags`: Specify only named tags (allow list) or run all tags except those listed (deny list).
+`--skip-dirs` : Skip directory paths you can define paths that will not be tagged.
 
 ```sh
-yor tag -d . --skip-tags yor_trace
-## Run all but yor_trace
-
-yor tag -d . --skip-tags yor_trace,git_modifiers
-## Run all but yor_trace and git_modifiers
-
-yor tag -d . --skip-tags git*
-## Run all tags except tags with specified patterns
-```
-
-`skip-dirs` : Skip directory paths you can define paths that will not be tagged.
-
-```sh
-yor tag -d path/to/files
 ## Run on the directory path/to/files
+yor tag -d path/to/files
 
-yor tag -d path/to/files --skip-dirs path/to/files/skip,path/to/files/another/skip2
 ## Run yor on the directory path/to/files, skipping path/to/files/skip/ and path/to/files/another/skip2/
+yor tag -d path/to/files --skip-dirs path/to/files/skip,path/to/files/another/skip2
 ```
 
 `list-tag`
 
 ```sh
+# List tag classes that are built into yor.
 yor list-tag-groups
- # List tag classes that are built into yor.
 
+# List all the tags built into yor
 yor list-tags
- # List all the tags built into yor
+
+# List all the tags built into yor under the tag group git
 yor list-tags --tag-groups git
-
- # List all the tags built into yor under the tag group git
 ```
 
-`dry-run`
-```sh
-yor tag -d . --dry-run
-# Perform a dry run to get a preview in the CLI output of all of the tags that will be added using Yor without applying any changes to your IaC files.
-```
+
 ### What is Yor trace?
 yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
 
