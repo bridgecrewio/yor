@@ -3,6 +3,7 @@ package gittag
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -131,7 +132,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		gitLines = append(gitLines, line.Text)
 	}
 
-	originFileText, err := ioutil.ReadFile(path)
+	originFileText, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return fileLineMapper{}
 	}
