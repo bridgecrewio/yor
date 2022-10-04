@@ -16,11 +16,6 @@ func TestTerrraformModule(t *testing.T) {
 		assert.True(t, isRemote)
 	})
 
-	t.Run("Test TF Module remote scalr logic", func(t *testing.T) {
-		isRemote := isRemoteModule("jameswoolfenden.scalr.io/acc-u1ksa0vgdflusgo/cloudfront/aws")
-		assert.True(t, isRemote)
-	})
-
 	t.Run("Test TF Module remote github logic", func(t *testing.T) {
 		isRemote := isRemoteModule("github.com/terraform-aws-modules/terraform-aws-vpc.git")
 		assert.True(t, isRemote)
@@ -47,6 +42,16 @@ func TestTerrraformModule(t *testing.T) {
 
 	t.Run("Test TF Registry Module logic", func(t *testing.T) {
 		isRegistry := isTerraformRegistryModule("terraform-aws-modules/security-group/aws")
+		assert.True(t, isRegistry)
+	})
+
+	t.Run("Test TF Private Registry Module logic", func(t *testing.T) {
+		isRegistry := isTerraformRegistryModule("some.private.registry/namespace/name/aws")
+		assert.True(t, isRegistry)
+	})
+
+	t.Run("Test TF Private scalr Registry Module logic", func(t *testing.T) {
+		isRegistry := isTerraformRegistryModule("jameswoolfenden.scalr.io/acc-u1ksa0vgdflusgo/cloudfront/aws")
 		assert.True(t, isRegistry)
 	})
 

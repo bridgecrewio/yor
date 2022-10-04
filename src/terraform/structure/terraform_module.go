@@ -24,7 +24,7 @@ import (
 const PluginsOutputDir = ".yor_plugins"
 
 var SkippedProviders = []string{"null", "random", "tls", "local"}
-var RegistryModuleRegex = regexp.MustCompile("^(?P<MODULE_WRITER>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
+var RegistryModuleRegex = regexp.MustCompile("^((?P<MODULE_HOSTNAME>[^/]+)/)?(?P<MODULE_NAMESPACE>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
 
 type TerraformModule struct {
 	tfModule            *tfconfig.Module
@@ -173,7 +173,7 @@ func isRemoteModule(s string) bool {
 	// Taken from https://www.terraform.io/docs/language/modules/sources.html
 	return strings.HasPrefix(s, "git::") || strings.HasPrefix(s, "hg::") || strings.HasPrefix(s, "s3::") || strings.HasPrefix(s, "gcs::") ||
 		strings.HasPrefix(s, "github.com/") || strings.HasPrefix(s, "bitbucket.org/") || strings.HasPrefix(s, "app.terraform.io/") ||
-		strings.HasPrefix(s, "https://") || strings.HasPrefix(s, "git@") || strings.Contains(s, ".scalr.io")
+		strings.HasPrefix(s, "https://") || strings.HasPrefix(s, "git@")
 }
 
 func isTerraformRegistryModule(source string) bool {
