@@ -48,7 +48,7 @@ run-yor:
   script:
     - git checkout ${CI_COMMIT_REF_NAME}
     - export YOR_VERSION=0.1.62
-    - wget -q -O - https://github.com/bridgecrewio/yor/releases/download/${YOR_VERSION}/yor-${YOR_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
+    - wget -q -O - https://github.com/bridgecrewio/yor/releases/download/${YOR_VERSION}/yor_${YOR_VERSION}_linux_amd64.tar.gz | tar -xvz -C /tmp
     - /tmp/yor tag -d .
     - *git-script
 ```
