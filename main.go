@@ -91,6 +91,7 @@ func tagCommand() *cli.Command {
 	skipResourcesArg := "skip-resources"
 	parsersArgs := "parsers"
 	dryRunArgs := "dry-run"
+	tagModules := "tag-modules"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -111,6 +112,7 @@ func tagCommand() *cli.Command {
 				SkipResources:     c.StringSlice(skipResourcesArg),
 				Parsers:           c.StringSlice(parsersArgs),
 				DryRun:            c.Bool(dryRunArgs),
+				TagModules:        c.Bool(tagModules),
 			}
 
 			options.Validate()
@@ -198,6 +200,12 @@ func tagCommand() *cli.Command {
 			&cli.BoolFlag{
 				Name:        dryRunArgs,
 				Usage:       "skip resource tagging",
+				Value:       false,
+				DefaultText: "false",
+			},
+			&cli.BoolFlag{
+				Name:        tagModules,
+				Usage:       "Always tag local modules",
 				Value:       false,
 				DefaultText: "false",
 			},
