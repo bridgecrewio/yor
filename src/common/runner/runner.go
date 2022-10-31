@@ -38,7 +38,7 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
-	moduleTag            bool
+	localModuleTag       bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -83,7 +83,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		processedParsers[p] = struct{}{}
 	}
 	options := map[string]string{
-		"tag-modules": strconv.FormatBool(commands.TagModules)}
+		"tag-local-modules": strconv.FormatBool(commands.TagLocalModules)}
 	for _, parser := range r.parsers {
 		parser.Init(dir, options)
 	}
