@@ -516,10 +516,25 @@ func (p *TerrraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, fileP
 			}
 		}
 		if !isTaggable {
-			isTaggable, tagsAttributeName = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."), possibleTagAttributeNames)
+			moduleDir := ExtractSubdirFromRemoteModuleSrc(moduleSource)
+			isTaggable, tagsAttributeName = p.isModuleTaggable(filePath, strings.Join(hclBlock.Labels(), "."), moduleDir, possibleTagAttributeNames)
 		}
 	}
 	return isTaggable, existingTags, tagsAttributeName
+}
+
+func ExtractSubdirFromRemoteModuleSrc(raw string) string {
+	// http(s) and various VCS sources contain one additional double slash that
+	// we must remove before we start processing source string. We are using
+	// the fact that such double slashes always have : on the left.
+	parts := strings.Split(raw, "://")
+	parts = strings.Split(parts[len(parts) - 1], "//")
+
+	if len(parts) == 1 {
+		return ""
+	}
+
+	return strings.Split(parts[1], "?")[0]
 }
 
 func ExtractProviderFromModuleSrc(source string) string {
@@ -543,7 +558,7 @@ func ExtractProviderFromModuleSrc(source string) string {
 	return ""
 }
 
-func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtts []string) (bool, string) {
+func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, moduleDir string, tagAtts []string) (bool, string) {
 	logger.Info(fmt.Sprintf("Searching module %v for %v", moduleName, tagAtts))
 	actualPath, _ := filepath.Rel(p.rootDir, filepath.Dir(fp))
 	absRootPath, _ := filepath.Abs(p.rootDir)
@@ -555,7 +570,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtt
 			p.downloadedPaths = append(p.downloadedPaths, fp)
 		})
 	}
-	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName)
+	expectedModuleDir := filepath.Join(p.moduleInstallDir, moduleName, moduleDir)
 	if _, err := os.Stat(expectedModuleDir); os.IsNotExist(err) {
 		return false, ""
 	}
