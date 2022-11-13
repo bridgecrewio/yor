@@ -326,6 +326,32 @@ func TestTagUncommittedResults(t *testing.T) {
 	})
 }
 
+func TestLocalModules(t *testing.T) {
+	t.Run("Test tagging local modules", func(t *testing.T) {
+		localTagExampleRepo := "https://github.com/JamesWoolfenden/terraform-aws-activemq/"
+		repoPath := utils.CloneRepo(localTagExampleRepo, "05ab598c4947bb9e53fee67a0f7350941897c2bd")
+		defer func() {
+			_ = os.RemoveAll(repoPath)
+		}()
+
+		targetDirectory := path.Join(repoPath, "example/examplea")
+
+		tagLocalDirectory(t, targetDirectory)
+
+		terraformParser := terraformStructure.TerrraformParser{}
+		terraformParser.Init(targetDirectory, nil)
+		dbAppFile := path.Join(targetDirectory, "module.broker.tf")
+		blocks, _ := terraformParser.ParseFile(dbAppFile)
+
+		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
+		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["common_tags"]
+		rawTagsExpr := rawTags.Expr.(*hclsyntax.FunctionCallExpr)
+		assert.Equal(t, "common_tags", rawTags.Name)
+		assert.Equal(t, "merge", rawTagsExpr.Name)
+	})
+
+}
+
 func failIfErr(t *testing.T, err error) {
 	if err != nil {
 		t.Error(err)
@@ -338,6 +364,19 @@ func tagDirectory(t *testing.T, path string) {
 		Directory: path,
 		TagGroups: getTagGroups(),
 		Parsers:   []string{"Terraform", "CloudFormation", "Serverless"},
+	})
+	failIfErr(t, err)
+	_, err = yorRunner.TagDirectory()
+	failIfErr(t, err)
+}
+
+func tagLocalDirectory(t *testing.T, path string) {
+	yorRunner := runner.Runner{}
+	err := yorRunner.Init(&clioptions.TagOptions{
+		Directory:       path,
+		TagGroups:       getTagGroups(),
+		Parsers:         []string{"Terraform"},
+		TagLocalModules: true,
 	})
 	failIfErr(t, err)
 	_, err = yorRunner.TagDirectory()

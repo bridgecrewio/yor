@@ -5,3 +5,4 @@
 .gobuild
 dist/
 /yor
+.DS_Store

@@ -40,6 +40,7 @@ type TerrraformParser struct {
 	providerToClientMap    sync.Map
 	taggableResourcesCache map[string]bool
 	tagModules             bool
+	tagLocalModules        bool
 	terraformModule        *TerraformModule
 	moduleImporter         *command.GetCommand
 	moduleInstallDir       string
@@ -55,10 +56,16 @@ func (p *TerrraformParser) Init(rootDir string, args map[string]string) {
 	p.rootDir = rootDir
 	p.taggableResourcesCache = make(map[string]bool)
 	p.tagModules = true
+	p.tagLocalModules = false
 	p.terraformModule = NewTerraformModule(rootDir)
 	if argTagModule, ok := args["tag-modules"]; ok {
 		p.tagModules, _ = strconv.ParseBool(argTagModule)
 	}
+
+	if argTagLocalModule, ok := args["tag-local-modules"]; ok {
+		p.tagLocalModules, _ = strconv.ParseBool(argTagLocalModule)
+	}
+
 	p.moduleImporter = &command.GetCommand{Meta: command.Meta{Color: false, Ui: customTfLogger{}}}
 	pwd, _ := os.Getwd()
 	p.moduleInstallDir = filepath.Join(pwd, ".terraform", "modules")
@@ -498,13 +505,14 @@ func (p *TerrraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, fileP
 	moduleSource := string(hclBlock.Body().GetAttribute("source").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
 	// source is always wrapped in " front and back
 	moduleSource = strings.Trim(moduleSource, "\" ")
-	if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) {
+
+	if !isRemoteModule(moduleSource) && !isTerraformRegistryModule(moduleSource) && !p.tagLocalModules {
 		// Don't use the tags label on local modules - the underlying resources will be tagged by themselves
 		isTaggable = false
 	} else {
 		// This is a remote module - if it has tags attribute, tag it!
 		moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
-		possibleTagAttributeNames := []string{"extra_tags", "tags"}
+		possibleTagAttributeNames := []string{"extra_tags", "tags", "common_tags"}
 		if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
 			possibleTagAttributeNames = append(possibleTagAttributeNames, val)
 		}

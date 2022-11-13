@@ -38,6 +38,7 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
+	localModuleTag       bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -81,9 +82,10 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		processedParsers[p] = struct{}{}
 	}
-
+	options := map[string]string{
+		"tag-local-modules": strconv.FormatBool(commands.TagLocalModules)}
 	for _, parser := range r.parsers {
-		parser.Init(dir, nil)
+		parser.Init(dir, options)
 	}
 
 	r.ChangeAccumulator = reports.TagChangeAccumulatorInstance
