@@ -250,6 +250,8 @@ func TestRunResults(t *testing.T) {
 		reportService.CreateReport()
 		report := reportService.GetReport()
 
+		reportService.PrintToStdout()
+
 		newTags := report.NewResourceTags
 		for _, newTag := range newTags {
 			assert.NotEqual(t, "yor_trace", newTag.TagKey)
