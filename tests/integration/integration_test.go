@@ -223,7 +223,7 @@ func TestRunResults(t *testing.T) {
 		reportService.CreateReport()
 		report := reportService.GetReport()
 		assert.LessOrEqual(t, 18, report.Summary.Scanned)
-		assert.Greater(t, 0, report.Summary.Scanned)
+		assert.Greater(t, report.Summary.Scanned, 0)
 
 		for _, newTag := range report.NewResourceTags {
 			if strings.HasPrefix(repoPath, newTag.File) {
