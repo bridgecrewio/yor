@@ -258,6 +258,27 @@ func TestRunnerInternals(t *testing.T) {
 			assert.Equal(t, "yor_trace", newTag.TagKey)
 		}
 	})
+
+	t.Run("Test validate inner modules accept skipped tags", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform/nested_dirs"
+		err := runner.Init(&clioptions.TagOptions{
+			Directory: rootDir,
+			SkipTags:  []string{"yor_trace"},
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			Parsers:   []string{"Terraform"},
+		})
+		assert.Nil(t, err)
+		reportService, err := runner.TagDirectory()
+		assert.Nil(t, err)
+		assert.NotNil(t, reportService)
+		reportService.CreateReport()
+		assert.Equal(t, 2, reportService.GetReport().Summary.NewResources)
+		newTags := reportService.GetReport().NewResourceTags
+		for _, newTag := range newTags {
+			assert.NotEqual(t, "yor_trace", newTag.TagKey)
+		}
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
