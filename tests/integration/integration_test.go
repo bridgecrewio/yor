@@ -210,7 +210,7 @@ func TestRunResults(t *testing.T) {
 			_ = os.RemoveAll(repoPath)
 		}()
 
-		yorRunner := runner.Runner{}
+		yorRunner := new(runner.Runner)
 		err := yorRunner.Init(&clioptions.TagOptions{
 			Directory: repoPath,
 			TagGroups: getTagGroups(),
