@@ -67,7 +67,7 @@ func TestTagCreation(t *testing.T) {
 		defaultDescription := tag.GetDescription()
 		cwd, _ := os.Getwd()
 		g := TagGroup{}
-		g.InitTagGroup(cwd, nil)
+		g.InitTagGroup(cwd, nil, nil)
 		for _, tag := range g.GetTags() {
 			assert.NotEqual(t, defaultDescription, tag.GetDescription())
 			assert.NotEqual(t, "", tag.GetDescription())

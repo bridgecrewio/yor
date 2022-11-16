@@ -73,7 +73,7 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(gotTagGroups))
 		group := gotTagGroups[0]
-		group.InitTagGroup("src", nil)
+		group.InitTagGroup("src", nil, nil)
 		groupTags := gotTagGroups[0].GetTags()
 		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
 		tag := groupTags[0]
@@ -237,6 +237,27 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "EC2InstanceResource0")
 	})
+
+	t.Run("Test run only yor_trace - terraform", func(t *testing.T) {
+		runner := Runner{}
+		rootDir := "../../../tests/terraform/nested_dirs"
+		err := runner.Init(&clioptions.TagOptions{
+			Directory: rootDir,
+			Tag:       []string{"yor_trace"},
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			Parsers:   []string{"Terraform"},
+		})
+		assert.Nil(t, err)
+		reportService, err := runner.TagDirectory()
+		assert.Nil(t, err)
+		assert.NotNil(t, reportService)
+		reportService.CreateReport()
+		newTags := reportService.GetReport().NewResourceTags
+		assert.Equal(t, 2, len(newTags))
+		for _, newTag := range newTags {
+			assert.Equal(t, "yor_trace", newTag.TagKey)
+		}
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
@@ -250,7 +271,7 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 
 	gitTagGroup := gittag.TagGroup{}
 	wd, _ := os.Getwd()
-	gitTagGroup.InitTagGroup(wd, nil)
+	gitTagGroup.InitTagGroup(wd, nil, nil)
 	gitTagGroup.GitService = gitService
 	return &gitTagGroup
 }
