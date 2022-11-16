@@ -261,7 +261,7 @@ func TestRunnerInternals(t *testing.T) {
 
 	t.Run("Test validate inner modules accept skipped tags", func(t *testing.T) {
 		runner := Runner{}
-		rootDir := "../../../tests/terraform/nested_dirs"
+		rootDir := "../../../tests/terraform"
 		err := runner.Init(&clioptions.TagOptions{
 			Directory: rootDir,
 			SkipTags:  []string{"yor_trace"},
