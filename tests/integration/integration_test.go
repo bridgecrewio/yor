@@ -205,10 +205,8 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		outputPath := "./result.json"
 		defer func() {
 			_ = os.RemoveAll(repoPath)
-			_ = os.RemoveAll(outputPath)
 		}()
 
 		yorRunner := runner.Runner{}
@@ -229,15 +227,13 @@ func TestRunResults(t *testing.T) {
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
 		singleTaggedResource := report.NewResourceTags[0]
-		assert.Equal(t, " aws_iam_role.bridgecrew_account_role", singleTaggedResource.ResourceID)
+		assert.Equal(t, "aws_iam_role.bridgecrew_account_role", singleTaggedResource.ResourceID)
 	})
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		outputPath := "./result.json"
 		defer func() {
 			_ = os.RemoveAll(repoPath)
-			_ = os.RemoveAll(outputPath)
 		}()
 
 		yorRunner := runner.Runner{}
