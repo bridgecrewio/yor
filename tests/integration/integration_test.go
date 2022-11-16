@@ -202,6 +202,21 @@ func TestRunResults(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("Number of filtered lines is %v, should be %v", len(filtered), 2))
 		}
 	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
+		content, _ := ioutil.ReadFile("../../result_tags_flag.json")
+		report := &reports.Report{}
+		err := json.Unmarshal(content, &report)
+		if err != nil {
+			assert.Fail(t, "Failed to parse json result")
+		}
+		assert.LessOrEqual(t, 18, report.Summary.Scanned)
+		assert.Equal(t, 1, report.Summary.NewResources)
+		assert.Equal(t, 0, report.Summary.UpdatedResources)
+
+		singleTaggedResource := report.NewResourceTags[0]
+		assert.Equal(t, " aws_iam_role.bridgecrew_account_role", singleTaggedResource.ResourceID)
+	})
 }
 
 func TestTagUncommittedResults(t *testing.T) {

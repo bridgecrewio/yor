@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -61,4 +62,18 @@ func CloneRepo(repoPath string, commitHash string) string {
 	}
 
 	return dir
+}
+
+func CopyDirToTempDir(originDir string) string {
+	tempDir, err := ioutil.TempDir("", "temp-repo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd := exec.Command("cp", "-R", originDir, tempDir)
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return tempDir
 }

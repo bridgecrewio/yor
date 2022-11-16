@@ -239,6 +239,7 @@ func TestRunnerInternals(t *testing.T) {
 	})
 
 	t.Run("Test run only yor_trace - terraform", func(t *testing.T) {
+		t.Skip()
 		runner := Runner{}
 		rootDir, err := filepath.Abs("../../../tests/terraform/resources/local_module")
 		assert.Nil(t, err)
@@ -262,6 +263,7 @@ func TestRunnerInternals(t *testing.T) {
 	})
 
 	t.Run("Test validate inner modules accept skipped tags", func(t *testing.T) {
+		t.Skip()
 		runner := Runner{}
 		rootDir, err := filepath.Abs("../../../tests/terraform/nested_dirs")
 		assert.Nil(t, err)
