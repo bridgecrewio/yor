@@ -204,18 +204,60 @@ func TestRunResults(t *testing.T) {
 	})
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
-		content, _ := ioutil.ReadFile("../../result_tags_flag.json")
-		report := &reports.Report{}
-		err := json.Unmarshal(content, &report)
-		if err != nil {
-			assert.Fail(t, "Failed to parse json result")
-		}
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		outputPath := "./result.json"
+		defer func() {
+			_ = os.RemoveAll(repoPath)
+			_ = os.RemoveAll(outputPath)
+		}()
+
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			Tag:       []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
 		assert.LessOrEqual(t, 18, report.Summary.Scanned)
 		assert.Equal(t, 1, report.Summary.NewResources)
 		assert.Equal(t, 0, report.Summary.UpdatedResources)
 
 		singleTaggedResource := report.NewResourceTags[0]
 		assert.Equal(t, " aws_iam_role.bridgecrew_account_role", singleTaggedResource.ResourceID)
+	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		outputPath := "./result.json"
+		defer func() {
+			_ = os.RemoveAll(repoPath)
+			_ = os.RemoveAll(outputPath)
+		}()
+
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			SkipTags:  []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		newTags := report.NewResourceTags
+		for _, newTag := range newTags {
+			assert.NotEqual(t, "yor_trace", newTag.TagKey)
+		}
 	})
 }
 

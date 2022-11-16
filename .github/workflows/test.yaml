@@ -58,19 +58,10 @@ jobs:
           clean: false
           path: 'terragoat'
           ref: 063dc2db3bb036160ed39d3705508ee8293a27c8
-      - name: Clone terraform-azurerm-bridgecrew-azure-read-only
-        uses: actions/checkout@v2
-        with:
-          repository: bridgecrewio/terraform-aws-bridgecrew-read-only # clone https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only
-          fetch-depth: 0
-          clean: false
-          path: 'terraform-aws-bridgecrew-read-only'
-          ref: a8686215642fd47a38bf8615d91d0d40630ab989
       - name: Run yor
         run: |
           git config --local user.email "action@github.com"
           ./yor list-tags -g code2cloud,git > list-tags-result.txt
           ./yor tag -d terragoat -o json --output-json-file result.json
-          ./yor tag -d terraform-azurerm-bridgecrew-azure-read-only -tags -o json --output-json-file result_tags_flag.json
       - name: Run integration tests
         run: go test -race ./tests/integration/...

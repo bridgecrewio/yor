@@ -237,54 +237,6 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "EC2InstanceResource0")
 	})
-
-	t.Run("Test run only yor_trace - terraform", func(t *testing.T) {
-		t.Skip()
-		runner := Runner{}
-		rootDir, err := filepath.Abs("../../../tests/terraform/resources/local_module")
-		assert.Nil(t, err)
-		//rootDir = testingUtils.CopyDirToTempDir(rootDir)
-		err = runner.Init(&clioptions.TagOptions{
-			Directory: rootDir,
-			Tag:       []string{"yor_trace"},
-			TagGroups: taggingUtils.GetAllTagGroupsNames(),
-			Parsers:   []string{"Terraform"},
-		})
-		assert.Nil(t, err)
-		reportService, err := runner.TagDirectory()
-		assert.Nil(t, err)
-		assert.NotNil(t, reportService)
-		reportService.CreateReport()
-		newTags := reportService.GetReport().NewResourceTags
-		assert.Equal(t, 1, len(newTags))
-		for _, newTag := range newTags {
-			assert.Equal(t, "yor_trace", newTag.TagKey)
-		}
-	})
-
-	t.Run("Test validate inner modules accept skipped tags", func(t *testing.T) {
-		t.Skip()
-		runner := Runner{}
-		rootDir, err := filepath.Abs("../../../tests/terraform/nested_dirs")
-		assert.Nil(t, err)
-		//rootDir = testingUtils.CopyDirToTempDir(rootDir)
-		err = runner.Init(&clioptions.TagOptions{
-			Directory: rootDir,
-			SkipTags:  []string{"yor_trace"},
-			TagGroups: taggingUtils.GetAllTagGroupsNames(),
-			Parsers:   []string{"Terraform"},
-		})
-		assert.Nil(t, err)
-		reportService, err := runner.TagDirectory()
-		assert.Nil(t, err)
-		assert.NotNil(t, reportService)
-		reportService.CreateReport()
-		assert.Equal(t, 0, reportService.GetReport().Summary.NewResources)
-		//newTags := reportService.GetReport().NewResourceTags
-		//for _, newTag := range newTags {
-		//	assert.NotEqual(t, "yor_trace", newTag.TagKey)
-		//}
-	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
