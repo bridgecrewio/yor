@@ -205,9 +205,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		defer func() {
-			_ = os.RemoveAll(repoPath)
-		}()
+		defer os.RemoveAll(repoPath)
 
 		yorRunner := new(runner.Runner)
 		err := yorRunner.Init(&clioptions.TagOptions{
@@ -235,9 +233,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		defer func() {
-			_ = os.RemoveAll(repoPath)
-		}()
+		defer os.RemoveAll(repoPath)
 
 		yorRunner := runner.Runner{}
 		err := yorRunner.Init(&clioptions.TagOptions{
