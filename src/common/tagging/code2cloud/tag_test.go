@@ -41,7 +41,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 
 		block := &MockTestBlock{
 			Block: structure.Block{

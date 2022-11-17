@@ -26,7 +26,7 @@ func TestGitTagGroup(t *testing.T) {
 		tagGroup := TagGroup{}
 
 		wd, _ := os.Getwd()
-		tagGroup.InitTagGroup(wd, nil)
+		tagGroup.InitTagGroup(wd, nil, nil)
 		tagGroup.GitService = gitService
 		block := &MockTestBlock{
 			Block: structure.Block{

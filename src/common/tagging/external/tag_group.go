@@ -109,8 +109,9 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
 
 }
 
-func (t *TagGroup) InitTagGroup(dir string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string) {
 	t.SkippedTags = skippedTags
+	t.SpecifiedTags = explicitlySpecifiedTags
 	t.Dir = dir
 }
 

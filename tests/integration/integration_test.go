@@ -202,6 +202,60 @@ func TestRunResults(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("Number of filtered lines is %v, should be %v", len(filtered), 2))
 		}
 	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		defer os.RemoveAll(repoPath)
+
+		yorRunner := new(runner.Runner)
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			Tag:       []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+		assert.LessOrEqual(t, 18, report.Summary.Scanned)
+		assert.Greater(t, report.Summary.Scanned, 0)
+
+		for _, newTag := range report.NewResourceTags {
+			if strings.HasPrefix(repoPath, newTag.File) {
+				assert.Equal(t, "yor_trace", newTag.TagKey)
+				assert.Equal(t, "aws_iam_role.bridgecrew_account_role", newTag.ResourceID)
+			}
+		}
+	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		defer os.RemoveAll(repoPath)
+
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			SkipTags:  []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		newTags := report.NewResourceTags
+		for _, newTag := range newTags {
+			if strings.HasPrefix(repoPath, newTag.File) {
+				assert.NotEqual(t, "yor_trace", newTag.TagKey)
+			}
+		}
+	})
 }
 
 func TestTagUncommittedResults(t *testing.T) {

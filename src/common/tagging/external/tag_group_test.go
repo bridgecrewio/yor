@@ -17,7 +17,7 @@ func TestExternalTagGroup(t *testing.T) {
 		_ = os.Setenv("GIT_BRANCH", "master")
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{
@@ -51,7 +51,7 @@ func TestExternalTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock matches", func(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{
@@ -92,7 +92,7 @@ func TestExternalTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock matches with directory filter", func(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_dir.yml")
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{
@@ -141,7 +141,7 @@ func TestExternalTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock not matches with directory filter", func(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_dir.yml")
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{
@@ -180,7 +180,7 @@ func TestExternalTagGroup(t *testing.T) {
 		_ = os.Setenv("GIT_BRANCH", "master")
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_no_match.yml")
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil)
+		tagGroup.InitTagGroup("", nil, nil)
 		tagGroup.InitExternalTagGroups(confPath)
 		block := &MockTestBlock{
 			Block: structure.Block{

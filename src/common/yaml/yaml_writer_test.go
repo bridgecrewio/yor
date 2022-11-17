@@ -27,7 +27,7 @@ func TestServerlessWriting(t *testing.T) {
 			},
 		}
 		tagGroup.SetTags(extraTags)
-		tagGroup.InitTagGroup("", []string{})
+		tagGroup.InitTagGroup("", []string{}, []string{})
 		relExpectedPath := directory + "/serverless_tagged.yml"
 		slsBlocks := []structure.IBlock{
 			&structure.Block{

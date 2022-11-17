@@ -30,8 +30,9 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string) {
 	t.SkippedTags = skippedTags
+	t.SpecifiedTags = explicitlySpecifiedTags
 	if path != "" {
 		gitService, err := gitservice.NewGitService(path)
 		if err != nil {

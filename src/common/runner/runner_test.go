@@ -73,7 +73,7 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(gotTagGroups))
 		group := gotTagGroups[0]
-		group.InitTagGroup("src", nil)
+		group.InitTagGroup("src", nil, nil)
 		groupTags := gotTagGroups[0].GetTags()
 		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
 		tag := groupTags[0]
@@ -250,7 +250,7 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 
 	gitTagGroup := gittag.TagGroup{}
 	wd, _ := os.Getwd()
-	gitTagGroup.InitTagGroup(wd, nil)
+	gitTagGroup.InitTagGroup(wd, nil, nil)
 	gitTagGroup.GitService = gitService
 	return &gitTagGroup
 }

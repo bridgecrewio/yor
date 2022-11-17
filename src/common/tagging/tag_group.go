@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"fmt"
+	"github.com/bridgecrewio/yor/src/common/utils"
 	"regexp"
 	"strings"
 
@@ -11,15 +12,16 @@ import (
 )
 
 type TagGroup struct {
-	tags        []tags.ITag
-	SkippedTags []string
-	Dir         string
+	tags          []tags.ITag
+	SkippedTags   []string
+	Dir           string
+	SpecifiedTags []string
 }
 
 var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
 type ITagGroup interface {
-	InitTagGroup(path string, skippedTags []string)
+	InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string)
 	CreateTagsForBlock(block structure.IBlock) error
 	GetTags() []tags.ITag
 	GetDefaultTags() []tags.ITag
@@ -32,7 +34,7 @@ func (t *TagGroup) GetSkippedDirs() []string {
 func (t *TagGroup) SetTags(tags []tags.ITag) {
 	for _, tag := range tags {
 		tag.Init()
-		if !t.IsTagSkipped(tag) {
+		if !t.IsTagSkipped(tag) && (t.SpecifiedTags == nil || len(t.SpecifiedTags) == 0 || utils.InSlice(t.SpecifiedTags, tag.GetKey())) {
 			t.tags = append(t.tags, tag)
 		}
 	}
