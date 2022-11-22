@@ -681,30 +681,14 @@ func (p *TerrraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite
 	// example: tokens: "merge({a=1, b=2}, {c=3})", return: ["a=1, b=2", "c=3"]
 	hclMaps := make([]hclwrite.Tokens, 0)
 	bracketOpenIndex := -1
-	tomapExpr := false
-	//tomapParenCounter := 0
 
 	for i, token := range tokens {
-		if token.Type == hclsyntax.TokenOBrace && !tomapExpr {
+		if token.Type == hclsyntax.TokenOBrace {
 			bracketOpenIndex = i
 		}
-		if token.Type == hclsyntax.TokenCBrace && !tomapExpr {
+		if token.Type == hclsyntax.TokenCBrace {
 			hclMaps = append(hclMaps, tokens[bracketOpenIndex+1:i])
 		}
-		//if token.Type == hclsyntax.TokenIdent && string(token.Bytes) == "tomap" {
-		//	tomapExpr = true
-		//	bracketOpenIndex = i
-		//}
-		//if token.Type == hclsyntax.TokenOParen && tomapExpr {
-		//	tomapParenCounter++
-		//}
-		//if token.Type == hclsyntax.TokenCParen && tomapExpr {
-		//	tomapParenCounter--
-		//	if tomapParenCounter == 0 {
-		//		hclMaps = append(hclMaps, tokens[bracketOpenIndex:i + 1])
-		//		tomapExpr = false
-		//	}
-		//}
 	}
 
 	return hclMaps
