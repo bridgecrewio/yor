@@ -2,6 +2,7 @@ package structure
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -515,6 +516,92 @@ func TestExtractProviderFromModuleSrc(t *testing.T) {
 	}
 }
 
+func TestRxtractTagPairs(t *testing.T) {
+	tests := []struct {
+		name   string
+		source hclwrite.Tokens
+		want   []hclwrite.Tokens
+	}{
+		{name: "standard",
+			source: hclwrite.Tokens{
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Name"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("test"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenComma, Bytes: []byte(","), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Second"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("test_second"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 0},
+			}, want: []hclwrite.Tokens{{
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Name"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("test"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 0},
+			},
+				{
+					&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+					&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Second"), SpacesBefore: 0},
+					&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+					&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+					&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+					&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("test_second"), SpacesBefore: 0},
+					&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				},
+			}},
+		{name: "with func",
+			source: hclwrite.Tokens{
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Name"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("format"), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenOParen, Bytes: []byte("("), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("%"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("s-sample"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenComma, Bytes: []byte(","), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("var"), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenDot, Bytes: []byte("."), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("this"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCParen, Bytes: []byte(")"), SpacesBefore: 0},
+			}, want: []hclwrite.Tokens{{
+				&hclwrite.Token{Type: hclsyntax.TokenOQuote, Bytes: []byte("\""), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("Name"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenEqual, Bytes: []byte("="), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("format"), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenOParen, Bytes: []byte("("), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("%"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenQuotedLit, Bytes: []byte("s-sample"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCQuote, Bytes: []byte("\""), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenComma, Bytes: []byte(","), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("var"), SpacesBefore: 1},
+				&hclwrite.Token{Type: hclsyntax.TokenDot, Bytes: []byte("."), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenIdent, Bytes: []byte("this"), SpacesBefore: 0},
+				&hclwrite.Token{Type: hclsyntax.TokenCParen, Bytes: []byte(")"), SpacesBefore: 0},
+			}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			terraformParser := TerrraformParser{}
+			if got := terraformParser.extractTagPairs(tt.source); !compareTokenArrays(got, tt.want) {
+				t.Errorf("extractTagPairs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 var layout = "2006-01-02 15:04:05"
 
 func getTime() time.Time {
@@ -540,4 +627,23 @@ func CreateComplexTagsLines() []*git.Line {
 	}
 
 	return lines
+}
+
+func compareTokenArrays(got []hclwrite.Tokens, want []hclwrite.Tokens) bool {
+	if len(got) != len(want) {
+		return false
+	}
+
+	for i := range want {
+		gotI := got[i]
+		wantI := want[i]
+		for j := range gotI {
+			if string(gotI[j].Bytes) != string(wantI[j].Bytes) {
+				return false
+			}
+
+		}
+	}
+
+	return true
 }

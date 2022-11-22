@@ -288,7 +288,7 @@ func (p *TerrraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock
 			tagReplaced := false
 			strippedTagKey := strings.ReplaceAll(tag.GetKey(), `"`, "")
 			for _, t := range possibleTagKeys {
-				if t == tag.GetKey() || t == strippedTagKey {
+				if t == tag.GetKey() || t == strippedTagKey || strings.Contains(t, strippedTagKey) {
 					replacedTags = append(replacedTags, tag)
 					tagReplaced = true
 					break
@@ -681,14 +681,30 @@ func (p *TerrraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite
 	// example: tokens: "merge({a=1, b=2}, {c=3})", return: ["a=1, b=2", "c=3"]
 	hclMaps := make([]hclwrite.Tokens, 0)
 	bracketOpenIndex := -1
+	tomapExpr := false
+	//tomapParenCounter := 0
 
 	for i, token := range tokens {
-		if token.Type == hclsyntax.TokenOBrace {
+		if token.Type == hclsyntax.TokenOBrace && !tomapExpr {
 			bracketOpenIndex = i
 		}
-		if token.Type == hclsyntax.TokenCBrace {
+		if token.Type == hclsyntax.TokenCBrace && !tomapExpr {
 			hclMaps = append(hclMaps, tokens[bracketOpenIndex+1:i])
 		}
+		//if token.Type == hclsyntax.TokenIdent && string(token.Bytes) == "tomap" {
+		//	tomapExpr = true
+		//	bracketOpenIndex = i
+		//}
+		//if token.Type == hclsyntax.TokenOParen && tomapExpr {
+		//	tomapParenCounter++
+		//}
+		//if token.Type == hclsyntax.TokenCParen && tomapExpr {
+		//	tomapParenCounter--
+		//	if tomapParenCounter == 0 {
+		//		hclMaps = append(hclMaps, tokens[bracketOpenIndex:i + 1])
+		//		tomapExpr = false
+		//	}
+		//}
 	}
 
 	return hclMaps
@@ -698,11 +714,25 @@ func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.To
 	// The function gets tokens and returns an array of tokens that represent key and value
 	// example: tokens: "a=1\n b=2, c=3", returns: ["a=1", "b=2", "c=3"]
 	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline}
+
+	bracketsCounters := map[hclsyntax.TokenType]int{
+		hclsyntax.TokenOParen: 0,
+		hclsyntax.TokenOBrack: 0,
+	}
+
+	openingBrackets := []hclsyntax.TokenType{hclsyntax.TokenOParen, hclsyntax.TokenOBrack}
+	closingBrackets := []hclsyntax.TokenType{hclsyntax.TokenCParen, hclsyntax.TokenCBrack}
+
+	bracketsPairs := map[hclsyntax.TokenType]hclsyntax.TokenType{
+		hclsyntax.TokenCParen: hclsyntax.TokenOParen,
+		hclsyntax.TokenCBrack: hclsyntax.TokenOBrack,
+	}
+
 	tagPairs := make([]hclwrite.Tokens, 0)
 	startIndex := 0
 	hasEq := false
 	for i, token := range tokens {
-		if utils.InSlice(separatorTokens, token.Type) {
+		if utils.InSlice(separatorTokens, token.Type) && getUncloseBracketsCount(bracketsCounters) == 0 {
 			if hasEq {
 				tagPairs = append(tagPairs, tokens[startIndex:i])
 			}
@@ -712,12 +742,28 @@ func (p *TerrraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.To
 		if token.Type == hclsyntax.TokenEqual {
 			hasEq = true
 		}
+		if utils.InSlice(openingBrackets, token.Type) {
+			bracketsCounters[token.Type]++
+		}
+		if utils.InSlice(closingBrackets, token.Type) {
+			matchingOpen := bracketsPairs[token.Type]
+			bracketsCounters[matchingOpen]--
+		}
 	}
 	if hasEq {
 		tagPairs = append(tagPairs, tokens[startIndex:])
 	}
 
 	return tagPairs
+}
+
+func getUncloseBracketsCount(bracketsCounters map[hclsyntax.TokenType]int) int {
+	sum := 0
+	for b := range bracketsCounters {
+		sum += bracketsCounters[b]
+	}
+
+	return sum
 }
 
 func (p *TerrraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
