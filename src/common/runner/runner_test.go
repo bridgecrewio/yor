@@ -237,6 +237,29 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "EC2InstanceResource0")
 	})
+
+	t.Run("Test merge with tomap terraform", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources/tomap"
+		_ = os.Setenv("YOR_SIMPLE_TAGS", "{\"test_tag\": \"test_value\"}")
+		defer os.Unsetenv("YOR_SIMPLE_TAGS")
+
+		yorRunner := new(Runner)
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: rootDir,
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			Tag:       []string{"test_tag"},
+			Parsers:   []string{"Terraform"},
+		})
+		yorRunner.TagFile(rootDir + "/tomap.tf")
+		if err != nil {
+			t.Error(err)
+		}
+
+		taggedFile, err := os.ReadFile(rootDir + "/tomap.tf")
+		expectedFile, err := os.ReadFile(rootDir + "/expected.tf")
+
+		assert.Equal(t, taggedFile, expectedFile)
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
