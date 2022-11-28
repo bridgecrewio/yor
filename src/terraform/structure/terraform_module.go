@@ -23,7 +23,7 @@ import (
 
 const PluginsOutputDir = ".yor_plugins"
 
-var SkippedProviders = []string{"null", "random", "tls", "local"}
+var SkippedProviders = []string{"null", "random", "tls", "local", "sops"}
 var RegistryModuleRegex = regexp.MustCompile("^((?P<MODULE_HOSTNAME>[^/]+)/)?(?P<MODULE_NAMESPACE>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
 
 type TerraformModule struct {
