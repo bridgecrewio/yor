@@ -12,8 +12,8 @@ type GitRepoTag struct {
 	tags.Tag
 }
 
-func (t *GitRepoTag) Init() {
-	t.Key = tags.GitRepoTagKey
+func (t *GitRepoTag) Init(tagPrefix string) {
+	t.Key = tagPrefix + tags.GitRepoTagKey
 }
 
 func (t *GitRepoTag) CalculateValue(data interface{}) (tags.ITag, error) {

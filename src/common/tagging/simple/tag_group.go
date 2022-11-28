@@ -16,7 +16,7 @@ type TagGroup struct {
 	tagging.TagGroup
 }
 
-func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string, tagPrefix string) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	envTagsStr := os.Getenv("YOR_SIMPLE_TAGS")
@@ -42,7 +42,7 @@ func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecif
 			envTags = append(envTags, tags.Init(key, value))
 		}
 
-		t.SetTags(envTags)
+		t.SetTags(envTags, tagPrefix)
 	}
 }
 

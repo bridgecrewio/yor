@@ -67,7 +67,7 @@ func TestTagCreation(t *testing.T) {
 		defaultDescription := tag.GetDescription()
 		cwd, _ := os.Getwd()
 		g := TagGroup{}
-		g.InitTagGroup(cwd, nil, nil)
+		g.InitTagGroup(cwd, nil, nil, "")
 		for _, tag := range g.GetTags() {
 			assert.NotEqual(t, defaultDescription, tag.GetDescription())
 			assert.NotEqual(t, "", tag.GetDescription())
@@ -77,7 +77,7 @@ func TestTagCreation(t *testing.T) {
 }
 
 func EvaluateTag(t *testing.T, tag tags.ITag, blame gitservice.GitBlame) tags.ITag {
-	tag.Init()
+	tag.Init("")
 	newTag, err := tag.CalculateValue(&blame)
 	if err != nil {
 		assert.Fail(t, "Failed to generate BC trace", err)

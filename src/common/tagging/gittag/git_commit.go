@@ -14,8 +14,8 @@ type GitCommitTag struct {
 	tags.Tag
 }
 
-func (t *GitCommitTag) Init() {
-	t.Key = "git_commit"
+func (t *GitCommitTag) Init(tagPrefix string) {
+	t.Key = tagPrefix + "git_commit"
 }
 
 func (t *GitCommitTag) CalculateValue(data interface{}) (tags.ITag, error) {

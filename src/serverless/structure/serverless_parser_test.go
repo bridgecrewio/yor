@@ -198,8 +198,8 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 				Value: "new_value",
 			},
 		}
-		tagGroup.SetTags(extraTags)
-		tagGroup.InitTagGroup("", []string{}, []string{})
+		tagGroup.SetTags(extraTags, "")
+		tagGroup.InitTagGroup("", []string{}, []string{}, "")
 		writeFilePath := directory + "/serverless_tagged.yml"
 		slsBlocks, err := slsParser.ParseFile(readFilePath)
 		for _, block := range slsBlocks {

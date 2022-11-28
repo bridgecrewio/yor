@@ -30,7 +30,7 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string, tagPrefix string) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	if path != "" {
@@ -42,7 +42,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpe
 	} else {
 		logger.Debug("Path was passed as \"\", not initializing git service")
 	}
-	t.SetTags(t.GetDefaultTags())
+	t.SetTags(t.GetDefaultTags(), tagPrefix)
 }
 
 func (t *TagGroup) GetDefaultTags() []tags.ITag {

@@ -18,7 +18,7 @@ const GitLastModifiedByTagKey = "git_last_modified_by"
 const GitRepoTagKey = "git_repo"
 
 type ITag interface {
-	Init()
+	Init(tagPrefix string)
 	CalculateValue(data interface{}) (ITag, error)
 	GetKey() string
 	SetValue(val string)
@@ -40,7 +40,7 @@ func Init(key string, value string) ITag {
 	}
 }
 
-func (t *Tag) Init() {}
+func (t *Tag) Init(tagPrefix string) {}
 
 func (t *Tag) GetPriority() int {
 	return 0

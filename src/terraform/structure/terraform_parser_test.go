@@ -172,8 +172,8 @@ func TestTerrraformParser_Module(t *testing.T) {
 		gitService.BlameByFile = &blameByFile
 		tagGroup := &gittag.TagGroup{GitService: gitService}
 		c2cTagGroup := &code2cloud.TagGroup{}
-		tagGroup.InitTagGroup(rootDir, nil, nil)
-		c2cTagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitTagGroup(rootDir, nil, nil, "")
+		c2cTagGroup.InitTagGroup("", nil, nil, "")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
@@ -235,8 +235,8 @@ func TestTerrraformParser_Module(t *testing.T) {
 		gitService.BlameByFile = &blameByFile
 		tagGroup := &gittag.TagGroup{GitService: gitService}
 		c2cTagGroup := &code2cloud.TagGroup{}
-		tagGroup.InitTagGroup(rootDir, nil, nil)
-		c2cTagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitTagGroup(rootDir, nil, nil, "")
+		c2cTagGroup.InitTagGroup("", nil, nil, "")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/module/gcp_module/main_tagged.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
@@ -292,7 +292,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		}()
 		p := &TerrraformParser{}
 		c2cTagGroup := &code2cloud.TagGroup{}
-		c2cTagGroup.InitTagGroup("", nil, nil)
+		c2cTagGroup.InitTagGroup("", nil, nil, "")
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/k8s_tf/main.tf"
 		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)

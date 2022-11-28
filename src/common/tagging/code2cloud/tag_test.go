@@ -20,7 +20,7 @@ func TestTagCreation(t *testing.T) {
 }
 
 func EvaluateTag(t *testing.T, tag tags.ITag) tags.ITag {
-	tag.Init()
+	tag.Init("")
 	newTag, err := tag.CalculateValue(struct{}{})
 	if err != nil {
 		assert.Fail(t, "Failed to generate BC trace", err)
@@ -41,7 +41,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitTagGroup("", nil, nil, "")
 
 		block := &MockTestBlock{
 			Block: structure.Block{

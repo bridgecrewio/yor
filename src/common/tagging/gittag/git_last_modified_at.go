@@ -12,8 +12,8 @@ type GitLastModifiedAtTag struct {
 	tags.Tag
 }
 
-func (t *GitLastModifiedAtTag) Init() {
-	t.Key = tags.GitLastModifiedAtTagKey
+func (t *GitLastModifiedAtTag) Init(tagPrefix string) {
+	t.Key = tagPrefix + tags.GitLastModifiedAtTagKey
 }
 
 func (t *GitLastModifiedAtTag) CalculateValue(data interface{}) (tags.ITag, error) {

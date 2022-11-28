@@ -158,13 +158,13 @@ func TestResultsGeneration(t *testing.T) {
 
 	t.Run("Test list-tags result", func(t *testing.T) {
 		grt := &gittag.GitRepoTag{}
-		grt.Init()
+		grt.Init("")
 
 		got := &gittag.GitOrgTag{}
-		got.Init()
+		got.Init("")
 
 		ytt := &code2cloud.YorTraceTag{}
-		ytt.Init()
+		ytt.Init("")
 
 		o := utils.CaptureOutput(func() {
 			ReportServiceInst.PrintTagGroupTags(map[string][]tags.ITag{

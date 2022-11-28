@@ -29,6 +29,7 @@ type TagOptions struct {
 	Parsers           []string
 	DryRun            bool
 	TagLocalModules   bool
+	TagPrefix         string
 }
 
 type ListTagsOptions struct {

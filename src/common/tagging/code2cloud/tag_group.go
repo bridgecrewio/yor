@@ -10,10 +10,10 @@ type TagGroup struct {
 	tagging.TagGroup
 }
 
-func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string, tagPrefix string) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
-	t.SetTags([]tags.ITag{&YorTraceTag{}})
+	t.SetTags([]tags.ITag{&YorTraceTag{}}, tagPrefix)
 }
 
 func (t *TagGroup) GetDefaultTags() []tags.ITag {

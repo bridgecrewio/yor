@@ -168,8 +168,8 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 			Value: "new_value",
 		},
 	}
-	tagGroup.SetTags(extraTags)
-	tagGroup.InitTagGroup("", []string{}, []string{})
+	tagGroup.SetTags(extraTags, "")
+	tagGroup.InitTagGroup("", []string{}, []string{}, "")
 	writeFilePath := directory + "/" + testFileName + "_tagged." + fileType
 	cfnBlocks, err := cfnParser.ParseFile(readFilePath)
 	for _, block := range cfnBlocks {

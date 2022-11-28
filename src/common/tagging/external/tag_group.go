@@ -109,7 +109,7 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
 
 }
 
-func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, tagPrefix string) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	t.Dir = dir
@@ -173,7 +173,7 @@ func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	if newTagsNum > 0 {
 		logger.Info(fmt.Sprintf("Created %d new tags: [%v]", newTagsNum, strings.Join(newTagKeys, ", ")))
 		copy(blockTags, append(filteredNewTags, existingTags...))
-		t.SetTags(blockTags)
+		t.SetTags(blockTags, "")
 		block.AddNewTags(filteredNewTags)
 	}
 	return nil
