@@ -57,14 +57,10 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	if commands.ConfigFile == "" {
 		logger.Info("Did not get an external config file")
 	}
-	tagPrefix := commands.TagPrefix
-	if tagPrefix != "" {
-		tagPrefix = tagPrefix + "_"
-	}
 	for _, tagGroup := range r.TagGroups {
-		tagGroup.InitTagGroup(dir, commands.SkipTags, commands.Tag, tagPrefix)
+		tagGroup.InitTagGroup(dir, commands.SkipTags, commands.Tag, commands.TagPrefix)
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
-			simpleTagGroup.SetTags(extraTags, tagPrefix)
+			simpleTagGroup.SetTags(extraTags, commands.TagPrefix)
 		} else if externalTagGroup, ok := tagGroup.(*external.TagGroup); ok && commands.ConfigFile != "" {
 			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
 		}
