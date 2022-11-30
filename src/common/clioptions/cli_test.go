@@ -21,6 +21,7 @@ func TestCliArgParsing(t *testing.T) {
 			ConfigFile:      "",
 			DryRun:          true,
 			TagLocalModules: true,
+			TagPrefix:       "prefix",
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()
@@ -36,6 +37,7 @@ func TestCliArgParsing(t *testing.T) {
 			OutputJSONFile: "",
 			ConfigFile:     "",
 			DryRun:         true,
+			TagPrefix:      "",
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()
