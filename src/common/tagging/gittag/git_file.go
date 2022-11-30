@@ -12,8 +12,8 @@ type GitFileTag struct {
 	tags.Tag
 }
 
-func (t *GitFileTag) Init(tagPrefix string) {
-	t.Key = tagPrefix + tags.GitFileTagKey
+func (t *GitFileTag) Init() {
+	t.Key = tags.GitFileTagKey
 }
 
 func (t *GitFileTag) CalculateValue(data interface{}) (tags.ITag, error) {

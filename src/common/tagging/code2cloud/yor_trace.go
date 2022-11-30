@@ -12,8 +12,8 @@ type YorTraceTag struct {
 	tags.Tag
 }
 
-func (t *YorTraceTag) Init(tagPrefix string) {
-	t.Key = tagPrefix + tags.YorTraceTagKey
+func (t *YorTraceTag) Init() {
+	t.Key = tags.YorTraceTagKey
 }
 
 func (t *YorTraceTag) CalculateValue(_ interface{}) (tags.ITag, error) {

@@ -12,8 +12,8 @@ type GitOrgTag struct {
 	tags.Tag
 }
 
-func (t *GitOrgTag) Init(tagPrefix string) {
-	t.Key = tagPrefix + "git_org"
+func (t *GitOrgTag) Init() {
+	t.Key = "git_org"
 }
 
 func (t *GitOrgTag) CalculateValue(data interface{}) (tags.ITag, error) {
