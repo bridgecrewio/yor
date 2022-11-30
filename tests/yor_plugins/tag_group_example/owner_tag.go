@@ -14,8 +14,8 @@ type DirTag struct {
 	tags.Tag
 }
 
-func (d *DirTag) Init(tagPrefix string) {
-	d.Key = tagPrefix + "custom_owner"
+func (d *DirTag) Init() {
+	d.Key = "custom_owner"
 }
 
 func (d *DirTag) CalculateValue(block interface{}) (tags.ITag, error) {
