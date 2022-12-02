@@ -232,6 +232,9 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
+	if err = fd.Close(); err != nil {
+		return err
+	}
 	err = os.Remove(tempFile.Name())
 	if err != nil {
 		return err
@@ -249,9 +252,7 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err = f.Close(); err != nil {
 		return err
 	}
-	if err = fd.Close(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
