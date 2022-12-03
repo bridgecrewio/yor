@@ -6,7 +6,6 @@ builds:
   - id: yor
     goos:
       - linux
-      - darwin
       - windows
     goarch:
       - 386
