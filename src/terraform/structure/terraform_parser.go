@@ -232,6 +232,11 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
+
+	//cant delete files on windows if you dont close them
+	if err = fd.Close(); err != nil {
+		return err
+	}
 	err = os.Remove(tempFile.Name())
 	if err != nil {
 		return err
@@ -249,9 +254,7 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err = f.Close(); err != nil {
 		return err
 	}
-	if err = fd.Close(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
@@ -512,7 +515,7 @@ func (p *TerrraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, fileP
 	} else {
 		// This is a remote module - if it has tags attribute, tag it!
 		moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
-		possibleTagAttributeNames := []string{"extra_tags", "tags", "common_tags"}
+		possibleTagAttributeNames := []string{"extra_tags", "tags", "common_tags", "labels"}
 		if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
 			possibleTagAttributeNames = append(possibleTagAttributeNames, val)
 		}
