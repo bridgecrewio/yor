@@ -232,7 +232,10 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 		return err
 	}
 
-	fd.Close()
+	//cant delete files on windows if you dont close them
+	if err = fd.Close(); err != nil {
+		return err
+	}
 	err = os.Remove(tempFile.Name())
 	if err != nil {
 		return err
