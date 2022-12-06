@@ -3,7 +3,6 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -126,7 +125,7 @@ func (p *TerrraformParser) ValidFile(_ string) bool {
 func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// #nosec G304
 	// read file bytes
-	src, err := ioutil.ReadFile(filePath)
+	src, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
@@ -180,7 +179,7 @@ func (p *TerrraformParser) ParseFile(filePath string) ([]structure.IBlock, error
 func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	// #nosec G304
 	// read file bytes
-	src, err := ioutil.ReadFile(readFilePath)
+	src, err := os.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
@@ -209,7 +208,7 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 		}
 	}
 
-	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
+	tempFile, err := os.CreateTemp(filepath.Dir(readFilePath), "temp.*.tf")
 	if err != nil {
 		return err
 	}
@@ -232,6 +231,8 @@ func (p *TerrraformParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
+
+	fd.Close()
 	err = os.Remove(tempFile.Name())
 	if err != nil {
 		return err
@@ -512,7 +513,7 @@ func (p *TerrraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, fileP
 	} else {
 		// This is a remote module - if it has tags attribute, tag it!
 		moduleProvider := ExtractProviderFromModuleSrc(moduleSource)
-		possibleTagAttributeNames := []string{"extra_tags", "tags", "common_tags"}
+		possibleTagAttributeNames := []string{"extra_tags", "tags", "common_tags", "labels"}
 		if val, ok := ProviderToTagAttribute[moduleProvider]; ok {
 			possibleTagAttributeNames = append(possibleTagAttributeNames, val)
 		}
@@ -568,7 +569,7 @@ func (p *TerrraformParser) isModuleTaggable(fp string, moduleName string, tagAtt
 		return false, ""
 	}
 
-	files, _ := ioutil.ReadDir(expectedModuleDir)
+	files, _ := os.ReadDir(expectedModuleDir)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".tf") {
 			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
