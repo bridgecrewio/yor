@@ -1,6 +1,7 @@
 package code2cloud
 
 import (
+	"github.com/bridgecrewio/yor/src/common/tagging"
 	"regexp"
 	"testing"
 
@@ -17,10 +18,31 @@ func TestTagCreation(t *testing.T) {
 		assert.Equal(t, "yor_trace", valueTag.GetKey())
 		assert.Equal(t, 36, len(valueTag.GetValue()))
 	})
+	t.Run("BcTraceTagCreationWithPrefix", func(t *testing.T) {
+		tag := YorTraceTag{}
+		tagPrefix := "prefix_"
+		valueTag := EvaluateTagWithPrefix(t, &tag, tagPrefix)
+		assert.Equal(t, tagPrefix+"yor_trace", valueTag.GetKey())
+		assert.Equal(t, 36, len(valueTag.GetValue()))
+	})
 }
 
 func EvaluateTag(t *testing.T, tag tags.ITag) tags.ITag {
 	tag.Init()
+	newTag, err := tag.CalculateValue(struct{}{})
+	if err != nil {
+		assert.Fail(t, "Failed to generate BC trace", err)
+	}
+	assert.Equal(t, "", tag.GetValue())
+	assert.IsType(t, &tags.Tag{}, newTag)
+	assert.True(t, IsValidUUID(newTag.GetValue()))
+
+	return newTag
+}
+
+func EvaluateTagWithPrefix(t *testing.T, tag tags.ITag, tagPrefix string) tags.ITag {
+	tag.Init()
+	tag.SetTagPrefix(tagPrefix)
 	newTag, err := tag.CalculateValue(struct{}{})
 	if err != nil {
 		assert.Fail(t, "Failed to generate BC trace", err)
@@ -41,7 +63,7 @@ func TestCode2CloudTagGroup(t *testing.T) {
 	t.Run("test tagGroup CreateTagsForBlock", func(t *testing.T) {
 		path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
 		tagGroup := TagGroup{}
-		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitTagGroup("", nil, nil, tagging.WithTagPrefix("prefix"))
 
 		block := &MockTestBlock{
 			Block: structure.Block{

@@ -147,6 +147,9 @@ yor tag -d . --config-file /path/to/conf/file/
 # Apply tags to all resources except of a specified type
 yor tag -d . --skip-resource-types aws_s3_bucket
 
+# Apply tags with a specifix prefix
+yor tag -d . --tag-prefix "module_"
+
 # Apply tags to all resources except with the specified name
 yor tag -d . --skip-resources aws_s3_bucket.operations
 

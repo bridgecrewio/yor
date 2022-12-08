@@ -16,7 +16,7 @@ type TagGroup struct {
 	tagging.TagGroup
 }
 
-func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (t *TagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	envTagsStr := os.Getenv("YOR_SIMPLE_TAGS")

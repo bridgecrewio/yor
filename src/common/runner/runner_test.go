@@ -164,6 +164,7 @@ func TestRunnerInternals(t *testing.T) {
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			TagPrefix: "prefix_",
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {

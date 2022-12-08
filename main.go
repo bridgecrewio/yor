@@ -92,6 +92,7 @@ func tagCommand() *cli.Command {
 	parsersArgs := "parsers"
 	dryRunArgs := "dry-run"
 	tagLocalModules := "tag-local-modules"
+	tagPrefix := "tag-prefix"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -113,6 +114,7 @@ func tagCommand() *cli.Command {
 				Parsers:           c.StringSlice(parsersArgs),
 				DryRun:            c.Bool(dryRunArgs),
 				TagLocalModules:   c.Bool(tagLocalModules),
+				TagPrefix:         c.String(tagPrefix),
 			}
 
 			options.Validate()
@@ -208,6 +210,11 @@ func tagCommand() *cli.Command {
 				Usage:       "Always tag local modules",
 				Value:       false,
 				DefaultText: "false",
+			},
+			&cli.StringFlag{
+				Name:        tagPrefix,
+				Usage:       "Add prefix to all the tags",
+				DefaultText: "",
 			},
 		},
 	}

@@ -17,6 +17,10 @@ func (t *GitOwnerTag) GetDescription() string {
 	return "Tag that marks the organizational owner of the resource"
 }
 
+func (t *GitOwnerTag) SetTagPrefix(s string) {
+	t.Key = s + t.Key
+}
+
 func (t *GitOwnerTag) Init() {
 	t.Key = "git_owner"
 }

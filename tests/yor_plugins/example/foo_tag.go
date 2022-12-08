@@ -15,6 +15,10 @@ func (t *FooTag) CalculateValue(_ interface{}) (tags.ITag, error) {
 	return &tags.Tag{Key: t.Key, Value: "foo"}, nil
 }
 
+func (t *FooTag) SetTagPrefix(s string) {
+	t.Key = s + t.Key
+}
+
 func (t *FooTag) GetKey() string {
 	return t.Key
 }

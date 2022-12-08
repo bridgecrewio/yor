@@ -16,12 +16,25 @@ type TagGroup struct {
 	SkippedTags   []string
 	Dir           string
 	SpecifiedTags []string
+	Options       InitTagGroupOptions
 }
 
 var IgnoredDirs = []string{".git", ".DS_Store", ".idea"}
 
+type InitTagGroupOption func(opt *InitTagGroupOptions)
+
+type InitTagGroupOptions struct {
+	TagPrefix string
+}
+
+func WithTagPrefix(s string) InitTagGroupOption {
+	return func(opt *InitTagGroupOptions) {
+		opt.TagPrefix = s
+	}
+}
+
 type ITagGroup interface {
-	InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string)
+	InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string, options ...InitTagGroupOption)
 	CreateTagsForBlock(block structure.IBlock) error
 	GetTags() []tags.ITag
 	GetDefaultTags() []tags.ITag
@@ -34,6 +47,7 @@ func (t *TagGroup) GetSkippedDirs() []string {
 func (t *TagGroup) SetTags(tags []tags.ITag) {
 	for _, tag := range tags {
 		tag.Init()
+		tag.SetTagPrefix(t.Options.TagPrefix)
 		if !t.IsTagSkipped(tag) && (t.SpecifiedTags == nil || len(t.SpecifiedTags) == 0 || utils.InSlice(t.SpecifiedTags, tag.GetKey())) {
 			t.tags = append(t.tags, tag)
 		}

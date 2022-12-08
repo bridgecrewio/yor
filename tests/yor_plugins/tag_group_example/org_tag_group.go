@@ -20,8 +20,14 @@ func (d *OrgTagGroup) GetDefaultTags() []tags.ITag {
 	}
 }
 
-func (d *OrgTagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string) {
+func (d *OrgTagGroup) InitTagGroup(_ string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
 	// If skipped tags isn't passed in, the skip mechanism will not work
+	opt := tagging.InitTagGroupOptions{
+		TagPrefix: "",
+	}
+	for _, fn := range options {
+		fn(&opt)
+	}
 	d.SkippedTags = skippedTags
 	d.SpecifiedTags = explicitlySpecifiedTags
 	d.SetTags(d.GetDefaultTags())
