@@ -45,17 +45,17 @@ func InSlice(slice interface{}, elem interface{}) bool {
 
 func AllNil(vv ...interface{}) bool {
 	for _, v := range vv {
-		if reflect.ValueOf(v).Kind() == reflect.Ptr && !reflect.ValueOf(v).IsNil() {
-			return false
+		if reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil() {
+			return true
 		}
-		if reflect.ValueOf(v).Kind() == reflect.String && v != "" {
-			return false
+		if reflect.ValueOf(v).Kind() == reflect.String && v == "" {
+			return true
 		}
-		if reflect.TypeOf(v) != nil && !reflect.ValueOf(v).IsNil() {
-			return false
+		if (reflect.TypeOf(v) == nil) || (reflect.TypeOf(v) != nil && reflect.ValueOf(v).IsNil()) {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func getKind(val interface{}) reflect.Kind {

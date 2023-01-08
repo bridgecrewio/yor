@@ -194,7 +194,7 @@ func TestAllNil(t *testing.T) {
 		i = nil
 		assert.Equal(t, true, AllNil(i))
 	})
-	t.Run("TestCheckForInterfaceWithString", func(t *testing.T) {
+	t.Run("TestCheckForInterfaceWithEmptyString", func(t *testing.T) {
 		var i interface{}
 		i = []interface{}(nil)
 		assert.Equal(t, true, AllNil(i))
