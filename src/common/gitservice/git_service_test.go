@@ -1,9 +1,12 @@
 package gitservice
 
 import (
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/tests/utils"
@@ -125,5 +128,31 @@ func TestNewGitService(t *testing.T) {
 		assert.Equal(t, "bridgecrewio", gitService.GetOrganization())
 		assert.Equal(t, "terragoat", gitService.GetRepoName())
 		assert.Equal(t, "terraform/aws/db-app.tf", targetPath)
+	})
+
+	t.Run("Get blame for lines test - no ci", func(t *testing.T) {
+		blame := NewGitBlame("some-path.json", structure.Lines{Start: 1, End: 2},
+			&git.BlameResult{
+				Lines: []*git.Line{
+					{Author: "user", Text: "real commit", Date: time.Now().AddDate(0, 0, -2), Hash: plumbing.Hash{}},
+					{Author: "our-ci-bot", Text: "ci commit", Date: time.Now().AddDate(0, 0, -1), Hash: plumbing.Hash{}},
+				},
+			},
+			"test", "test", "test@test.com")
+		commit := blame.GetLatestCommit()
+		assert.Equal(t, "user", commit.Author)
+	})
+
+	t.Run("Get blame for lines test - no ci 2", func(t *testing.T) {
+		blame := NewGitBlame("some-path.json", structure.Lines{Start: 1, End: 2},
+			&git.BlameResult{
+				Lines: []*git.Line{
+					{Author: "user", Text: "real commit", Date: time.Now().AddDate(0, -1, 0), Hash: plumbing.Hash{}},
+					{Author: "[bot] bridgecrew", Text: "ci commit", Date: time.Now().AddDate(0, 0, -1), Hash: plumbing.Hash{}},
+				},
+			},
+			"test", "test", "test@test.com")
+		commit := blame.GetLatestCommit()
+		assert.Equal(t, "user", commit.Author)
 	})
 }

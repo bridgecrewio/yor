@@ -2,6 +2,7 @@ package gitservice
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -11,12 +12,20 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+var CIRegexStrings = []string{
+	"\bci\b",
+	"[bot]",
+	"github-action",
+	"\bautomation\b",
+}
+
 type GitBlame struct {
 	GitOrg        string
 	GitRepository string
 	BlamesByLine  map[int]*git.Line
 	FilePath      string
 	GitUserEmail  string
+	CIRegex       *regexp.Regexp
 }
 
 func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {
@@ -30,7 +39,8 @@ func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameR
 		}
 		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
 	}
-
+	ciRegexp, _ := regexp.Compile("(" + strings.Join(CIRegexStrings, "|") + ")")
+	gitBlame.CIRegex = ciRegexp
 	return &gitBlame
 }
 
@@ -41,9 +51,9 @@ func (g *GitBlame) GetLatestCommit() (latestCommit *git.Line) {
 			// This line was added/edited but not committed yet, so latest commit is nil
 			return nil
 		}
-		if latestDate.Before(v.Date) &&
-			// Commit was not made by CI, i.e. github actions (for now)
-			!strings.Contains(v.Author, "[bot]") && !strings.Contains(v.Author, "github-actions") {
+
+		isCiBot := g.CIRegex.MatchString(v.Author)
+		if latestDate.Before(v.Date) && !isCiBot {
 			latestDate = v.Date
 			latestCommit = v
 		}
