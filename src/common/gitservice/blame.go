@@ -13,10 +13,10 @@ import (
 )
 
 var CIRegexStrings = []string{
-	"\bci\b",
+	"\\bci\\b",
 	"\\[bot]",
 	"github-action",
-	"\bautomation\b",
+	"\\bautomation\\b",
 }
 
 type GitBlame struct {

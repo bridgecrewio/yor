@@ -82,7 +82,7 @@ func TestNewGitService(t *testing.T) {
 		assert.Equal(t, "d68d2897add9bc2203a5ed0632a5cdd8ff8cefb0", commit.Hash.String())
 	})
 
-	t.Run("Get blame for lines test", func(t *testing.T) {
+	t.Run("Get blame for lines test 2", func(t *testing.T) {
 		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "52d676e1cd75a13f990f1caca51d6ad8c78858da")
 		defer func() {
 			_ = os.RemoveAll(terragoatPath)
