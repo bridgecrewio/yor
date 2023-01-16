@@ -522,7 +522,8 @@ func (p *TerraformParser) extractTagsFromModule(hclBlock *hclwrite.Block, filePa
 			possibleTagAttributeNames = append(possibleTagAttributeNames, val)
 		}
 		for _, tan := range possibleTagAttributeNames {
-			existingTags, isTaggable = p.getExistingTags(hclBlock, tan)
+			existingTags, isTaggable = p.getModuleTags(hclBlock, tan)
+
 			if isTaggable {
 				tagsAttributeName = tan
 				break
@@ -823,4 +824,23 @@ func (p *TerraformParser) getClient(providerName string) tfschema.Client {
 
 	p.providerToClientMap.Store(providerName, newClient)
 	return newClient
+}
+
+func (p *TerraformParser) getModuleTags(hclBlock *hclwrite.Block, tagsAttributeName string) ([]tags.ITag, bool) {
+	isTaggable := false
+	existingTags := make([]tags.ITag, 0)
+
+	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
+	if tagsAttribute != nil {
+		// if tags exists in module
+		isTaggable = true
+		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		parsedTags := p.parseTagAttribute(tagsTokens)
+		for key := range parsedTags {
+			iTag := tags.Init(key, parsedTags[key])
+			existingTags = append(existingTags, iTag)
+		}
+	}
+
+	return existingTags, isTaggable
 }
