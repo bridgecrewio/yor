@@ -6,3 +6,4 @@
 dist/
 /yor
 .DS_Store
+.run
