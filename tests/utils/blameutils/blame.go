@@ -2,6 +2,8 @@ package blameutils
 
 import (
 	"math/rand"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -53,7 +55,7 @@ func GetGitLines(t *testing.T, numOfLines int) []*git.Line {
 func SetupBlame(t *testing.T) gitservice.GitBlame {
 	gitLines := GetGitLines(t, 3)
 
-	return gitservice.GitBlame{
+	blame := gitservice.GitBlame{
 		GitOrg:        Org,
 		GitRepository: Repository,
 		FilePath:      FilePath,
@@ -63,6 +65,10 @@ func SetupBlame(t *testing.T) gitservice.GitBlame {
 			2: gitLines[2],
 		},
 	}
+
+	blame.CIRegex, _ = regexp.Compile("(" + strings.Join(gitservice.CIRegexStrings, "|") + ")")
+
+	return blame
 }
 
 func SetupBlameResults(t *testing.T, path string, numOfLines int) *git.BlameResult {
