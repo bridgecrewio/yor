@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerrraformBlock(t *testing.T) {
+func TestTerraformBlock(t *testing.T) {
 	t.Run("Test tag merging and diff", func(t *testing.T) {
 		existingTags := []tags.ITag{
 			&gittag.GitModifiersTag{

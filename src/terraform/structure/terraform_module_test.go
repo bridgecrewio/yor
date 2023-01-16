@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerrraformModule(t *testing.T) {
+func TestTerraformModule(t *testing.T) {
 	t.Run("Test TF Module remote https logic", func(t *testing.T) {
 		isRemote := isRemoteModule("https://github.com/terraform-aws-modules/terraform-aws-vpc.git")
 		assert.True(t, isRemote)
