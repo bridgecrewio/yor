@@ -14,7 +14,7 @@ import (
 
 var CIRegexStrings = []string{
 	"\bci\b",
-	"[bot]",
+	"\\[bot]",
 	"github-action",
 	"\bautomation\b",
 }
