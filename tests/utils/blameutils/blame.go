@@ -2,8 +2,6 @@ package blameutils
 
 import (
 	"math/rand"
-	"regexp"
-	"strings"
 	"testing"
 	"time"
 
@@ -66,7 +64,7 @@ func SetupBlame(t *testing.T) gitservice.GitBlame {
 		},
 	}
 
-	blame.CIRegex, _ = regexp.Compile("(" + strings.Join(gitservice.CIRegexStrings, "|") + ")")
+	gitservice.PrepareCIRegex(blame)
 
 	return blame
 }

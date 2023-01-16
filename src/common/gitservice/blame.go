@@ -39,9 +39,13 @@ func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameR
 		}
 		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
 	}
+	PrepareCIRegex(gitBlame)
+	return &gitBlame
+}
+
+func PrepareCIRegex(gitBlame GitBlame) {
 	ciRegexp, _ := regexp.Compile("(" + strings.Join(CIRegexStrings, "|") + ")")
 	gitBlame.CIRegex = ciRegexp
-	return &gitBlame
 }
 
 func (g *GitBlame) GetLatestCommit() (latestCommit *git.Line) {

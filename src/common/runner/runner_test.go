@@ -52,6 +52,8 @@ func Test_loadExternalTags(t *testing.T) {
 			}, 1: {Author: "shati",
 				Date: yesterday,
 				Hash: plumbing.NewHash("1")}}}
+
+		gitservice.PrepareCIRegex(gitBlame)
 		for _, tag := range gotTags {
 			tag.Init()
 			tagVal, err := tag.CalculateValue(&gitBlame)
