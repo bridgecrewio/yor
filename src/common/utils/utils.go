@@ -51,6 +51,9 @@ func AllNil(vv ...interface{}) bool {
 		if reflect.ValueOf(v).Kind() == reflect.String && v != "" {
 			return false
 		}
+		if reflect.ValueOf(v).Kind() == reflect.Slice && !reflect.ValueOf(v).IsNil() {
+			return false
+		}
 	}
 	return true
 }

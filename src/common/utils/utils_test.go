@@ -182,3 +182,21 @@ func TestGetEnv(t *testing.T) {
 		_ = os.Unsetenv("test2")
 	})
 }
+
+func TestAllNil(t *testing.T) {
+	t.Run("TestCheckForInterfaceWithString", func(t *testing.T) {
+		var i interface{}
+		i = []string{"bla"}
+		assert.Equal(t, false, AllNil(i))
+	})
+	t.Run("TestCheckForNonInterfaceWithStringIsNotCrashing", func(t *testing.T) {
+		var i interface{}
+		i = nil
+		assert.Equal(t, true, AllNil(i))
+	})
+	t.Run("TestCheckForInterfaceWithEmptyString", func(t *testing.T) {
+		var i interface{}
+		i = []interface{}(nil)
+		assert.Equal(t, true, AllNil(i))
+	})
+}
