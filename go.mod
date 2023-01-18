@@ -1,6 +1,6 @@
 module github.com/bridgecrewio/yor
 
-go 1.17
+go 1.19
 
 require (
 	github.com/awslabs/goformation/v5 v5.2.7

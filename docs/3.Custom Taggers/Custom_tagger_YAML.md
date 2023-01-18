@@ -7,7 +7,7 @@ nav_order: 2
 # Custom Tagger Using YAML Configuration Files
 
 The Yor framework uses YAML configuration files to support advanced rules when applying custom tags.
-Users can define tagging enforcement rules that are specific to their organization’s needs. 
+Users can define tagging enforcement rules that are specific to their organization’s needs.
 YAML based custom tagging enables you to have different tags for different existing resource tags.
 
 ## Running YAML based custom tagger
@@ -23,7 +23,7 @@ The YAML based custom tagging configuration file includes the following options:
 
 ```
 name: env
-value: 
+value:
     default: prod
 ```
 
@@ -44,11 +44,11 @@ filters:
 ```
 
 5. Use case dynamic value definition using *value* mapping (optional): Tags are defined based on matching
-   keys that contain a sequence of values. Under each value the user can define which existing tags a resource will be 
+   keys that contain a sequence of values. Under each value the user can define which existing tags a resource will be
    tagged with. If none of the conditions are matched, a default value will be applied. In the example below
-   resources in the directory `/path/to/some/dir` and existing tag `yor_trace: 123` will 
+   resources in the directory `/path/to/some/dir` and existing tag `yor_trace: 123` will
    be tagged with one of the following:
-    1. *team: devops*: resources have the tags `git_repo: yor`, `git_commit: asd12f`, and `git_modifiers:` 
+    1. *team: devops*: resources have the tags `git_repo: yor`, `git_commit: asd12f`, and `git_modifiers:`
        will be tagged with one of the following values - `johnb / amyh / rond`
     2. *team: dev1*: for any other resource that does not comply with option 1.
 
@@ -70,7 +70,7 @@ value:
    directory: /path/to/some/dir
 ```
 6. You can create custom tag groups using the YAML-based configuration. Add the `tag_groups` field, add a
-   `name`, and a `tags` sequence which includes the tag items mentioned above. In the example below, shows a tag group 
+   `name`, and a `tags` sequence which includes the tag items mentioned above. In the example below, shows a tag group
    named `ownership` which includes the two custom tags: `env` and `team`.
 
 ```
@@ -111,7 +111,7 @@ Some YAML configuration capabilities are available in the CLI. Some commands ava
 2. `--tag-value`: define tag value
 3. `-filter-tags`: tag resources that have tags as defined. Use an array [] to support multiple values and to support `AND` logic between tags
 
-In the example below, EC2 instances and Security Groups will be tagged with the `env:prod` tag. Use this in cases where a resource that has `tronxd` 
+In the example below, EC2 instances and Security Groups will be tagged with the `env:prod` tag. Use this in cases where a resource that has `tronxd`
 or `amy` are one of the `git_modifiers` and it is located in `checkov` or `terragoat git_repo`.
 
 **Example 3:** CLI custom tagging

@@ -3,14 +3,12 @@ package reports
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sort"
 
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -196,7 +194,7 @@ func (r *ReportService) PrintJSONToFile(file string) {
 		logger.Warning("Failed to create report as JSON")
 	}
 
-	err = ioutil.WriteFile(file, jr, 0600)
+	err = os.WriteFile(file, jr, 0600)
 	if err != nil {
 		logger.Warning("Failed to write to JSON file", err.Error())
 	}

@@ -1,9 +1,10 @@
 package code2cloud
 
 import (
-	"github.com/bridgecrewio/yor/src/common/tagging"
 	"regexp"
 	"testing"
+
+	"github.com/bridgecrewio/yor/src/common/tagging"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"

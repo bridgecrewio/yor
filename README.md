@@ -18,7 +18,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
-* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
+* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
 * Dry-Run: get a preview of what tags will be added without applying any.

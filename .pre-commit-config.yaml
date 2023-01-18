@@ -1,11 +1,53 @@
 ---
 repos:
-  - repo: local
+#  - repo: local
+#    hooks:
+#      - id: yor
+#        name: yor
+#        entry: yor tag -d
+#        args: ["tests/terraform/mixed/"]
+#        language: golang
+#        types: [terraform]
+#        pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
     hooks:
-      - id: yor
-        name: yor
-        entry: yor tag -d
-        args: ["tests/terraform/mixed/"]
-        language: golang
-        types: [terraform]
-        pass_filenames: false        
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: detect-aws-credentials
+      - id: detect-private-key
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.3.1
+    hooks:
+      - id: forbid-tabs
+        exclude_types: [ python, javascript, dtd, markdown, makefile, xml ]
+        exclude: binary|\.bin$|rego|\.rego$|go|\.go$
+  - repo: https://github.com/jameswoolfenden/pre-commit-shell
+    rev: 0.0.2
+    hooks:
+      - id: shell-lint
+  - repo: https://github.com/bridgecrewio/checkov
+    rev: 2.2.239
+    hooks:
+      - id: checkov
+        verbose: true
+        entry: checkov -d . --framework dockerfile github_actions json yaml sca_package sca_image secrets
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.17
+    hooks:
+    - id: gofmt
+    - id: goimports
+    - id: golint
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v1.50.1
+    hooks:
+    - id: golangci-lint
+  - repo: https://github.com/syntaqx/git-hooks
+    rev: v0.0.17
+    hooks:
+    - id: go-test
+      args: [ "./..." ]
+    - id: go-mod-tidy
+    - id: go-generate

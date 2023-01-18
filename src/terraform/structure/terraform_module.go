@@ -2,22 +2,19 @@ package structure
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform/tfdiags"
-
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"
 	"github.com/hashicorp/terraform/addrs"
 	"github.com/hashicorp/terraform/moduledeps"
 	"github.com/hashicorp/terraform/plugin/discovery"
+	"github.com/hashicorp/terraform/tfdiags"
 	"github.com/mitchellh/cli"
 )
 
@@ -82,7 +79,7 @@ func (t *TerraformModule) InitProvider() {
 }
 
 func providerExists(providersInstallDir string, provider string) bool {
-	fileInfo, err := ioutil.ReadDir(providersInstallDir)
+	fileInfo, err := os.ReadDir(providersInstallDir)
 	if err != nil {
 		return false
 	}

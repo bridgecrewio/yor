@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,12 +18,9 @@ import (
 	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 	testingUtils "github.com/bridgecrewio/yor/tests/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
-
-	"github.com/pmezard/go-difflib/difflib"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-
+	"github.com/pmezard/go-difflib/difflib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,14 +93,14 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
-		originFileBytes, err := ioutil.ReadFile(filePath)
+		originFileBytes, err := os.ReadFile(filePath)
 		if err != nil {
 			t.Error(err)
 		}
 		originFileLines := utils.GetLinesFromBytes(originFileBytes)
 
 		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
 
 		mockGitTagGroup := initMockGitTagGroup(options.Directory, map[string]string{filePath: filePath})
@@ -121,7 +117,7 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		time.Sleep(time.Second)
 
-		editedFileBytes, err := ioutil.ReadFile(filePath)
+		editedFileBytes, err := os.ReadFile(filePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -267,7 +263,7 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 	gitService, _ := gitservice.NewGitService(rootDir)
 
 	for filePath := range filesToBlames {
-		blameSrc, _ := ioutil.ReadFile(filesToBlames[filePath])
+		blameSrc, _ := os.ReadFile(filesToBlames[filePath])
 		blame := blameutils.CreateMockBlame(blameSrc)
 		gitService.BlameByFile.Store(filePath, &blame)
 	}

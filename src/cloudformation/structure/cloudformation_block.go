@@ -3,6 +3,7 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
+
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"

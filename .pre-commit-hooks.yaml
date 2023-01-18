@@ -4,4 +4,3 @@
   language: golang
   entry: yor tag -d
   types: [terraform]
-
