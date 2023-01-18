@@ -51,7 +51,6 @@ func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 }
 
 func (p CloudformationParser) Close() {
-	return
 }
 
 func (p *CloudformationParser) GetSkippedDirs() []string {

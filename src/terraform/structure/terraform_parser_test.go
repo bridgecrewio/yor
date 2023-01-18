@@ -214,7 +214,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 					}
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
@@ -277,7 +277,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 					}
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
@@ -332,7 +332,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 					assert.NotEqualf(t, "kubernetes.io/cluster/$${local.prefix}", tag.GetKey(), "Bad tag exists!")
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
