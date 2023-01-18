@@ -252,8 +252,8 @@ func TestRunnerInternals(t *testing.T) {
 			t.Error(err)
 		}
 
-		taggedFile, err := os.ReadFile(rootDir + "/tomap.tf")
-		expectedFile, err := os.ReadFile(rootDir + "/expected.tf")
+		taggedFile, _ := os.ReadFile(rootDir + "/tomap.tf")
+		expectedFile, _ := os.ReadFile(rootDir + "/expected.tf")
 
 		assert.Equal(t, taggedFile, expectedFile)
 	})
