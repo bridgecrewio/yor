@@ -37,6 +37,8 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
+
+        //fmt.Print(reflect.Type(cli.Command))
 }
 
 func listTagGroupsCommand() *cli.Command {
@@ -59,7 +61,6 @@ func listTagsCommand() *cli.Command {
 				// cli package doesn't split comma separated values
 				TagGroups: c.StringSlice(tagGroupsArg),
 			}
-
 			listTagsOptions.Validate()
 			return listTags(&listTagsOptions)
 		},
@@ -93,6 +94,7 @@ func tagCommand() *cli.Command {
 	dryRunArgs := "dry-run"
 	tagLocalModules := "tag-local-modules"
 	tagPrefix := "tag-prefix"
+	noColor := "no-color"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -115,6 +117,7 @@ func tagCommand() *cli.Command {
 				DryRun:            c.Bool(dryRunArgs),
 				TagLocalModules:   c.Bool(tagLocalModules),
 				TagPrefix:         c.String(tagPrefix),
+				NoColor:           c.Bool(noColor),
 			}
 
 			options.Validate()
@@ -216,6 +219,12 @@ func tagCommand() *cli.Command {
 				Usage:       "Add prefix to all the tags",
 				DefaultText: "",
 			},
+			&cli.BoolFlag{
+				Name:        noColor,
+				Usage:       "Remove color for cleaner logs",
+				Value:       false,
+				DefaultText: "false",
+			},
 		},
 	}
 }
@@ -266,7 +275,7 @@ func printReport(reportService *reports.ReportService, options *clioptions.TagOp
 	}
 	switch strings.ToLower(options.Output) {
 	case "cli":
-		reportService.PrintToStdout()
+		reportService.PrintToStdout(options.NoColor)
 	case "json":
 		reportService.PrintJSONToStdout()
 	default:

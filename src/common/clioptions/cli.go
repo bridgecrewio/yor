@@ -30,6 +30,7 @@ type TagOptions struct {
 	DryRun            bool
 	TagLocalModules   bool
 	TagPrefix         string
+	NoColor           bool
 }
 
 type ListTagsOptions struct {
