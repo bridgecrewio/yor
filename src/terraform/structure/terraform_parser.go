@@ -32,6 +32,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
 	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
+	"aws_secretsmanager_secret_rotation",         // This resource does not support tags, although tfschema states otherwise.
 }
 
 var taggableResourcesLock sync.RWMutex

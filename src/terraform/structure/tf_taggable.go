@@ -307,7 +307,6 @@ var TfTaggableResourceTypes = []string{
     "aws_schemas_registry",
     "aws_schemas_schema",
     "aws_secretsmanager_secret",
-    "aws_secretsmanager_secret_rotation",
     "aws_security_group",
     "aws_serverlessapplicationrepository_cloudformation_stack",
     "aws_service_discovery_http_namespace",
