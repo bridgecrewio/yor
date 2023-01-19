@@ -72,7 +72,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		switch p {
 		case "Terraform":
-			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+			r.parsers = append(r.parsers, &tfStructure.TerraformParser{})
 		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":

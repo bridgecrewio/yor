@@ -169,7 +169,7 @@ func TestRunnerInternals(t *testing.T) {
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 			if !info.IsDir() {
-				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerrraformParser{}, path)
+				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerraformParser{}, path)
 				if isFileSkipped {
 					shouldSkip := false
 					skippedIndex := -1
