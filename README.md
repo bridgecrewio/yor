@@ -57,6 +57,16 @@ MacOS / Linux
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
+If not using Brew:
+
+```
+pip3 install lastversion
+lastversion bridgecrewio/yor -d --assets
+tar -xzf $(find . -name *.tar.gz)
+chmod +x yor
+sudo mv yor /usr/local/bin
+```
+
 __OR__
 
 Windows

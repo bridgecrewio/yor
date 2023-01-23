@@ -22,9 +22,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerrraformParser_ParseFile(t *testing.T) {
+func TestTerraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources/", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/eks.tf"
@@ -82,7 +82,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("parse complex tags", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
@@ -117,7 +117,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("Skip collision tags block", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/collision/main.tf"
@@ -127,7 +127,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("Do not crash if getting malformed file", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/malformed_file_in_dir", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/malformed_file_in_dir/trail.tf"
@@ -137,10 +137,10 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser(t *testing.T) {
+func TestTerraformParser(t *testing.T) {
 	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
 		directory := "../../../tests/terraform/resources/module1"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf", "module3/main.tf", "module3/outputs.tf"}
 		actualFiles, err := terraformParser.GetSourceFiles(directory)
@@ -156,7 +156,7 @@ func TestTerrraformParser(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser_Module(t *testing.T) {
+func TestTerraformParser_Module(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources"
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
@@ -164,7 +164,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{}
 		var blameByFile sync.Map
@@ -227,7 +227,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{}
 		var blameByFile sync.Map
@@ -290,7 +290,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		c2cTagGroup := &code2cloud.TagGroup{}
 		c2cTagGroup.InitTagGroup("", nil, nil)
 		p.Init(rootDir, nil)
@@ -339,7 +339,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	})
 
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/mixed", nil)
 		defer p.Close()
 		blocks, err := p.ParseFile("../../../tests/terraform/mixed/mixed.tf")
@@ -350,8 +350,19 @@ func TestTerrraformParser_Module(t *testing.T) {
 		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
 	})
 
+	t.Run("Test parsing of unsupported resources", func(t *testing.T) {
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/supported", nil)
+		defer p.Close()
+		blocks, err := p.ParseFile("../../../tests/terraform/supported/unsupported.tf")
+		if err != nil {
+			t.Fail()
+		}
+		assert.Equal(t, false, blocks[0].IsBlockTaggable())
+	})
+
 	t.Run("Test reading & writing of module block", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/module_with_tags", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module_with_tags/main.tf"
@@ -380,7 +391,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	})
 
 	t.Run("Test taggable unaccessible module", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/tfe_module", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
@@ -396,7 +407,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	})
 
 	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/module", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module/main.tf"
@@ -426,7 +437,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	})
 
 	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources/attributescenarios", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/attributescenarios/main.tf"
@@ -455,7 +466,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 
 	t.Run("Module isTaggable local/remote", func(t *testing.T) {
 		directory := "../../../tests/terraform/resources/local_module"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		defer terraformParser.Close()
 		expectedFiles := []string{"main.tf", "sub_local_module/main.tf", "sub_local_module/variables.tf"}
@@ -478,7 +489,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 
 	t.Run("Test isModuleTaggable on remote modules", func(t *testing.T) {
 		directory := "../../../tests/terraform/module/provider_modules"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		defer terraformParser.Close()
 		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
@@ -593,7 +604,7 @@ func TestRxtractTagPairs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			terraformParser := TerrraformParser{}
+			terraformParser := TerraformParser{}
 			if got := terraformParser.extractTagPairs(tt.source); !compareTokenArrays(got, tt.want) {
 				t.Errorf("extractTagPairs() = %v, want %v", got, tt.want)
 			}
