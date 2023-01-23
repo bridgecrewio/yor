@@ -37,8 +37,6 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
-        //fmt.Print(reflect.Type(cli.Command))
 }
 
 func listTagGroupsCommand() *cli.Command {
