@@ -7,3 +7,5 @@ dist/
 /yor
 .DS_Store
 .run
+*.orig
+yor.exe
