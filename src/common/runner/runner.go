@@ -21,6 +21,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
 	"github.com/bridgecrewio/yor/src/common/utils"
+	dkStructure "github.com/bridgecrewio/yor/src/dockerfile/structure"
 	slsStructure "github.com/bridgecrewio/yor/src/serverless/structure"
 	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 )
@@ -72,11 +73,13 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		switch p {
 		case "Terraform":
-			r.parsers = append(r.parsers, &tfStructure.TerraformParser{})
+			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
 		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":
 			r.parsers = append(r.parsers, &slsStructure.ServerlessParser{})
+		case "Dockerfile":
+			r.parsers = append(r.parsers, &dkStructure.DockerfileParser{})
 		default:
 			logger.Warning(fmt.Sprintf("ignoring unknown parser %#v", err))
 		}
@@ -86,8 +89,9 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		"tag-local-modules": strconv.FormatBool(commands.TagLocalModules)}
 	for _, parser := range r.parsers {
 		parser.Init(dir, options)
-	}
 
+	}
+	r.reportingService = reports.ReportServiceInst
 	r.ChangeAccumulator = reports.TagChangeAccumulatorInstance
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
@@ -171,6 +175,7 @@ func (r *Runner) isSkippedResource(resource string) bool {
 
 func (r *Runner) TagFile(file string) {
 	for _, parser := range r.parsers {
+
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
 			continue

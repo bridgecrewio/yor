@@ -2,6 +2,9 @@ package common
 
 import "github.com/bridgecrewio/yor/src/common/structure"
 
+/*
+	This interface is for all parsers.  All these signatures need to be implemented
+*/
 type IParser interface {
 	Init(rootDir string, args map[string]string)
 	Name() string
