@@ -2,8 +2,6 @@ package structure
 
 import (
 	"fmt"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,13 +17,14 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerrraformParser_ParseFile(t *testing.T) {
+func TestTerraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources/", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/eks.tf"
@@ -83,7 +82,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("parse complex tags", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
@@ -118,7 +117,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("Skip collision tags block", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/collision/main.tf"
@@ -128,7 +127,7 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 
 	t.Run("Do not crash if getting malformed file", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/malformed_file_in_dir", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/malformed_file_in_dir/trail.tf"
@@ -138,10 +137,10 @@ func TestTerrraformParser_ParseFile(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser(t *testing.T) {
+func TestTerraformParser(t *testing.T) {
 	t.Run("Get all terraform files when having module reference", func(t *testing.T) {
 		directory := "../../../tests/terraform/resources/module1"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		expectedFiles := []string{"module1/main.tf", "module2/main.tf", "module2/outputs.tf", "module3/main.tf", "module3/outputs.tf"}
 		actualFiles, err := terraformParser.GetSourceFiles(directory)
@@ -157,15 +156,15 @@ func TestTerrraformParser(t *testing.T) {
 	})
 }
 
-func TestTerrraformParser_Module(t *testing.T) {
+func TestTerraformParser_Module(t *testing.T) {
 	t.Run("Parse a file, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources"
 		filePath := "../../../tests/terraform/resources/complex_tags.tf"
-		originFileBytes, _ := ioutil.ReadFile(filePath)
+		originFileBytes, _ := os.ReadFile(filePath)
 		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{}
 		var blameByFile sync.Map
@@ -177,9 +176,9 @@ func TestTerrraformParser_Module(t *testing.T) {
 		c2cTagGroup.InitTagGroup("", nil, nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/tagged/complex_tags_tagged.tf"
-		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		writeFileBytes, _ := os.ReadFile(writeFilePath)
 		defer func() {
-			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
@@ -215,7 +214,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 					}
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
@@ -224,11 +223,11 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Parse a gcp module file and tag its blocks correctly", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/module/gcp_module"
 		filePath := "../../../tests/terraform/module/gcp_module/main.tf"
-		originFileBytes, _ := ioutil.ReadFile(filePath)
+		originFileBytes, _ := os.ReadFile(filePath)
 		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		blameLines := CreateComplexTagsLines()
 		gitService := &gitservice.GitService{}
 		var blameByFile sync.Map
@@ -240,9 +239,9 @@ func TestTerrraformParser_Module(t *testing.T) {
 		c2cTagGroup.InitTagGroup("", nil, nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/module/gcp_module/main_tagged.tf"
-		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		writeFileBytes, _ := os.ReadFile(writeFilePath)
 		defer func() {
-			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
@@ -278,7 +277,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 					}
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
@@ -287,18 +286,18 @@ func TestTerrraformParser_Module(t *testing.T) {
 	t.Run("Parse a file with escaped tags, tag its blocks, and write them to the file", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources/k8s_tf"
 		filePath := "../../../tests/terraform/resources/k8s_tf/main.tf"
-		originFileBytes, _ := ioutil.ReadFile(filePath)
+		originFileBytes, _ := os.ReadFile(filePath)
 		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		c2cTagGroup := &code2cloud.TagGroup{}
 		c2cTagGroup.InitTagGroup("", nil, nil)
 		p.Init(rootDir, nil)
 		writeFilePath := "../../../tests/terraform/resources/k8s_tf/main.tf"
-		writeFileBytes, _ := ioutil.ReadFile(writeFilePath)
+		writeFileBytes, _ := os.ReadFile(writeFilePath)
 		defer func() {
-			_ = ioutil.WriteFile(writeFilePath, writeFileBytes, 0644)
+			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
 		parsedBlocks, err := p.ParseFile(filePath)
 		if err != nil {
@@ -333,14 +332,14 @@ func TestTerrraformParser_Module(t *testing.T) {
 					assert.NotEqualf(t, "kubernetes.io/cluster/$${local.prefix}", tag.GetKey(), "Bad tag exists!")
 				}
 				if !isYorTagExists {
-					t.Error(fmt.Sprintf("tag not found on merged block %v", yorTagKey))
+					t.Errorf("tag not found on merged block %v", yorTagKey)
 				}
 			}
 		}
 	})
 
 	t.Run("Test parsing of unsupported blocks", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/mixed", nil)
 		defer p.Close()
 		blocks, err := p.ParseFile("../../../tests/terraform/mixed/mixed.tf")
@@ -351,8 +350,19 @@ func TestTerrraformParser_Module(t *testing.T) {
 		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
 	})
 
+	t.Run("Test parsing of unsupported resources", func(t *testing.T) {
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/supported", nil)
+		defer p.Close()
+		blocks, err := p.ParseFile("../../../tests/terraform/supported/unsupported.tf")
+		if err != nil {
+			t.Fail()
+		}
+		assert.Equal(t, false, blocks[0].IsBlockTaggable())
+	})
+
 	t.Run("Test reading & writing of module block", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/module_with_tags", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module_with_tags/main.tf"
@@ -375,13 +385,13 @@ func TestTerrraformParser_Module(t *testing.T) {
 			_ = os.Remove(resultFileName)
 		}()
 		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
-		resultStr, _ := ioutil.ReadFile(resultFileName)
-		expectedStr, _ := ioutil.ReadFile(expectedFileName)
+		resultStr, _ := os.ReadFile(resultFileName)
+		expectedStr, _ := os.ReadFile(expectedFileName)
 		assert.Equal(t, string(resultStr), string(expectedStr))
 	})
 
 	t.Run("Test taggable unaccessible module", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/tfe_module", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
@@ -397,7 +407,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 	})
 
 	t.Run("Test reading & writing of module block without tags", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/module/module", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module/main.tf"
@@ -421,13 +431,13 @@ func TestTerrraformParser_Module(t *testing.T) {
 			_ = os.Remove(resultFileName)
 		}()
 		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
-		resultStr, _ := ioutil.ReadFile(resultFileName)
-		expectedStr, _ := ioutil.ReadFile(expectedFileName)
+		resultStr, _ := os.ReadFile(resultFileName)
+		expectedStr, _ := os.ReadFile(expectedFileName)
 		assert.Equal(t, string(expectedStr), string(resultStr))
 	})
 
 	t.Run("TestTagsAttributeScenarios", func(t *testing.T) {
-		p := &TerrraformParser{}
+		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/resources/attributescenarios", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/attributescenarios/main.tf"
@@ -449,14 +459,14 @@ func TestTerrraformParser_Module(t *testing.T) {
 			_ = os.Remove(resultFilePath)
 		}()
 
-		result, _ := ioutil.ReadFile(resultFilePath)
-		expected, _ := ioutil.ReadFile(expectedFilePath)
+		result, _ := os.ReadFile(resultFilePath)
+		expected, _ := os.ReadFile(expectedFilePath)
 		assert.Equal(t, string(expected), string(result))
 	})
 
 	t.Run("Module isTaggable local/remote", func(t *testing.T) {
 		directory := "../../../tests/terraform/resources/local_module"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		defer terraformParser.Close()
 		expectedFiles := []string{"main.tf", "sub_local_module/main.tf", "sub_local_module/variables.tf"}
@@ -479,7 +489,7 @@ func TestTerrraformParser_Module(t *testing.T) {
 
 	t.Run("Test isModuleTaggable on remote modules", func(t *testing.T) {
 		directory := "../../../tests/terraform/module/provider_modules"
-		terraformParser := TerrraformParser{}
+		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		defer terraformParser.Close()
 		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
@@ -594,7 +604,7 @@ func TestRxtractTagPairs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			terraformParser := TerrraformParser{}
+			terraformParser := TerraformParser{}
 			if got := terraformParser.extractTagPairs(tt.source); !compareTokenArrays(got, tt.want) {
 				t.Errorf("extractTagPairs() = %v, want %v", got, tt.want)
 			}
@@ -610,7 +620,7 @@ func getTime() time.Time {
 }
 
 func CreateComplexTagsLines() []*git.Line {
-	originFileText, err := ioutil.ReadFile("../../../tests/terraform/resources/complex_tags.tf")
+	originFileText, err := os.ReadFile("../../../tests/terraform/resources/complex_tags.tf")
 	if err != nil {
 		panic(err)
 	}

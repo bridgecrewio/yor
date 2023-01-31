@@ -36,4 +36,3 @@ resource "aws_vpc" "d" {
     yor_trace = "181119e5-c2ff-4ba1-a35e-78d2c0793297"
   }
 }
-

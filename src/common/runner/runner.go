@@ -72,7 +72,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		switch p {
 		case "Terraform":
-			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+			r.parsers = append(r.parsers, &tfStructure.TerraformParser{})
 		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":
@@ -305,8 +305,5 @@ func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 			return true
 		}
 	}
-	if !p.ValidFile(file) {
-		return true
-	}
-	return false
+	return !p.ValidFile(file)
 }

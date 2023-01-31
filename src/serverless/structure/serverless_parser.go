@@ -2,7 +2,6 @@ package structure
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -141,7 +140,7 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 		block := block.(*ServerlessBlock)
 		block.UpdateTags()
 	}
-	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.yaml")
+	tempFile, err := os.CreateTemp(filepath.Dir(readFilePath), "temp.*.yaml")
 	defer func() {
 		_ = os.Remove(tempFile.Name())
 	}()

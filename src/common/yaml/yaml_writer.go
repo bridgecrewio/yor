@@ -2,8 +2,8 @@ package yaml
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -22,7 +22,7 @@ const SingleIndent = "  "
 func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
 	// #nosec G304
 	// read file bytes
-	originFileSrc, err := ioutil.ReadFile(readFilePath)
+	originFileSrc, err := os.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
@@ -122,7 +122,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	allLines = append(allLines, originLines[oldResourcesLineRange.End+1:]...)
 	linesText := strings.Join(allLines, "\n")
 
-	err = ioutil.WriteFile(writeFilePath, []byte(linesText), 0600)
+	err = os.WriteFile(writeFilePath, []byte(linesText), 0600)
 
 	return err
 }
@@ -281,7 +281,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
 	}
 	// #nosec G304
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return nil
