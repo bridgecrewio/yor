@@ -6,12 +6,12 @@ nav_order: 4
 ---
 
 # Reviewing Tag Results
-You can assume that each resource that is being tagged using Yor has a diff view. For example -  
+You can assume that each resource that is being tagged using Yor has a diff view. For example -
 
 ![Diff View](../yor_diff_view.png)
 
-After applying `./yor tag` command, you will get the CLI Findings Summary. This is also available once you are running 
-`./yor tag -d . -o cli` 
+After applying `./yor tag` command, you will get the CLI Findings Summary. This is also available once you are running
+`./yor tag -d . -o cli`
 
 ![Yor Summary](../yor_summary.png)
 
@@ -24,10 +24,6 @@ Use the following commands to display the tags that are currently used.
 # will print cli output and additional output to file on json file -- enables programatic analysis alongside printing human readable result
 ```
 
-For a JSON file example see 
+For a JSON file example see
 
 ![YOR JSON Results](../yor_json_results.png)
-
-
-
-

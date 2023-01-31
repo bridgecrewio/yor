@@ -2,9 +2,10 @@ package tagging
 
 import (
 	"fmt"
-	"github.com/bridgecrewio/yor/src/common/utils"
 	"regexp"
 	"strings"
+
+	"github.com/bridgecrewio/yor/src/common/utils"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"

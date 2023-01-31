@@ -24,5 +24,3 @@ The following parameter fields are used with the `./yor` command.
 |`list-tag-groups` | list the groups of tags that are built into yor |
 
 Type `yor -h` to have up-to-date list of supported commands.
-
-

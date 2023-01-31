@@ -1,7 +1,6 @@
 package yaml
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -63,15 +62,15 @@ func TestServerlessWriting(t *testing.T) {
 				TagLines:          structure.Lines{Start: -1, End: -1},
 			},
 		}
-		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
+		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
 		err := WriteYAMLFile(readFilePath, slsBlocks, f.Name(), "tags", "functions")
 		if err != nil {
 			assert.Fail(t, err.Error())
 		}
 		expectedFilePath, _ := filepath.Abs(relExpectedPath)
 		actualFilePath, _ := filepath.Abs(f.Name())
-		expected, _ := ioutil.ReadFile(expectedFilePath)
-		actualOutput, _ := ioutil.ReadFile(actualFilePath)
+		expected, _ := os.ReadFile(expectedFilePath)
+		actualOutput, _ := os.ReadFile(actualFilePath)
 		assert.Equal(t, string(expected), string(actualOutput))
 		defer func(name string) {
 			err := os.Remove(name)
@@ -121,15 +120,15 @@ func TestCFNWriting(t *testing.T) {
 				Name:              "S3Bucket",
 			},
 		}
-		f, _ := ioutil.TempFile(directory, "base.*.template")
+		f, _ := os.CreateTemp(directory, "base.*.template")
 		err := WriteYAMLFile(readFilePath, blocks, f.Name(), "Tags", "Resources")
 		if err != nil {
 			assert.Fail(t, err.Error())
 		}
 		expectedFilePath := filepath.Join(directory, "expected.txt")
 		actualFilePath, _ := filepath.Abs(f.Name())
-		expected, _ := ioutil.ReadFile(expectedFilePath)
-		actualOutput, _ := ioutil.ReadFile(actualFilePath)
+		expected, _ := os.ReadFile(expectedFilePath)
+		actualOutput, _ := os.ReadFile(actualFilePath)
 		assert.Equal(t, string(expected), string(actualOutput))
 		defer func() {
 			_ = os.Remove(f.Name())

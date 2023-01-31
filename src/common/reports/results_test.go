@@ -3,7 +3,6 @@ package reports
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -16,7 +15,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 	"github.com/bridgecrewio/yor/tests/utils"
-
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/stretchr/testify/assert"
@@ -80,7 +78,7 @@ func TestResultsGeneration(t *testing.T) {
 
 		_, _ = ReportServiceInst.report.AsJSONBytes()
 		ReportServiceInst.PrintJSONToFile(reportFileName)
-		content, _ := ioutil.ReadFile(reportFileName)
+		content, _ := os.ReadFile(reportFileName)
 		result := Report{}
 		_ = json.Unmarshal(content, &result)
 

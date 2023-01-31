@@ -2,7 +2,7 @@ package gittag
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,10 +13,8 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
-	"github.com/go-git/go-git/v5/plumbing"
-
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -137,7 +135,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		gitLines = append(gitLines, line.Text)
 	}
 
-	originFileText, err := ioutil.ReadFile(filepath.Clean(path))
+	originFileText, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return fileLineMapper{}
 	}

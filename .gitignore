@@ -9,3 +9,5 @@ dist/
 .run
 *.orig
 yor.exe
+yor.exe
+.run

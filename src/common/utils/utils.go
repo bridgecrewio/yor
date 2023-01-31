@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -97,7 +96,7 @@ func GetFileFormat(filePath string) string {
 	if strings.HasSuffix(filePath, common.CFTFileType.Extension) {
 		absFilePath, _ := filepath.Abs(filePath)
 		// #nosec G304 - file is from user
-		content, _ := ioutil.ReadFile(absFilePath)
+		content, _ := os.ReadFile(absFilePath)
 		if strings.HasPrefix(string(content), "{") {
 			return common.JSONFileType.FileFormat
 		}

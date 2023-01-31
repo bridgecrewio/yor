@@ -2,7 +2,7 @@
   AWSTemplateFormatVersion: "2010-09-09"
   Description: >
     protects access to content hosted on CloudFront with KeyCloak authentication using Lambda@Edge
-  
+
   Parameters:
     DomainName:
       Type: String
@@ -10,7 +10,7 @@
     AlternateDomainCertArn:
       Type: String
       Default: ""
-  
+
   Resources:
     S3Bucket:
       Type: AWS::S3::Bucket
@@ -59,7 +59,7 @@
               Resource: !GetAtt S3Bucket.Arn
               Principal:
                 CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
-  
+
   Outputs:
     S3Bucket:
       Description: s3 bucket
