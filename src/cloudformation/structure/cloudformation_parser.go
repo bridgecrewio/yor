@@ -3,14 +3,13 @@ package structure
 import (
 	stdjson "encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
-
-	"reflect"
 
 	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/goformation/v5"
@@ -52,7 +51,6 @@ func (p *CloudformationParser) Init(rootDir string, _ map[string]string) {
 }
 
 func (p CloudformationParser) Close() {
-	return
 }
 
 func (p *CloudformationParser) GetSkippedDirs() []string {
@@ -71,7 +69,7 @@ func (p *CloudformationParser) ValidFile(filePath string) bool {
 		logger.Warning(fmt.Sprintf("Error opening file %s, skipping: %v", filePath, err))
 		return false
 	}
-	bytes, err := ioutil.ReadAll(file)
+	bytes, err := io.ReadAll(file)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("Error reading file %s, skipping: %v", filePath, err))
 		return false
@@ -227,7 +225,7 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 		block := block.(*CloudformationBlock)
 		block.UpdateTags()
 	}
-	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.template")
+	tempFile, err := os.CreateTemp(filepath.Dir(readFilePath), "temp.*.template")
 	defer func() {
 		_ = os.Remove(tempFile.Name())
 	}()
@@ -282,7 +280,7 @@ func (p *CloudformationParser) getTagsLines(filePath string, resourceLinesRange 
 		return structure.Lines{Start: -1, End: -1}
 	case common.JSONFileType.FileFormat:
 		// #nosec G304
-		file, err := ioutil.ReadFile(filePath)
+		file, err := os.ReadFile(filePath)
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 			return structure.Lines{Start: -1, End: -1}

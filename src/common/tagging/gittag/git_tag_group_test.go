@@ -1,7 +1,6 @@
 package gittag
 
 import (
-	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
@@ -11,7 +10,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,7 +47,7 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 		expectedMapping := ExpectedFileMappingTagged
 		gittagGroup := TagGroup{}
 		filePath := "../../../../tests/terraform/resources/taggedkms/tagged_kms.tf"
-		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
+		src, _ := os.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
 		mapper := gittagGroup.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], mapper.originToGit)
@@ -59,7 +57,7 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 		expectedMapping := ExpectedFileMappingDeleted
 		gittagGroup := TagGroup{}
 		filePath := "../../../../tests/terraform/resources/taggedkms/deleted_kms.tf"
-		src, _ := ioutil.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
+		src, _ := os.ReadFile("../../../../tests/terraform/resources/taggedkms/origin_kms.tf")
 		blame := blameutils.CreateMockBlame(src)
 		mapper := gittagGroup.mapOriginFileToGitFile(filePath, &blame)
 		assert.Equal(t, expectedMapping["originToGit"], mapper.originToGit)

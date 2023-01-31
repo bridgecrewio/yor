@@ -3,7 +3,6 @@ package integration
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -18,7 +17,6 @@ import (
 	tagUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
 	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 	"github.com/bridgecrewio/yor/tests/utils"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -29,20 +27,20 @@ import (
 func TestMultipleCommits(t *testing.T) {
 	t.Run("Test tagging over multiple commits", func(t *testing.T) {
 		// read two resource files to be added to a new file we create
-		part1Text, err := ioutil.ReadFile("./resources/commits_file_1.tf")
+		part1Text, err := os.ReadFile("./resources/commits_file_1.tf")
 		failIfErr(t, err)
-		part2Text, err := ioutil.ReadFile("./resources/commits_file_2.tf")
+		part2Text, err := os.ReadFile("./resources/commits_file_2.tf")
 		failIfErr(t, err)
 
 		// init temp directory and file, and write the first text to it
-		dir, err := ioutil.TempDir("", "commits")
+		dir, err := os.MkdirTemp("", "commits")
 		failIfErr(t, err)
 		defer func() {
 			_ = os.RemoveAll(dir)
 		}()
 		tfFileName := "main.tf"
 		tfFilePath := path.Join(dir, tfFileName)
-		err = ioutil.WriteFile(tfFilePath, part1Text, 0644)
+		err = os.WriteFile(tfFilePath, part1Text, 0644)
 		failIfErr(t, err)
 
 		// init git repository and commit the file
@@ -143,7 +141,7 @@ func TestMultipleCommits(t *testing.T) {
 
 func TestRunResults(t *testing.T) {
 	t.Run("Test terragoat tagging", func(t *testing.T) {
-		content, _ := ioutil.ReadFile("../../result.json")
+		content, _ := os.ReadFile("../../result.json")
 		report := &reports.Report{}
 		err := json.Unmarshal(content, &report)
 		if err != nil {
@@ -184,7 +182,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test cli arg parsing", func(t *testing.T) {
 		resultFile := "../../list-tags-result.txt"
-		content, _ := ioutil.ReadFile(resultFile)
+		content, _ := os.ReadFile(resultFile)
 		defer func() {
 			_ = os.Remove(resultFile)
 		}()
@@ -327,7 +325,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		tagDirectory(t, terragoatAWSDirectory)
 
 		// Make minor change to file
-		input, _ := ioutil.ReadFile(path.Join(terragoatAWSDirectory, "db-app.tf"))
+		input, _ := os.ReadFile(path.Join(terragoatAWSDirectory, "db-app.tf"))
 		lines := strings.Split(string(input), "\n")
 		for i, line := range lines {
 			if line == "  instance_class          = \"db.t3.micro\"" {
@@ -335,7 +333,7 @@ func TestTagUncommittedResults(t *testing.T) {
 			}
 		}
 		output := strings.Join(lines, "\n")
-		_ = ioutil.WriteFile(path.Join(terragoatAWSDirectory, "db-app.tf"), []byte(output), 0644)
+		_ = os.WriteFile(path.Join(terragoatAWSDirectory, "db-app.tf"), []byte(output), 0644)
 
 		// tag again, this time the files have uncommitted changes
 		tagDirectory(t, terragoatAWSDirectory)

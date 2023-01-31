@@ -3,7 +3,6 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -129,7 +128,7 @@ func (p *TerraformParser) ValidFile(_ string) bool {
 func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// #nosec G304
 	// read file bytes
-	src, err := ioutil.ReadFile(filePath)
+	src, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
@@ -183,7 +182,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
 	// #nosec G304
 	// read file bytes
-	src, err := ioutil.ReadFile(readFilePath)
+	src, err := os.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
@@ -212,7 +211,7 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 		}
 	}
 
-	tempFile, err := ioutil.TempFile(filepath.Dir(readFilePath), "temp.*.tf")
+	tempFile, err := os.CreateTemp(filepath.Dir(readFilePath), "temp.*.tf")
 	if err != nil {
 		return err
 	}
@@ -236,7 +235,7 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 		return err
 	}
 
-	//cant delete files on windows if you dont close them
+	// can't delete files on windows if you dont close them
 	if err = fd.Close(); err != nil {
 		return err
 	}
@@ -575,7 +574,7 @@ func (p *TerraformParser) isModuleTaggable(fp string, moduleName string, tagAtts
 		return false, ""
 	}
 
-	files, _ := ioutil.ReadDir(expectedModuleDir)
+	files, _ := os.ReadDir(expectedModuleDir)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".tf") {
 			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))

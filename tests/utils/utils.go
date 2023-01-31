@@ -3,7 +3,6 @@ package utils
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -39,7 +38,7 @@ func CaptureOutput(f func()) string {
 }
 
 func CloneRepo(repoPath string, commitHash string) string {
-	dir, err := ioutil.TempDir("", "temp-repo")
+	dir, err := os.MkdirTemp("", "temp-repo")
 	if err != nil {
 		log.Fatal(err)
 	}

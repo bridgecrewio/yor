@@ -1,4 +1,7 @@
-FROM arm64v8/alpine
+FROM arm64v8/alpine:3.17.1
+# checkov:skip=CKV_DOCKER_3: Not a service
+# checkov:skip=CKV_DOCKER_2: Not a service
+# checkov:skip=CKV2_DOCKER_2: Not a service
 
 RUN apk --no-cache add build-base git curl jq bash
 RUN curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_arm64")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o /usr/bin/yor.tar.gz"}' | sh

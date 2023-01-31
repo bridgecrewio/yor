@@ -43,7 +43,7 @@ during pull request review and as part of any build process.
 stages:
   - yor
 
-run-yor:    
+run-yor:
   stage: yor
   script:
     - git checkout ${CI_COMMIT_REF_NAME}

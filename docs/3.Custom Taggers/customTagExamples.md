@@ -15,7 +15,7 @@ Yor supports several ways of adding custom tags:
 	2. [Complex tags that rely on different inputs](#adding-complex-tags)
 3. [Using YAML configuration files](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml-configuration-files)
 4. [Using CLI commands](../3.Custom Taggers/Custom_tagger_YAML.md#custom-tagger-using-yaml-configuration-files)
-       
+
 Examples can be found in [`tests/yor_plugins`](https://github.com/bridgecrewio/yor/tree/main/tests/yor_plugins)
 
 ## Adding Simple Tags Using Environment Variables
@@ -34,16 +34,16 @@ will add these tags as part of yor run, as shown once running `./yor --list-tags
 ![](../yor_list_tags_after_env_var.png)
 
 ## Adding Custom Tags Using Golang
-Use the following code samples to add tags using Go. 
+Use the following code samples to add tags using Go.
 
 ### Adding Simple Code Based Tags
 1. Create tags implementing the `ITag` interface.
 2. To override an existing tag, make the tag's method `GetPriority()` return a positive number, otherwise return `0`, or a negative number.
-3. Create a file in the package `main` that exposes an array variable (for example `ExtraTags`) containing pointers to all the tags implemented. 
+3. Create a file in the package `main` that exposes an array variable (for example `ExtraTags`) containing pointers to all the tags implemented.
    For example:
     ```go
     package main
-    
+
     var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
     ```
 4. Run `go build -gcflags="all=-N -l" -buildmode=plugin -o <plugin-dir>/extra_tags.so <plugin-dir>/*.go`
@@ -75,11 +75,11 @@ For examples see the [example](https://github.com/bridgecrewio/yor/tree/main/tes
     ```
 4. Implement the tags which implement the `ITag` interface. For example, see [Adding Simple Code Based Tags](#adding-simple-code-based-tags).
 5. Go back to the `InitTagGroup` method and add pointers to your new tags in the input of the `SetTags` function call.
-6. Create a file in package `main` that exposes an array variable (for example `ExtraTags`) containing pointers to all the tags implemented. 
+6. Create a file in package `main` that exposes an array variable (for example `ExtraTags`) containing pointers to all the tags implemented.
    For example:
     ```go
     package main
-    
+
     var ExtraTaggers = []interface{}{&CustomTagger{}}
     ```
 
@@ -94,4 +94,3 @@ Use the following example to run Yor with the Custom Taggers:
 ./yor tag --custom-tagging tests/yor_plugins/example,tests/yor_plugins/tag_group_example
 # run yor with custom tags located in tests/yor_plugins/example and custom taggers located in tests/yor_plugins/tag_group_example
 ```
-

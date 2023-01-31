@@ -1,7 +1,6 @@
 package json
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -11,7 +10,6 @@ import (
 	s3tags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -476,7 +474,7 @@ func writeJSONTestHelper(t *testing.T, directory string, testFileName string, ex
 			Name:              "S3Bucket",
 		},
 	}
-	f, _ := ioutil.TempFile(directory, testFileName+".*.json")
+	f, _ := os.CreateTemp(directory, testFileName+".*.json")
 	_, fileBracketsMapping := MapResourcesLineJSON(readFilePath, []string{"S3Bucket"})
 	err := WriteJSONFile(readFilePath, blocks, f.Name(), fileBracketsMapping)
 	if err != nil {
@@ -484,8 +482,8 @@ func writeJSONTestHelper(t *testing.T, directory string, testFileName string, ex
 	}
 	expectedFilePath := filepath.Join(directory, testFileName+"_expected.json")
 	actualFilePath, _ := filepath.Abs(f.Name())
-	expected, _ := ioutil.ReadFile(expectedFilePath)
-	actualOutput, _ := ioutil.ReadFile(actualFilePath)
+	expected, _ := os.ReadFile(expectedFilePath)
+	actualOutput, _ := os.ReadFile(actualFilePath)
 	assert.Equal(t, string(expected), string(actualOutput))
 	defer func() {
 		_ = os.Remove(f.Name())

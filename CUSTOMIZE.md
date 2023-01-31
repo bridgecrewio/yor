@@ -22,7 +22,7 @@ export YOR_SIMPLE_TAGS='{"somekey": "somevalue", "another-key": "another_val"}'
 3. Create a file located in package `main` that exposes a variable `ExtraTags` - array containing pointers to all tags implemented. Example:
     ```go
     package main
-    
+
     var ExtraTags = []interface{}{&TerragoatTag{}, &CheckovTag{}}
     ```
 4. Run the command `go build -gcflags="all=-N -l" -buildmode=plugin -o <plugin-dir>/extra_tags.so <plugin-dir>/*.go`
@@ -57,7 +57,7 @@ See example in [tests/yor_plugins/example](tests/yor_plugins/example)
 6. Create a file located in package `main` that exposes a variable `ExtraTaggers` - array containing pointers to all tags implemented. Example:
     ```go
     package main
-    
+
     var ExtraTaggers = []interface{}{&CustomTagger{}}
     ```
 
