@@ -1,0 +1,27 @@
+{
+    "branch": "master",
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/changelog",
+            {
+                "changelogFile": "CHANGELOG.md",
+                "changelogTitle": "# GoFormation Versioning Changelog"
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": [
+                    "CHANGELOG.md",
+                    "AUTHORS.md"
+                ]
+            }
+        ],
+        [
+            "@semantic-release/github"
+        ]
+    ]
+}
+

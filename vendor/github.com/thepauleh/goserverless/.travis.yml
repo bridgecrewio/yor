@@ -1,0 +1,8 @@
+language: go
+go:
+- 1.13
+
+script:
+  - env GO111MODULE=on go build 
+  - env GO111MODULE=on go test
+  
