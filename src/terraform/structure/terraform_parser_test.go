@@ -544,7 +544,7 @@ func TestExtractSubdirFromRemoteModuleSrc(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ExtractSubdirFromRemoteModuleSrc(tt.source); got != tt.want {
 				t.Errorf("ExtractProviderFromModuleSrc() = %v, want %v", got, tt.want)
-      }
+			}
 		})
 	}
 }
