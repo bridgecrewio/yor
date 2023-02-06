@@ -526,6 +526,29 @@ func TestExtractProviderFromModuleSrc(t *testing.T) {
 	}
 }
 
+
+func TestExtractSubdirFromRemoteModuleSrc(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+		want   string
+	}{
+		{name: "registry", source: "terraform-aws-modules/iam/aws", want: ""},
+		{name: "registry_with_subdir", source: "terraform-aws-modules/iam/aws//modules/iam-policy", want: "modules/iam-policy"},
+		{name: "git", source: "git::ssh://username@example.com/storage.git", want: ""},
+		{name: "git_with_ref", source: "git::ssh://username@example.com/storage.git?ref=v1.2.0", want: ""},
+		{name: "git_with_subdir", source: "git::ssh://username@example.com/storage.git//sub/dir", want: "sub/dir"},
+		{name: "git_with_ref_and_subdir", source: "git::ssh://username@example.com/storage.git//sub?ref=v1.2.0", want: "sub"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ExtractSubdirFromRemoteModuleSrc(tt.source); got != tt.want {
+				t.Errorf("ExtractProviderFromModuleSrc() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRxtractTagPairs(t *testing.T) {
 	tests := []struct {
 		name   string
