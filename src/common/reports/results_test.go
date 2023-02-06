@@ -113,10 +113,12 @@ func TestResultsGeneration(t *testing.T) {
 		}
 	})
 
-	t.Run("Test CLI output structure", func(t *testing.T, colors *reports.ColorStruct) {
+	t.Run("Test CLI output structure", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
 
-		output := utils.CaptureOutput(ReportServiceInst.PrintToStdout(colors))
+                colors := common.NoColorCheck(false)
+		output := utils.CaptureOutputColors(ReportServiceInst.PrintToStdout)
+		fmt.Println(output) //DEBUG for go test
 		lines := strings.Split(output, "\n")
 		// Verify banner
 		assert.Equal(t, fmt.Sprintf("%v%vv%v", common.YorLogo, colors.Purple, common.Version), strings.Join(lines[0:6], "\n"))

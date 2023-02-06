@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+        "github.com/bridgecrewio/yor/src/common"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
@@ -30,6 +31,32 @@ func CaptureOutput(f func()) string {
 	log.SetOutput(writer)
 
 	f()
+	_ = writer.Close()
+	var buf bytes.Buffer
+	_, _ = io.Copy(&buf, reader)
+	_ = reader.Close()
+	return buf.String()
+}
+
+func CaptureOutputColors(f func(*common.ColorStruct)) string {
+        colors := common.NoColorCheck(false)
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		panic(err)
+	}
+
+	stdout := os.Stdout
+	stderr := os.Stderr
+	defer func() {
+		os.Stdout = stdout
+		os.Stderr = stderr
+		log.SetOutput(stderr)
+	}()
+	os.Stdout = writer
+	os.Stderr = writer
+	log.SetOutput(writer)
+
+	f(colors)
 	_ = writer.Close()
 	var buf bytes.Buffer
 	_, _ = io.Copy(&buf, reader)
