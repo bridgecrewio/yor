@@ -28,6 +28,8 @@ type TagOptions struct {
 	SkipResources     []string
 	Parsers           []string
 	DryRun            bool
+	TagLocalModules   bool
+	TagPrefix         string
 }
 
 type ListTagsOptions struct {

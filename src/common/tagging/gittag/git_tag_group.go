@@ -2,7 +2,7 @@ package gittag
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,10 +13,8 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
-
-	"github.com/go-git/go-git/v5/plumbing"
-
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -30,8 +28,13 @@ type fileLineMapper struct {
 	gitToOrigin map[int]int
 }
 
-func (t *TagGroup) InitTagGroup(path string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
+	opt := tagging.InitTagGroupOptions{}
+	for _, fn := range options {
+		fn(&opt)
+	}
 	t.SkippedTags = skippedTags
+	t.SpecifiedTags = explicitlySpecifiedTags
 	if path != "" {
 		gitService, err := gitservice.NewGitService(path)
 		if err != nil {
@@ -132,7 +135,7 @@ func (t *TagGroup) mapOriginFileToGitFile(path string, fileBlame *git.BlameResul
 		gitLines = append(gitLines, line.Text)
 	}
 
-	originFileText, err := ioutil.ReadFile(filepath.Clean(path))
+	originFileText, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return fileLineMapper{}
 	}

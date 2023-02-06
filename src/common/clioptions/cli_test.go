@@ -9,6 +9,23 @@ import (
 )
 
 func TestCliArgParsing(t *testing.T) {
+	t.Run("Tag local options flag", func(t *testing.T) {
+		options := TagOptions{
+			Directory:       "some/dir",
+			Tag:             nil,
+			SkipTags:        nil,
+			CustomTagging:   nil,
+			SkipDirs:        nil,
+			Output:          "cli",
+			OutputJSONFile:  "",
+			ConfigFile:      "",
+			DryRun:          true,
+			TagLocalModules: true,
+			TagPrefix:       "prefix",
+		}
+		// Expect the validation to pass without throwing errors
+		options.Validate()
+	})
 	t.Run("Test tag argument parsing - valid output", func(t *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
@@ -20,6 +37,7 @@ func TestCliArgParsing(t *testing.T) {
 			OutputJSONFile: "",
 			ConfigFile:     "",
 			DryRun:         true,
+			TagPrefix:      "",
 		}
 		// Expect the validation to pass without throwing errors
 		options.Validate()

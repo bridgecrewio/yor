@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -66,11 +65,11 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		}
 		assert.NotNil(t, func1Block)
 		assert.NotNil(t, func2Block)
-		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
+		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
 		_ = slsParser.WriteFile(slsFilepath, slsBlocks, f.Name())
 
-		expected, _ := ioutil.ReadFile(expectedSlsFilepath)
-		actual, _ := ioutil.ReadFile(f.Name())
+		expected, _ := os.ReadFile(expectedSlsFilepath)
+		actual, _ := os.ReadFile(f.Name())
 
 		assert.Equal(t, string(expected), string(actual))
 
@@ -199,7 +198,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			},
 		}
 		tagGroup.SetTags(extraTags)
-		tagGroup.InitTagGroup("", []string{})
+		tagGroup.InitTagGroup("", []string{}, []string{})
 		writeFilePath := directory + "/serverless_tagged.yml"
 		slsBlocks, err := slsParser.ParseFile(readFilePath)
 		for _, block := range slsBlocks {
@@ -211,15 +210,15 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		f, _ := ioutil.TempFile(directory, "serverless.*.yaml")
+		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
 		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
 		if err != nil {
 			t.Fail()
 		}
 		expectedFilePath, _ := filepath.Abs(writeFilePath)
 		actualFilePath, _ := filepath.Abs(f.Name())
-		expected, _ := ioutil.ReadFile(expectedFilePath)
-		actualOutput, _ := ioutil.ReadFile(actualFilePath)
+		expected, _ := os.ReadFile(expectedFilePath)
+		actualOutput, _ := os.ReadFile(actualFilePath)
 		assert.Equal(t, string(expected), string(actualOutput))
 		defer func(name string) {
 			err := os.Remove(name)

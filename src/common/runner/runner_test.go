@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,12 +18,9 @@ import (
 	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 	testingUtils "github.com/bridgecrewio/yor/tests/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
-
-	"github.com/pmezard/go-difflib/difflib"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-
+	"github.com/pmezard/go-difflib/difflib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -73,7 +69,7 @@ func Test_loadExternalTags(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(gotTagGroups))
 		group := gotTagGroups[0]
-		group.InitTagGroup("src", nil)
+		group.InitTagGroup("src", nil, nil)
 		groupTags := gotTagGroups[0].GetTags()
 		assert.Equal(t, 1, len(gotTagGroups[0].GetTags()))
 		tag := groupTags[0]
@@ -97,14 +93,14 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		filePath := options.Directory + "/ebs.yaml"
 
-		originFileBytes, err := ioutil.ReadFile(filePath)
+		originFileBytes, err := os.ReadFile(filePath)
 		if err != nil {
 			t.Error(err)
 		}
 		originFileLines := utils.GetLinesFromBytes(originFileBytes)
 
 		defer func() {
-			_ = ioutil.WriteFile(filePath, originFileBytes, 0644)
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
 		}()
 
 		mockGitTagGroup := initMockGitTagGroup(options.Directory, map[string]string{filePath: filePath})
@@ -121,7 +117,7 @@ func Test_TagCFNDir(t *testing.T) {
 		}
 		time.Sleep(time.Second)
 
-		editedFileBytes, err := ioutil.ReadFile(filePath)
+		editedFileBytes, err := os.ReadFile(filePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -133,7 +129,7 @@ func Test_TagCFNDir(t *testing.T) {
 		matcher := difflib.NewMatcher(originFileLines, editedFileLines)
 		matches := matcher.GetMatchingBlocks()
 		expectedMatches := []difflib.Match{
-			{A: 0, B: 0, Size: 14}, {A: 14, B: 28, Size: 8}, {A: 22, B: 36, Size: 0},
+			{A: 0, B: 0, Size: 14}, {A: 14, B: 28, Size: 9}, {A: 23, B: 37, Size: 0},
 		}
 		assert.Equal(t, expectedMatches, matches)
 	})
@@ -164,11 +160,12 @@ func TestRunnerInternals(t *testing.T) {
 			Directory: rootDir,
 			SkipDirs:  []string{"../../../tests/terraform/mixed", "../../../tests/terraform/resources/tagged/"},
 			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			TagPrefix: "prefix_",
 		})
 
 		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 			if !info.IsDir() {
-				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerrraformParser{}, path)
+				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerraformParser{}, path)
 				if isFileSkipped {
 					shouldSkip := false
 					skippedIndex := -1
@@ -237,20 +234,43 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "EC2InstanceResource0")
 	})
+
+	t.Run("Test merge with tomap terraform", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources/tomap"
+		_ = os.Setenv("YOR_SIMPLE_TAGS", "{\"test_tag\": \"test_value\"}")
+		defer os.Unsetenv("YOR_SIMPLE_TAGS")
+
+		yorRunner := new(Runner)
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: rootDir,
+			TagGroups: taggingUtils.GetAllTagGroupsNames(),
+			Tag:       []string{"test_tag"},
+			Parsers:   []string{"Terraform"},
+		})
+		yorRunner.TagFile(rootDir + "/tomap.tf")
+		if err != nil {
+			t.Error(err)
+		}
+
+		taggedFile, _ := os.ReadFile(rootDir + "/tomap.tf")
+		expectedFile, _ := os.ReadFile(rootDir + "/expected.tf")
+
+		assert.Equal(t, taggedFile, expectedFile)
+	})
 }
 
 func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gittag.TagGroup {
 	gitService, _ := gitservice.NewGitService(rootDir)
 
 	for filePath := range filesToBlames {
-		blameSrc, _ := ioutil.ReadFile(filesToBlames[filePath])
+		blameSrc, _ := os.ReadFile(filesToBlames[filePath])
 		blame := blameutils.CreateMockBlame(blameSrc)
 		gitService.BlameByFile.Store(filePath, &blame)
 	}
 
 	gitTagGroup := gittag.TagGroup{}
 	wd, _ := os.Getwd()
-	gitTagGroup.InitTagGroup(wd, nil)
+	gitTagGroup.InitTagGroup(wd, nil, nil)
 	gitTagGroup.GitService = gitService
 	return &gitTagGroup
 }

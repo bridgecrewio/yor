@@ -3,8 +3,8 @@ package json
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -19,7 +19,7 @@ import (
 func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, fileBracketsPairs map[int]BracketPair) error {
 
 	// #nosec G304
-	originFileSrc, err := ioutil.ReadFile(readFilePath)
+	originFileSrc, err := os.ReadFile(readFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
@@ -63,7 +63,7 @@ func WriteJSONFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		textToWrite += originFileStr[lastReplacedIndex:]
 	}
 
-	err = ioutil.WriteFile(writeFilePath, []byte(textToWrite), 0600)
+	err = os.WriteFile(writeFilePath, []byte(textToWrite), 0600)
 	return err
 }
 
@@ -278,7 +278,7 @@ func getJSONStr(jsonData interface{}) string {
 func MapResourcesLineJSON(filePath string, resourceNames []string) (map[string]*structure.Lines, map[int]BracketPair) {
 	resourceToLines := make(map[string]*structure.Lines)
 	// #nosec G304
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
 		return nil, nil
@@ -318,7 +318,7 @@ func MapBracketsInString(str string) []Brackets {
 	return allBrackets
 }
 
-// GetBracketsPairs: given a list of all brackets of pair, map all the pairs correctly and return them ordered by the open char index
+// GetBracketsPairs given a list of all brackets of pair, map all the pairs correctly and return them ordered by the open char index
 func GetBracketsPairs(bracketsInString []Brackets) map[int]BracketPair {
 	startCharToBrackets := make(map[int]BracketPair)
 	bracketShape2BracketsStacks := make(map[BracketShape][]Brackets)
@@ -400,7 +400,7 @@ func getKeyIndex(str string, key string, linesRange *structure.Lines) int {
 	return indexOfKey
 }
 
-// FindWrappingBrackets: given a brackets pair, find the pair that wraps them
+// FindWrappingBrackets given a brackets pair, find the pair that wraps them
 func FindWrappingBrackets(allBracketPairs map[int]BracketPair, innerBracketPair BracketPair) BracketPair {
 	wrappingPair := -1
 	for i, bracketsPair := range allBracketPairs {

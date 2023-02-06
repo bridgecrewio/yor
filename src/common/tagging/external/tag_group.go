@@ -2,7 +2,6 @@ package external
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strconv"
@@ -109,14 +108,15 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
 
 }
 
-func (t *TagGroup) InitTagGroup(dir string, skippedTags []string) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
 	t.SkippedTags = skippedTags
+	t.SpecifiedTags = explicitlySpecifiedTags
 	t.Dir = dir
 }
 
 func (t *TagGroup) InitExternalTagGroup() {
 	configMap := Config{}
-	confBytes, err := ioutil.ReadFile(t.configFilePath)
+	confBytes, err := os.ReadFile(t.configFilePath)
 	if err != nil {
 		logger.Error(err.Error())
 	}

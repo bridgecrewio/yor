@@ -1,9 +1,10 @@
 package structure
 
 import (
-	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 	"sort"
 	"testing"
+
+	goformationTags "github.com/awslabs/goformation/v5/cloudformation/tags"
 
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"

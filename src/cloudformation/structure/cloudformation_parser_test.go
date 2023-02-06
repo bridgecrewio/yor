@@ -2,16 +2,14 @@ package structure
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/json"
+	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-
-	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/yaml"
 	"github.com/stretchr/testify/assert"
 )
@@ -157,7 +155,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 }
 
 func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fileType string) {
-	f, _ := ioutil.TempFile(directory, "temp.*."+fileType)
+	f, _ := os.CreateTemp(directory, "temp.*."+fileType)
 	cfnParser := CloudformationParser{}
 	cfnParser.Init(directory, nil)
 	readFilePath := directory + "/" + testFileName + "." + fileType
@@ -169,7 +167,7 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 		},
 	}
 	tagGroup.SetTags(extraTags)
-	tagGroup.InitTagGroup("", []string{})
+	tagGroup.InitTagGroup("", []string{}, []string{})
 	writeFilePath := directory + "/" + testFileName + "_tagged." + fileType
 	cfnBlocks, err := cfnParser.ParseFile(readFilePath)
 	for _, block := range cfnBlocks {
@@ -191,8 +189,8 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 	}
 	expectedAbs, _ := filepath.Abs(writeFilePath)
 	actualAbs, _ := filepath.Abs(f.Name())
-	expectedContent, _ := ioutil.ReadFile(expectedAbs)
-	actualContent, _ := ioutil.ReadFile(actualAbs)
+	expectedContent, _ := os.ReadFile(expectedAbs)
+	actualContent, _ := os.ReadFile(actualAbs)
 	defer func() {
 		_ = os.Remove(f.Name())
 	}()

@@ -2,7 +2,7 @@ package gitservice
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -12,7 +12,6 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -168,7 +167,7 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 }
 
 func GetGitUserEmail() string {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	cmd := exec.Command("git", "config", "user.email")
 	email, err := cmd.Output()
 	stdout := os.Stdout

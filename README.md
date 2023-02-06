@@ -3,7 +3,7 @@
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
-<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-81%25-brightgreen.svg?longCache=true&style=flat)</a>
+<a href='https://github.com/jpoles1/gopherbadger' target='_blank'>![gopherbadger-tag-do-not-edit](https://img.shields.io/badge/Go%20Coverage-82%25-brightgreen.svg?longCache=true&style=flat)</a>
 [![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://slack.bridgecrew.io/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bridgecrewio/yor)](https://goreportcard.com/report/github.com/bridgecrewio/yor)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bridgecrewio/yor.svg)](https://pkg.go.dev/github.com/bridgecrewio/yor)
@@ -18,7 +18,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Features
 * Apply tags and labels on infrastructure as code directory
 * Tracing: ```yor_trace``` tag enables simple attribution between an IaC resource block and a running cloud resource.
-* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.  
+* Change management: git-based tags automatically add org, repo, commit and modifier details on every resource block.
 * Custom taggers: user-defined tagging logics can be added to run using Yor.
 * Skips: inline annotations enable developers to exclude paths that should not be tagged.
 * Dry-Run: get a preview of what tags will be added without applying any.
@@ -57,6 +57,16 @@ MacOS / Linux
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
 ```
+If not using Brew:
+
+```
+pip3 install lastversion
+lastversion bridgecrewio/yor -d --assets
+tar -xzf $(find . -name *.tar.gz)
+chmod +x yor
+sudo mv yor /usr/local/bin
+```
+
 __OR__
 
 Windows
@@ -146,6 +156,9 @@ yor tag -d . --config-file /path/to/conf/file/
 
 # Apply tags to all resources except of a specified type
 yor tag -d . --skip-resource-types aws_s3_bucket
+
+# Apply tags with a specifix prefix
+yor tag -d . --tag-prefix "module_"
 
 # Apply tags to all resources except with the specified name
 yor tag -d . --skip-resources aws_s3_bucket.operations

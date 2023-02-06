@@ -38,6 +38,7 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
+	localModuleTag       bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -57,7 +58,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		logger.Info("Did not get an external config file")
 	}
 	for _, tagGroup := range r.TagGroups {
-		tagGroup.InitTagGroup(dir, commands.SkipTags)
+		tagGroup.InitTagGroup(dir, commands.SkipTags, commands.Tag, tagging.WithTagPrefix(commands.TagPrefix))
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
 			simpleTagGroup.SetTags(extraTags)
 		} else if externalTagGroup, ok := tagGroup.(*external.TagGroup); ok && commands.ConfigFile != "" {
@@ -71,7 +72,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		switch p {
 		case "Terraform":
-			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+			r.parsers = append(r.parsers, &tfStructure.TerraformParser{})
 		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":
@@ -81,9 +82,10 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		processedParsers[p] = struct{}{}
 	}
-
+	options := map[string]string{
+		"tag-local-modules": strconv.FormatBool(commands.TagLocalModules)}
 	for _, parser := range r.parsers {
-		parser.Init(dir, nil)
+		parser.Init(dir, options)
 	}
 
 	r.ChangeAccumulator = reports.TagChangeAccumulatorInstance
@@ -303,8 +305,5 @@ func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
 			return true
 		}
 	}
-	if !p.ValidFile(file) {
-		return true
-	}
-	return false
+	return !p.ValidFile(file)
 }

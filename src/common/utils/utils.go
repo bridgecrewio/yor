@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -51,6 +50,9 @@ func AllNil(vv ...interface{}) bool {
 		if reflect.ValueOf(v).Kind() == reflect.String && v != "" {
 			return false
 		}
+		if reflect.ValueOf(v).Kind() == reflect.Slice && !reflect.ValueOf(v).IsNil() {
+			return false
+		}
 	}
 	return true
 }
@@ -94,7 +96,7 @@ func GetFileFormat(filePath string) string {
 	if strings.HasSuffix(filePath, common.CFTFileType.Extension) {
 		absFilePath, _ := filepath.Abs(filePath)
 		// #nosec G304 - file is from user
-		content, _ := ioutil.ReadFile(absFilePath)
+		content, _ := os.ReadFile(absFilePath)
 		if strings.HasPrefix(string(content), "{") {
 			return common.JSONFileType.FileFormat
 		}

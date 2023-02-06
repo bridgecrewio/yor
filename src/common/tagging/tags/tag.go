@@ -25,6 +25,7 @@ type ITag interface {
 	GetValue() string
 	GetPriority() int
 	GetDescription() string
+	SetTagPrefix(tagPrefix string)
 }
 
 type TagDiff struct {
@@ -41,6 +42,10 @@ func Init(key string, value string) ITag {
 }
 
 func (t *Tag) Init() {}
+
+func (t *Tag) SetTagPrefix(tagPrefix string) {
+	t.Key = fmt.Sprintf("%s%s", tagPrefix, t.Key)
+}
 
 func (t *Tag) GetPriority() int {
 	return 0

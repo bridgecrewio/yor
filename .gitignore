@@ -5,3 +5,9 @@
 .gobuild
 dist/
 /yor
+.DS_Store
+.run
+*.orig
+yor.exe
+yor.exe
+.run

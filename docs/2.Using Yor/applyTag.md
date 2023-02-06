@@ -6,8 +6,8 @@ nav_order: 3
 ---
 # Applying Tags
 
-The following commands are used to apply tags. GitHub Actions provides a simple, automatic way of applying tags to your IaC 
-both during pull request review and as part of any build process. In order to integrate Yor into follow the installation 
+The following commands are used to apply tags. GitHub Actions provides a simple, automatic way of applying tags to your IaC
+both during pull request review and as part of any build process. In order to integrate Yor into follow the installation
 [here](../2.Using Yor/installation.md#integrate-yor-with-github-actions)
 
 ## Apply Built-in Tags
@@ -17,10 +17,10 @@ To apply all configured tags run the following commands:
    ```sh
     ./yor tag --directory terraform/
     # Apply all the tags in yor on the directory tree terraform/
-   
+
     ./yor tag --directory terraform/ --skip-tags git_last_modified_by,yor_trace
     # Apply all the tags in yor except the tags git_last_modified_by and yor_trace
-   
+
     ./yor tag --tag-group git --directory terraform/
     # Apply only the tags under the git tag group
 
@@ -59,11 +59,11 @@ Yor supports terraform [`module` blocks](https://www.terraform.io/docs/language/
 1. modules with a local path - will not be modified. The underlying resources will be tagged separately.
 2. modules with a remote path - tags will be added according to the module block metadata.
    Yor does not download the remote module and modify it, but rather considers it as a black box.
-   
+
 Some examples:
 ```terraform
 module "local_module" {
-   # This is a local module. Yor will **not** modify this block. 
+   # This is a local module. Yor will **not** modify this block.
    # Instead, Yor will tag the actual resources located at the source dir that is specified in the module block
    source  = "../../tests/terraform"
    tags    = {
@@ -72,7 +72,7 @@ module "local_module" {
 }
 
 module "remote_module" {
-   # This is a remote module (from the registry). 
+   # This is a remote module (from the registry).
    # Yor will add tags to the `tags` attribute of this module
    source = "terraform-aws-modules/vpc/aws"
    tags   = {
@@ -81,7 +81,7 @@ module "remote_module" {
 }
 
 module "remote_module_2" {
-   # This is a remote module (from github). 
+   # This is a remote module (from github).
    # Yor will add tags to the `tags` attribute of this module
    source = "git@github.com:terraform-aws-modules/terraform-aws-vpc.git"
    tags   = {
@@ -95,7 +95,7 @@ module "remote_module_2" {
 ##### Before
 ```terraform
 module "remote_module" {
-   # This is a remote module (from the registry). 
+   # This is a remote module (from the registry).
    # Yor will add tags to the `tags` attribute of this module
    source = "terraform-aws-modules/vpc/aws"
    tags   = {
@@ -107,7 +107,7 @@ module "remote_module" {
 ##### After
 ```terraform
 module "remote_module" {
-   # This is a remote module (from the registry). 
+   # This is a remote module (from the registry).
    # Yor will add tags to the `tags` attribute of this module
    source = "terraform-aws-modules/vpc/aws"
    tags   = {

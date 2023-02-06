@@ -3,7 +3,6 @@ package integration
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -18,7 +17,6 @@ import (
 	tagUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
 	terraformStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 	"github.com/bridgecrewio/yor/tests/utils"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -29,20 +27,20 @@ import (
 func TestMultipleCommits(t *testing.T) {
 	t.Run("Test tagging over multiple commits", func(t *testing.T) {
 		// read two resource files to be added to a new file we create
-		part1Text, err := ioutil.ReadFile("./resources/commits_file_1.tf")
+		part1Text, err := os.ReadFile("./resources/commits_file_1.tf")
 		failIfErr(t, err)
-		part2Text, err := ioutil.ReadFile("./resources/commits_file_2.tf")
+		part2Text, err := os.ReadFile("./resources/commits_file_2.tf")
 		failIfErr(t, err)
 
 		// init temp directory and file, and write the first text to it
-		dir, err := ioutil.TempDir("", "commits")
+		dir, err := os.MkdirTemp("", "commits")
 		failIfErr(t, err)
 		defer func() {
 			_ = os.RemoveAll(dir)
 		}()
 		tfFileName := "main.tf"
 		tfFilePath := path.Join(dir, tfFileName)
-		err = ioutil.WriteFile(tfFilePath, part1Text, 0644)
+		err = os.WriteFile(tfFilePath, part1Text, 0644)
 		failIfErr(t, err)
 
 		// init git repository and commit the file
@@ -143,7 +141,7 @@ func TestMultipleCommits(t *testing.T) {
 
 func TestRunResults(t *testing.T) {
 	t.Run("Test terragoat tagging", func(t *testing.T) {
-		content, _ := ioutil.ReadFile("../../result.json")
+		content, _ := os.ReadFile("../../result.json")
 		report := &reports.Report{}
 		err := json.Unmarshal(content, &report)
 		if err != nil {
@@ -184,7 +182,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test cli arg parsing", func(t *testing.T) {
 		resultFile := "../../list-tags-result.txt"
-		content, _ := ioutil.ReadFile(resultFile)
+		content, _ := os.ReadFile(resultFile)
 		defer func() {
 			_ = os.Remove(resultFile)
 		}()
@@ -200,6 +198,60 @@ func TestRunResults(t *testing.T) {
 				(strings.HasPrefix(filtered[0], "| git") && strings.HasPrefix(filtered[1], "| code2cloud")))
 		} else {
 			assert.Fail(t, fmt.Sprintf("Number of filtered lines is %v, should be %v", len(filtered), 2))
+		}
+	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		defer os.RemoveAll(repoPath)
+
+		yorRunner := new(runner.Runner)
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			Tag:       []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+		assert.LessOrEqual(t, 18, report.Summary.Scanned)
+		assert.Greater(t, report.Summary.Scanned, 0)
+
+		for _, newTag := range report.NewResourceTags {
+			if strings.HasPrefix(repoPath, newTag.File) {
+				assert.Equal(t, "yor_trace", newTag.TagKey)
+				assert.Equal(t, "aws_iam_role.bridgecrew_account_role", newTag.ResourceID)
+			}
+		}
+	})
+
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
+		defer os.RemoveAll(repoPath)
+
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			SkipTags:  []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		newTags := report.NewResourceTags
+		for _, newTag := range newTags {
+			if strings.HasPrefix(repoPath, newTag.File) {
+				assert.NotEqual(t, "yor_trace", newTag.TagKey)
+			}
 		}
 	})
 }
@@ -220,11 +272,11 @@ func TestTagUncommittedResults(t *testing.T) {
 		// tag again, this time the files have uncommitted changes
 		tagDirectory(t, terragoatAWSDirectory)
 
-		terrraformParser := terraformStructure.TerrraformParser{}
-		terrraformParser.Init(terragoatAWSDirectory, nil)
+		terraformParser := terraformStructure.TerraformParser{}
+		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks, err := terrraformParser.ParseFile(dbAppFile)
+		blocks, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -273,7 +325,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		tagDirectory(t, terragoatAWSDirectory)
 
 		// Make minor change to file
-		input, _ := ioutil.ReadFile(path.Join(terragoatAWSDirectory, "db-app.tf"))
+		input, _ := os.ReadFile(path.Join(terragoatAWSDirectory, "db-app.tf"))
 		lines := strings.Split(string(input), "\n")
 		for i, line := range lines {
 			if line == "  instance_class          = \"db.t3.micro\"" {
@@ -281,16 +333,16 @@ func TestTagUncommittedResults(t *testing.T) {
 			}
 		}
 		output := strings.Join(lines, "\n")
-		_ = ioutil.WriteFile(path.Join(terragoatAWSDirectory, "db-app.tf"), []byte(output), 0644)
+		_ = os.WriteFile(path.Join(terragoatAWSDirectory, "db-app.tf"), []byte(output), 0644)
 
 		// tag again, this time the files have uncommitted changes
 		tagDirectory(t, terragoatAWSDirectory)
 
-		terrraformParser := terraformStructure.TerrraformParser{}
-		terrraformParser.Init(terragoatAWSDirectory, nil)
+		terraformParser := terraformStructure.TerraformParser{}
+		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks, err := terrraformParser.ParseFile(dbAppFile)
+		blocks, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -326,6 +378,32 @@ func TestTagUncommittedResults(t *testing.T) {
 	})
 }
 
+func TestLocalModules(t *testing.T) {
+	t.Run("Test tagging local modules", func(t *testing.T) {
+		localTagExampleRepo := "https://github.com/JamesWoolfenden/terraform-aws-activemq/"
+		repoPath := utils.CloneRepo(localTagExampleRepo, "05ab598c4947bb9e53fee67a0f7350941897c2bd")
+		defer func() {
+			_ = os.RemoveAll(repoPath)
+		}()
+
+		targetDirectory := path.Join(repoPath, "example/examplea")
+
+		tagLocalDirectory(t, targetDirectory)
+
+		terraformParser := terraformStructure.TerraformParser{}
+		terraformParser.Init(targetDirectory, nil)
+		dbAppFile := path.Join(targetDirectory, "module.broker.tf")
+		blocks, _ := terraformParser.ParseFile(dbAppFile)
+
+		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
+		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["common_tags"]
+		rawTagsExpr := rawTags.Expr.(*hclsyntax.FunctionCallExpr)
+		assert.Equal(t, "common_tags", rawTags.Name)
+		assert.Equal(t, "merge", rawTagsExpr.Name)
+	})
+
+}
+
 func failIfErr(t *testing.T, err error) {
 	if err != nil {
 		t.Error(err)
@@ -338,6 +416,19 @@ func tagDirectory(t *testing.T, path string) {
 		Directory: path,
 		TagGroups: getTagGroups(),
 		Parsers:   []string{"Terraform", "CloudFormation", "Serverless"},
+	})
+	failIfErr(t, err)
+	_, err = yorRunner.TagDirectory()
+	failIfErr(t, err)
+}
+
+func tagLocalDirectory(t *testing.T, path string) {
+	yorRunner := runner.Runner{}
+	err := yorRunner.Init(&clioptions.TagOptions{
+		Directory:       path,
+		TagGroups:       getTagGroups(),
+		Parsers:         []string{"Terraform"},
+		TagLocalModules: true,
 	})
 	failIfErr(t, err)
 	_, err = yorRunner.TagDirectory()
