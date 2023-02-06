@@ -10,3 +10,4 @@ var YmlFileType = FileType{Extension: ".yml", FileFormat: "yml"}
 var JSONFileType = FileType{Extension: ".json", FileFormat: "json"}
 var CFTFileType = FileType{Extension: ".template", FileFormat: "template"}
 var TfFileType = FileType{Extension: ".tf", FileFormat: "tf"}
+var DockerFileType = FileType{Extension: "", FileFormat: ""}

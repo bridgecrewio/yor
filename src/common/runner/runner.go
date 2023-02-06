@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -73,7 +74,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		}
 		switch p {
 		case "Terraform":
-			r.parsers = append(r.parsers, &tfStructure.TerrraformParser{})
+			r.parsers = append(r.parsers, &tfStructure.TerraformParser{})
 		case "CloudFormation":
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":
@@ -91,7 +92,6 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		parser.Init(dir, options)
 
 	}
-	r.reportingService = reports.ReportServiceInst
 	r.ChangeAccumulator = reports.TagChangeAccumulatorInstance
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
@@ -183,7 +183,7 @@ func (r *Runner) TagFile(file string) {
 		logger.Info(fmt.Sprintf("Tagging %v\n", file))
 		blocks, err := parser.ParseFile(file)
 		if err != nil {
-			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
+			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v. The error thrown was the following: %v", file, reflect.TypeOf(parser), err))
 			continue
 		}
 		isFileTaggable := false
@@ -194,7 +194,7 @@ func (r *Runner) TagFile(file string) {
 			if r.isSkippedResource(block.GetResourceID()) {
 				continue
 			}
-			if block.IsBlockTaggable() {
+			if block.IsBlockTaggable() && parser.Name() != "Dockerfile" {
 				logger.Debug(fmt.Sprintf("Tagging %v:%v", file, block.GetResourceID()))
 				isFileTaggable = true
 				for _, tagGroup := range r.TagGroups {
@@ -204,6 +204,10 @@ func (r *Runner) TagFile(file string) {
 						continue
 					}
 				}
+			}
+
+			if parser.Name() == "Dockerfile" {
+				isFileTaggable = true
 			} else {
 				logger.Debug(fmt.Sprintf("Block %v:%v is not taggable, skipping", file, block.GetResourceID()))
 			}
@@ -289,6 +293,14 @@ func extractExternalResources(plug *plugin.Plugin, symbol string) ([]interface{}
 }
 
 func (r *Runner) isFileSkipped(p common.IParser, file string) bool {
+	if p.Name() == "Dockerfile" {
+		statFile, statFileError := os.Stat(file)
+		if statFileError != nil {
+			log.Fatal("Could not read metadata of the file for the Docker file parser.")
+		}
+		result := strings.Contains(strings.ToLower(statFile.Name()), "dockerfile")
+		return !result
+	}
 	relPath, _ := filepath.Rel(r.dir, file)
 	for _, sp := range r.skipDirs {
 		if strings.HasPrefix(r.dir+"/"+relPath, sp) {
