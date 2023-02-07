@@ -31,7 +31,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
 	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
-	"aws_secretsmanager_secret_rotation",         // This resource does not support tags, although tfschema states otherwise.
+	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
 }
 
 var taggableResourcesLock sync.RWMutex
@@ -492,6 +492,19 @@ func (p *TerraformParser) parseBlock(hclBlock *hclwrite.Block, filePath string) 
 			}
 		}()
 		isTaggable, existingTags, tagsAttributeName = p.extractTagsFromModule(hclBlock, filePath, isTaggable, existingTags, tagsAttributeName)
+	}
+
+	for _, existingTag := range existingTags {
+		if existingTag.GetKey() == tags.YorToggle {
+			v, err := strconv.ParseBool(existingTag.GetValue())
+			if err != nil {
+				continue
+			}
+
+			if !v {
+				isTaggable = false
+			}
+		}
 	}
 
 	terraformBlock := TerraformBlock{
