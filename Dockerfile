@@ -8,16 +8,5 @@ RUN curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | j
 RUN tar -xf /usr/bin/yor.tar.gz -C /usr/bin/ && rm /usr/bin/yor.tar.gz && chmod +x /usr/bin/yor && echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
 COPY entrypoint.sh /entrypoint.sh
 
-WORKDIR /app
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-COPY *.go ./
-
-RUN go build -o /docker-yor-test
-
-CMD ["/docker-yor-test"]
-
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]

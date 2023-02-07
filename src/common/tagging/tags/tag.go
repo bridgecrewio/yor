@@ -16,6 +16,7 @@ const GitModifiersTagKey = "git_modifiers"
 const GitLastModifiedAtTagKey = "git_last_modified_at"
 const GitLastModifiedByTagKey = "git_last_modified_by"
 const GitRepoTagKey = "git_repo"
+const YorToggle = "yor_toggle"
 
 type ITag interface {
 	Init()
