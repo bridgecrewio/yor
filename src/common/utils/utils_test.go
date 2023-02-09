@@ -65,64 +65,67 @@ func TestGetFileFormat(t *testing.T) {
 }
 
 func TestInSlice(t *testing.T) {
-	type args struct {
-		slice interface{}
+	type args[T comparable] struct {
+		slice []T
 		elem  interface{}
 	}
-	tests := []struct {
+	type testStruct[T comparable] struct {
 		name string
-		args args
+		args args[T]
 		want bool
-	}{
+	}
+
+	testsStr := []testStruct[string]{
 		{
 			name: "in slice string",
-			args: args{slice: []string{"a", "b", "c", "e"}, elem: "a"},
+			args: args[string]{slice: []string{"a", "b", "c", "e"}, elem: "a"},
 			want: true,
 		},
 		{
 			name: "not in slice string",
-			args: args{slice: []string{"a", "b", "c", "e"}, elem: "d"},
-			want: false,
-		},
-		{
-			name: "in slice int",
-			args: args{slice: []int{1, 2, 3, 4}, elem: 1},
-			want: true,
-		},
-		{
-			name: "not in slice int",
-			args: args{slice: []int{1, 2, 3, 4}, elem: 5},
-			want: false,
-		},
-		{
-			name: "slice in slice ",
-			args: args{slice: [][]int{{1, 2, 3, 4}, {5, 6}, {7}}, elem: []int{5, 6}},
-			want: true,
-		},
-		{
-			name: "not slice in slice ",
-			args: args{slice: [][]int{{1, 2, 3, 4}, {5, 6}, {7}}, elem: []int{5, 7}},
-			want: false,
-		},
-		{
-			name: "different kinds",
-			args: args{slice: []int{1, 2, 3, 4}, elem: "bana"},
+			args: args[string]{slice: []string{"a", "b", "c", "e"}, elem: "d"},
 			want: false,
 		},
 		{
 			name: "nil slice",
-			args: args{slice: nil, elem: "bana"},
+			args: args[string]{slice: nil, elem: "bana"},
 			want: false,
 		},
+
 		{
 			name: "empty slice",
-			args: args{slice: []int{}, elem: "bana"},
+			args: args[string]{slice: []string{}, elem: "bana"},
 			want: false,
 		},
 	}
-	for _, tt := range tests {
+	testsInt := []testStruct[int]{
+		{
+			name: "in slice int",
+			args: args[int]{slice: []int{1, 2, 3, 4}, elem: 1},
+			want: true,
+		},
+		{
+			name: "not in slice int",
+			args: args[int]{slice: []int{1, 2, 3, 4}, elem: 5},
+			want: false,
+		},
+		//{ // not supported for generics
+		//	name: "different kinds",
+		//	args: args[int]{slice: []int{1, 2, 3, 4}, elem: "bana"},
+		//	want: false,
+		//},
+
+	}
+	for _, tt := range testsStr {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InSlice(tt.args.slice, tt.args.elem); got != tt.want {
+			if got := InSlice(tt.args.slice, tt.args.elem.(string)); got != tt.want {
+				t.Errorf("InSlice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	for _, tt := range testsInt {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := InSlice(tt.args.slice, tt.args.elem.(int)); got != tt.want {
 				t.Errorf("InSlice() = %v, want %v", got, tt.want)
 			}
 		})
@@ -196,4 +199,33 @@ func TestAllNil(t *testing.T) {
 		i := []interface{}(nil)
 		assert.Equal(t, true, AllNil(i))
 	})
+}
+
+func TestSliceInSlices(t *testing.T) {
+	type args[T comparable] struct {
+		elems  [][]T
+		vSlice []T
+	}
+	type testCase[T comparable] struct {
+		name string
+		args args[T]
+		want bool
+	}
+	tests := []testCase[int]{
+		{
+			name: "slice in slice ",
+			args: args[int]{elems: [][]int{{1, 2, 3, 4}, {5, 6}, {7}}, vSlice: []int{5, 6}},
+			want: true,
+		},
+		{
+			name: "not slice in slice ",
+			args: args[int]{elems: [][]int{{1, 2, 3, 4}, {5, 6}, {7}}, vSlice: []int{5, 7}},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, SliceInSlices(tt.args.elems, tt.args.vSlice), "SliceInSlices(%v, %v)", tt.args.elems, tt.args.vSlice)
+		})
+	}
 }

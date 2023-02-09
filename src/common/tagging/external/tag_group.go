@@ -197,27 +197,27 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 					matching := true
 					for tagName, tagMatch := range matchType["tags"].(map[interface{}]interface{}) {
 						foundTag := false
-						switch tagMatch.(type) {
+						switch tagMatchV := tagMatch.(type) {
 						case string:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName && blockTagValue == tagMatch {
+								if blockTagKey == tagName && blockTagValue == tagMatchV {
 									foundTag = true
 									break
 								}
 							}
-						case []interface{}:
+						case []string:
 							for _, blockTag := range blockTags {
 								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
 								if blockTagKey == tagName {
 									if blockTagKey == tags.GitModifiersTagKey {
 										for _, val := range strings.Split(blockTagValue, "/") {
-											if utils.InSlice(tagMatch, val) {
+											if utils.InSlice(tagMatchV, val) {
 												foundTag = true
 												break
 											}
 										}
-									} else if utils.InSlice(tagMatch, blockTagValue) {
+									} else if utils.InSlice(tagMatchV, blockTagValue) {
 										foundTag = true
 										break
 									}
