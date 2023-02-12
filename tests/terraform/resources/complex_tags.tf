@@ -84,11 +84,11 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   min_size = 0
 }
 
-resource "azurerm_virtual_network" "test" {
+resource "azurerm_virtual_network" "brace_in_brace" {
   address_space       = ["10.52.0.0/16"]
-  location            = local.resource_group.location
-  name                = "${random_id.prefix.hex}-vn"
-  resource_group_name = local.resource_group.name
+  location            = "who_cares"
+  name                = "just a name"
+  resource_group_name = "a group"
   tags = {
     a = lookup({ yor_trace = "ay", b = "bee" }, "a", "what?")
   }

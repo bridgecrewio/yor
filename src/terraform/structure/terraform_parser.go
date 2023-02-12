@@ -31,7 +31,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
 	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
-	"aws_secretsmanager_secret_rotation",         // This resource does not support tags, although tfschema states otherwise.
+	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
 }
 
 var taggableResourcesLock sync.RWMutex
@@ -542,7 +542,7 @@ func ExtractSubdirFromRemoteModuleSrc(raw string) string {
 	// we must remove before we start processing source string. We are using
 	// the fact that such double slashes always have : on the left.
 	parts := strings.Split(raw, "://")
-	parts = strings.Split(parts[len(parts) - 1], "//")
+	parts = strings.Split(parts[len(parts)-1], "//")
 
 	if len(parts) == 1 {
 		return ""
@@ -793,7 +793,9 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]s
 		value = strings.TrimPrefix(strings.TrimSuffix(value, " "), " ")
 		_ = json.Unmarshal([]byte(key), &key)
 		_ = json.Unmarshal([]byte(value), &value)
-		parsedTags[key] = value
+		if _, ok := parsedTags[key]; !ok {
+			parsedTags[key] = value
+		}
 	}
 
 	return parsedTags

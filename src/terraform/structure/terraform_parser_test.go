@@ -95,6 +95,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 			"instance_merged_override":                  {"Environment": "new_env"},
 			"aurora_cluster_bastion_auto_scaling_group": {"git_org": "bridgecrewio", "git_repo": "platform", "yor_trace": "48564943-4cfc-403c-88cd-cbb207e0d33e", "Name": "bc-aurora-bastion"},
 			"instance_null_tags":                        nil,
+			"brace_in_brace":                            {"yor_trace": "ay", "b": "bee"},
 		}
 
 		parsedBlocks, err := p.ParseFile(filePath)
@@ -525,7 +526,6 @@ func TestExtractProviderFromModuleSrc(t *testing.T) {
 		})
 	}
 }
-
 
 func TestExtractSubdirFromRemoteModuleSrc(t *testing.T) {
 	tests := []struct {
