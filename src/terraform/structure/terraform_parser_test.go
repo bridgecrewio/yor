@@ -52,7 +52,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 		for _, block := range parsedBlocks {
 			hclBlock := block.GetRawBlock().(*hclwrite.Block)
 			if hclBlock.Type() == ResourceBlockType {
-				if utils.InSlice(taggableResources, hclBlock.Labels()) {
+				if utils.SliceInSlices(taggableResources, hclBlock.Labels()) {
 					assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("expected block %s to be taggable", hclBlock.Labels()))
 					resourceName := hclBlock.Labels()[1]
 					expectedTagsForResource := expectedTags[resourceName]

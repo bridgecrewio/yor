@@ -18,27 +18,31 @@ import (
 // RemoveGcpInvalidChars Source of regex: https://cloud.google.com/compute/docs/labeling-resources
 var RemoveGcpInvalidChars = regexp.MustCompile(`[^\p{Ll}\p{Lo}\p{N}_-]`)
 
-func InSlice(slice interface{}, elem interface{}) bool {
-	for _, e := range convertToInterfaceSlice(slice) {
-		if getKind(e) != getKind(elem) {
-			continue
-		}
-		if getKind(e) == reflect.Slice {
-			inSlice := true
-			for _, subElem := range convertToInterfaceSlice(elem) {
-				inSlice = inSlice && InSlice(e, subElem)
-				if !inSlice {
-					break
-				}
-			}
-			if inSlice {
-				return true
-			}
-		} else if e == elem {
+func InSlice[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
 			return true
 		}
 	}
+	return false
+}
 
+func SliceInSlices[T comparable](elems [][]T, vSlice []T) bool {
+	for _, elemSlice := range elems {
+		curSize := len(elemSlice)
+		if curSize != len(vSlice) {
+			continue
+		}
+		equalNum := 0
+		for i, elem := range elemSlice {
+			if elem == vSlice[i] {
+				equalNum++
+			}
+		}
+		if equalNum == curSize {
+			return true
+		}
+	}
 	return false
 }
 
@@ -55,26 +59,6 @@ func AllNil(vv ...interface{}) bool {
 		}
 	}
 	return true
-}
-
-func getKind(val interface{}) reflect.Kind {
-	s := reflect.ValueOf(val)
-	return s.Kind()
-}
-
-func convertToInterfaceSlice(origin interface{}) []interface{} {
-	s := reflect.ValueOf(origin)
-	if s.Kind() != reflect.Slice {
-		return make([]interface{}, 0)
-	}
-
-	ret := make([]interface{}, s.Len())
-
-	for i := 0; i < s.Len(); i++ {
-		ret[i] = s.Index(i).Interface()
-	}
-
-	return ret
 }
 
 func GetFileScanner(filePath string, nonFoundLines *structure.Lines) (*bufio.Scanner, *structure.Lines) {
