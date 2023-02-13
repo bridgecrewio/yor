@@ -264,9 +264,29 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
+	src := []byte(" var.turn_off_yor_tags ? {} : ")
+
 	if tagsAttribute == nil {
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if mergedTagsTokens != nil {
+			expRaw, _ := hclsyntax.LexExpression(src, "", hcl.InitialPos)
+			var exp hclwrite.Tokens
+			for _, v := range expRaw {
+				transV := hclwrite.Token{
+					Type:  v.Type,
+					Bytes: v.Bytes,
+				}
+				exp = append(exp, &transV)
+			}
+			mergedTagsTokens = InsertTokens(exp, mergedTagsTokens)
+			mergedTagsTokens = InsertToken(mergedTagsTokens, 0, &hclwrite.Token{
+				Type:  hclsyntax.TokenOParen,
+				Bytes: []byte("("),
+			})
+			mergedTagsTokens = InsertToken(mergedTagsTokens, len(mergedTagsTokens), &hclwrite.Token{
+				Type:  hclsyntax.TokenCParen,
+				Bytes: []byte(")"),
+			})
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, mergedTagsTokens)
 		}
 	} else {
@@ -336,7 +356,31 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// => we should replace it!
 				rawTagsTokens = newTagsTokens
 			} else {
+				originalRawTagsTokens := rawTagsTokens
 				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
+				expRaw, _ := hclsyntax.LexExpression([]byte(" var.turn_off_yor_tags ?"), "", hcl.InitialPos)
+				var exp hclwrite.Tokens
+				for _, v := range expRaw {
+					transV := hclwrite.Token{
+						Type:  v.Type,
+						Bytes: v.Bytes,
+					}
+					exp = append(exp, &transV)
+				}
+
+				originalRawTagsTokens = InsertToken(originalRawTagsTokens, len(originalRawTagsTokens), &hclwrite.Token{
+					Type:  hclsyntax.TokenColon,
+					Bytes: []byte(":"),
+				})
+				rawTagsTokens = InsertTokens(InsertTokens(exp, originalRawTagsTokens), rawTagsTokens)
+				rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
+					Type:  hclsyntax.TokenOParen,
+					Bytes: []byte("("),
+				})
+				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
+					Type:  hclsyntax.TokenCParen,
+					Bytes: []byte(")"),
+				})
 			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
@@ -345,6 +389,18 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 		// These lines execute if there is either a `merge` operator at the start of the tags,
 		// or if it is rendered via a variable / local.
 		newTagsTokens := buildTagsTokens(newTags)
+		expRaw, _ := hclsyntax.LexExpression(src, "", hcl.InitialPos)
+		var exp hclwrite.Tokens
+		for _, v := range expRaw {
+			transV := hclwrite.Token{
+				Type:  v.Type,
+				Bytes: v.Bytes,
+			}
+			exp = append(exp, &transV)
+		}
+
+		newTagsTokens = InsertTokens(exp, newTagsTokens)
+
 		if !isMergeOpExists && newTagsTokens != nil {
 			// Insert the merge token, opening and closing parenthesis tokens
 			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
@@ -373,6 +429,14 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 			for _, tagToken := range newTagsTokens {
 				rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens)-1, tagToken)
 			}
+			rawTagsTokens = InsertToken(rawTagsTokens, 0, &hclwrite.Token{
+				Type:  hclsyntax.TokenOParen,
+				Bytes: []byte("("),
+			})
+			rawTagsTokens = InsertToken(rawTagsTokens, len(rawTagsTokens), &hclwrite.Token{
+				Type:  hclsyntax.TokenCParen,
+				Bytes: []byte(")"),
+			})
 		}
 		// Set the body's tags to the new built tokens
 		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
@@ -555,7 +619,7 @@ func ExtractSubdirFromRemoteModuleSrc(raw string) string {
 	// we must remove before we start processing source string. We are using
 	// the fact that such double slashes always have : on the left.
 	parts := strings.Split(raw, "://")
-	parts = strings.Split(parts[len(parts) - 1], "//")
+	parts = strings.Split(parts[len(parts)-1], "//")
 
 	if len(parts) == 1 {
 		return ""
