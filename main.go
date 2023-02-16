@@ -59,7 +59,6 @@ func listTagsCommand() *cli.Command {
 				// cli package doesn't split comma separated values
 				TagGroups: c.StringSlice(tagGroupsArg),
 			}
-
 			listTagsOptions.Validate()
 			return listTags(&listTagsOptions)
 		},
@@ -93,6 +92,7 @@ func tagCommand() *cli.Command {
 	dryRunArgs := "dry-run"
 	tagLocalModules := "tag-local-modules"
 	tagPrefix := "tag-prefix"
+	noColor := "no-color"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -115,11 +115,13 @@ func tagCommand() *cli.Command {
 				DryRun:            c.Bool(dryRunArgs),
 				TagLocalModules:   c.Bool(tagLocalModules),
 				TagPrefix:         c.String(tagPrefix),
+				NoColor:           c.Bool(noColor),
 			}
 
 			options.Validate()
 
-			return tag(&options)
+                        colors := common.NoColorCheck(options.NoColor)
+			return tag(&options, colors)
 		},
 		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the GitHub action as well via entrypoint.sh
 			&cli.StringFlag{
@@ -216,6 +218,12 @@ func tagCommand() *cli.Command {
 				Usage:       "Add prefix to all the tags",
 				DefaultText: "",
 			},
+			&cli.BoolFlag{
+				Name:        noColor,
+				Usage:       "remove colorized output",
+				Value:       false,
+				DefaultText: "false",
+			},
 		},
 	}
 }
@@ -242,7 +250,7 @@ func listTags(options *clioptions.ListTagsOptions) error {
 	return nil
 }
 
-func tag(options *clioptions.TagOptions) error {
+func tag(options *clioptions.TagOptions, colors *common.ColorStruct) error {
 	yorRunner := new(runner.Runner)
 	logger.Info(fmt.Sprintf("Setting up to tag the directory %v\n", options.Directory))
 	err := yorRunner.Init(options)
@@ -253,12 +261,12 @@ func tag(options *clioptions.TagOptions) error {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	printReport(reportService, options)
+	printReport(reportService, options, colors)
 
 	return nil
 }
 
-func printReport(reportService *reports.ReportService, options *clioptions.TagOptions) {
+func printReport(reportService *reports.ReportService, options *clioptions.TagOptions, colors *common.ColorStruct) {
 	reportService.CreateReport()
 
 	if options.OutputJSONFile != "" {
@@ -266,7 +274,7 @@ func printReport(reportService *reports.ReportService, options *clioptions.TagOp
 	}
 	switch strings.ToLower(options.Output) {
 	case "cli":
-		reportService.PrintToStdout()
+		reportService.PrintToStdout(colors)
 	case "json":
 		reportService.PrintJSONToStdout()
 	default:
