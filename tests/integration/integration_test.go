@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -253,6 +254,39 @@ func TestRunResults(t *testing.T) {
 				assert.NotEqual(t, "yor_trace", newTag.TagKey)
 			}
 		}
+	})
+
+	t.Run("Test terraform-azurerm-bridgecrew-read-only tagging with yor toggle on", func(t *testing.T) {
+		repoPath := utils.CloneRepo("https://github.com/jiaweitao001/terraform-azurerm-yor-test-azure-read-only.git", "eed052d87a19b2b88bfb89a88d9db94ea7c88e8b")
+		defer os.RemoveAll(repoPath)
+
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: repoPath,
+			TagGroups: getTagGroups(),
+			Tag:       []string{"yor_trace"},
+			Parsers:   []string{"Terraform"},
+		})
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		newTags := report.NewResourceTags
+		for _, newTag := range newTags {
+			if strings.HasPrefix(newTag.File, repoPath) {
+				assert.Equal(t, "yor_trace", newTag.TagKey)
+			}
+		}
+
+		terraformParser := terraformStructure.TerraformParser{}
+		variableFile := filepath.Join(repoPath, "variables.tf")
+		blocks, err := terraformParser.ParseFile(variableFile)
+		failIfErr(t, err)
+		addedToggleBlock := blocks[len(blocks)-1].(*terraformStructure.TerraformBlock)
+		assert.Equal(t, "turn_off_yor_tags", addedToggleBlock.GetResourceID())
 	})
 }
 

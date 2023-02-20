@@ -247,7 +247,7 @@ func TestRunnerInternals(t *testing.T) {
 			Tag:       []string{"test_tag"},
 			Parsers:   []string{"Terraform"},
 		})
-		yorRunner.TagFile(rootDir + "/tomap.tf")
+		yorRunner.TagFile(rootDir+"/tomap.tf", false)
 		if err != nil {
 			t.Error(err)
 		}

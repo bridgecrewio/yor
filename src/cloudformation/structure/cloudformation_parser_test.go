@@ -183,7 +183,7 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 	if err != nil {
 		t.Fail()
 	}
-	err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name())
+	err = cfnParser.WriteFile(readFilePath, cfnBlocks, f.Name(), false)
 	if err != nil {
 		t.Fail()
 	}

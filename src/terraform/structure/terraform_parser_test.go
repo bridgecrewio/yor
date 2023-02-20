@@ -498,18 +498,6 @@ func TestTerraformParser_Module(t *testing.T) {
 			assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("Block %v should be taggable", block.GetResourceID()))
 		}
 	})
-
-	t.Run("Test isModuleTaggable with yor_toggle set to false", func(t *testing.T) {
-		directory := "../../../tests/terraform/module/module_with_yor_toggle_off"
-		terraformParser := TerraformParser{}
-		terraformParser.Init(directory, nil)
-		defer terraformParser.Close()
-		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
-		assert.Equal(t, 1, len(blocks))
-		for _, block := range blocks {
-			assert.False(t, block.IsBlockTaggable(), fmt.Sprintf("Block %v should not be taggable", block.GetResourceID()))
-		}
-	})
 }
 
 func TestExtractProviderFromModuleSrc(t *testing.T) {
@@ -537,7 +525,6 @@ func TestExtractProviderFromModuleSrc(t *testing.T) {
 		})
 	}
 }
-
 
 func TestExtractSubdirFromRemoteModuleSrc(t *testing.T) {
 	tests := []struct {

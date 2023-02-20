@@ -135,7 +135,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	return parsedBlocks, nil
 }
 
-func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
+func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, addToggle bool) error {
 	for _, block := range blocks {
 		block := block.(*ServerlessBlock)
 		block.UpdateTags()

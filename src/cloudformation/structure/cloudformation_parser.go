@@ -220,7 +220,7 @@ func (p *CloudformationParser) GetExistingTags(tagsValue reflect.Value) []tags.I
 	return iTags
 }
 
-func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
+func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, addToggle bool) error {
 	for _, block := range blocks {
 		block := block.(*CloudformationBlock)
 		block.UpdateTags()

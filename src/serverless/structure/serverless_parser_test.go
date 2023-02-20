@@ -66,7 +66,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		assert.NotNil(t, func1Block)
 		assert.NotNil(t, func2Block)
 		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
-		_ = slsParser.WriteFile(slsFilepath, slsBlocks, f.Name())
+		_ = slsParser.WriteFile(slsFilepath, slsBlocks, f.Name(), false)
 
 		expected, _ := os.ReadFile(expectedSlsFilepath)
 		actual, _ := os.ReadFile(f.Name())
@@ -211,7 +211,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			t.Fail()
 		}
 		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
-		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name())
+		err = slsParser.WriteFile(readFilePath, slsBlocks, f.Name(), false)
 		if err != nil {
 			t.Fail()
 		}

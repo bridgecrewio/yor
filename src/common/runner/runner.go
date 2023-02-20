@@ -2,14 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"plugin"
-	"reflect"
-	"strconv"
-	"strings"
-	"sync"
-
 	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/clioptions"
@@ -23,6 +15,16 @@ import (
 	"github.com/bridgecrewio/yor/src/common/utils"
 	slsStructure "github.com/bridgecrewio/yor/src/serverless/structure"
 	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/zclconf/go-cty/cty"
+	"os"
+	"path/filepath"
+	"plugin"
+	"reflect"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type Runner struct {
@@ -108,9 +110,19 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	return nil
 }
 
-func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup) {
+func (r *Runner) toggleFinder(fileChan chan string, toggleExists chan bool, wg *sync.WaitGroup) {
 	for file := range fileChan {
-		r.TagFile(file)
+		if r.FindToggle(file) {
+			toggleExists <- true
+			r.AddSwitchVariable(file)
+		}
+		wg.Done()
+	}
+}
+
+func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup, isToggleTurnedOn bool) {
+	for file := range fileChan {
+		r.TagFile(file, isToggleTurnedOn)
 		wg.Done()
 	}
 }
@@ -130,12 +142,33 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 		logger.Error("Failed to run Walk() on root dir", r.dir)
 	}
 
+	var finderWait sync.WaitGroup
+	isToggleTurnedOn := false
+	finderWait.Add(len(files))
+	toggleExists := make(chan bool, r.workersNum)
+	toggleFinderChan := make(chan string)
+
+	for i := 0; i < r.workersNum; i++ {
+		go r.toggleFinder(toggleFinderChan, toggleExists, &finderWait)
+	}
+
+	for _, file := range files {
+		toggleFinderChan <- file
+	}
+
+	defer close(toggleExists)
+	close(toggleFinderChan)
+	finderWait.Wait()
+	if len(toggleExists) != 0 {
+		isToggleTurnedOn = <-toggleExists
+	}
+
 	var wg sync.WaitGroup
 	wg.Add(len(files))
 	fileChan := make(chan string)
 
 	for i := 0; i < r.workersNum; i++ {
-		go r.worker(fileChan, &wg)
+		go r.worker(fileChan, &wg, isToggleTurnedOn)
 	}
 
 	for _, file := range files {
@@ -169,7 +202,56 @@ func (r *Runner) isSkippedResource(resource string) bool {
 	return false
 }
 
-func (r *Runner) TagFile(file string) {
+func (r *Runner) FindToggle(file string) bool {
+	for _, parser := range r.parsers {
+		if r.isFileSkipped(parser, file) {
+			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
+			continue
+		}
+		blocks, err := parser.ParseFile(file)
+		if err != nil {
+			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
+			continue
+		}
+		for _, block := range blocks {
+			if block.(*tfStructure.TerraformBlock).HclSyntaxBlock.Type == tfStructure.VariableBlockType {
+				if block.GetResourceID() == "yor_toggle" {
+					rawBlock := block.GetRawBlock().(*hclwrite.Block)
+					valueStr := string(rawBlock.Body().GetAttribute("default").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
+					valueStr = strings.TrimSpace(valueStr)
+					value, err := strconv.ParseBool(valueStr)
+					if err != nil {
+						logger.Info(fmt.Sprintf("Failed to convert default value of yor_toggle %v with parser %v", valueStr, err))
+					}
+					return value
+				}
+			}
+		}
+	}
+	return false
+}
+
+func (r *Runner) AddSwitchVariable(file string) {
+	src, err := os.ReadFile(file)
+	if err != nil {
+		logger.Info(fmt.Sprintf("Failed to read file %s because %s", file, err))
+	}
+
+	hclFile, diagnostics := hclwrite.ParseConfig(src, file, hcl.InitialPos)
+	if diagnostics != nil && diagnostics.HasErrors() {
+		hclErrors := diagnostics.Errs()
+		logger.Info(fmt.Sprintf("Failed to parse hcl file %s because of errors %s", file, hclErrors))
+	}
+	rootBody := hclFile.Body()
+	rootBody.AppendNewline()
+	rootBody.AppendNewline()
+	newBlock := rootBody.AppendNewBlock("variable", []string{"turn_off_yor_tags"})
+	newBody := newBlock.Body()
+	newBody.SetAttributeValue("default", cty.BoolVal(true))
+	os.WriteFile(file, hclFile.Bytes(), 0644)
+}
+
+func (r *Runner) TagFile(file string, addToggle bool) {
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
@@ -205,7 +287,7 @@ func (r *Runner) TagFile(file string) {
 			r.ChangeAccumulator.AccumulateChanges(block)
 		}
 		if isFileTaggable && !r.dryRun {
-			err = parser.WriteFile(file, blocks, file)
+			err = parser.WriteFile(file, blocks, file, addToggle)
 			if err != nil {
 				logger.Warning(fmt.Sprintf("Failed writing tags to file %s, because %v", file, err))
 			}
