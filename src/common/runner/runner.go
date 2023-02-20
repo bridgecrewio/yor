@@ -215,7 +215,12 @@ func (r *Runner) FindToggle(file string) bool {
 			continue
 		}
 		for _, block := range blocks {
-			if block.(*tfStructure.TerraformBlock).HclSyntaxBlock.Type == tfStructure.VariableBlockType {
+			terraformBlock, isTerraformType := block.(*tfStructure.TerraformBlock)
+			if !isTerraformType {
+				return false
+			}
+
+			if terraformBlock.HclSyntaxBlock.Type == tfStructure.VariableBlockType {
 				if block.GetResourceID() == "yor_toggle" {
 					rawBlock := block.GetRawBlock().(*hclwrite.Block)
 					valueStr := string(rawBlock.Body().GetAttribute("default").Expr().BuildTokens(hclwrite.Tokens{}).Bytes())
