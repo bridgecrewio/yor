@@ -2,6 +2,14 @@ package runner
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"plugin"
+	"reflect"
+	"strconv"
+	"strings"
+	"sync"
+
 	cfnStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/clioptions"
@@ -18,13 +26,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
-	"os"
-	"path/filepath"
-	"plugin"
-	"reflect"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type Runner struct {
