@@ -195,7 +195,7 @@ func TestTerraformParser_Module(t *testing.T) {
 			}
 		}
 
-		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath, false)
 		if err != nil {
 			t.Error(err)
 		}
@@ -258,7 +258,7 @@ func TestTerraformParser_Module(t *testing.T) {
 			}
 		}
 
-		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath, false)
 		if err != nil {
 			t.Error(err)
 		}
@@ -312,7 +312,7 @@ func TestTerraformParser_Module(t *testing.T) {
 			}
 		}
 
-		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath, false)
 		if err != nil {
 			t.Error(err)
 		}
@@ -384,7 +384,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.Remove(resultFileName)
 		}()
-		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
+		_ = p.WriteFile(sourceFilePath, blocks, resultFileName, false)
 		resultStr, _ := os.ReadFile(resultFileName)
 		expectedStr, _ := os.ReadFile(expectedFileName)
 		assert.Equal(t, string(resultStr), string(expectedStr))
@@ -430,7 +430,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.Remove(resultFileName)
 		}()
-		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
+		_ = p.WriteFile(sourceFilePath, blocks, resultFileName, false)
 		resultStr, _ := os.ReadFile(resultFileName)
 		expectedStr, _ := os.ReadFile(expectedFileName)
 		assert.Equal(t, string(expectedStr), string(resultStr))
@@ -454,7 +454,7 @@ func TestTerraformParser_Module(t *testing.T) {
 			}
 		}
 
-		_ = p.WriteFile(filePath, blocks, resultFilePath)
+		_ = p.WriteFile(filePath, blocks, resultFilePath, false)
 		defer func() {
 			_ = os.Remove(resultFilePath)
 		}()
