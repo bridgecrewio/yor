@@ -119,7 +119,7 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	var files []string
 	err := filepath.Walk(r.dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			logger.Debug(fmt.Sprintf("Failed to scan dir %s", path))
+			logger.Warning(fmt.Sprintf("Failed to scan dir %s", path))
 		}
 		if !info.IsDir() {
 			files = append(files, path)
