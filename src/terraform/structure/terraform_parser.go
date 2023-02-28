@@ -265,13 +265,12 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
-	Type := rawBlock.Type()
-	
+
 	//we don't add tags to data sources
-	if Type == "data" {
+	if rawBlock.Type() == "data" {
 		return
 	}
-	
+
 	if tagsAttribute == nil {
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if mergedTagsTokens != nil {
