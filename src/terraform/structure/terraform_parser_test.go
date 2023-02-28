@@ -350,6 +350,33 @@ func TestTerraformParser_Module(t *testing.T) {
 		assert.Equal(t, "aws_s3_bucket.test-bucket", blocks[0].GetResourceID())
 	})
 
+	t.Run("Test parsing of data source blocks", func(t *testing.T) {
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/data", nil)
+		defer p.Close()
+		sourceFilePath := "../../../tests/terraform/data/main.tf"
+		expectedFileName := "../../../tests/terraform/data/expected.txt"
+		blocks, err := p.ParseFile(sourceFilePath)
+		if err != nil {
+			t.Fail()
+		}
+
+		mb := blocks[0]
+		mb.AddNewTags([]tags.ITag{
+			&tags.Tag{Key: tags.YorTraceTagKey, Value: "some-uuid"},
+			&tags.Tag{Key: "mock_tag", Value: "mock_value"},
+		})
+
+		resultFileName := "result.txt"
+		defer func() {
+			_ = os.Remove(resultFileName)
+		}()
+		_ = p.WriteFile(sourceFilePath, blocks, resultFileName)
+		resultStr, _ := os.ReadFile(resultFileName)
+		expectedStr, _ := os.ReadFile(expectedFileName)
+		assert.Equal(t, string(resultStr), string(expectedStr))
+	})
+
 	t.Run("Test parsing of unsupported resources", func(t *testing.T) {
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/supported", nil)
