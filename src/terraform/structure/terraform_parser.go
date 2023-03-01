@@ -31,7 +31,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
 	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
-	"aws_secretsmanager_secret_rotation",         // This resource does not support tags, although tfschema states otherwise.
+	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
 }
 
 var taggableResourcesLock sync.RWMutex
@@ -150,6 +150,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
+
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
@@ -264,6 +265,12 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
+
+	//we don't add tags to data sources
+	if rawBlock.Type() == "data" {
+		return
+	}
+
 	if tagsAttribute == nil {
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if mergedTagsTokens != nil {
@@ -542,7 +549,7 @@ func ExtractSubdirFromRemoteModuleSrc(raw string) string {
 	// we must remove before we start processing source string. We are using
 	// the fact that such double slashes always have : on the left.
 	parts := strings.Split(raw, "://")
-	parts = strings.Split(parts[len(parts) - 1], "//")
+	parts = strings.Split(parts[len(parts)-1], "//")
 
 	if len(parts) == 1 {
 		return ""
