@@ -123,12 +123,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
-- script: sudo tar -xf yor.tar.gz -C /usr/bin/ 
-- script: rm yor.tar.gz 
-- script: sudo chmod +x /usr/bin/yor 
-- script: echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
-- script: yor --version
+- script: |
+    curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
+    sudo tar -xf yor.tar.gz -C /usr/bin/ 
+    rm yor.tar.gz 
+    sudo chmod +x /usr/bin/yor 
+    echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
+    yor --version
 ```
 
 Pre-commit
