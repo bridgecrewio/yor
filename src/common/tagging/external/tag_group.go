@@ -186,6 +186,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	retTag.Key = tag.GetKey()
 	retTag.Value = evaluateTemplateVariable(tag.defaultValue)
 	blockTags := append(block.GetExistingTags(), block.GetNewTags()...)
+	gitModifiersCounts := make(map[string]int)
 	if len(tag.matches) > 0 {
 		for _, matchEntry := range tag.matches {
 			for matchValue, matchObj := range matchEntry {
@@ -206,20 +207,26 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 									break
 								}
 							}
-						case []string:
-							for _, blockTag := range blockTags {
-								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName {
-									if blockTagKey == tags.GitModifiersTagKey {
-										for _, val := range strings.Split(blockTagValue, "/") {
-											if utils.InSlice(tagMatchV, val) {
-												foundTag = true
-												break
+						case []string, []interface{}:
+							if b, ok := tagMatchV.([]interface{}); ok {
+								tagMatchStrings := make([]string, len(b))
+								for i := range b {
+									tagMatchStrings[i] = b[i].(string)
+								}
+
+								for _, blockTag := range blockTags {
+									blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+									if blockTagKey == tagName {
+										if blockTagKey == tags.GitModifiersTagKey {
+											for _, val := range strings.Split(blockTagValue, "/") {
+												if utils.InSlice(tagMatchStrings, val) {
+													gitModifiersCounts[matchValue] += 1
+												}
 											}
+										} else if utils.InSlice(tagMatchStrings, blockTagValue) {
+											foundTag = true
+											break
 										}
-									} else if utils.InSlice(tagMatchV, blockTagValue) {
-										foundTag = true
-										break
 									}
 								}
 							}
@@ -232,6 +239,10 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 					}
 				}
 			}
+		}
+		if len(gitModifiersCounts) > 0 {
+			maxMatchValue := utils.MaxMapCountKey(gitModifiersCounts)
+			retTag.Value = evaluateTemplateVariable(maxMatchValue)
 		}
 		return retTag, nil
 	} else if tag.defaultValue != "" {
