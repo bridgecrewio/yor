@@ -208,10 +208,10 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 								}
 							}
 						case []string, []interface{}:
-							if b, ok := tagMatchV.([]interface{}); ok {
-								tagMatchStrings := make([]string, len(b))
-								for i := range b {
-									tagMatchStrings[i] = b[i].(string)
+							if tagMatchTypeSwitch, ok := tagMatchV.([]interface{}); ok {
+								tagMatchStrings := make([]string, len(tagMatchTypeSwitch))
+								for i := range tagMatchTypeSwitch {
+									tagMatchStrings[i] = tagMatchTypeSwitch[i].(string)
 								}
 
 								for _, blockTag := range blockTags {
