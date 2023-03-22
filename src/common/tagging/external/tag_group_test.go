@@ -246,7 +246,7 @@ func TestExternalTagGroup(t *testing.T) {
 		}
 		for _, newTag := range block.NewTags {
 			if newTag.GetKey() == "team" {
-				assert.Equal(t, "seceng", newTag.GetValue())
+				assert.Equal(t, "interfaces", newTag.GetValue())
 			}
 		}
 	})

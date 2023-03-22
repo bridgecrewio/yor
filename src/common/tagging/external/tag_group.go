@@ -240,9 +240,14 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 				}
 			}
 		}
-		if len(gitModifiersCounts) > 0 {
-			maxMatchValue := utils.MaxMapCountKey(gitModifiersCounts)
-			retTag.Value = evaluateTemplateVariable(maxMatchValue)
+		if len(gitModifiersCounts) == 1 {
+			for k, _ := range gitModifiersCounts {
+				retTag.Value = evaluateTemplateVariable(k)
+				break
+			}
+		} else if len(gitModifiersCounts) > 1 {
+			// TODO use the CODEOWNERS file to resolve the conflict
+			logger.Info(fmt.Sprintf("Git-modifiers conflict found, fallback to default value %s\n", retTag.Value))
 		}
 		return retTag, nil
 	} else if tag.defaultValue != "" {
