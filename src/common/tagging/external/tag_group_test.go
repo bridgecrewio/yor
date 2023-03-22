@@ -209,6 +209,89 @@ func TestExternalTagGroup(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("test tagGroup conflicted git_modifiers", func(t *testing.T) {
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitExternalTagGroups(confPath)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd/nofar/rotemavni",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "00193660c248483862c06e2ae96111adfcb683af",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		for _, newTag := range block.NewTags {
+			if newTag.GetKey() == "team" {
+				assert.Equal(t, "interfaces", newTag.GetValue())
+			}
+		}
+	})
+
+	t.Run("test tagGroup non conflicted git_modifiers", func(t *testing.T) {
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitExternalTagGroups(confPath)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "nofar",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "00193660c248483862c06e2ae96111adfcb683af",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		for _, newTag := range block.NewTags {
+			if newTag.GetKey() == "team" {
+				assert.Equal(t, "platform", newTag.GetValue())
+			}
+		}
+	})
+
 }
 
 type MockTestBlock struct {
