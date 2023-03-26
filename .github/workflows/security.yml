@@ -37,3 +37,11 @@ jobs:
         run: go build
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+  detect-secrets:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
+      - name: detect secrets
+        uses: edplato/trufflehog-actions-scan@0af17d9dd1410283f740eb76b0b8f6b696cadefc  # v0.9
+        with:
+          scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"
