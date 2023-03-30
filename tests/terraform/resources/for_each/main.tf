@@ -14,7 +14,7 @@ resource "aws_subnet" "eks_subnet" {
 
   vpc_id                  = var.vpc_id
   cidr_block              = each.value.cidr_block
-  availability_zone       = var.availability_zone
+  availability_zone       = each.key
   map_public_ip_on_launch = true
   tags                    = each.value.tags
 }
