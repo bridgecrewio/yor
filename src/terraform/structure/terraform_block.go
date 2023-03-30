@@ -21,6 +21,7 @@ const DataBlockType = "data"
 const LocalBlockType = "local"
 const VarBlockType = "var"
 const VariableBlockType = "variable"
+const EachBlockType = "each"
 
 var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType, VariableBlockType}
 
