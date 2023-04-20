@@ -35,6 +35,7 @@ func (t *TagGroup) InitTagGroup(path string, skippedTags []string, explicitlySpe
 	}
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
+	t.Options = opt
 	if path != "" {
 		gitService, err := gitservice.NewGitService(path)
 		if err != nil {
