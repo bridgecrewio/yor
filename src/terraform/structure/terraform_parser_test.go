@@ -525,6 +525,61 @@ func TestTerraformParser_Module(t *testing.T) {
 			assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("Block %v should be taggable", block.GetResourceID()))
 		}
 	})
+
+	t.Run("Parse a file assigns tags from `for_each` object, tag its blocks, and write them to the file", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources/for_each"
+		filePath := "../../../tests/terraform/resources/for_each/main.tf"
+		originFileBytes, _ := os.ReadFile(filePath)
+		defer func() {
+			_ = os.WriteFile(filePath, originFileBytes, 0644)
+		}()
+		p := &TerraformParser{}
+		c2cTagGroup := &code2cloud.TagGroup{}
+		c2cTagGroup.InitTagGroup("", nil, nil)
+		p.Init(rootDir, nil)
+		writeFilePath := "../../../tests/terraform/resources/for_each/main.tf"
+		writeFileBytes, _ := os.ReadFile(writeFilePath)
+		defer func() {
+			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
+		}()
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+
+		for _, block := range parsedBlocks {
+			if block.IsBlockTaggable() {
+				_ = c2cTagGroup.CreateTagsForBlock(block)
+			} else {
+				assert.Fail(t, fmt.Sprintf("Block %v should be taggable!", block.GetResourceID()))
+			}
+		}
+
+		err = p.WriteFile(filePath, parsedBlocks, writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		for _, block := range parsedTaggedFileTags {
+			if block.IsBlockTaggable() {
+				isYorTagExists := false
+				yorTagKey := tags.YorTraceTagKey
+				for _, tag := range block.GetExistingTags() {
+					if tag.GetKey() == yorTagKey || strings.ReplaceAll(tag.GetKey(), `"`, "") == yorTagKey {
+						isYorTagExists = true
+					}
+					assert.NotEqualf(t, "kubernetes.io/cluster/$${local.prefix}", tag.GetKey(), "Bad tag exists!")
+				}
+				if !isYorTagExists {
+					t.Errorf("tag not found on merged block %v", yorTagKey)
+				}
+			}
+		}
+	})
 }
 
 func TestExtractProviderFromModuleSrc(t *testing.T) {
@@ -552,7 +607,6 @@ func TestExtractProviderFromModuleSrc(t *testing.T) {
 		})
 	}
 }
-
 
 func TestExtractSubdirFromRemoteModuleSrc(t *testing.T) {
 	tests := []struct {
