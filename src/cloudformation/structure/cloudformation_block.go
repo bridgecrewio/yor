@@ -13,6 +13,10 @@ type CloudformationBlock struct {
 	structure.Block
 }
 
+func (b *CloudformationBlock) GetFramework() string {
+	return "Cloudformation"
+}
+
 func (b *CloudformationBlock) UpdateTags() {
 	if !b.IsTaggable {
 		return

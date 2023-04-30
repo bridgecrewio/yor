@@ -1,6 +1,7 @@
 package yaml
 
 import (
+	"github.com/bridgecrewio/yor/pkg/slsParser"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,7 +12,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/stretchr/testify/assert"
-	"github.com/thepauleh/goserverless/serverless"
 )
 
 func TestServerlessWriting(t *testing.T) {
@@ -33,9 +33,8 @@ func TestServerlessWriting(t *testing.T) {
 				FilePath:    readFilePath,
 				ExitingTags: nil,
 				NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
-				RawBlock: serverless.Function{
-					Handler: "myFunction.handler",
-					Name:    "myFunction",
+				RawBlock: slsParser.Function{
+					Name: "myFunction",
 					Tags: map[string]interface{}{
 						"new_tag": "new_value",
 					},
@@ -49,9 +48,8 @@ func TestServerlessWriting(t *testing.T) {
 				FilePath:    readFilePath,
 				ExitingTags: nil,
 				NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
-				RawBlock: serverless.Function{
-					Handler: "myFunction2.handler",
-					Name:    "myFunction2",
+				RawBlock: slsParser.Function{
+					Name: "myFunction2",
 					Tags: map[string]interface{}{
 						"new_tag": "new_value",
 					},

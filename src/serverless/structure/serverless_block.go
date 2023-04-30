@@ -1,14 +1,18 @@
 package structure
 
 import (
+	"github.com/bridgecrewio/yor/pkg/slsParser"
 	"github.com/bridgecrewio/yor/src/common/structure"
-	"github.com/thepauleh/goserverless/serverless"
 
 	"go.opencensus.io/tag"
 )
 
 type ServerlessBlock struct {
 	structure.Block
+}
+
+func (b *ServerlessBlock) GetFramework() string {
+	return "Serverless"
 }
 
 func (b *ServerlessBlock) UpdateTags() {
@@ -31,7 +35,7 @@ func (b *ServerlessBlock) UpdateTags() {
 	for _, mergedTag := range slsMergedTags {
 		slsMergedTagsValue[mergedTag.Key.Name()] = mergedTag.Value
 	}
-	rawFunction := b.RawBlock.(serverless.Function)
+	rawFunction := b.RawBlock.(slsParser.Function)
 	if rawFunction.Tags == nil {
 		rawFunction.Tags = make(map[string]interface{}, len(slsMergedTags))
 	}
