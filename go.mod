@@ -18,7 +18,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sanathkr/yaml v1.0.0
 	github.com/stretchr/testify v1.6.1
-	github.com/thepauleh/goserverless v0.0.0-20220613122947-21ff7c8de24c
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/zclconf/go-cty v1.7.0
 	go.opencensus.io v0.22.0
@@ -50,7 +49,6 @@ require (
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.33.0 // indirect
-	github.com/awslabs/goformation/v4 v4.19.5 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect

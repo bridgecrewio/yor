@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -14,7 +13,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/sanathkr/yaml"
-	"github.com/thepauleh/goserverless/serverless"
 )
 
 const SingleIndent = "  "
@@ -26,7 +24,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	if err != nil {
 		return fmt.Errorf("failed to read file %s because %s", readFilePath, err)
 	}
-	isCfn := !strings.Contains(filepath.Base(readFilePath), "serverless")
+	isCfn := blocks[0].(IYamlBlock).GetFramework() == "Cloudformation"
 	originLines := utils.GetLinesFromBytes(originFileSrc)
 
 	oldResourcesLineRange := computeResourcesLineRange(originLines, blocks, isCfn)
@@ -220,16 +218,6 @@ func getYAMLLines(rawBlock interface{}, isCfn bool) []string {
 
 	textLines = utils.GetLinesFromBytes(yamlBytes)
 
-	if !isCfn {
-		slsFunction := rawBlock.(serverless.Function)
-		if utils.AllNil(slsFunction.VPC.SecurityGroupIds, slsFunction.VPC.SubnetIds) {
-			textLines = removeLineByAttribute(textLines, "vpc:")
-		}
-		if utils.AllNil(slsFunction.Package.Include, slsFunction.Package.Artifact, slsFunction.Package.Exclude,
-			slsFunction.Package.ExcludeDevDependencies, slsFunction.Package.Individually) {
-			textLines = removeLineByAttribute(textLines, "package")
-		}
-	}
 	return textLines
 }
 

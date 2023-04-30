@@ -1,11 +1,14 @@
 package structure
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"math"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -14,8 +17,6 @@ import (
 	"github.com/bridgecrewio/yor/src/common/types"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	yamlUtils "github.com/bridgecrewio/yor/src/common/yaml"
-	"github.com/thepauleh/goserverless"
-	"github.com/thepauleh/goserverless/serverless"
 )
 
 const FunctionTagsAttributeName = "tags"
@@ -24,6 +25,8 @@ const FunctionsSectionName = "functions"
 type ServerlessParser struct {
 	YamlParser types.YamlParser
 }
+
+var slsParseLock sync.Mutex
 
 func (p *ServerlessParser) Name() string {
 	return "Serverless"
@@ -45,8 +48,8 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension}
 }
 
-func goserverlessParse(file string) (*serverless.Template, error) {
-	var template *serverless.Template
+func serverlessParse(file string) (*structure.Template, error) {
+	var template *structure.Template
 	var err error
 	defer func() {
 		if e := recover(); e != nil {
@@ -54,12 +57,16 @@ func goserverlessParse(file string) (*serverless.Template, error) {
 			err = fmt.Errorf("failed to parse sls file %v: %v", file, e)
 		}
 	}()
-
-	template, err = goserverless.Open(file)
+	slsParseLock.Lock()
+	template, err = Open(file)
+	slsParseLock.Unlock()
 	return template, err
 }
 
-func (p *ServerlessParser) ValidFile(_ string) bool {
+func (p *ServerlessParser) ValidFile(file string) bool {
+	if _, err := serverlessParse(file); err != nil {
+		return false
+	}
 	return true
 }
 
@@ -67,11 +74,11 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
 	fileName := filepath.Base(filePath)
-	if !(fileName == fmt.Sprintf("serverless.%s", fileFormat)) {
+	if !(fileName == fmt.Sprintf("serverless.%s", fileFormat) || fileName == fmt.Sprintf("config.%s", fileFormat)) {
 		return nil, nil
 	}
 	// #nosec G304 - file is from user
-	template, err := goserverlessParse(filePath)
+	template, err := serverlessParse(filePath)
 	if err != nil || template == nil || template.Functions == nil {
 		if err != nil {
 			logger.Warning(fmt.Sprintf("There was an error processing the serverless template: %s", err))
@@ -192,4 +199,29 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 		tagsLines.End = lineCounter - 1
 	}
 	return tagsLines
+}
+
+// Open and parse a Serverless template from file.
+// Works with YAML formatted templates.
+func Open(filename string) (*structure.Template, error) {
+	// #nosec G304
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return openYaml(data)
+}
+
+func openYaml(input []byte) (*structure.Template, error) {
+	intrinsified, err := intrinsics.ProcessYAML(input, nil)
+	if err != nil {
+		return nil, err
+	}
+	template := &structure.Template{}
+	if err := json.Unmarshal(intrinsified, template); err != nil {
+		return nil, err
+	}
+
+	return template, nil
 }
