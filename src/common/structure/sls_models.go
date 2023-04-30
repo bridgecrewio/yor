@@ -1,4 +1,4 @@
-package slsParser
+package structure
 
 import "github.com/bridgecrewio/goformation/v5/cloudformation"
 

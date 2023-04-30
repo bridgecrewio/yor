@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"github.com/bridgecrewio/yor/pkg/slsParser"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -67,7 +66,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 			Block: structure.Block{
 				ExitingTags:       existingTags,
 				NewTags:           newTags,
-				RawBlock:          resource[0].GetRawBlock().(slsParser.Function),
+				RawBlock:          resource[0].GetRawBlock().(structure.Function),
 				IsTaggable:        true,
 				TagsAttributeName: "tags",
 				Lines:             structure.Lines{Start: 4, End: 14},
@@ -77,7 +76,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 
 		b.UpdateTags()
 
-		currentRawBlock := b.RawBlock.(slsParser.Function)
+		currentRawBlock := b.RawBlock.(structure.Function)
 		currentTags := currentRawBlock.Tags
 		sort.Slice(expectedMergedTags, func(i, j int) bool {
 			return expectedMergedTags[i].GetKey() > expectedMergedTags[j].GetKey()

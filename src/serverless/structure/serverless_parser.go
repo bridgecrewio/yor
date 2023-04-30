@@ -1,8 +1,9 @@
 package structure
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/bridgecrewio/yor/pkg/slsParser"
+	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"math"
 	"os"
 	"path/filepath"
@@ -47,8 +48,8 @@ func (p *ServerlessParser) GetSupportedFileExtensions() []string {
 	return []string{common.YamlFileType.Extension, common.YmlFileType.Extension}
 }
 
-func serverlessParse(file string) (*slsParser.Template, error) {
-	var template *slsParser.Template
+func serverlessParse(file string) (*structure.Template, error) {
+	var template *structure.Template
 	var err error
 	defer func() {
 		if e := recover(); e != nil {
@@ -57,7 +58,7 @@ func serverlessParse(file string) (*slsParser.Template, error) {
 		}
 	}()
 	slsParseLock.Lock()
-	template, err = slsParser.Open(file)
+	template, err = Open(file)
 	slsParseLock.Unlock()
 	return template, err
 }
@@ -198,4 +199,29 @@ func (p *ServerlessParser) getTagsLines(filePath string, resourceLinesRange *str
 		tagsLines.End = lineCounter - 1
 	}
 	return tagsLines
+}
+
+// Open and parse a Serverless template from file.
+// Works with YAML formatted templates.
+func Open(filename string) (*structure.Template, error) {
+	// #nosec G304
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	return openYaml(data)
+}
+
+func openYaml(input []byte) (*structure.Template, error) {
+	intrinsified, err := intrinsics.ProcessYAML(input, nil)
+	if err != nil {
+		return nil, err
+	}
+	template := &structure.Template{}
+	if err := json.Unmarshal(intrinsified, template); err != nil {
+		return nil, err
+	}
+
+	return template, nil
 }
