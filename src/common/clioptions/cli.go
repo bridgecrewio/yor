@@ -28,6 +28,7 @@ type TagOptions struct {
 	SkipResources     []string
 	Parsers           []string
 	DryRun            bool
+	CheckMode         bool
 	TagLocalModules   bool
 	TagPrefix         string
 	NoColor           bool

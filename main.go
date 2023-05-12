@@ -90,6 +90,7 @@ func tagCommand() *cli.Command {
 	skipResourcesArg := "skip-resources"
 	parsersArgs := "parsers"
 	dryRunArgs := "dry-run"
+	checkModeArgs := "check"
 	tagLocalModules := "tag-local-modules"
 	tagPrefix := "tag-prefix"
 	noColor := "no-color"
@@ -113,6 +114,7 @@ func tagCommand() *cli.Command {
 				SkipResources:     c.StringSlice(skipResourcesArg),
 				Parsers:           c.StringSlice(parsersArgs),
 				DryRun:            c.Bool(dryRunArgs),
+				CheckMode:         c.Bool(checkModeArgs),
 				TagLocalModules:   c.Bool(tagLocalModules),
 				TagPrefix:         c.String(tagPrefix),
 				NoColor:           c.Bool(noColor),
@@ -208,6 +210,12 @@ func tagCommand() *cli.Command {
 				DefaultText: "false",
 			},
 			&cli.BoolFlag{
+				Name:        checkModeArgs,
+				Usage:       "exit with error if changes made/needed",
+				Value:       false,
+				DefaultText: "false",
+			},
+			&cli.BoolFlag{
 				Name:        tagLocalModules,
 				Usage:       "Always tag local modules",
 				Value:       false,
@@ -263,6 +271,9 @@ func tag(options *clioptions.TagOptions, colors *common.ColorStruct) error {
 	}
 	printReport(reportService, options, colors)
 
+	if options.CheckMode && reportService.Changed() {
+		logger.Error("Changes needed and CheckMode is true.")
+	}
 	return nil
 }
 

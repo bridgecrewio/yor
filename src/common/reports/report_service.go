@@ -51,6 +51,14 @@ func init() {
 	ReportServiceInst = &ReportService{}
 }
 
+func (r *ReportService) Changed() bool {
+	changesAccumulator := TagChangeAccumulatorInstance
+	new_count := len(changesAccumulator.NewBlockTraces)
+	updated_count := len(changesAccumulator.UpdatedBlockTraces)
+
+	return new_count > 0 || updated_count > 0
+}
+
 func (r *ReportService) GetReport() *Report {
 	return &r.report
 }
