@@ -21,6 +21,7 @@ import (
 
 const FunctionTagsAttributeName = "tags"
 const FunctionsSectionName = "functions"
+const FunctionType = "function"
 
 type ServerlessParser struct {
 	YamlParser types.YamlParser
@@ -132,6 +133,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error
 				Lines:             *lines,
 				TagLines:          tagsLines,
 				Name:              funcName,
+				Type:              FunctionType,
 			},
 		}
 
