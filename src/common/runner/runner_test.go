@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/bridgecrewio/yor/src/common/reports"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
@@ -286,6 +287,7 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		runner.ChangeAccumulator = &reports.TagChangeAccumulator{}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -293,7 +295,7 @@ func Test_YorNameTag(t *testing.T) {
 		reportService.CreateReport()
 		report := reportService.GetReport()
 
-		assert.Equal(t, len(report.NewResourceTags), 29)
+		assert.Equal(t, 29, len(report.NewResourceTags))
 		for _, newTag := range report.NewResourceTags {
 			assert.Equal(t, newTag.ResourceID, newTag.UpdatedValue)
 		}
@@ -308,6 +310,7 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		runner.ChangeAccumulator = &reports.TagChangeAccumulator{}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -335,6 +338,7 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		runner.ChangeAccumulator = &reports.TagChangeAccumulator{}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)
@@ -342,7 +346,7 @@ func Test_YorNameTag(t *testing.T) {
 		reportService.CreateReport()
 		report := reportService.GetReport()
 
-		assert.Equal(t, len(report.NewResourceTags), 12)
+		assert.Equal(t, 12, len(report.NewResourceTags))
 		yorNameCounter := 0
 		for _, newTag := range report.NewResourceTags {
 			if newTag.TagKey == tags.YorNameTagKey {
