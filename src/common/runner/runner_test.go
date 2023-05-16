@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
 	"strings"
@@ -273,4 +274,83 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 	gitTagGroup.InitTagGroup(wd, nil, nil)
 	gitTagGroup.GitService = gitService
 	return &gitTagGroup
+}
+
+func Test_YorNameTag(t *testing.T) {
+	t.Run("tag cloudformation", func(t *testing.T) {
+		options := clioptions.TagOptions{
+			Directory: "../../../tests/cloudformation/resources/cfngoat",
+			TagGroups: []string{string(taggingUtils.Code2Cloud)},
+			Parsers:   []string{"CloudFormation"},
+		}
+
+		runner := Runner{}
+		err := runner.Init(&options)
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		assert.Equal(t, len(report.NewResourceTags), 29)
+		for _, newTag := range report.NewResourceTags {
+			assert.Equal(t, newTag.ResourceID, newTag.UpdatedValue)
+		}
+	})
+
+	t.Run("tag serverless", func(t *testing.T) {
+		options := clioptions.TagOptions{
+			Directory: "../../../tests/serverless/resources/sls_resource_name",
+			TagGroups: []string{string(taggingUtils.Code2Cloud)},
+			Parsers:   []string{"Serverless"},
+		}
+
+		runner := Runner{}
+		err := runner.Init(&options)
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		assert.Equal(t, len(report.NewResourceTags), 4)
+		yorNameCounter := 0
+		for _, newTag := range report.NewResourceTags {
+			if newTag.TagKey == tags.YorNameTagKey {
+				yorNameCounter += 1
+				assert.Equal(t, newTag.ResourceID, newTag.UpdatedValue)
+			}
+		}
+		assert.Equal(t, 2, yorNameCounter)
+	})
+
+	t.Run("tag terraform", func(t *testing.T) {
+		options := clioptions.TagOptions{
+			Directory: "../../../tests/terraform/resources/resource_name",
+			TagGroups: []string{string(taggingUtils.Code2Cloud)},
+			Parsers:   []string{"Terraform"},
+		}
+
+		runner := Runner{}
+		err := runner.Init(&options)
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		assert.Equal(t, len(report.NewResourceTags), 12)
+		yorNameCounter := 0
+		for _, newTag := range report.NewResourceTags {
+			if newTag.TagKey == tags.YorNameTagKey {
+				yorNameCounter += 1
+				resourceName := strings.Split(newTag.ResourceID, ".")[1]
+				assert.Equal(t, resourceName, newTag.UpdatedValue)
+			}
+		}
+		assert.Equal(t, 6, yorNameCounter)
+	})
 }
