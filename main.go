@@ -90,7 +90,7 @@ func tagCommand() *cli.Command {
 	skipResourcesArg := "skip-resources"
 	parsersArgs := "parsers"
 	dryRunArgs := "dry-run"
-	checkModeArgs := "check"
+	validateModeArgs := "validate"
 	tagLocalModules := "tag-local-modules"
 	tagPrefix := "tag-prefix"
 	noColor := "no-color"
@@ -114,7 +114,7 @@ func tagCommand() *cli.Command {
 				SkipResources:     c.StringSlice(skipResourcesArg),
 				Parsers:           c.StringSlice(parsersArgs),
 				DryRun:            c.Bool(dryRunArgs),
-				CheckMode:         c.Bool(checkModeArgs),
+				ValidateMode:      c.Bool(validateModeArgs),
 				TagLocalModules:   c.Bool(tagLocalModules),
 				TagPrefix:         c.String(tagPrefix),
 				NoColor:           c.Bool(noColor),
@@ -210,8 +210,8 @@ func tagCommand() *cli.Command {
 				DefaultText: "false",
 			},
 			&cli.BoolFlag{
-				Name:        checkModeArgs,
-				Usage:       "exit with error if changes made/needed",
+				Name:        validateModeArgs,
+				Usage:       "dry-run and exit with error if changes made/needed",
 				Value:       false,
 				DefaultText: "false",
 			},
@@ -260,6 +260,9 @@ func listTags(options *clioptions.ListTagsOptions) error {
 
 func tag(options *clioptions.TagOptions, colors *common.ColorStruct) error {
 	yorRunner := new(runner.Runner)
+	if options.ValidateMode {
+		options.DryRun = true
+	}
 	logger.Info(fmt.Sprintf("Setting up to tag the directory %v\n", options.Directory))
 	err := yorRunner.Init(options)
 	if err != nil {
@@ -271,8 +274,8 @@ func tag(options *clioptions.TagOptions, colors *common.ColorStruct) error {
 	}
 	printReport(reportService, options, colors)
 
-	if options.CheckMode && reportService.Changed() {
-		logger.Error("Changes needed and CheckMode is true.")
+	if options.ValidateMode && reportService.Changed() {
+		logger.Error("Changes needed and ValidateMode is true.")
 	}
 	return nil
 }
