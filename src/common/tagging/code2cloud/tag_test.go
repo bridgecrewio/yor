@@ -2,6 +2,7 @@ package code2cloud
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/tagging"
@@ -66,15 +67,26 @@ func TestCode2CloudTagGroup(t *testing.T) {
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil, tagging.WithTagPrefix("prefix"))
 
+		blockName := "my_bucket"
+
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   path,
 				IsTaggable: true,
+				Name:       blockName,
 			},
 		}
 
 		_ = tagGroup.CreateTagsForBlock(block)
-		assert.Equal(t, 1, len(block.NewTags))
+		assert.Equal(t, 2, len(block.NewTags))
+		foundYorName := false
+		for _, newTag := range block.NewTags {
+			if strings.Contains(newTag.GetKey(), tags.YorNameTagKey) {
+				foundYorName = true
+				assert.Equal(t, blockName, newTag.GetValue())
+			}
+		}
+		assert.True(t, foundYorName)
 	})
 }
 

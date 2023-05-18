@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
 	"strings"
@@ -273,4 +274,37 @@ func initMockGitTagGroup(rootDir string, filesToBlames map[string]string) *gitta
 	gitTagGroup.InitTagGroup(wd, nil, nil)
 	gitTagGroup.GitService = gitService
 	return &gitTagGroup
+}
+
+func Test_YorNameTag(t *testing.T) {
+	t.Run("tag code2cloud", func(t *testing.T) {
+		options := clioptions.TagOptions{
+			Directory: "../../../tests/resource_name",
+			TagGroups: []string{string(taggingUtils.Code2Cloud)},
+			Parsers:   []string{"Terraform", "CloudFormation", "Serverless"},
+		}
+
+		runner := Runner{}
+		err := runner.Init(&options)
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		yorNameCounter := 0
+		for _, newTag := range report.NewResourceTags {
+			if newTag.TagKey == tags.YorNameTagKey {
+				yorNameCounter += 1
+				resourceIdParts := strings.Split(newTag.ResourceID, ".")
+				resourceName := resourceIdParts[0]
+				if len(resourceIdParts) > 1 {
+					resourceName = resourceIdParts[1]
+				}
+				assert.Equal(t, resourceName, newTag.UpdatedValue)
+			}
+		}
+		assert.True(t, yorNameCounter > 0)
+	})
 }

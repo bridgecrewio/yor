@@ -286,7 +286,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["tags"]
 		rawTagsExpr := rawTags.Expr.(*hclsyntax.ObjectConsExpr)
 		assert.Equal(t, "tags", rawTags.Name)
-		assert.Equal(t, 10, len(rawTagsExpr.Items))
+		assert.Equal(t, 11, len(rawTagsExpr.Items))
 
 		currentTags := defaultInstanceBlock.ExitingTags
 
@@ -352,7 +352,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["tags"]
 		rawTagsExpr := rawTags.Expr.(*hclsyntax.ObjectConsExpr)
 		assert.Equal(t, "tags", rawTags.Name)
-		assert.Equal(t, 10, len(rawTagsExpr.Items))
+		assert.Equal(t, 11, len(rawTagsExpr.Items))
 
 		currentTags := defaultInstanceBlock.ExitingTags
 

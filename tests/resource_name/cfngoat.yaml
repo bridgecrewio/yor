@@ -1,0 +1,1326 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation Template to deploy insecure infrastructure
+Parameters:
+  CompanyName:
+    Description: Company Name
+    Type: String
+    Default: acme
+  Environment:
+    Description: Environment
+    Type: String
+    Default: dev
+  DBName:
+    Description: Name of the Database
+    Type: String
+    Default: db1
+  Password:
+    Description: Database Password
+    Type: String
+    NoEcho: True
+    MinLength: 1
+    MaxLength: 41
+    AllowedPattern: ^[a-zA-Z0-9]*$
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+Resources:
+  ####################
+  ###  EC2 in VPC  ###
+  ####################
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs: ""
+      InstanceType: t2.nano
+      SecurityGroupIds:
+        - !Ref WebNodeSG
+      ImageId: !Ref LatestAmiId
+      SubnetId: !Ref WebSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-ec2"
+        - Key: yor_trace
+          Value: 595b9b79-bd1e-45fd-a297-d521ebdf15e7
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          sudo yum -y update
+          sudo yum -y install httpd php php-mysqlnd
+          sudo systemctl enable httpd
+          sudo systemctl start httpd
+          export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAA
+          export AWS_SECRET_ACCESS_KEY=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
+          export AWS_DEFAULT_REGION=us-west-2
+          echo "<h1>Deployed via CloudFormation</h1>" | sudo tee /var/www/html/index.html
+  WebHostStorage:
+    # Unencrypted Volume
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs: ""
+      #Encrypted: False
+      Size: 1
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-ebs"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 838685b6-8fac-42eb-9cf4-008dd36216a1
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+
+  ### CFN Does not Support Volume Snapshot
+  EBSAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref EC2Instance
+      VolumeId: !Ref WebHostStorage
+      Device: /dev/sdh
+
+  # Security Group  SSH port open to the world
+  WebNodeSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-sg"
+      GroupDescription: !Sub "${AWS::AccountId}-${CompanyName}-${Environment} Security Group"
+      VpcId: !Ref WebVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 0
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: d4d72008-2b73-4635-9df6-8035c8850d66
+        - Key: git_org
+          Value: bridgecrewio
+  WebVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-vpc"
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: eeb90d09-d35e-440f-ac67-2f96e472b2e0
+  WebSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WebVPC
+      CidrBlock: 172.16.10.0/24
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-subnet"
+        - Key: yor_trace
+          Value: 4f6434ca-b2c2-4fe3-88fc-9ad969965958
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+  WebSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WebVPC
+      CidrBlock: 172.16.11.0/24
+      AvailabilityZone:
+        Fn::Select:
+          - "1"
+          - Fn::GetAZs: ""
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-subnet2"
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 68c27f34-7110-458d-98b3-b9a7307638dc
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+  WebIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-igw"
+        - Key: yor_trace
+          Value: 39d8202d-7126-40dd-afa0-4554eeadada4
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref WebIGW
+      VpcId: !Ref WebVPC
+  WebRTB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WebVPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rtb"
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 0613f2a9-ccbb-4e77-839b-bc0a7681bd9c
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+  WebDefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref WebRTB
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref WebIGW
+  RTBAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WebSubnet
+      RouteTableId: !Ref WebRTB
+  RTBAssoc2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WebSubnet2
+      RouteTableId: !Ref WebRTB
+  WebENI:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      Description: A nice description.
+      SubnetId: !Ref WebSubnet
+      PrivateIpAddress: 172.16.10.100
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-primary_network_interface"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: ebfdc86d-55a5-4df1-88fd-2f3bc869549c
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+  VpcFlowLogs:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      ResourceId: !Ref WebVPC
+      ResourceType: VPC
+      LogDestination: !GetAtt FlowBucket.Arn
+      LogDestinationType: s3
+      TrafficType: ALL
+      Tags:
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 077d3a3d-66bc-4fe9-8839-b59a40785234
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+  FlowBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-flowlogs"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-flowlogs"
+        - Key: yor_trace
+          Value: a148a687-a031-4491-8fc9-6bb78fef0572
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+
+  #############
+  ###  IAM  ###
+  #############
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-user"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-user"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 346804e2-5a21-4f1b-a8bf-f3c3fc9c7d15
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+  AccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref User
+  UserPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: excess_policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:*"
+              - "s3:*"
+              - "lambda:*"
+              - "cloudwatch:*"
+            Resource: "*"
+      Users:
+        - !Ref User
+
+  #############
+  ###  KMS  ###
+  #############
+  LogsKey:
+    # Key does not have rotation enabled
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-logs bucket key"
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+      Tags:
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: bd68272a-4d3b-44e6-a2f0-ad783935c332
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+  LogsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::AccountId}-${CompanyName}-${Environment}-logs-bucket-key"
+      TargetKeyId: !Ref LogsKey
+
+  ################
+  ###  DB App  ###
+  ################
+  DefaultDB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    Properties:
+      DBName: !Ref DBName
+      Engine: MySQL
+      OptionGroupName: !Ref DefaultDBOptionGroup
+      DBParameterGroupName: !Ref DefaultDBParameterGroup
+      DBSubnetGroupName: !Ref DefaultSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DefaultSG
+
+      DBInstanceIdentifier: !Sub "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+      EngineVersion: "8.0"
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: "20"
+      MasterUsername: admin
+      MasterUserPassword: !Ref Password
+      MultiAZ: False
+      BackupRetentionPeriod: 0
+      StorageEncrypted: False
+      MonitoringInterval: 0
+      PubliclyAccessible: True
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rds"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: ca176a04-46cc-411d-a062-222ae03835a8
+  DefaultDBOptionGroup:
+    Type: AWS::RDS::OptionGroup
+    Properties:
+      EngineName: mysql
+      MajorEngineVersion: "8.0"
+      OptionGroupDescription: CloudFormation OG
+      OptionConfigurations: []
+      Tags:
+        - Key: Name
+          Value: !Sub "og-${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 6d7cc8b8-ee12-4ad2-940c-324b6eeca646
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+  DefaultDBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Terraform PG
+      Family: mysql8.0
+      Parameters:
+        character_set_client: utf8
+        character_set_server: utf8
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-pg"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 88c3fff0-8627-4e00-8e10-086c1651370a
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+  DefaultSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub "sg-${AWS::AccountId}-${CompanyName}-${Environment}"
+      DBSubnetGroupDescription: CloudFormation DB Subnet Group
+      SubnetIds:
+        - !Ref WebSubnet
+        - !Ref WebSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub "sg-${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 3c0704d6-7b98-472d-a6b2-c3085cb87024
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+  DefaultSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rds-sg"
+      GroupDescription: !Sub "${AWS::AccountId}-${CompanyName}-${Environment} RDS Security Group"
+      VpcId: !Ref WebVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !GetAtt WebVPC.CidrBlock
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rds-sg"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 3d3b2421-0886-4ab8-88ec-e4bef646fdf6
+  EC2Profile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-profile"
+      Path: "/"
+      Roles:
+        - !Ref EC2Role
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-role"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 47d128cd-8fec-4d80-a768-e5e4c133b61a
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+  EC2Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "s3:*"
+              - "ec2:*"
+              - "rds:*"
+            Resource: "*"
+      Roles:
+        - !Ref EC2Role
+  DBAppInstance:
+    # EC2 have plain text secrets in user data
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs: ""
+      ImageId: !Ref LatestAmiId
+      InstanceType: t2.nano
+      IamInstanceProfile: !Ref EC2Profile
+      SecurityGroupIds:
+        - !Ref WebNodeSG
+      SubnetId: !Ref WebSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-dbapp"
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 35854694-8244-4717-8f50-146fbec15c61
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          ### Config from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Tutorials.WebServerDB.CreateWebServer.html
+          sudo yum -y update
+          sudo yum -y install httpd php php-mysqlnd
+          sudo systemctl enable httpd
+          sudo systemctl start httpd
+          sudo mkdir /var/www/inc
+          cat << EnD > /tmp/dbinfo.inc
+          <?php
+          define('DB_SERVER', '${DefaultDB.Endpoint.Address}:${DefaultDB.Endpoint.Port}');
+          define('DB_USERNAME', 'admin');
+          define('DB_PASSWORD', '${Password}');
+          define('DB_DATABASE', '${DefaultDB}');
+          ?>
+          EnD
+          sudo mv /tmp/dbinfo.inc /var/www/inc
+          sudo chown root:root /var/www/inc/dbinfo.inc
+          cat << EnD > /tmp/index.php
+          <?php include "../inc/dbinfo.inc"; ?>
+          <html>
+          <body>
+          <h1>Sample page</h1>
+          <?php
+            /* Connect to MySQL and select the database. */
+            $connection = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD);
+            if (mysqli_connect_errno()) echo "Failed to connect to MySQL: " . mysqli_connect_error();
+            $database = mysqli_select_db($connection, DB_DATABASE);
+            /* Ensure that the EMPLOYEES table exists. */
+            VerifyEmployeesTable($connection, DB_DATABASE);
+            /* If input fields are populated, add a row to the EMPLOYEES table. */
+            $employee_name = htmlentities($_POST['NAME']);
+            $employee_address = htmlentities($_POST['ADDRESS']);
+            if (strlen($employee_name) || strlen($employee_address)) {
+              AddEmployee($connection, $employee_name, $employee_address);
+            }
+          ?>
+          <!-- Input form -->
+          <form action="<?PHP echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
+            <table border="0">
+              <tr>
+                <td>NAME</td>
+                <td>ADDRESS</td>
+              </tr>
+              <tr>
+                <td>
+                  <input type="text" name="NAME" maxlength="45" size="30" />
+                </td>
+                <td>
+                  <input type="text" name="ADDRESS" maxlength="90" size="60" />
+                </td>
+                <td>
+                  <input type="submit" value="Add Data" />
+                </td>
+              </tr>
+            </table>
+          </form>
+          <!-- Display table data. -->
+          <table border="1" cellpadding="2" cellspacing="2">
+            <tr>
+              <td>ID</td>
+              <td>NAME</td>
+              <td>ADDRESS</td>
+            </tr>
+          <?php
+          $result = mysqli_query($connection, "SELECT * FROM EMPLOYEES");
+          while($query_data = mysqli_fetch_row($result)) {
+            echo "<tr>";
+            echo "<td>",$query_data[0], "</td>",
+                 "<td>",$query_data[1], "</td>",
+                 "<td>",$query_data[2], "</td>";
+            echo "</tr>";
+          }
+          ?>
+          </table>
+          <!-- Clean up. -->
+          <?php
+            mysqli_free_result($result);
+            mysqli_close($connection);
+          ?>
+          </body>
+          </html>
+          <?php
+          /* Add an employee to the table. */
+          function AddEmployee($connection, $name, $address) {
+             $n = mysqli_real_escape_string($connection, $name);
+             $a = mysqli_real_escape_string($connection, $address);
+             $query = "INSERT INTO EMPLOYEES (NAME, ADDRESS) VALUES ('$n', '$a');";
+             if(!mysqli_query($connection, $query)) echo("<p>Error adding employee data.</p>");
+          }
+          /* Check whether the table exists and, if not, create it. */
+          function VerifyEmployeesTable($connection, $dbName) {
+            if(!TableExists("EMPLOYEES", $connection, $dbName))
+            {
+               $query = "CREATE TABLE EMPLOYEES (
+                   ID int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                   NAME VARCHAR(45),
+                   ADDRESS VARCHAR(90)
+                 )";
+               if(!mysqli_query($connection, $query)) echo("<p>Error creating table.</p>");
+            }
+          }
+          /* Check for the existence of a table. */
+          function TableExists($tableName, $connection, $dbName) {
+            $t = mysqli_real_escape_string($connection, $tableName);
+            $d = mysqli_real_escape_string($connection, $dbName);
+            $checktable = mysqli_query($connection,
+                "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_NAME = '$t' AND TABLE_SCHEMA = '$d'");
+            if(mysqli_num_rows($checktable) > 0) return true;
+            return false;
+          }
+          ?>
+          EnD
+          sudo mv /tmp/index.php /var/www/html
+          sudo chown root:root /var/www/html/index.php
+
+  ################
+  ###  Lambda  ###
+  ################
+  IAM4Lambda:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis-lambda"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis-lambda"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 2c07712d-22f5-42be-946e-1c2e71d2e275
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+  AnalysisLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+      Runtime: nodejs12.x
+      Role: !GetAtt IAM4Lambda.Arn
+      Handler: exports.test
+      Code:
+        ZipFile: |
+          console.log("Hello World");
+      Environment:
+        Variables:
+          access_key: "AKIAIOSFODNN7EXAMPLE"
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 5939cdf9-4e86-4208-80d1-095c367c2c13
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+
+  ############
+  ###  S3  ###
+  ############
+  DataBucket:
+    # Public, not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data"
+      AccessControl: PublicRead
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 509b197d-4f87-4ae1-aa43-8cca13c9e92e
+        - Key: git_org
+          Value: bridgecrewio
+
+  ### TODO - Custom Upload of insecure document
+  FinancialsBucket:
+    # not encrypted, no access logs, no versioning
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-financials"
+      AccessControl: Private
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-financials"
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 7d0b70d4-58fb-4d2d-b966-177d349932da
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+  OperationsBucket:
+    # not encrypted, no access logs
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-operations"
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-operations"
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 9e00e7c2-b27c-4141-af5a-2d90c9632a23
+  DataScienceBucket:
+    # not encrypted
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data-science"
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LogsBucket
+        LogFilePrefix: log/
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data-science"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 11266986-850e-41eb-b980-7b4d8d49f919
+        - Key: git_org
+          Value: bridgecrewio
+  LogsBucket:
+    # not encrypted
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-logs"
+      AccessControl: LogDeliveryWrite
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Ref LogsKey
+              SSEAlgorithm: aws:kms
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-logs"
+        - Key: yor_trace
+          Value: 7c5f90f1-7102-45dc-bead-02754df64eba
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+
+    ########################
+    ### Clean S3 Buckets ###
+    ########################
+  CleanupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: lambda-execute
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: '*'
+        - PolicyName: s3-object-delete
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:DeleteObject
+                Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-cleanup-role"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_file
+          Value: cfngoat.yaml
+        - Key: git_commit
+          Value: b1681f3806db6656faf4107ceceb77e9364e59b7
+        - Key: git_modifiers
+          Value: jonathan.jozwiak
+        - Key: git_last_modified_at
+          Value: "2020-04-25 01:13:26"
+        - Key: git_last_modified_by
+          Value: jonathan.jozwiak@googlemail.com
+        - Key: yor_trace
+          Value: 573995a2-e3f4-43a6-847d-df474b0fc71a
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+  CleanBucketFunction:
+    Type: "AWS::Lambda::Function"
+    DependsOn:
+      - CleanupRole
+    Properties:
+      Handler: index.clearS3Bucket
+      Role:
+        Fn::GetAtt:
+          - CleanupRole
+          - Arn
+      Runtime: nodejs12.x
+      Timeout: 25
+      Code:
+        ZipFile: |
+          'use strict';
+
+          var AWS      = require('aws-sdk');
+          var s3       = new AWS.S3();
+
+          module.exports =  {
+            clearS3Bucket: function (event, context, cb) {
+              console.log("Event=", event);
+              console.log("Context=", context);
+              if (event.RequestType === 'Delete')  {
+                  var bucketName = event.ResourceProperties.BucketName;
+
+                  console.log("Delete bucket requested for", bucketName);
+
+                  var objects = listObjects(s3, bucketName);
+
+                  objects.then(function(result) {
+                     var keysToDeleteArray = [];
+                     console.log("Found "+ result.Contents.length + " objects to delete.");
+                     if (result.Contents.length === 0) {
+                         sendResponse(event, context, "SUCCESS");
+                     } else {
+                         for (var i = 0, len = result.Contents.length; i < len; i++) {
+                             var item =  new Object();
+                             item = {};
+                             item = { Key: result.Contents[i].Key };
+                             keysToDeleteArray.push(item);
+                         }
+
+                         var delete_params = {
+                             Bucket: bucketName,
+                             Delete: {
+                               Objects: keysToDeleteArray,
+                               Quiet: false
+                             }
+                         };
+
+                         var deletedObjects = deleteObjects(s3, delete_params);
+
+                         deletedObjects.then(function(result) {
+                             console.log("deleteObjects API returned ", result);
+                             sendResponse(event, context, "SUCCESS");
+                         }, function(err) {
+                             console.log("ERROR: deleteObjects API Call failed!");
+                             console.log(err);
+                             sendResponse(event, context, "FAILED");
+                         });
+                     }
+                  }, function(err) {
+                     console.log("ERROR: listObjects API Call failed!");
+                     console.log(err);
+                     sendResponse(event, context, "FAILED");
+                  });
+
+              } else {
+                console.log("Delete not requested.");
+                sendResponse(event, context, "SUCCESS");
+              }
+
+            }
+          };
+
+          function listObjects(client, bucketName) {
+            return new Promise(function (resolve, reject){
+              client.listObjectsV2({Bucket: bucketName}, function (err, res){
+                if (err) reject(err);
+                else resolve(res);
+              });
+            });
+          }
+
+          function deleteObjects(client, params) {
+            return new Promise(function (resolve, reject){
+              client.deleteObjects(params, function (err, res){
+                if (err) reject(err);
+                else resolve(res);
+              });
+            });
+          }
+
+          function sendResponse(event, context, responseStatus, responseData, physicalResourceId, noEcho) {
+            var responseBody = JSON.stringify({
+              Status: responseStatus,
+              Reason: "See the details in CloudWatch Log Stream: " + context.logStreamName,
+              PhysicalResourceId: physicalResourceId || context.logStreamName,
+              StackId: event.StackId,
+              RequestId: event.RequestId,
+              LogicalResourceId: event.LogicalResourceId,
+              NoEcho: noEcho || false,
+              Data: responseData
+            });
+
+            console.log("Response body:\n", responseBody);
+
+            var https = require("https");
+            var url = require("url");
+
+            var parsedUrl = url.parse(event.ResponseURL);
+            var options = {
+              hostname: parsedUrl.hostname,
+              port: 443,
+              path: parsedUrl.path,
+              method: "PUT",
+              headers: {
+                "content-type": "",
+                "content-length": responseBody.length
+              }
+            };
+
+            var request = https.request(options, function(response) {
+              console.log("Status code: " + response.statusCode);
+              console.log("Status message: " + response.statusMessage);
+              context.done();
+            });
+
+            request.on("error", function(error) {
+              console.log("send(..) failed executing https.request(..): " + error);
+              context.done();
+            });
+
+            request.write(responseBody);
+            request.end();
+          }
+      Tags:
+        - Key: git_commit
+          Value: 42153ba22c28f5c0bff388b24a6344137a5dfe26
+        - Key: git_modifiers
+          Value: jonathan.jozwiak/nimrodkor
+        - Key: git_last_modified_at
+          Value: "2021-08-23 13:51:41"
+        - Key: git_last_modified_by
+          Value: nimrodkor@gmail.com
+        - Key: yor_trace
+          Value: 75847e0e-ba4e-46e5-8c36-cd934d666acd
+        - Key: git_org
+          Value: bridgecrewio
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_file
+          Value: cfngoat.yaml
+  CleanFlowBucketOnDelete:
+    Type: Custom::cleanupflowbucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref FlowBucket
+  CleanDataBucketOnDelete:
+    Type: Custom::cleanupdatabucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref DataBucket
+  CleanFinancialsBucketOnDelete:
+    Type: Custom::cleanupfinancialsbucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref FinancialsBucket
+  CleanOperationsBucketOnDelete:
+    Type: Custom::cleanupoperationsbucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref OperationsBucket
+  CleanDataScienceBucketOnDelete:
+    Type: Custom::cleanupdatasciencebucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref DataScienceBucket
+  CleanLogsBucketOnDelete:
+    Type: Custom::cleanuplogsbucket
+    Properties:
+      ServiceToken: !GetAtt CleanBucketFunction.Arn
+      BucketName: !Ref LogsBucket
+
+Outputs:
+  EC2PublicDNS:
+    Description: Web Host Public DNS Name
+    Value: !GetAtt [EC2Instance, PublicDnsName]
+  VpcId:
+    Description: The ID of the VPC
+    Value: !Ref WebVPC
+  PublicSubnet:
+    Description: The ID of the Public Subnet
+    Value: !Ref WebSubnet
+  PublicSubnet2:
+    Description: The ID of the Public Subnet
+    Value: !Ref WebSubnet2
+
+  UserName:
+    Description: The Name of the IAM User
+    Value: !Ref User
+  SecretKey:
+    Description: The Secret Key of the IAM User
+    Value: !GetAtt AccessKey.SecretAccessKey
+
+  DBAppPublicDNS:
+    Description: DB App Public DNS Name
+    Value: !GetAtt [DBAppInstance, PublicDnsName]
+  DBEndpoint:
+    Description: DB Endpoint
+    Value: !Sub ${DefaultDB.Endpoint.Address}:{DefaultDB.Endpoint.Port}
