@@ -66,8 +66,8 @@ Resources:
           sudo yum -y install httpd php php-mysqlnd
           sudo systemctl enable httpd
           sudo systemctl start httpd
-          export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAA
-          export AWS_SECRET_ACCESS_KEY=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
+          export AWS_ACCESS_KEY_ID=a
+          export AWS_SECRET_ACCESS_KEY=b
           export AWS_DEFAULT_REGION=us-west-2
           echo "<h1>Deployed via CloudFormation</h1>" | sudo tee /var/www/html/index.html
   WebHostStorage:
@@ -887,8 +887,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "a"
+          secret_key: "b"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
