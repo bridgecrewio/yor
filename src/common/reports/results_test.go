@@ -29,6 +29,10 @@ func TestResultsGeneration(t *testing.T) {
 		assert.Equal(t, 2, len(updatedBlocks))
 	})
 
+	t.Run("Test changed boolean function", func(t *testing.T) {
+		assert.Equal(t, true, ReportServiceInst.Changed())
+	})
+
 	t.Run("Test report JSON stdout", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
 		_, _ = ReportServiceInst.report.AsJSONBytes()
