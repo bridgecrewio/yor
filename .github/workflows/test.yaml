@@ -15,7 +15,7 @@ jobs:
         go: [ 1.19 ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@v3  # v3
       - name: Install Go
         uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
@@ -30,7 +30,7 @@ jobs:
     name: golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@v3  # v3
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@79d32f10b2ea0d4cebb755d849b048c4b40c3d50  # v2
         with:
@@ -43,7 +43,7 @@ jobs:
         go: [ 1.19 ]
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@v3  # v3
       - name: Install Go
         uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
@@ -51,7 +51,7 @@ jobs:
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+        uses: actions/checkout@v3  # v3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
