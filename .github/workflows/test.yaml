@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@79d32f10b2ea0d4cebb755d849b048c4b40c3d50  # v2
+        uses: reviewdog/action-golangci-lint@v2  # v2
         with:
           tool_name: golangci-lint
           fail_on_error: true
