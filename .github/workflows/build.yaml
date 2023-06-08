@@ -137,7 +137,7 @@ jobs:
       - name: Git Fetch Repo
         run: |
           git fetch
-      - uses: goreleaser/goreleaser-action@v2
+      - uses: goreleaser/goreleaser-action@v4
         name: goreleaser
         with:
           version: latest
