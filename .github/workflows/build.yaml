@@ -57,7 +57,7 @@ jobs:
         with:
           filename: coverage.out
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@7517b838f3a0d51de4b334a61ef1330672118927  # v14
+        uses: tj-actions/verify-changed-files@7da22d0521c254e711e5988bd2c7d48c2948d137  # v14
         id: verify-changed-files
         with:
           files: README.md
