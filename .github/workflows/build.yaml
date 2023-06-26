@@ -126,7 +126,7 @@ jobs:
         with:
           ref: main
       - name: version
-        uses: anothrNick/github-tag-action@72703d02f7df0cdb8f27aeb9feafeccd67b49881  # v1
+        uses: anothrNick/github-tag-action@a2c70ae13a881faf2b4953baaa9e49731997ab36  # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
