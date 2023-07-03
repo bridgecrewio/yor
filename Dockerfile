@@ -3,7 +3,7 @@ FROM alpine:3.17.1
 # checkov:skip=CKV_DOCKER_2: Not a service
 # checkov:skip=CKV2_DOCKER_2: Not a service
 
-ARG BUILDARCH
+ARG BUILDARCH=amd64
 RUN echo "linux_${BUILDARCH}"
 RUN apk --no-cache add build-base git curl jq bash
 RUN curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest  \
