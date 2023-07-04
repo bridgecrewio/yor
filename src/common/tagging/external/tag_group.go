@@ -186,6 +186,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 	retTag.Key = tag.GetKey()
 	retTag.Value = evaluateTemplateVariable(tag.defaultValue)
 	blockTags := append(block.GetExistingTags(), block.GetNewTags()...)
+	gitModifiersCounts := make(map[string]int)
 	if len(tag.matches) > 0 {
 		for _, matchEntry := range tag.matches {
 			for matchValue, matchObj := range matchEntry {
@@ -206,20 +207,26 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 									break
 								}
 							}
-						case []string:
-							for _, blockTag := range blockTags {
-								blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
-								if blockTagKey == tagName {
-									if blockTagKey == tags.GitModifiersTagKey {
-										for _, val := range strings.Split(blockTagValue, "/") {
-											if utils.InSlice(tagMatchV, val) {
-												foundTag = true
-												break
+						case []string, []interface{}:
+							if tagMatchTypeSwitch, ok := tagMatchV.([]interface{}); ok {
+								tagMatchStrings := make([]string, len(tagMatchTypeSwitch))
+								for i := range tagMatchTypeSwitch {
+									tagMatchStrings[i] = tagMatchTypeSwitch[i].(string)
+								}
+
+								for _, blockTag := range blockTags {
+									blockTagKey, blockTagValue := blockTag.GetKey(), blockTag.GetValue()
+									if blockTagKey == tagName {
+										if blockTagKey == tags.GitModifiersTagKey {
+											for _, val := range strings.Split(blockTagValue, "/") {
+												if utils.InSlice(tagMatchStrings, val) {
+													gitModifiersCounts[matchValue] += 1
+												}
 											}
+										} else if utils.InSlice(tagMatchStrings, blockTagValue) {
+											foundTag = true
+											break
 										}
-									} else if utils.InSlice(tagMatchV, blockTagValue) {
-										foundTag = true
-										break
 									}
 								}
 							}
@@ -232,6 +239,15 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 					}
 				}
 			}
+		}
+		if len(gitModifiersCounts) == 1 {
+			for k, _ := range gitModifiersCounts {
+				retTag.Value = evaluateTemplateVariable(k)
+				break
+			}
+		} else if len(gitModifiersCounts) > 1 {
+			// TODO use the CODEOWNERS file to resolve the conflict
+			logger.Info(fmt.Sprintf("Git-modifiers conflict found, fallback to default value %s\n", retTag.Value))
 		}
 		return retTag, nil
 	} else if tag.defaultValue != "" {

@@ -21,6 +21,7 @@ const DataBlockType = "data"
 const LocalBlockType = "local"
 const VarBlockType = "var"
 const VariableBlockType = "variable"
+const EachBlockType = "each"
 
 var SupportedBlockTypes = []string{ResourceBlockType, ModuleBlockType, VariableBlockType}
 
@@ -62,4 +63,10 @@ func (b *TerraformBlock) GetSeparator() string {
 
 func (b *TerraformBlock) IsGCPBlock() bool {
 	return strings.HasPrefix(b.GetResourceID(), "google_") || b.GetTagsAttributeName() == ProviderToTagAttribute["google"]
+}
+
+func (b *TerraformBlock) GetResourceName() string {
+	resourceId := b.GetResourceID()
+	resourceType := b.GetResourceType()
+	return strings.ReplaceAll(resourceId, strings.Join([]string{resourceType, ""}, "."), "")
 }

@@ -5,19 +5,21 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   unit-test:
     strategy:
       matrix:
         go: [ 1.19 ]
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
           go-version: ${{ matrix.go }}
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Prepare external plugin tests
         run: |
           go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
@@ -26,12 +28,11 @@ jobs:
         run: go build -v && go test ./src/...
   linter:
     name: golangci-lint
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@v1
+        uses: reviewdog/action-golangci-lint@79d32f10b2ea0d4cebb755d849b048c4b40c3d50  # v2
         with:
           tool_name: golangci-lint
           fail_on_error: true
@@ -42,16 +43,15 @@ jobs:
         go: [ 1.19 ]
     runs-on: [self-hosted, public, linux, x64]
     steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
           go-version: ${{ matrix.go }}
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@v2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0

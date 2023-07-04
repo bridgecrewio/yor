@@ -3,6 +3,7 @@ package yaml
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/awslabs/goformation/v5/cloudformation/s3"
@@ -11,8 +12,22 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/stretchr/testify/assert"
-	"github.com/thepauleh/goserverless/serverless"
 )
+
+type CustomBlock struct {
+	structure.Block
+}
+
+func (cb *CustomBlock) Init(_ string, _ interface{}) {}
+
+func (cb *CustomBlock) UpdateTags() {}
+
+func (cb *CustomBlock) GetFramework() string {
+	if strings.Contains(cb.Block.FilePath, "serverless") {
+		return "Serverless"
+	}
+	return "Cloudformation"
+}
 
 func TestServerlessWriting(t *testing.T) {
 	t.Run("test SLS writing", func(t *testing.T) {
@@ -29,37 +44,39 @@ func TestServerlessWriting(t *testing.T) {
 		tagGroup.InitTagGroup("", []string{}, []string{})
 		relExpectedPath := directory + "/serverless_tagged.yml"
 		slsBlocks := []structure.IBlock{
-			&structure.Block{
-				FilePath:    readFilePath,
-				ExitingTags: nil,
-				NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
-				RawBlock: serverless.Function{
-					Handler: "myFunction.handler",
-					Name:    "myFunction",
-					Tags: map[string]interface{}{
-						"new_tag": "new_value",
+			&CustomBlock{
+				Block: structure.Block{
+					FilePath:    readFilePath,
+					ExitingTags: nil,
+					NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
+					RawBlock: structure.Function{
+						Name: "myFunction",
+						Tags: map[string]interface{}{
+							"new_tag": "new_value",
+						},
 					},
+					IsTaggable:        true,
+					TagsAttributeName: "tags",
+					Lines:             structure.Lines{Start: 13, End: 15},
+					TagLines:          structure.Lines{Start: -1, End: -1},
 				},
-				IsTaggable:        true,
-				TagsAttributeName: "tags",
-				Lines:             structure.Lines{Start: 13, End: 15},
-				TagLines:          structure.Lines{Start: -1, End: -1},
 			},
-			&structure.Block{
-				FilePath:    readFilePath,
-				ExitingTags: nil,
-				NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
-				RawBlock: serverless.Function{
-					Handler: "myFunction2.handler",
-					Name:    "myFunction2",
-					Tags: map[string]interface{}{
-						"new_tag": "new_value",
+			&CustomBlock{
+				Block: structure.Block{
+					FilePath:    readFilePath,
+					ExitingTags: nil,
+					NewTags:     []tags.ITag{&tags.Tag{Key: "new_tag", Value: "new_value"}},
+					RawBlock: structure.Function{
+						Name: "myFunction2",
+						Tags: map[string]interface{}{
+							"new_tag": "new_value",
+						},
 					},
+					IsTaggable:        true,
+					TagsAttributeName: "tags",
+					Lines:             structure.Lines{Start: 16, End: 18},
+					TagLines:          structure.Lines{Start: -1, End: -1},
 				},
-				IsTaggable:        true,
-				TagsAttributeName: "tags",
-				Lines:             structure.Lines{Start: 16, End: 18},
-				TagLines:          structure.Lines{Start: -1, End: -1},
 			},
 		}
 		f, _ := os.CreateTemp(directory, "serverless.*.yaml")
@@ -97,27 +114,29 @@ func TestCFNWriting(t *testing.T) {
 			},
 		}
 		blocks := []structure.IBlock{
-			&structure.Block{
-				FilePath:    readFilePath,
-				ExitingTags: []tags.ITag{},
-				NewTags:     extraTags,
-				RawBlock: &s3.Bucket{
-					AccessControl:                   "PublicRead",
-					AWSCloudFormationDeletionPolicy: "Retain",
-					WebsiteConfiguration: &s3.Bucket_WebsiteConfiguration{
-						ErrorDocument: "error.html",
-						IndexDocument: "index.html",
+			&CustomBlock{
+				Block: structure.Block{
+					FilePath:    readFilePath,
+					ExitingTags: []tags.ITag{},
+					NewTags:     extraTags,
+					RawBlock: &s3.Bucket{
+						AccessControl:                   "PublicRead",
+						AWSCloudFormationDeletionPolicy: "Retain",
+						WebsiteConfiguration: &s3.Bucket_WebsiteConfiguration{
+							ErrorDocument: "error.html",
+							IndexDocument: "index.html",
+						},
+						Tags: []s3tags.Tag{
+							{Key: "new_tag", Value: "new_val"},
+							{Key: "another_tag", Value: "another_val"},
+						},
 					},
-					Tags: []s3tags.Tag{
-						{Key: "new_tag", Value: "new_val"},
-						{Key: "another_tag", Value: "another_val"},
-					},
+					IsTaggable:        true,
+					TagsAttributeName: "Tags",
+					Lines:             structure.Lines{Start: 2, End: 9},
+					TagLines:          structure.Lines{Start: -1, End: -1},
+					Name:              "S3Bucket",
 				},
-				IsTaggable:        true,
-				TagsAttributeName: "Tags",
-				Lines:             structure.Lines{Start: 2, End: 9},
-				TagLines:          structure.Lines{Start: -1, End: -1},
-				Name:              "S3Bucket",
 			},
 		}
 		f, _ := os.CreateTemp(directory, "base.*.template")

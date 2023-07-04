@@ -39,6 +39,7 @@ type IBlock interface {
 	GetTagsAttributeName() string
 	IsGCPBlock() bool
 	GetResourceType() string
+	GetResourceName() string
 }
 
 type Block struct {
@@ -210,4 +211,8 @@ func (b *Block) GetTagsAttributeName() string {
 
 func (b *Block) IsGCPBlock() bool {
 	return false
+}
+
+func (b *Block) GetResourceName() string {
+	return b.GetResourceID()
 }

@@ -166,3 +166,15 @@ func GetEnv(key, fallback string) string {
 	}
 	return fallback
 }
+
+func MaxMapCountKey(m map[string]int) string {
+	var maxKey string
+	var maxCount = -1
+	for key, count := range m {
+		if count > maxCount {
+			maxKey = key
+			maxCount = count
+		}
+	}
+	return maxKey
+}

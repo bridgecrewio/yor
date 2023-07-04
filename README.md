@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
-![Coverage](https://img.shields.io/badge/Coverage-81.5%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-81.7%25-brightgreen)
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -111,7 +111,26 @@ jobs:
         uses: bridgecrewio/yor-action@main
 ```
 
+Azure DevOps Pipeline
 
+Install Yor with:
+
+```yaml
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: |
+    curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
+    sudo tar -xf yor.tar.gz -C /usr/bin/ 
+    rm yor.tar.gz 
+    sudo chmod +x /usr/bin/yor 
+    echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
+    yor --version
+```
 
 Pre-commit
 ```yaml

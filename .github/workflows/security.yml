@@ -1,39 +1,24 @@
+# !!! Important !!!
+# any change to this workflow will not take into effect on the same PR and only after,
+# because of security implications from target 'pull_request_target'
+
 name: security
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  pull_request_target:  # this is needed to use the API key in a PR
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  gosec:
-    runs-on: [self-hosted, public, linux, x64]
-    env:
-      GO111MODULE: on
+  start-security-scan:
+    runs-on: ubuntu-latest
+    environment: scan-security
     steps:
-      - name: Checkout Source
-        uses: actions/checkout@v2
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: './...'
-  codeql:
-    runs-on: [self-hosted, public, linux, x64]
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.19' # To match codeql go version
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: go
-      - name: Build
-        run: go build
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+      - run: echo start security scan  # just needs a simple step to better control the follow-up jobs
+  security:
+    needs: start-security-scan
+    uses: ./.github/workflows/security-shared.yml
+    secrets: inherit

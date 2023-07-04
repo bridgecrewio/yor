@@ -287,7 +287,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				isMergeOpExists = true
 				break
 			}
-			if i == 0 && utils.InSlice([]string{VarBlockType, LocalBlockType, ModuleBlockType, DataBlockType}, tokenStr) {
+			if i == 0 && utils.InSlice([]string{VarBlockType, LocalBlockType, ModuleBlockType, DataBlockType, EachBlockType}, tokenStr) {
 				isRenderedAttribute = true
 				break
 			}
@@ -341,7 +341,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// The line is:
 				//    tags = null
 				// => we should replace it!
-				rawTagsTokens = newTagsTokens
+				rawTagsTokens = newTagsTokens // checkov:skip=CKV_SECRET_6 false positive
 			} else {
 				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
 			}

@@ -2,11 +2,13 @@ package gittag
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
 	"github.com/bridgecrewio/yor/src/common/gitservice"
 	"github.com/bridgecrewio/yor/src/common/structure"
+	"github.com/bridgecrewio/yor/src/common/tagging"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/bridgecrewio/yor/tests/utils/blameutils"
@@ -80,6 +82,30 @@ func TestGittagGroup_mapOriginFileToGitFile(t *testing.T) {
 			assert.Equal(t, validated, tag.GetValue())
 		}
 	})
+}
+
+func TestGitTagGroupWithPrefix(t *testing.T) {
+	path := "../../../../tests/utils/blameutils/git_tagger_file.txt"
+	blame := blameutils.SetupBlameResults(t, path, 3)
+	var blameByFile sync.Map
+	blameByFile.Store(path, blame)
+	gitService := &gitservice.GitService{BlameByFile: &blameByFile}
+	tagGroup := TagGroup{}
+	tagGroup.GitService = gitService
+	tagGroup.InitTagGroup("", nil, nil, tagging.WithTagPrefix("prefix_"))
+
+	block := &MockTestBlock{
+		Block: structure.Block{
+			FilePath:   path,
+			IsTaggable: true,
+		},
+	}
+
+	err := tagGroup.CreateTagsForBlock(block)
+	assert.NoError(t, err)
+	for _, tag := range block.NewTags {
+		assert.True(t, strings.HasPrefix(tag.GetKey(), "prefix_"))
+	}
 }
 
 var ExpectedFileMappingTagged = map[string]map[int]int{
