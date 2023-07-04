@@ -13,6 +13,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: 'build'
   cancel-in-progress: true
@@ -24,21 +27,23 @@ jobs:
 
   test:
     runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.19
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
         with:
           token: ${{ secrets.PAT }}
-      - name: "Terraform Init"
-        uses: hashicorp/terraform-github-actions@master
+      - name: Install Go
+        uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
-          tf_actions_version: 0.14.5
-          tf_actions_subcommand: "init"
-          tf_actions_working_dir: "tests/terraform/resources"
+          go-version: 1.19
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1  # v2
+        with:
+          terraform_version: 0.14.5
+      - name: Terraform Init
+        working-directory: ./tests/terraform/resources
+        run: terraform init
       - name: Prepare external plugin tests
         run: |
           go build -buildmode=plugin -o tests/yor_plugins/example/extra_tags.so tests/yor_plugins/example/*.go
@@ -48,53 +53,50 @@ jobs:
           go build -v && go test ./src/... -covermode=count -coverprofile=coverage.out
           go tool cover -func=coverage.out -o=coverage.out
       - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
-        uses: tj-actions/coverage-badge-go@v2
+        uses: tj-actions/coverage-badge-go@7f447a2281e6c95d57526e53b2e800dfb3c07425  # v2
         with:
           filename: coverage.out
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v12
+        uses: tj-actions/verify-changed-files@7f1b21ceb7ef533b97b46e89e2f882ee5cb17ae0  # v16
         id: verify-changed-files
         with:
           files: README.md
 
-      - name: Commit changes
+      - name: Commit + Push changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
           git commit -m "chore: Updated coverage badge."
 
-      - name: Push changes
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.PAT }}
-          branch: ${{ github.head_ref }}
+          git push origin
   linter:
     name: golangci-lint
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@v1
+        uses: reviewdog/action-golangci-lint@79d32f10b2ea0d4cebb755d849b048c4b40c3d50  # v2
         with:
           tool_name: golangci-lint
           fail_on_error: true
+          golangci_lint_flags: "--skip-dirs tests/yor_plugins"
   integration-tests:
     runs-on: [self-hosted, public, linux, x64]
     steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
           go-version: 1.19
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@v2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
@@ -113,17 +115,18 @@ jobs:
       - integration-tests
       - test
       - linter
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.version.outputs.new_tag }}
     steps:
       - name: Wait for coverage to update
         run: sleep 10s
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
         with:
           ref: main
       - name: version
-        uses: anothrNick/github-tag-action@1.26.0
+        uses: anothrNick/github-tag-action@a2c70ae13a881faf2b4953baaa9e49731997ab36  # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
@@ -131,20 +134,19 @@ jobs:
           DEFAULT_BUMP: patch
         id: version
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
           go-version: 1.19
       - name: Git Fetch Repo
         run: |
           git fetch
-      - uses: goreleaser/goreleaser-action@v2
+      - uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b  # v4
         name: goreleaser
         with:
           version: latest
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          GORELEASER_CURRENT_TAG: ${{ steps.version.outputs.new_tag }}
 #      - name: Update go reportcard
 #        uses: creekorful/goreportcard-action@v1.0
   publish-dockerhub:
@@ -152,9 +154,9 @@ jobs:
     needs:
       - create-release
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@43dc228e327224b2eda11c8883232afd5b34943b  # v5
         with:
           name: bridgecrew/yor
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -162,7 +164,7 @@ jobs:
           buildoptions: "--no-cache"
           tags: "latest,${{ needs.create-release.outputs.version }}"
       - name: Update Docker Hub README
-        uses: peter-evans/dockerhub-description@v2
+        uses: peter-evans/dockerhub-description@dc67fad7001ef9e8e3c124cb7a64e16d0a63d864  # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
