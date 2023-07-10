@@ -725,7 +725,7 @@ func (p *TerraformParser) getHclMapsContents(tokens hclwrite.Tokens) []hclwrite.
 func (p *TerraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tokens {
 	// The function gets tokens and returns an array of tokens that represent key and value
 	// example: tokens: "a=1\n b=2, c=3", returns: ["a=1", "b=2", "c=3"]
-	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline}
+	separatorTokens := []hclsyntax.TokenType{hclsyntax.TokenComma, hclsyntax.TokenNewline, hclsyntax.TokenComment}
 
 	bracketsCounters := map[hclsyntax.TokenType]int{
 		hclsyntax.TokenOParen: 0,
@@ -746,7 +746,11 @@ func (p *TerraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tok
 	for i, token := range tokens {
 		if utils.InSlice(separatorTokens, token.Type) && getUncloseBracketsCount(bracketsCounters) == 0 {
 			if hasEq {
-				tagPairs = append(tagPairs, tokens[startIndex:i])
+				if token.Type == hclsyntax.TokenComment {
+					tagPairs = append(tagPairs, tokens[startIndex:i+1])
+				} else {
+					tagPairs = append(tagPairs, tokens[startIndex:i])
+				}
 			}
 			startIndex = i + 1
 			hasEq = false
