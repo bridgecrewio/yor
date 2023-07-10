@@ -1,0 +1,32 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This Template will create VPC Peering Connection",
+  "Parameters": {
+    "EDHPrivateSubnetAAZ": {
+      "Description": "Availability Zone of the instance",
+      "Type": "String",
+      "AllowedPattern": ".+"
+    },
+    "SecurityGroupID": {
+      "Description": "Security Group ID",
+      "Type": "String",
+      "AllowedPattern": ".+"
+    },
+    "SubnetID": {
+      "Description": "Subnet ID",
+      "Type": "String",
+      "AllowedPattern": ".+"
+    }
+  },
+  "Resources": {
+    "Peer" : {
+      "Type" : "AWS::EC2::VPCPeeringConnection",
+      "Properties" : {
+        "PeerVpcId" : "vpc-6da4bb14",
+        "Tags" : [{"Key" : "Name", "Value" : "Dev-Uat-Peering-Connection"},{"Key" : "gafg:billing", "Value" : "edh"},{"Key":"new_tag","Value":"new_value"},{"Key":"another_tag","Value":"another_val"}],
+        "VpcId" : "vpc-1993c37f",
+        "PeerOwnerId" : "950826683103"
+      }
+    }
+  }
+}
