@@ -34,17 +34,17 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Set up Go
         uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753  # v4
         with:
           go-version: '1.19' # To match codeql go version
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
+        uses: github/codeql-action/init@f6e388ebf0efc915c6c5b165b019ee61a6746a38  # v2
         with:
           languages: go
           config-file: ./.github/codeql-config.yml
       - name: Build
         run: go build
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
+        uses: github/codeql-action/analyze@f6e388ebf0efc915c6c5b165b019ee61a6746a38  # v2

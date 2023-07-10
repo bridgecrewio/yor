@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -89,6 +90,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		firstTagIndex := strings.Index(tagsStr[1:], "{") + 2
 		firstTagStr := tagsStr[firstTagIndex : firstTagIndex+strings.Index(tagsStr[firstTagIndex+1:], "\"")]
 		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{")) // find the indent of the key and value entry
+		compact := false
 		if strings.Contains(firstTagStr, "\n") {
 			// If the tag string has a newline, it means the indent needs to be re-evaluated. Example for this use case:
 			// "Tags": [
@@ -100,6 +102,9 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			indentDiff := len(tagEntryIndent) - len(tagBlockIndent)
 			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-indentDiff]
 			tagEntryIndent = tagEntryIndent[0 : len(tagEntryIndent)-indentDiff]
+		} else if len(tagsLinesList) == 1 {
+			// multi tags in one line
+			compact = true
 		} else {
 			// Otherwise, need to take the indent of the "{" character. This case handles:
 			// "Tags": [
@@ -110,13 +115,26 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 
 		// unmarshal updated tags with the indent matching origin file. This will create the tags with the `[]` wrapping which will be discarded later
 		strAddedTags, err := json.MarshalIndent(diff.Added, tagBlockIndent, strings.TrimPrefix(tagEntryIndent, tagBlockIndent))
-		netNewTagLines := strings.Split(string(strAddedTags), "\n")
-		finalTagsStr := strings.Join(tagsLinesList[:len(tagsLinesList)-1], "\n") + ",\n" +
-			strings.Join(netNewTagLines[1:len(netNewTagLines)-1], "\n") + "\n" +
-			tagsLinesList[len(tagsLinesList)-1]
-		_ = finalTagsStr
 		if err != nil {
 			logger.Warning(fmt.Sprintf("failed to unmarshal tags %s with indent '%s' because of error: %s", diff.Added, tagBlockIndent, err))
+		}
+
+		finalTagsStr := ""
+		if compact {
+			dst := &bytes.Buffer{}
+			if err := json.Compact(dst, strAddedTags); err != nil {
+				logger.Warning(fmt.Sprintf("failed to build tags %s with err: %s", strAddedTags, err))
+				return fullOriginStr
+			}
+			tagsLine := tagsLinesList[0]
+
+			finalTagsStr = tagsLine[:len(tagsLine)-1] + "," + dst.String()[1:]
+		} else {
+			netNewTagLines := strings.Split(string(strAddedTags), "\n")
+			finalTagsStr = strings.Join(tagsLinesList[:len(tagsLinesList)-1], "\n") + ",\n" +
+				strings.Join(netNewTagLines[1:len(netNewTagLines)-1], "\n") + "\n" +
+				tagsLinesList[len(tagsLinesList)-1]
+
 		}
 		tagsStartRelativeToResource := tagBrackets.Open.CharIndex - resourceBrackets.Open.CharIndex
 		tagsEndRelativeToResource := tagBrackets.Close.CharIndex - resourceBrackets.Open.CharIndex
