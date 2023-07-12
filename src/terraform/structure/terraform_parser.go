@@ -746,11 +746,11 @@ func (p *TerraformParser) extractTagPairs(tokens hclwrite.Tokens) []hclwrite.Tok
 	for i, token := range tokens {
 		if utils.InSlice(separatorTokens, token.Type) && getUncloseBracketsCount(bracketsCounters) == 0 {
 			if hasEq {
+				endIndex := i
 				if token.Type == hclsyntax.TokenComment {
-					tagPairs = append(tagPairs, tokens[startIndex:i+1])
-				} else {
-					tagPairs = append(tagPairs, tokens[startIndex:i])
+					endIndex = i + 1
 				}
+				tagPairs = append(tagPairs, tokens[startIndex:endIndex])
 			}
 			startIndex = i + 1
 			hasEq = false
