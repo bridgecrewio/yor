@@ -1,5 +1,7 @@
 #!/bin/sh
-echo "Updating version file with new tag: $GORELEASER_CURRENT_TAG"
+set -e
+latestTag=$(git describe --tags)
+echo "Updating version file with new tag: $latestTag"
 echo "package common" > src/common/version.go
 echo "" >> src/common/version.go
-echo "const Version = \"$GORELEASER_CURRENT_TAG\"" >> src/common/version.go
+echo "const Version = \"$latestTag\"" >> src/common/version.go
