@@ -9,14 +9,14 @@ builds:
       - darwin
       - windows
     goarch:
-      - 386
+      - "386"
       - amd64
       - arm
       - arm64
     goarm:
-      - 7
+      - "7"
     ignore:
-      - goarch: 386
+      - goarch: "386"
         goos: darwin
 
 archives:
@@ -31,7 +31,7 @@ brews:
   -
     name: yor
 
-    tap:
+    repository:
       owner: bridgecrewio
       name: homebrew-tap
       token: "{{ .Env.GITHUB_TOKEN }}"
