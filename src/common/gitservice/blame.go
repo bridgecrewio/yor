@@ -2,9 +2,10 @@ package gitservice
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing/object"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
