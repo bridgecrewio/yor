@@ -19,16 +19,34 @@ type GitBlame struct {
 	GitUserEmail  string
 }
 
-func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {
-	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath, GitUserEmail: userEmail}
+func NewGitBlame(RelFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, g *GitService) *GitBlame {
+	gitBlame := GitBlame{GitOrg: g.organization, GitRepository: g.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: filePath, GitUserEmail: g.currentUserEmail}
 	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
 	endLine := lines.End - 1
+
+	ref, _ := g.repository.Head()
+	commit, _ := g.repository.CommitObject(ref.Hash())
+	parentIter := commit.Parents()
+	previousCommit, _ := parentIter.Next()
+
+	var previousBlameResult *git.BlameResult
+	result, _ := g.PreviousBlameByFile.Load(filePath)
+	previousBlameResult = result.(*git.BlameResult)
+
 	for line := startLine; line <= endLine; line++ {
 		if line >= len(blameResult.Lines) {
-			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))
+			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", RelFilePath))
 			return &gitBlame
 		}
 		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
+
+		// Check if the line has been removed in the current state of the file
+		if len(previousBlameResult.Lines) > len(blameResult.Lines) {
+			if previousBlameResult.Lines[line].Text != blameResult.Lines[line].Text {
+				// The line has been removed, so update the git commit id
+				gitBlame.BlamesByLine[line+1].Hash = previousCommit.Hash
+			}
+		}
 	}
 
 	return &gitBlame

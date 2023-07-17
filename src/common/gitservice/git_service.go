@@ -18,14 +18,15 @@ import (
 )
 
 type GitService struct {
-	gitRootDir       string
-	scanPathFromRoot string
-	repository       *git.Repository
-	remoteURL        string
-	organization     string
-	repoName         string
-	BlameByFile      *sync.Map
-	currentUserEmail string
+	gitRootDir          string
+	scanPathFromRoot    string
+	repository          *git.Repository
+	remoteURL           string
+	organization        string
+	repoName            string
+	BlameByFile         *sync.Map
+	PreviousBlameByFile *sync.Map
+	currentUserEmail    string
 }
 
 var gitGraphLock sync.Mutex
@@ -53,10 +54,11 @@ func NewGitService(rootDir string) (*GitService, error) {
 	scanPathFromRoot, _ := filepath.Rel(rootDirIter, scanAbsDir)
 
 	gitService := GitService{
-		gitRootDir:       rootDir,
-		scanPathFromRoot: scanPathFromRoot,
-		repository:       repository,
-		BlameByFile:      &sync.Map{},
+		gitRootDir:          rootDir,
+		scanPathFromRoot:    scanPathFromRoot,
+		repository:          repository,
+		BlameByFile:         &sync.Map{},
+		PreviousBlameByFile: &sync.Map{},
 	}
 	err = gitService.setOrgAndName()
 	gitService.currentUserEmail = GetGitUserEmail()
@@ -115,7 +117,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines
 	relativeFilePath := g.ComputeRelativeFilePath(filePath)
 	blame, ok := g.BlameByFile.Load(filePath)
 	if ok {
-		return NewGitBlame(relativeFilePath, lines, blame.(*git.BlameResult), g.organization, g.repoName, g.currentUserEmail), nil
+		return NewGitBlame(relativeFilePath, filePath, lines, blame.(*git.BlameResult), g), nil
 	}
 
 	var err error
@@ -126,7 +128,7 @@ func (g *GitService) GetBlameForFileLines(filePath string, lines structure.Lines
 
 	g.BlameByFile.Store(filePath, blame)
 
-	return NewGitBlame(relativeFilePath, lines, blame.(*git.BlameResult), g.organization, g.repoName, g.currentUserEmail), nil
+	return NewGitBlame(relativeFilePath, filePath, lines, blame.(*git.BlameResult), g), nil
 }
 
 func (g *GitService) GetOrganization() string {
@@ -157,11 +159,21 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 		return nil, fmt.Errorf("failed to find commit %s ", head.Hash().String())
 	}
 
+	parentIter := selectedCommit.Parents()
+	previousCommit, err := parentIter.Next()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get previous commit: %s", err)
+	}
 	blame, err = git.Blame(selectedCommit, relativeFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
 	}
+	previousBlame, err := git.Blame(previousCommit, relativeFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
+	}
 	g.BlameByFile.Store(filePath, blame)
+	g.PreviousBlameByFile.Store(filePath, previousBlame)
 
 	return blame.(*git.BlameResult), nil
 }
