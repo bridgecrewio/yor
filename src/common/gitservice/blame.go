@@ -45,15 +45,15 @@ func GetPreviousBlameResult(g *GitService, filePath string) (*git.BlameResult, *
 	return previousBlameResult, previousCommit
 }
 
-func NewGitBlame(realFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, g *GitService) *GitBlame {
-	gitBlame := GitBlame{GitOrg: g.organization, GitRepository: g.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: realFilePath, GitUserEmail: g.currentUserEmail}
+func NewGitBlame(relativeFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, g *GitService) *GitBlame {
+	gitBlame := GitBlame{GitOrg: g.organization, GitRepository: g.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: relativeFilePath, GitUserEmail: g.currentUserEmail}
 	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
 	endLine := lines.End - 1
 	previousBlameResult, previousCommit := GetPreviousBlameResult(g, filePath)
 
 	for line := startLine; line <= endLine; line++ {
 		if line >= len(blameResult.Lines) {
-			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", realFilePath))
+			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", relativeFilePath))
 			return &gitBlame
 		}
 		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
