@@ -41,7 +41,7 @@ func GetPreviousBlameResult(gitSvc *GitService, filePath string) (*git.BlameResu
 
 	var previousBlameResult *git.BlameResult
 	result, ok := gitSvc.PreviousBlameByFile.Load(filePath)
-	if ok != true {
+	if !ok {
 		return nil, nil
 	}
 
