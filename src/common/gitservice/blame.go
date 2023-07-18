@@ -21,15 +21,15 @@ type GitBlame struct {
 	GitUserEmail  string
 }
 
-func GetPreviousBlameResult(g *GitService, filePath string) (*git.BlameResult, *object.Commit) {
-	if g.repository == nil {
+func GetPreviousBlameResult(gitSvc *GitService, filePath string) (*git.BlameResult, *object.Commit) {
+	if gitSvc.repository == nil {
 		return nil, nil
 	}
-	ref, err := g.repository.Head()
+	ref, err := gitSvc.repository.Head()
 	if err != nil {
 		return nil, nil
 	}
-	commit, err := g.repository.CommitObject(ref.Hash())
+	commit, err := gitSvc.repository.CommitObject(ref.Hash())
 	if err != nil {
 		return nil, nil
 	}
@@ -40,16 +40,20 @@ func GetPreviousBlameResult(g *GitService, filePath string) (*git.BlameResult, *
 	}
 
 	var previousBlameResult *git.BlameResult
-	result, _ := g.PreviousBlameByFile.Load(filePath)
+	result, ok := gitSvc.PreviousBlameByFile.Load(filePath)
+	if ok != true {
+		return nil, nil
+	}
+
 	previousBlameResult = result.(*git.BlameResult)
 	return previousBlameResult, previousCommit
 }
 
-func NewGitBlame(relativeFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, g *GitService) *GitBlame {
-	gitBlame := GitBlame{GitOrg: g.organization, GitRepository: g.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: relativeFilePath, GitUserEmail: g.currentUserEmail}
+func NewGitBlame(relativeFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, gitSvc *GitService) *GitBlame {
+	gitBlame := GitBlame{GitOrg: gitSvc.organization, GitRepository: gitSvc.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: relativeFilePath, GitUserEmail: gitSvc.currentUserEmail}
 	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
 	endLine := lines.End - 1
-	previousBlameResult, previousCommit := GetPreviousBlameResult(g, filePath)
+	previousBlameResult, previousCommit := GetPreviousBlameResult(gitSvc, filePath)
 
 	for line := startLine; line <= endLine; line++ {
 		if line >= len(blameResult.Lines) {
