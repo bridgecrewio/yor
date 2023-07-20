@@ -30,7 +30,7 @@ For instance, running -
 ```sh
 export YOR_SIMPLE_TAGS='{"team": "devops", "env": "prod"}'
 ```
-will add these tags as part of yor run, as shown once running `./yor --list-tags` command:
+will add these tags as part of yor run, as shown once running `./yor list-tags` command:
 ![](../yor_list_tags_after_env_var.png)
 
 ## Adding Custom Tags Using Golang
