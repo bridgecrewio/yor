@@ -1,6 +1,8 @@
 package structure
 
 import (
+	"strings"
+
 	"github.com/ahmetb/go-linq/v3"
 	tfjson "github.com/hashicorp/terraform-json"
 	awsv2 "github.com/lonegunmanb/terraform-aws-schema/v2/generated"
@@ -12,7 +14,6 @@ import (
 	googlev2 "github.com/lonegunmanb/terraform-google-schema/v2/generated"
 	googlev3 "github.com/lonegunmanb/terraform-google-schema/v3/generated"
 	googlev4 "github.com/lonegunmanb/terraform-google-schema/v4/generated"
-	"strings"
 )
 
 var TfTaggableResourceTypes []string
