@@ -6,30 +6,31 @@ require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/awslabs/goformation/v5 v5.2.7
 	github.com/bridgecrewio/goformation/v5 v5.0.0-20210823083242-84a6d242099f
-	github.com/go-git/go-git/v5 v5.7.0
+	github.com/go-git/go-git/v5 v5.8.0
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-hclog v0.9.2
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/hcl/v2 v2.8.2
 	github.com/hashicorp/terraform v0.14.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20211115214459-90acf1ca460f
-	github.com/hashicorp/terraform-json v0.16.0
+	github.com/hashicorp/terraform-json v0.17.1
 	github.com/lonegunmanb/terraform-aws-schema/v2 v2.70.4
 	github.com/lonegunmanb/terraform-aws-schema/v3 v3.76.1
 	github.com/lonegunmanb/terraform-aws-schema/v4 v4.67.0
+	github.com/lonegunmanb/terraform-aws-schema/v5 v5.9.0
 	github.com/lonegunmanb/terraform-azurerm-schema/v2 v2.99.0
-	github.com/lonegunmanb/terraform-azurerm-schema/v3 v3.57.0
+	github.com/lonegunmanb/terraform-azurerm-schema/v3 v3.66.0
 	github.com/lonegunmanb/terraform-google-schema/v2 v2.20.3
 	github.com/lonegunmanb/terraform-google-schema/v3 v3.90.1
-	github.com/lonegunmanb/terraform-google-schema/v4 v4.66.0
+	github.com/lonegunmanb/terraform-google-schema/v4 v4.74.0
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sanathkr/yaml v1.0.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/zclconf/go-cty v1.13.0
+	github.com/zclconf/go-cty v1.13.2
 	go.opencensus.io v0.22.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gopkg.in/yaml.v2 v2.4.0
@@ -82,7 +83,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
@@ -163,17 +164,17 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v0.0.0-20161029104018-1d6e34225557 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/oauth2 v0.8.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/oauth2 v0.10.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.27.1 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

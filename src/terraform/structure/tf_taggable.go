@@ -6,6 +6,7 @@ import (
 	awsv2 "github.com/lonegunmanb/terraform-aws-schema/v2/generated"
 	awsv3 "github.com/lonegunmanb/terraform-aws-schema/v3/generated"
 	awsv4 "github.com/lonegunmanb/terraform-aws-schema/v4/generated"
+	awsv5 "github.com/lonegunmanb/terraform-aws-schema/v5/generated"
 	azurev2 "github.com/lonegunmanb/terraform-azurerm-schema/v2/generated"
 	azurev3 "github.com/lonegunmanb/terraform-azurerm-schema/v3/generated"
 	googlev2 "github.com/lonegunmanb/terraform-google-schema/v2/generated"
@@ -14,26 +15,13 @@ import (
 	"strings"
 )
 
-//var deprecatedResourceTypes = []string{
-//	"azurerm_api_management_property",
-//	"azurerm_data_lake_analytics_account",
-//	"azurerm_devspace_controller",
-//	"azurerm_hdinsight_ml_services_cluster",
-//	"azurerm_hdinsight_rserver_cluster",
-//	"azurerm_hdinsight_storm_cluster",
-//	"azurerm_service_fabric_mesh_application",
-//	"azurerm_service_fabric_mesh_local_network",
-//	"azurerm_service_fabric_mesh_secret",
-//	"azurerm_service_fabric_mesh_secret_value",
-//}
-
 var TfTaggableResourceTypes []string
 
 func init() {
-	linq.From(previousTaggableTypes(awsv4.Resources, isTaggableType, awsv2.Resources, awsv3.Resources)).
+	linq.From(previousTaggableTypes(awsv4.Resources, isTaggableType, awsv2.Resources, awsv3.Resources, awsv4.Resources)).
 		Concat(linq.From(previousTaggableTypes(azurev3.Resources, isTaggableType, azurev2.Resources))).
 		Concat(linq.From(previousTaggableTypes(googlev4.Resources, isGoogleTaggableType, googlev2.Resources, googlev3.Resources))).
-		Concat(linq.From(taggableTypes(awsv4.Resources, isTaggableType))).
+		Concat(linq.From(taggableTypes(awsv5.Resources, isTaggableType))).
 		Concat(linq.From(taggableTypes(azurev3.Resources, isTaggableType))).
 		Concat(linq.From(taggableTypes(googlev4.Resources, isGoogleTaggableType))).
 		Except(linq.From(unsupportedTerraformBlocks)).
