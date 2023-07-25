@@ -19,7 +19,11 @@ import (
 var TfTaggableResourceTypes []string
 
 func init() {
-	linq.From(previousTaggableTypes(awsv4.Resources, isTaggableType, awsv2.Resources, awsv3.Resources, awsv4.Resources)).
+	loadSchema()
+}
+
+func loadSchema() {
+	linq.From(previousTaggableTypes(awsv5.Resources, isTaggableType, awsv2.Resources, awsv3.Resources, awsv4.Resources)).
 		Concat(linq.From(previousTaggableTypes(azurev3.Resources, isTaggableType, azurev2.Resources))).
 		Concat(linq.From(previousTaggableTypes(googlev4.Resources, isGoogleTaggableType, googlev2.Resources, googlev3.Resources))).
 		Concat(linq.From(taggableTypes(awsv5.Resources, isTaggableType))).

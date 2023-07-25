@@ -91,3 +91,11 @@ func TestKnownUntaggableResourcesShouldNotBeTaggable(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkInit(b *testing.B) {
+	loadSchema()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		loadSchema()
+	}
+}
