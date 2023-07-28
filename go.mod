@@ -6,7 +6,7 @@ require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/awslabs/goformation/v5 v5.2.7
 	github.com/bridgecrewio/goformation/v5 v5.0.0-20210823083242-84a6d242099f
-	github.com/go-git/go-git/v5 v5.8.0
+	github.com/go-git/go-git/v5 v5.8.1
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-hclog v0.9.2
 	github.com/hashicorp/go-version v1.6.0
@@ -38,6 +38,7 @@ require (
 
 require (
 	cloud.google.com/go v0.45.1 // indirect
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/azure-sdk-for-go v36.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.9.2 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.1-0.20191028180845-3492b2aff503 // indirect
@@ -49,8 +50,8 @@ require (
 	github.com/Azure/go-autorest/tracing v0.5.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20180810175552-4a21cbd618b4 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022 // indirect
-	github.com/Microsoft/go-winio v0.5.2 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230518184743-7afd39499903 // indirect
+	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/Unknwon/com v0.0.0-20151008135407-28b053d5a292 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -110,7 +111,6 @@ require (
 	github.com/hashicorp/serf v0.0.0-20160124182025-e4ec8cc423bb // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
-	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/joyent/triton-go v0.0.0-20180313100802-d8f9c0314926 // indirect
@@ -151,7 +151,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/skeema/knownhosts v1.1.1 // indirect
+	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/svanharmelen/jsonapi v0.0.0-20180618144545-0c0828c3f16d // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.82+incompatible // indirect
@@ -165,11 +165,13 @@ require (
 	github.com/xlab/treeprint v0.0.0-20161029104018-1d6e34225557 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
