@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing/object"
+
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 
@@ -19,16 +21,54 @@ type GitBlame struct {
 	GitUserEmail  string
 }
 
-func NewGitBlame(filePath string, lines structure.Lines, blameResult *git.BlameResult, gitOrg string, gitRepository string, userEmail string) *GitBlame {
-	gitBlame := GitBlame{GitOrg: gitOrg, GitRepository: gitRepository, BlamesByLine: map[int]*git.Line{}, FilePath: filePath, GitUserEmail: userEmail}
+func GetPreviousBlameResult(gitSvc *GitService, filePath string) (*git.BlameResult, *object.Commit) {
+	if gitSvc.repository == nil {
+		return nil, nil
+	}
+	ref, err := gitSvc.repository.Head()
+	if err != nil {
+		return nil, nil
+	}
+	commit, err := gitSvc.repository.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, nil
+	}
+	parentIter := commit.Parents()
+	previousCommit, err := parentIter.Next()
+	if err != nil {
+		return nil, nil
+	}
+
+	var previousBlameResult *git.BlameResult
+	result, ok := gitSvc.PreviousBlameByFile.Load(filePath)
+	if !ok {
+		return nil, nil
+	}
+
+	previousBlameResult = result.(*git.BlameResult)
+	return previousBlameResult, previousCommit
+}
+
+func NewGitBlame(relativeFilePath string, filePath string, lines structure.Lines, blameResult *git.BlameResult, gitSvc *GitService) *GitBlame {
+	gitBlame := GitBlame{GitOrg: gitSvc.organization, GitRepository: gitSvc.repoName, BlamesByLine: map[int]*git.Line{}, FilePath: relativeFilePath, GitUserEmail: gitSvc.currentUserEmail}
 	startLine := lines.Start - 1 // the lines in blameResult.Lines start from zero while the lines range start from 1
 	endLine := lines.End - 1
+	previousBlameResult, previousCommit := GetPreviousBlameResult(gitSvc, filePath)
+
 	for line := startLine; line <= endLine; line++ {
 		if line >= len(blameResult.Lines) {
-			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", filePath))
+			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", relativeFilePath))
 			return &gitBlame
 		}
 		gitBlame.BlamesByLine[line+1] = blameResult.Lines[line]
+
+		// Check if the line has been removed in the current state of the file
+		if previousBlameResult != nil && len(previousBlameResult.Lines) > len(blameResult.Lines) {
+			if previousBlameResult.Lines[line].Text != blameResult.Lines[line].Text {
+				// The line has been removed, so update the git commit id
+				gitBlame.BlamesByLine[line+1].Hash = previousCommit.Hash
+			}
+		}
 	}
 
 	return &gitBlame
