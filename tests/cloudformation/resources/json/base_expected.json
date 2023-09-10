@@ -4,7 +4,6 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "AccessControl": "PublicRead",
         "WebsiteConfiguration": {
           "IndexDocument": "index.html",
           "ErrorDocument": "error.html"
@@ -22,7 +21,10 @@
             "Key": "another_tag",
             "Value": "another_val"
           }
-        ]
+        ],
+        "PublicAccessBlockConfiguration": {
+          "RestrictPublicBuckets": true
+        }
       },
       "DeletionPolicy": "Retain"
     }
