@@ -55,14 +55,10 @@ func TestResourceThatDeprecatedTagsInLatestProviderShouldNotBeTaggable(t *testin
 
 func TestTagsWithIncorrectTypeShouldNotBeTaggable(t *testing.T) {
 	resource := "azurerm_api_management_property"
-	taggable := false
 	for _, r := range TfTaggableResourceTypes {
 		if r == resource {
-			taggable = true
+			t.Errorf("`azurerm_api_management_property`'s tags is a list so it should not be taggable")
 		}
-	}
-	if taggable {
-		t.Errorf("`azurerm_api_management_property`'s tags is a list so it should not be taggable")
 	}
 }
 

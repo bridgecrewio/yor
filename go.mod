@@ -17,12 +17,12 @@ require (
 	github.com/lonegunmanb/terraform-aws-schema/v2 v2.70.4
 	github.com/lonegunmanb/terraform-aws-schema/v3 v3.76.1
 	github.com/lonegunmanb/terraform-aws-schema/v4 v4.67.0
-	github.com/lonegunmanb/terraform-aws-schema/v5 v5.9.0
+	github.com/lonegunmanb/terraform-aws-schema/v5 v5.16.1
 	github.com/lonegunmanb/terraform-azurerm-schema/v2 v2.99.0
-	github.com/lonegunmanb/terraform-azurerm-schema/v3 v3.66.0
+	github.com/lonegunmanb/terraform-azurerm-schema/v3 v3.72.0
 	github.com/lonegunmanb/terraform-google-schema/v2 v2.20.3
 	github.com/lonegunmanb/terraform-google-schema/v3 v3.90.1
-	github.com/lonegunmanb/terraform-google-schema/v4 v4.74.0
+	github.com/lonegunmanb/terraform-google-schema/v4 v4.81.0
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -164,12 +164,12 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v0.0.0-20161029104018-1d6e34225557 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
-	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/net v0.14.0 // indirect
+	golang.org/x/oauth2 v0.11.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/api v0.9.0 // indirect
