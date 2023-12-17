@@ -70,12 +70,16 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 			if isCfn {
 				tagIndent += SingleIndent
 			}
-			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagIndent)...)
+			resourcesLines = append(resourcesLines, IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], tagIndent, 0)...)
 			resourcesLines = append(resourcesLines, oldResourceLines[lastIndex+1:]...)
 			continue
 		}
 
 		oldTagsIndent := ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start-oldResourceLinesRange.Start])
+		oldTagsValueIndent := len(ExtractIndentationOfLine(oldResourceLines[oldResourceTagLines.Start-oldResourceLinesRange.Start+1])) - len(oldTagsIndent)
+		if isCfn {
+			oldTagsValueIndent = 0
+		}
 		if isCfn {
 			oldTagsIndent += SingleIndent
 		}
@@ -87,7 +91,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 		} else {
 			UpdateExistingSLSTags(tagLines, diff.Updated)
 		}
-		allNewResourceTagLines := IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent)
+		allNewResourceTagLines := IndentLines(newResourceLines[newResourceTagLineRange.Start+1:newResourceTagLineRange.End+1], oldTagsIndent, oldTagsValueIndent)
 		var netNewResourceLines []string
 		for i := 0; i < len(allNewResourceTagLines); i += linesPerTag {
 			l := allNewResourceTagLines[i]
@@ -337,13 +341,19 @@ func findLastNonEmptyLine(fileLines []string, maxIndex int) int {
 	return 0
 }
 
-func IndentLines(textLines []string, indent string) []string {
+func IndentLines(textLines []string, indent string, valueIndent int) []string {
 	for i, originLine := range textLines {
+		var blankSpaces string
+		if valueIndent == 0 {
+			blankSpaces = SingleIndent
+		} else {
+			blankSpaces = strings.Repeat(" ", valueIndent)
+		}
 		noLeadingWhitespace := strings.TrimLeft(originLine, "\t \n")
 		if strings.Contains(originLine, "- Key") {
 			textLines[i] = indent + noLeadingWhitespace
 		} else {
-			textLines[i] = indent + SingleIndent + noLeadingWhitespace
+			textLines[i] = indent + blankSpaces + noLeadingWhitespace
 		}
 	}
 
