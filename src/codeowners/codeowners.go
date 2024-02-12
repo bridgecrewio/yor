@@ -145,7 +145,7 @@ func parseCodeowners(r io.Reader) []Codeowner {
 		}
 		if len(fields) > 1 {
 			fields = combineEscapedSpaces(fields)
-			c, _ := NewCodeowner(fields[0], fields[1:], curSection)
+			c := NewCodeowner(fields[0], fields[1:], curSection)
 			co = append(co, c)
 		}
 	}
@@ -170,7 +170,7 @@ func combineEscapedSpaces(fields []string) []string {
 }
 
 // NewCodeowner -
-func NewCodeowner(pattern string, owners []string, section string) (Codeowner, error) {
+func NewCodeowner(pattern string, owners []string, section string) Codeowner {
 	re := getPattern(pattern)
 	c := Codeowner{
 		Pattern: pattern,
@@ -178,7 +178,7 @@ func NewCodeowner(pattern string, owners []string, section string) (Codeowner, e
 		Owners:  owners,
 		Section: section,
 	}
-	return c, nil
+	return c
 }
 
 // Owners - return the list of code owners for the given path
