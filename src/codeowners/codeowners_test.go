@@ -276,8 +276,10 @@ func ExampleFromFile() {
 }
 
 func ExampleFromFileWithFS() {
+	tpath, _ := filepath.Abs(filepath.Dir(filepath.Dir(cwd())))
+	tpath += "/tests"
 	// open filesystem rooted at current working directory
-	fsys := os.DirFS(cwd())
+	fsys := os.DirFS(tpath)
 
 	c, _ := FromFileWithFS(fsys, ".")
 	fmt.Println(c.Patterns[0])
