@@ -154,7 +154,7 @@ func TestFindCodeownersFile(t *testing.T) {
 }
 
 func co(pattern string, owners []string) Codeowner {
-	c := NewCodeowner(pattern, owners, "someSection")
+	c := NewCodeowner(pattern, owners, "")
 	return c
 }
 
