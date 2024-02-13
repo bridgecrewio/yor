@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -266,10 +267,12 @@ func cwd() string {
 }
 
 func ExampleFromFile() {
-	c, _ := FromFile(cwd())
+	tpath, _ := filepath.Abs(filepath.Dir(filepath.Dir(cwd())))
+	tpath += "/tests"
+	c, _ := FromFile(tpath)
 	fmt.Println(c.Patterns[0])
 	// Output:
-	// *	@hairyhenderson
+	// *	bridgecrewio
 }
 
 func ExampleFromFileWithFS() {
@@ -279,7 +282,7 @@ func ExampleFromFileWithFS() {
 	c, _ := FromFileWithFS(fsys, ".")
 	fmt.Println(c.Patterns[0])
 	// Output:
-	// *	@hairyhenderson
+	// *	bridgecrewio
 }
 
 func ExampleFromReader() {

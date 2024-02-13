@@ -39,7 +39,6 @@ type Runner struct {
 	workersNum           int
 	dryRun               bool
 	localModuleTag       bool
-	useCodeOwners        bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
