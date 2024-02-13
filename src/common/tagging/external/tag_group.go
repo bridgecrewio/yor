@@ -23,6 +23,7 @@ type TagGroup struct {
 	configFilePath  string
 	config          *Config
 	tagGroupsByName map[string][]Tag
+	useCodeOwners   bool
 }
 
 type Tag struct {
@@ -102,8 +103,9 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 	return satisfyFilters
 }
 
-func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
+func (t *TagGroup) InitExternalTagGroups(configFilePath string, useCodeOwners bool) {
 	t.configFilePath = configFilePath
+	t.useCodeOwners = useCodeOwners
 	t.tagGroupsByName = make(map[string][]Tag)
 	t.InitExternalTagGroup()
 
@@ -246,7 +248,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 				retTag.Value = evaluateTemplateVariable(k)
 				break
 			}
-		} else if len(gitModifiersCounts) > 1 {
+		} else if t.useCodeOwners && len(gitModifiersCounts) > 1 {
 			if res, found := t.getSectionFromCodeOwners(block); found {
 				retTag.Value = res
 			}

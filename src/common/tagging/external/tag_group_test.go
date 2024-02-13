@@ -18,7 +18,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "",
@@ -52,7 +52,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "",
@@ -93,7 +93,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_dir.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "src/account/main.tf",
@@ -142,7 +142,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_dir.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "src/base/main.tf",
@@ -181,7 +181,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_no_match.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "src/base/main.tf",
@@ -214,7 +214,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "",
@@ -255,7 +255,7 @@ func TestExternalTagGroup(t *testing.T) {
 		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group.yml")
 		tagGroup := TagGroup{}
 		tagGroup.InitTagGroup("", nil, nil)
-		tagGroup.InitExternalTagGroups(confPath)
+		tagGroup.InitExternalTagGroups(confPath, false)
 		block := &MockTestBlock{
 			Block: structure.Block{
 				FilePath:   "",

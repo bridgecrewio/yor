@@ -39,6 +39,7 @@ type Runner struct {
 	workersNum           int
 	dryRun               bool
 	localModuleTag       bool
+	useCodeOwners        bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -62,7 +63,7 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 		if simpleTagGroup, ok := tagGroup.(*simple.TagGroup); ok {
 			simpleTagGroup.SetTags(extraTags)
 		} else if externalTagGroup, ok := tagGroup.(*external.TagGroup); ok && commands.ConfigFile != "" {
-			externalTagGroup.InitExternalTagGroups(commands.ConfigFile)
+			externalTagGroup.InitExternalTagGroups(commands.ConfigFile, commands.UseCodeOwners)
 		}
 	}
 	processedParsers := map[string]struct{}{}
