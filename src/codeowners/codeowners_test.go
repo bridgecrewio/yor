@@ -266,20 +266,22 @@ func cwd() string {
 	return cwd
 }
 
-func ExampleFromFile() {
+func testDir() string {
 	tpath, _ := filepath.Abs(filepath.Dir(filepath.Dir(cwd())))
 	tpath += "/tests"
-	c, _ := FromFile(tpath)
+	return tpath
+}
+
+func ExampleFromFile() {
+	c, _ := FromFile(testDir())
 	fmt.Println(c.Patterns[0])
 	// Output:
 	// *	bridgecrewio
 }
 
 func ExampleFromFileWithFS() {
-	tpath, _ := filepath.Abs(filepath.Dir(filepath.Dir(cwd())))
-	tpath += "/tests"
 	// open filesystem rooted at current working directory
-	fsys := os.DirFS(tpath)
+	fsys := os.DirFS(testDir())
 
 	c, _ := FromFileWithFS(fsys, ".")
 	fmt.Println(c.Patterns[0])
@@ -296,11 +298,11 @@ func ExampleFromReader() {
 }
 
 func ExampleCodeowners_Owners() {
-	c, _ := FromFile(cwd())
+	c, _ := FromFile(testDir())
 	owners := c.Owners("README.md")
 	for i, o := range owners {
 		fmt.Printf("Owner #%d is %s\n", i, o)
 	}
 	// Output:
-	// Owner #0 is @hairyhenderson
+	// Owner #0 is bridgecrewio
 }
