@@ -27,7 +27,7 @@ docs/**	@org/docteam @joe`
 	sample3 = `baz/* @baz @qux`
 	sample4 = `[test]
 *   @everyone
-[test2][2]
+[test2]
 */foo @everyoneelse`
 
 	// based on https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners#codeowners-syntax
@@ -88,9 +88,9 @@ func TestParseCodeowners(t *testing.T) {
 	r := bytes.NewBufferString(sample)
 	c := parseCodeowners(r)
 	expected := []Codeowner{
-		co("*", []string{"@everyone"}),
-		co("foobar/", []string{"someone@else.com"}),
-		co("docs/**", []string{"@org/docteam", "@joe"}),
+		co("*", []string{"@everyone"}, ""),
+		co("foobar/", []string{"someone@else.com"}, ""),
+		co("docs/**", []string{"@org/docteam", "@joe"}, ""),
 	}
 	assert.Equal(t, expected, c)
 }
@@ -100,8 +100,8 @@ func TestParseCodeownersSections(t *testing.T) {
 	r := bytes.NewBufferString(sample4)
 	c := parseCodeowners(r)
 	expected := []Codeowner{
-		co("*", []string{"@everyone"}),
-		co("*/foo", []string{"@everyoneelse"}),
+		co("*", []string{"@everyone"}, "test"),
+		co("*/foo", []string{"@everyoneelse"}, "test2"),
 	}
 	assert.Equal(t, expected, c)
 }
@@ -153,8 +153,8 @@ func TestFindCodeownersFile(t *testing.T) {
 	assert.Nil(t, r)
 }
 
-func co(pattern string, owners []string) Codeowner {
-	c := NewCodeowner(pattern, owners, "")
+func co(pattern string, owners []string, section string) Codeowner {
+	c := NewCodeowner(pattern, owners, section)
 	return c
 }
 
@@ -215,20 +215,20 @@ func TestOwners(t *testing.T) {
 		path     string
 		expected []string
 	}{
-		{[]Codeowner{co("a/*", foo)}, "c/b", nil},
-		{[]Codeowner{co("**", foo)}, "a/b", foo},
-		{[]Codeowner{co("**", foo), co("a/b/*", bar)}, "a/b/c", bar},
-		{[]Codeowner{co("**", foo), co("a/b/*", bar), co("a/b/c", baz)}, "a/b/c", baz},
-		{[]Codeowner{co("**", foo), co("a/*/c", bar), co("a/b/*", baz)}, "a/b/c", baz},
-		{[]Codeowner{co("**", foo), co("a/b/*", bar), co("a/b/", baz)}, "a/b/bar", baz},
-		{[]Codeowner{co("**", foo), co("a/b/*", bar), co("a/b/", baz)}, "/someroot/a/b/bar", baz},
+		{[]Codeowner{co("a/*", foo, "")}, "c/b", nil},
+		{[]Codeowner{co("**", foo, "")}, "a/b", foo},
+		{[]Codeowner{co("**", foo, ""), co("a/b/*", bar, "")}, "a/b/c", bar},
+		{[]Codeowner{co("**", foo, ""), co("a/b/*", bar, ""), co("a/b/c", baz, "")}, "a/b/c", baz},
+		{[]Codeowner{co("**", foo, ""), co("a/*/c", bar, ""), co("a/b/*", baz, "")}, "a/b/c", baz},
+		{[]Codeowner{co("**", foo, ""), co("a/b/*", bar, ""), co("a/b/", baz, "")}, "a/b/bar", baz},
+		{[]Codeowner{co("**", foo, ""), co("a/b/*", bar, ""), co("a/b/", baz, "")}, "/someroot/a/b/bar", baz},
 		{[]Codeowner{
-			co("*", foo),
-			co("/a/*", bar),
-			co("/b/**", baz)}, "/a/aa/file", foo},
+			co("*", foo, ""),
+			co("/a/*", bar, ""),
+			co("/b/**", baz, "")}, "/a/aa/file", foo},
 		{[]Codeowner{
-			co("*", foo),
-			co("/a/**", bar)}, "/a/bb/file", bar},
+			co("*", foo, ""),
+			co("/a/**", bar, "")}, "/a/bb/file", bar},
 	}
 
 	for _, d := range data {
