@@ -15,6 +15,10 @@ In the CLI, define the path of the YAML configuration file that you want to appl
 
 `yor tag -d . --config-file </path/to/file>`
 
+You can also decide to use code owners file in case of git modifiers has a conflict (default: false)
+
+`yor tag -d . --config-file </path/to/file> --use-code-owners`
+
 The YAML based custom tagging configuration file includes the following options:
 1. Name key definition (required)
 2. Default key value and default keys (required)

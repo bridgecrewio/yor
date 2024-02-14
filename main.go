@@ -94,6 +94,7 @@ func tagCommand() *cli.Command {
 	tagLocalModules := "tag-local-modules"
 	tagPrefix := "tag-prefix"
 	noColor := "no-color"
+	useCodeowners := "use-code-owners"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -118,11 +119,12 @@ func tagCommand() *cli.Command {
 				TagLocalModules:   c.Bool(tagLocalModules),
 				TagPrefix:         c.String(tagPrefix),
 				NoColor:           c.Bool(noColor),
+				UseCodeOwners:     c.Bool(useCodeowners),
 			}
 
 			options.Validate()
 
-                        colors := common.NoColorCheck(options.NoColor)
+			colors := common.NoColorCheck(options.NoColor)
 			return tag(&options, colors)
 		},
 		Flags: []cli.Flag{ // When adding flags, make sure they are supported in the GitHub action as well via entrypoint.sh
@@ -229,6 +231,12 @@ func tagCommand() *cli.Command {
 			&cli.BoolFlag{
 				Name:        noColor,
 				Usage:       "remove colorized output",
+				Value:       false,
+				DefaultText: "false",
+			},
+			&cli.BoolFlag{
+				Name:        useCodeowners,
+				Usage:       "use code owners file to tag team",
 				Value:       false,
 				DefaultText: "false",
 			},

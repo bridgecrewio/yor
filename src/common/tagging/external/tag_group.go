@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bridgecrewio/yor/src/codeowners"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"
@@ -22,6 +23,7 @@ type TagGroup struct {
 	configFilePath  string
 	config          *Config
 	tagGroupsByName map[string][]Tag
+	useCodeOwners   bool
 }
 
 type Tag struct {
@@ -101,8 +103,9 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 	return satisfyFilters
 }
 
-func (t *TagGroup) InitExternalTagGroups(configFilePath string) {
+func (t *TagGroup) InitExternalTagGroups(configFilePath string, useCodeOwners bool) {
 	t.configFilePath = configFilePath
+	t.useCodeOwners = useCodeOwners
 	t.tagGroupsByName = make(map[string][]Tag)
 	t.InitExternalTagGroup()
 
@@ -245,15 +248,35 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 				retTag.Value = evaluateTemplateVariable(k)
 				break
 			}
-		} else if len(gitModifiersCounts) > 1 {
-			// TODO use the CODEOWNERS file to resolve the conflict
-			logger.Info(fmt.Sprintf("Git-modifiers conflict found, fallback to default value %s\n", retTag.Value))
+		} else if t.useCodeOwners && len(gitModifiersCounts) > 1 {
+			if res, found := t.getSectionFromCodeOwners(block); found {
+				retTag.Value = res
+			}
 		}
 		return retTag, nil
 	} else if tag.defaultValue != "" {
 		return retTag, nil
 	}
 	return Tag{}, fmt.Errorf("could not compute external tag %s", tag.GetKey())
+}
+
+func (t *TagGroup) getSectionFromCodeOwners(block structure.IBlock) (string, bool) {
+	// this function should be safe to use because we will not always have code owners file
+	path, err := os.Getwd()
+	if err != nil {
+		logger.Error(err.Error())
+		return "", false
+	}
+	owners, err := codeowners.NewSingleCodeOwners(path)
+	if err != nil {
+		logger.Error(err.Error())
+		return "", false
+	}
+	section := owners.Section(block.GetFilePath())
+	if len(section) > 0 { // not an empty string
+		return section, true
+	}
+	return "", false
 }
 
 func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {

@@ -32,6 +32,7 @@ type TagOptions struct {
 	TagLocalModules   bool
 	TagPrefix         string
 	NoColor           bool
+	UseCodeOwners     bool
 }
 
 type ListTagsOptions struct {
