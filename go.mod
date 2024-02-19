@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-hclog v0.9.2
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hashicorp/hcl/v2 v2.8.2
-	github.com/hashicorp/terraform v1.8.0
+	github.com/hashicorp/terraform v1.7.3
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20211115214459-90acf1ca460f
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
