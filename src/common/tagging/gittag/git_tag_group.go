@@ -18,6 +18,8 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
+const gitPrefix = "git_"
+
 type TagGroup struct {
 	tagging.TagGroup
 	GitService *gitservice.GitService
@@ -194,10 +196,11 @@ func (t *TagGroup) updateBlameForOriginLines(block structure.IBlock, blame *gits
 
 func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.IBlock) bool {
 	tagsLines := block.GetTagsLines()
+	latestBlame := blame.GetLatestCommit()
 	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
 	for lineNum, line := range blame.BlamesByLine {
-		if line.Hash.String() == blame.GetLatestCommit().Hash.String() &&
-			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) {
+		if line.Hash.String() == latestBlame.Hash.String() &&
+			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) || (tagsLines.Start <= lineNum && lineNum <= tagsLines.End && !strings.HasPrefix(line.Text, gitPrefix)) {
 			return true
 		}
 	}
