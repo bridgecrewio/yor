@@ -34,8 +34,6 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: print env
-        run: env
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@94d61e3205b61acf4ddabfeb13c5f8a13eb4167b  # v2
