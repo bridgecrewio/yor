@@ -18,8 +18,6 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-const gitPrefix = "git_"
-
 type TagGroup struct {
 	tagging.TagGroup
 	GitService *gitservice.GitService
