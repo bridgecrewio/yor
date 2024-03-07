@@ -200,7 +200,7 @@ func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.
 	hasTags := tagsLines.Start != -1 && tagsLines.End != -1
 	for lineNum, line := range blame.BlamesByLine {
 		if line.Hash.String() == latestBlame.Hash.String() &&
-			(!hasTags || lineNum < tagsLines.Start || lineNum > tagsLines.End) || (tagsLines.Start <= lineNum && lineNum <= tagsLines.End && !strings.HasPrefix(line.Text, gitPrefix)) {
+			(!hasTags || lineNum <= tagsLines.Start || lineNum >= tagsLines.End) {
 			return true
 		}
 	}
