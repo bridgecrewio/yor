@@ -264,7 +264,6 @@ func TestTagUncommittedResults(t *testing.T) {
 			_ = os.RemoveAll(terragoatPath)
 			_ = os.RemoveAll(outputPath)
 		}()
-
 		terragoatAWSDirectory := path.Join(terragoatPath, "terraform/aws")
 
 		// tag aws directory
