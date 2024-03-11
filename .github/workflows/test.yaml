@@ -40,7 +40,7 @@ jobs:
         run: hostname
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@94d61e3205b61acf4ddabfeb13c5f8a13eb4167b  # v2
+        uses: reviewdog/action-golangci-lint@00311c26a97213f93f2fd3a3524d66762e956ae0  # v2
         with:
           tool_name: golangci-lint
           fail_on_error: true
