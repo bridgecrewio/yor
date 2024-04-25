@@ -139,6 +139,20 @@ func (g *GitService) GetRepoName() string {
 	return g.repoName
 }
 
+func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (*git.BlameResult, error) {
+	// currently there's a bug inside go-git so in order to mitigate it we wrap it with recover
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
+	blame, err := git.Blame(selectedCommit, relativeFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", relativeFilePath, err)
+	}
+	return blame, err
+}
+
 func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	blame, ok := g.BlameByFile.Load(filePath)
 	if ok {
@@ -164,13 +178,13 @@ func (g *GitService) GetFileBlame(filePath string) (*git.BlameResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get previous commit: %s", err)
 	}
-	blame, err = git.Blame(selectedCommit, relativeFilePath)
+	blame, err = wrapGitBlame(selectedCommit, relativeFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
+		return nil, err
 	}
-	previousBlame, err := git.Blame(previousCommit, relativeFilePath)
+	previousBlame, err := wrapGitBlame(previousCommit, relativeFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", filePath, err)
+		return nil, err
 	}
 	g.BlameByFile.Store(filePath, blame)
 	g.PreviousBlameByFile.Store(filePath, previousBlame)
