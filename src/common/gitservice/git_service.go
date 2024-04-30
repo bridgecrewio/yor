@@ -2,7 +2,6 @@ package gitservice
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/pkg/errors"
 )
 
 type GitService struct {
