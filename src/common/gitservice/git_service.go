@@ -1,13 +1,14 @@
 package gitservice
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"sync"
 
@@ -140,14 +141,12 @@ func (g *GitService) GetRepoName() string {
 	return g.repoName
 }
 
-func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (*git.BlameResult, error) {
+func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (blame *git.BlameResult, err error) {
 	// currently there's a bug inside go-git so in order to mitigate it we wrap it with recover
-	var err error
-	var blame *git.BlameResult
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
-			err = errors.New("unknown panic")
+			fmt.Println("Recovered in f", r, debug.Stack())
+			err = errors.Errorf("unknown panic, %v", r)
 		}
 	}()
 	blame, err = git.Blame(selectedCommit, relativeFilePath)
