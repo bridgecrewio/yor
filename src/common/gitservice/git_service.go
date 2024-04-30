@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"sync"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/pkg/errors"
 )
 
 type GitService struct {
@@ -139,14 +141,15 @@ func (g *GitService) GetRepoName() string {
 	return g.repoName
 }
 
-func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (*git.BlameResult, error) {
+func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (blame *git.BlameResult, err error) {
 	// currently there's a bug inside go-git so in order to mitigate it we wrap it with recover
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
+			fmt.Println("Recovered in f", r, debug.Stack())
+			err = errors.Errorf("unknown panic, %v", r)
 		}
 	}()
-	blame, err := git.Blame(selectedCommit, relativeFilePath)
+	blame, err = git.Blame(selectedCommit, relativeFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", relativeFilePath, err)
 	}
