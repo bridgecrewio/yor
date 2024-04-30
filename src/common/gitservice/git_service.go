@@ -1,6 +1,7 @@
 package gitservice
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -141,12 +142,15 @@ func (g *GitService) GetRepoName() string {
 
 func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (*git.BlameResult, error) {
 	// currently there's a bug inside go-git so in order to mitigate it we wrap it with recover
+	var err error
+	var blame *git.BlameResult
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered in f", r)
+			err = errors.New("unknown panic")
 		}
 	}()
-	blame, err := git.Blame(selectedCommit, relativeFilePath)
+	blame, err = git.Blame(selectedCommit, relativeFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blame for latest commit of file %s because of error %s", relativeFilePath, err)
 	}
