@@ -145,7 +145,7 @@ func wrapGitBlame(selectedCommit *object.Commit, relativeFilePath string) (blame
 	// currently there's a bug inside go-git so in order to mitigate it we wrap it with recover
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r, debug.Stack())
+			fmt.Println("Recovered in f", r, string(debug.Stack()))
 			err = errors.Errorf("unknown panic, %v", r)
 		}
 	}()
