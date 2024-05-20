@@ -38,7 +38,7 @@ jobs:
           # needed for terraform-setup https://github.com/hashicorp/setup-terraform/issues/84
           node-version: '16'
       - name: Install Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7  # v4
         with:
           go-version: 1.19
       - name: Setup Terraform
@@ -98,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Install Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7  # v4
         with:
           go-version: 1.19
       - name: build
@@ -142,7 +142,7 @@ jobs:
           DEFAULT_BUMP: patch
         id: version
       - name: Install Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7  # v4
         with:
           go-version: 1.19
       - name: Git Fetch Repo
