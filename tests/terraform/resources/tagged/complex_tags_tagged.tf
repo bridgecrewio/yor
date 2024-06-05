@@ -13,6 +13,9 @@ resource "aws_instance" "many_instance_tags" {
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
   })
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 resource "aws_alb" "alb_with_merged_tags" {

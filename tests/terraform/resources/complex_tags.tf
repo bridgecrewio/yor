@@ -65,6 +65,9 @@ resource "aws_instance" "instance_null_tags" {
   ami = ""
   instance_type = ""
   tags = null
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 resource "aws_autoscaling_group" "autoscaling_group_tagged" {
