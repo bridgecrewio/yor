@@ -75,6 +75,9 @@ resource "aws_instance" "instance_merged_var" {
       git_modifiers        = "jonjozwiak/schosterbarak"
       git_repo             = "terragoat"
   })
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 variable "new_env_tag" {
