@@ -245,7 +245,7 @@ func TestTagReplacement(t *testing.T) {
 
 func TestYaml_ResorceSkipTagging(t *testing.T) {
 	t.Run("Test some resources with skip comment added to utils.SkipResourcesByComment", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/SkipComment/skipOne.yaml"
+		filePath := "../../../tests/cloudformation/resources/skipComment/skipOne.yaml"
 		resorseSkip := []string{"NewVolume"}
 		expectedResourceNames := []string{"NewVolume", "NewVolume2"}
 		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
@@ -254,7 +254,7 @@ func TestYaml_ResorceSkipTagging(t *testing.T) {
 		defer resetSkipArr()
 	})
 	t.Run("All resources with skip comment added to utils.SkipResourcesByComment", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/SkipComment/skipAll.yaml"
+		filePath := "../../../tests/cloudformation/resources/skipComment/skipAll.yaml"
 		resorseSkip := []string{"NewVolume", "NewVolume2"}
 		expectedResourceNames := []string{"NewVolume", "NewVolume2"}
 		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
@@ -262,7 +262,7 @@ func TestYaml_ResorceSkipTagging(t *testing.T) {
 		defer resetSkipArr()
 	})
 	t.Run("No resources with skip all comment in the file, utils.SkipResourcesByComment should be empty", func(t *testing.T) {
-		filePath := "../../../tests/cloudformation/resources/SkipComment/noSkip.yaml"
+		filePath := "../../../tests/cloudformation/resources/skipComment/noSkip.yaml"
 		expectedResourceNames := []string{"NewVolume"}
 		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
 		assert.Empty(t, utils.SkipResourcesByComment)

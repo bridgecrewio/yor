@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Sample EBS Volume with EC2 instance template
 Resources:
+#yor:skip
   NewVolume:
     Type: AWS::EC2::Volume
     Properties:
