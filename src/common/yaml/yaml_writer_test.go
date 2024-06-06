@@ -11,6 +11,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/simple"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
+	"github.com/bridgecrewio/yor/src/common/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -240,4 +241,35 @@ func TestTagReplacement(t *testing.T) {
 		assert.Equal(t, *res["zone"], structure.Lines{Start: 26, End: 38})
 		assert.Equal(t, *res["attribute"], structure.Lines{Start: 40, End: 53})
 	})
+}
+
+func TestYaml_ResorceSkipTagging(t *testing.T) {
+	t.Run("Test some resources with skip comment added to utils.SkipResourcesByComment", func(t *testing.T) {
+		filePath := "../../../tests/cloudformation/resources/SkipComment/skipOne.yaml"
+		resorseSkip := []string{"NewVolume"}
+		expectedResourceNames := []string{"NewVolume", "NewVolume2"}
+		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
+		assert.Equal(t, utils.SkipResourcesByComment, resorseSkip)
+		assert.NotEqual(t, utils.SkipResourcesByComment, "NewVolume2")
+		defer resetSkipArr()
+	})
+	t.Run("All resources with skip comment added to utils.SkipResourcesByComment", func(t *testing.T) {
+		filePath := "../../../tests/cloudformation/resources/SkipComment/skipAll.yaml"
+		resorseSkip := []string{"NewVolume", "NewVolume2"}
+		expectedResourceNames := []string{"NewVolume", "NewVolume2"}
+		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
+		assert.Equal(t, utils.SkipResourcesByComment, resorseSkip)
+		defer resetSkipArr()
+	})
+	t.Run("No resources with skip all comment in the file, utils.SkipResourcesByComment should be empty", func(t *testing.T) {
+		filePath := "../../../tests/cloudformation/resources/SkipComment/noSkip.yaml"
+		expectedResourceNames := []string{"NewVolume"}
+		MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
+		assert.Empty(t, utils.SkipResourcesByComment)
+		defer resetSkipArr()
+	})
+}
+
+func resetSkipArr() {
+	utils.SkipResourcesByComment = []string{}
 }

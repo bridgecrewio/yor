@@ -2,12 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common/clioptions"
@@ -219,6 +220,20 @@ func TestRunnerInternals(t *testing.T) {
 			})
 		})
 		assert.NotContains(t, output, "aws_s3_bucket.test-bucket")
+	})
+
+	t.Run("Test skip resource by comment", func(t *testing.T) {
+		options := clioptions.TagOptions{
+			Directory: "../../../tests/terraform/skipComment/skipOne.tf",
+			Parsers:   []string{"Terraform"},
+		}
+		runner := Runner{}
+		runner.Init(&options)
+		runner.parsers[0].ParseFile(options.Directory)
+		utils.AppendSkipedByCommentToRunnerSkippedResources(&runner.skippedResources)
+		result := make([]string, 0)
+		result = append(result, "aws_instance.example_instance")
+		assert.Equal(t, result, runner.skippedResources)
 	})
 
 	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
