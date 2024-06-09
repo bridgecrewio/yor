@@ -182,7 +182,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIPALL" {
 				skipAll = true
 			}
-			
+
 			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
 				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, terraformBlock.GetResourceID())
 			}
