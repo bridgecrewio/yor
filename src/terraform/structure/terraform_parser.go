@@ -25,6 +25,7 @@ import (
 )
 
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
+var mutex sync.Mutex
 var unsupportedTerraformBlocks = []string{
 	"aws_autoscaling_group",                  // This resource specifically supports tags with a different structure, see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
 	"aws_lb_listener",                        // This resource does not support tags, although docs state otherwise.
@@ -184,7 +185,9 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 			}
 
 			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
+				mutex.Lock()
 				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, terraformBlock.GetResourceID())
+				mutex.Unlock()
 			}
 		}
 		parsedBlocks = append(parsedBlocks, terraformBlock)

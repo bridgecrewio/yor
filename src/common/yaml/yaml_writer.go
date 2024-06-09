@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+    "sync"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -16,6 +17,7 @@ import (
 )
 
 const SingleIndent = "  "
+var mutex sync.Mutex
 
 func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
 	// #nosec G304
@@ -288,7 +290,9 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		cleanContent := strings.TrimSpace(line)
 		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
 			if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIPALL" {
+				mutex.Lock()
 				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, resourceNames...)
+				mutex.Unlock()
 			}
 			readResources = true
 			resourcesIndent = countLeadingSpaces(line)
@@ -298,7 +302,9 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		if readResources {
 			if i > 0 {
 				if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIP" {
+                    mutex.Lock()
 					utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, strings.Trim(strings.TrimSpace(line), ":"))
+					mutex.Unlock()
 				}
 			}
 			lineIndent := countLeadingSpaces(line)

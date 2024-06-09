@@ -23,10 +23,9 @@ var mutex sync.Mutex
 
 func AppendSkipedByCommentToRunnerSkippedResources(skippedResources *[]string) {
 	mutex.Lock()
-	defer mutex.Unlock()
-
 	*skippedResources = append(*skippedResources, SkipResourcesByComment...)
 	SkipResourcesByComment = SkipResourcesByComment[:0]
+	mutex.Unlock()
 }
 
 func InSlice[T comparable](elems []T, v T) bool {
