@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+	"sync"
 
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
@@ -20,6 +21,10 @@ var RemoveGcpInvalidChars = regexp.MustCompile(`[^\p{Ll}\p{Lo}\p{N}_-]`)
 var SkipResourcesByComment = make([]string, 0)
 
 func AppendSkipedByCommentToRunnerSkippedResources(skippedResources *[]string) {
+    var mutex sync.Mutex
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	*skippedResources = append(*skippedResources, SkipResourcesByComment...)
 	SkipResourcesByComment = SkipResourcesByComment[:0]
 }

@@ -223,18 +223,24 @@ func TestRunnerInternals(t *testing.T) {
 	})
 
 	t.Run("Test skip resource by comment", func(t *testing.T) {
-		options := clioptions.TagOptions{
-			Directory: "../../../tests/terraform/skipComment/skipOne.tf",
-			Parsers:   []string{"Terraform"},
-		}
-		runner := Runner{}
-		runner.Init(&options)
-		runner.parsers[0].ParseFile(options.Directory)
-		utils.AppendSkipedByCommentToRunnerSkippedResources(&runner.skippedResources)
-		result := make([]string, 0)
-		result = append(result, "aws_instance.example_instance")
-		assert.Equal(t, result, runner.skippedResources)
-	})
+        options := clioptions.TagOptions{
+            Directory: "../../../tests/terraform/skipComment/skipOne.tf",
+            Parsers:   []string{"Terraform"},
+        }
+        runner := Runner{}
+        err := runner.Init(&options)
+        if err != nil {
+            t.Error(err)
+        }
+        tfBlocks, err := runner.parsers[0].ParseFile(options.Directory)
+        if err != nil {
+            t.Error(err)
+        }
+        assert.Equal(t, 3, len(tfBlocks))
+        utils.AppendSkipedByCommentToRunnerSkippedResources(&runner.skippedResources)
+		result := []string{"aws_instance.example_instance"}
+        assert.Equal(t, result, runner.skippedResources)
+    })
 
 	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
 		runner := Runner{}

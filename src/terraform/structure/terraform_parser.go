@@ -179,7 +179,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 		line := terraformBlock.GetLines().Start
 		if line > 1 && line <= len(lines) {
 			lineAbove := lines[line-2]
-			if strings.ToUpper(strings.TrimSpace(lineAbove))== "#YOR:SKIPALL" {
+			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIPALL" {
 				skipAll = true
 			}
 			
