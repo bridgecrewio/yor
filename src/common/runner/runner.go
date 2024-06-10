@@ -182,10 +182,10 @@ func (r *Runner) TagFile(file string) {
 			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
 			continue
 		}
+		mutex.Lock()
 		if r.skippedResources == nil {
 			r.skippedResources = []string{}
 		}
-		mutex.Lock()
 		r.skippedResources = append(r.skippedResources, skipResourcesByComment...)
 		mutex.Unlock()
 		isFileTaggable := false
