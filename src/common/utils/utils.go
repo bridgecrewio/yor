@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
-	"unicode"
 	"sync"
+	"unicode"
 
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"

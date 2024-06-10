@@ -255,6 +255,9 @@ func TestRunResults(t *testing.T) {
 		}
 	})
 
+}
+
+func TestSkipResourcesByComment(t *testing.T) {
 	t.Run("Test tagging terraform and cloudFormation files and skip resource by comment", func(t *testing.T) {
 		yorRunner := runner.Runner{}
 		err := yorRunner.Init(&clioptions.TagOptions{
@@ -262,8 +265,8 @@ func TestRunResults(t *testing.T) {
 			TagGroups: getTagGroups(),
 			Parsers:   []string{"Terraform", "CloudFormation"},
 		})
-		tfFileBytes, _ := os.ReadFile("skipComment\\skipResource.tf")
-		yamlFileBytes, _ := os.ReadFile("skipComment\\skipResource.yaml")
+		tfFileBytes, _ := os.ReadFile(".\\skipComment\\skipResource.tf")
+		yamlFileBytes, _ := os.ReadFile(".\\skipComment\\skipResource.yaml")
 		defer func() {
 			_ = os.WriteFile(".\\skipComment\\skipResource.tf", tfFileBytes, 0644)
 			_ = os.WriteFile(".\\skipComment\\skipResource.yaml", yamlFileBytes, 0644)

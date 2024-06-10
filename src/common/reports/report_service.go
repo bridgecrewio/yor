@@ -149,16 +149,16 @@ func (r *ReportService) printUpdatedResourcesToStdout(colors *common.ColorStruct
 	fmt.Print(colors.Green, fmt.Sprintf("Updated Resource Traces (%v):\n", r.report.Summary.UpdatedResources), colors.Reset)
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Old Value", "Updated Value", "Yor ID"})
-        if !colors.NoColor {
-	        table.SetColumnColor(
-        		tablewriter.Colors{},
-        		tablewriter.Colors{},
-        		tablewriter.Colors{tablewriter.Bold},
-        		tablewriter.Colors{tablewriter.Normal, tablewriter.FgRedColor},
-        		tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
-        		tablewriter.Colors{},
-        	)
-        }
+	if !colors.NoColor {
+		table.SetColumnColor(
+			tablewriter.Colors{},
+			tablewriter.Colors{},
+			tablewriter.Colors{tablewriter.Bold},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgRedColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+			tablewriter.Colors{},
+		)
+	}
 
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
@@ -176,15 +176,15 @@ func (r *ReportService) printNewResourcesToStdout(colors *common.ColorStruct) {
 	table.SetHeader([]string{"File", "Resource", "Tag Key", "Tag Value", "Yor ID"})
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
-        if !colors.NoColor {
-        	table.SetColumnColor(
-        		tablewriter.Colors{},
-        		tablewriter.Colors{},
-        		tablewriter.Colors{tablewriter.Bold},
-        		tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
-        		tablewriter.Colors{},
-	        )
-        }
+	if !colors.NoColor {
+		table.SetColumnColor(
+			tablewriter.Colors{},
+			tablewriter.Colors{},
+			tablewriter.Colors{tablewriter.Bold},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+			tablewriter.Colors{},
+		)
+	}
 	for _, tr := range r.report.NewResourceTags {
 		table.Append([]string{tr.File, tr.ResourceID, tr.TagKey, tr.UpdatedValue, tr.YorTraceID})
 	}
