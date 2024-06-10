@@ -31,7 +31,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener",                        // This resource does not support tags, although docs state otherwise.
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
-	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
+	"google_monitoring_notification_channel", // This resource uses labels for other purposes.
 	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
 }
 
@@ -126,12 +126,13 @@ func (p *TerraformParser) ValidFile(_ string) bool {
 	return true
 }
 
-func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, []string, error) {
 	// #nosec G304
 	// read file bytes
+	skipResourcesByComment := make([]string, 0)
 	src, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
 	lines := strings.Split(string(src), "\n")
 
@@ -139,16 +140,16 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 	hclSyntaxFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 
 	if hclFile == nil || hclSyntaxFile == nil {
-		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
@@ -185,15 +186,13 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 			}
 
 			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
-				mutex.Lock()
-				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, terraformBlock.GetResourceID())
-				mutex.Unlock()
+				skipResourcesByComment = append(skipResourcesByComment, terraformBlock.GetResourceID())
 			}
 		}
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 
-	return parsedBlocks, nil
+	return parsedBlocks, skipResourcesByComment, nil
 }
 
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -243,7 +242,7 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 		return err
 	}
 
-	_, err = p.ParseFile(tempFile.Name())
+	_, _, err = p.ParseFile(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("editing file %v resulted in malformed terraform, please open a github issue with the relevant details", readFilePath)
 	}
@@ -282,7 +281,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
 
-	//we don't add tags to data sources
+	// we don't add tags to data sources
 	if rawBlock.Type() == "data" {
 		return
 	}
@@ -582,7 +581,7 @@ func ExtractProviderFromModuleSrc(source string) string {
 	}
 	if isTerraformRegistryModule(source) {
 		matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
-		val, _ := matches["PROVIDER"]
+		val := matches["PROVIDER"]
 		return val
 	}
 	withoutRef := strings.Split(source, "//")[0]
@@ -615,7 +614,7 @@ func (p *TerraformParser) isModuleTaggable(fp string, moduleName string, moduleD
 	files, _ := os.ReadDir(expectedModuleDir)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".tf") {
-			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
+			blocks, _, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
 			for _, b := range blocks {
 				if b.(*TerraformBlock).HclSyntaxBlock.Type == VariableBlockType {
 					for _, tagAtt := range tagAtts {

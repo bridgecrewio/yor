@@ -23,48 +23,45 @@ import (
 )
 
 func TestTerraformParser_SkipResourceByComment(t *testing.T) {
-	t.Run("SkipAll comment added all resources to utils.SkipResourcesByComment", func(t *testing.T) {
+	t.Run("SkipAll comment added all resources to skipResourcesByComment slice", func(t *testing.T) {
 		// Initialize TerraformParser and parse file with all resources containing skip comment
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/skipComment/", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/skipComment/skipAll.tf"
-		_, err := p.ParseFile(filePath)
+		_, skipResourcesByComment, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
 		exceptedSkipResources := []string{"aws_vpc.example_vpc", "aws_subnet.example_subnet", "aws_instance.example_instance"}
-		assert.Equal(t, exceptedSkipResources, utils.SkipResourcesByComment)
-		defer resetSkipArr()
+		assert.Equal(t, exceptedSkipResources, skipResourcesByComment)
 	})
 
-	t.Run("No resources with skip comment in the file, utils.SkipResourcesByComment should be empty", func(t *testing.T) {
+	t.Run("No resources with skip comment in the file, skipResourcesByComment slice should be empty", func(t *testing.T) {
 		// Initialize TerraformParser and parse file with no skip tags
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/skipComment/", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/skipComment/noSkip.tf"
-		_, err := p.ParseFile(filePath)
+		_, skipResourcesByComment, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
-		assert.Empty(t, utils.SkipResourcesByComment)
-		defer resetSkipArr()
+		assert.Empty(t, skipResourcesByComment)
 	})
 
-	t.Run("One resource with skip comment, only that resource added to utils.SkipResourcesByComment", func(t *testing.T) {
+	t.Run("One resource with skip comment, only that resource added to skipResourcesByComment slice", func(t *testing.T) {
 		// Initialize TerraformParser and parse file with one resource containing skip tag
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/skipComment/", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/skipComment/skipOne.tf"
-		_, err := p.ParseFile(filePath)
+		_, skipResourcesByComment, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
 		exceptedSkipResources := []string{"aws_instance.example_instance"}
-		assert.Equal(t, exceptedSkipResources, utils.SkipResourcesByComment)
-		defer resetSkipArr()
+		assert.Equal(t, exceptedSkipResources, skipResourcesByComment)
 	})
 }
 
@@ -91,7 +88,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 			"eks_subnet2": {Start: 55, End: 63},
 			"eks_cluster": {Start: 65, End: 78},
 		}
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -143,7 +140,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 			"instance_null_tags":                        nil,
 		}
 
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -167,7 +164,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 		p.Init("../../../tests/terraform/resources", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/collision/main.tf"
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		assert.Nil(t, parsedBlocks)
 		assert.NotNil(t, err)
 	})
@@ -177,7 +174,7 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 		p.Init("../../../tests/terraform/malformed_file_in_dir", nil)
 		defer p.Close()
 		filePath := "../../../tests/terraform/resources/malformed_file_in_dir/trail.tf"
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		assert.Nil(t, parsedBlocks)
 		assert.NotNil(t, err)
 	})
@@ -226,7 +223,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -245,7 +242,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -289,7 +286,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -308,7 +305,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -345,7 +342,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -362,7 +359,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -388,7 +385,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/mixed", nil)
 		defer p.Close()
-		blocks, err := p.ParseFile("../../../tests/terraform/mixed/mixed.tf")
+		blocks, _, err := p.ParseFile("../../../tests/terraform/mixed/mixed.tf")
 		if err != nil {
 			t.Fail()
 		}
@@ -402,7 +399,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/data/main.tf"
 		expectedFileName := "../../../tests/terraform/data/expected.txt"
-		blocks, err := p.ParseFile(sourceFilePath)
+		blocks, _, err := p.ParseFile(sourceFilePath)
 		if err != nil {
 			t.Fail()
 		}
@@ -429,7 +426,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/tags_with_comments/main.tf"
 		expectedFileName := "../../../tests/terraform/tags_with_comments/expected.txt"
-		blocks, err := p.ParseFile(sourceFilePath)
+		blocks, _, err := p.ParseFile(sourceFilePath)
 		if err != nil {
 			t.Fail()
 		}
@@ -453,7 +450,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/supported", nil)
 		defer p.Close()
-		blocks, err := p.ParseFile("../../../tests/terraform/supported/unsupported.tf")
+		blocks, _, err := p.ParseFile("../../../tests/terraform/supported/unsupported.tf")
 		if err != nil {
 			t.Fail()
 		}
@@ -466,7 +463,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module_with_tags/main.tf"
 		expectedFileName := "../../../tests/terraform/module/module_with_tags/expected.txt"
-		blocks, err := p.ParseFile(sourceFilePath)
+		blocks, _, err := p.ParseFile(sourceFilePath)
 		if err != nil {
 			t.Fail()
 		}
@@ -494,7 +491,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		p.Init("../../../tests/terraform/module/tfe_module", nil)
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/tfe_module/main.tf"
-		blocks, err := p.ParseFile(sourceFilePath)
+		blocks, _, err := p.ParseFile(sourceFilePath)
 		if err != nil {
 			t.Fail()
 		}
@@ -511,7 +508,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer p.Close()
 		sourceFilePath := "../../../tests/terraform/module/module/main.tf"
 		expectedFileName := "../../../tests/terraform/module/module/expected.txt"
-		blocks, err := p.ParseFile(sourceFilePath)
+		blocks, _, err := p.ParseFile(sourceFilePath)
 		if err != nil {
 			t.Fail()
 		}
@@ -542,7 +539,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		filePath := "../../../tests/terraform/resources/attributescenarios/main.tf"
 		resultFilePath := "../../../tests/terraform/resources/attributescenarios/main_result.tf"
 		expectedFilePath := "../../../tests/terraform/resources/attributescenarios/expected.txt"
-		blocks, _ := p.ParseFile(filePath)
+		blocks, _, _ := p.ParseFile(filePath)
 		assert.Equal(t, 8, len(blocks))
 		for _, block := range blocks {
 			if block.IsBlockTaggable() {
@@ -571,7 +568,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		expectedFiles := []string{"main.tf", "sub_local_module/main.tf", "sub_local_module/variables.tf"}
 		for _, file := range expectedFiles {
 			filePath := filepath.Join(directory, file)
-			fileBlocks, err := terraformParser.ParseFile(filePath)
+			fileBlocks, _, err := terraformParser.ParseFile(filePath)
 			if err != nil {
 				assert.Fail(t, fmt.Sprintf("Failed to parse file %v", filePath))
 			}
@@ -591,7 +588,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		terraformParser := TerraformParser{}
 		terraformParser.Init(directory, nil)
 		defer terraformParser.Close()
-		blocks, _ := terraformParser.ParseFile(directory + "/main.tf")
+		blocks, _, _ := terraformParser.ParseFile(directory + "/main.tf")
 		assert.Equal(t, 8, len(blocks))
 		for _, block := range blocks {
 			assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("Block %v should be taggable", block.GetResourceID()))
@@ -614,7 +611,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		defer func() {
 			_ = os.WriteFile(writeFilePath, writeFileBytes, 0644)
 		}()
-		parsedBlocks, err := p.ParseFile(filePath)
+		parsedBlocks, _, err := p.ParseFile(filePath)
 		if err != nil {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
@@ -631,7 +628,7 @@ func TestTerraformParser_Module(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		parsedTaggedFileTags, err := p.ParseFile(writeFilePath)
+		parsedTaggedFileTags, _, err := p.ParseFile(writeFilePath)
 		if err != nil {
 			t.Error(err)
 		}
@@ -832,8 +829,4 @@ func compareTokenArrays(got []hclwrite.Tokens, want []hclwrite.Tokens) bool {
 	}
 
 	return true
-}
-
-func resetSkipArr() {
-	utils.SkipResourcesByComment = []string{}
 }

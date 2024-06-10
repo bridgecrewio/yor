@@ -29,7 +29,7 @@ func TestServerlessParser_ParseFile(t *testing.T) {
 		slsParser.Init(directory, nil)
 		slsFilepath, _ := filepath.Abs(filepath.Join(slsParser.YamlParser.RootDir, "serverless.yml"))
 		expectedSlsFilepath, _ := filepath.Abs(filepath.Join(slsParser.YamlParser.RootDir, "serverless_expected.yaml"))
-		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		slsBlocks, _, err := slsParser.ParseFile(slsFilepath)
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
@@ -94,7 +94,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "serverless.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
-		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		slsBlocks, _, err := slsParser.ParseFile(slsFilepath)
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
@@ -120,7 +120,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		var func1Block, func2Block *ServerlessBlock
-		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		slsBlocks, _, err := slsParser.ParseFile(slsFilepath)
 		for _, block := range slsBlocks {
 			castedBlock := block.(*ServerlessBlock)
 			if castedBlock.Name == "myFunction" {
@@ -150,7 +150,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
 		var func1Block, func2Block *ServerlessBlock
-		slsBlocks, err := slsParser.ParseFile(slsFilepath)
+		slsBlocks, _, err := slsParser.ParseFile(slsFilepath)
 		for _, block := range slsBlocks {
 			castedBlock := block.(*ServerlessBlock)
 			if castedBlock.Name == "myFunction" {
@@ -179,7 +179,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		slsFilepath, _ := filepath.Abs(strings.Join([]string{directory, "file.yml"}, "/"))
 		slsParser := ServerlessParser{}
 		slsParser.Init(directory, nil)
-		parsedBlocks, _ := slsParser.ParseFile(slsFilepath)
+		parsedBlocks, _, _ := slsParser.ParseFile(slsFilepath)
 		if parsedBlocks != nil {
 			t.Fail()
 		}
@@ -200,7 +200,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		tagGroup.SetTags(extraTags)
 		tagGroup.InitTagGroup("", []string{}, []string{})
 		writeFilePath := directory + "/serverless_tagged.yml"
-		slsBlocks, err := slsParser.ParseFile(readFilePath)
+		slsBlocks, _, err := slsParser.ParseFile(readFilePath)
 		for _, block := range slsBlocks {
 			err := tagGroup.CreateTagsForBlock(block)
 			if err != nil {

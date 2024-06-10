@@ -232,12 +232,12 @@ func TestRunnerInternals(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		tfBlocks, err := runner.parsers[0].ParseFile(options.Directory)
+		tfBlocks, skipResourcesByComment, err := runner.parsers[0].ParseFile(options.Directory)
 		if err != nil {
 			t.Error(err)
 		}
 		assert.Equal(t, 3, len(tfBlocks))
-		utils.AppendSkipedByCommentToRunnerSkippedResources(&runner.skippedResources)
+		runner.skippedResources = append(runner.skippedResources, skipResourcesByComment...)
 		result := []string{"aws_instance.example_instance"}
 		assert.Equal(t, result, runner.skippedResources)
 	})
@@ -307,6 +307,9 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		if err != nil {
+			t.Error(err)
+		}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)

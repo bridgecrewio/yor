@@ -9,7 +9,7 @@ type ColorStruct struct {
 	Purple  string
 }
 
-func NoColorCheck(NoColorBool bool) *ColorStruct {
+func NoColorCheck(noColorBool bool) *ColorStruct {
 	var colors ColorStruct
 	colors = ColorStruct{
 		NoColor: true,
@@ -19,7 +19,7 @@ func NoColorCheck(NoColorBool bool) *ColorStruct {
 		Blue:    "",
 		Purple:  "",
 	}
-	if !NoColorBool {
+	if !noColorBool {
 		colors = ColorStruct{
 			NoColor: false,
 			Reset:   "\033[0m",

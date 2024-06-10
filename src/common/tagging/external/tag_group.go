@@ -78,9 +78,9 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 
 		case "directory":
 			prefixes := make([]string, 0)
-			switch filterValue.(type) {
+			switch filterValue := filterValue.(type) {
 			case []interface{}:
-				for _, e := range filterValue.([]interface{}) {
+				for _, e := range filterValue {
 					prefixes = append(prefixes, e.(string))
 				}
 			case interface{}:

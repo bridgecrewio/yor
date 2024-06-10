@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -17,8 +16,6 @@ import (
 )
 
 const SingleIndent = "  "
-
-var mutex sync.Mutex
 
 func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath string, tagsAttributeName string, resourcesStartToken string) error {
 	// #nosec G304
@@ -269,8 +266,10 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	return tagsLines, tagsExist
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) map[string]*structure.Lines {
+func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) (map[string]*structure.Lines, []string) {
 	resourceToLines := make(map[string]*structure.Lines)
+	skipResourcesByComment := make([]string, 0)
+
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
@@ -279,7 +278,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return nil
+		return nil, skipResourcesByComment
 	}
 
 	readResources := false
@@ -291,9 +290,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		cleanContent := strings.TrimSpace(line)
 		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
 			if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIPALL" {
-				mutex.Lock()
-				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, resourceNames...)
-				mutex.Unlock()
+				skipResourcesByComment = append(skipResourcesByComment, resourceNames...)
 			}
 			readResources = true
 			resourcesIndent = countLeadingSpaces(line)
@@ -303,9 +300,9 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		if readResources {
 			if i > 0 {
 				if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIP" {
-					mutex.Lock()
-					utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, strings.Trim(strings.TrimSpace(line), ":"))
-					mutex.Unlock()
+
+					skipResourcesByComment = append(skipResourcesByComment, strings.Trim(strings.TrimSpace(line), ":"))
+
 				}
 			}
 			lineIndent := countLeadingSpaces(line)
@@ -340,7 +337,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		// Handle last line of resource is last line of file
 		resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, len(fileLines)-1)
 	}
-	return resourceToLines
+	return resourceToLines, skipResourcesByComment
 }
 
 func countLeadingSpaces(line string) int {
