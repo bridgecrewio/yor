@@ -170,6 +170,7 @@ func (r *Runner) isSkippedResource(resource string) bool {
 }
 
 func (r *Runner) TagFile(file string) {
+	var mutex sync.Mutex
 	for _, parser := range r.parsers {
 		if r.isFileSkipped(parser, file) {
 			logger.Debug(fmt.Sprintf("%v parser Skipping %v", parser.Name(), file))
@@ -184,7 +185,9 @@ func (r *Runner) TagFile(file string) {
 		if r.skippedResources == nil {
 			r.skippedResources = []string{}
 		}
+		mutex.Lock()
 		r.skippedResources = append(r.skippedResources, skipResourcesByComment...)
+		mutex.Unlock()
 		isFileTaggable := false
 		for _, block := range blocks {
 			if r.isSkippedResourceType(block.GetResourceType()) {
