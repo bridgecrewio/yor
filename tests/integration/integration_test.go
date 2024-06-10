@@ -256,6 +256,35 @@ func TestRunResults(t *testing.T) {
 	})
 }
 
+func TestSkipResourcesByComment(t *testing.T) {
+	t.Run("Test tagging terraform and cloudFormation files and skip resource by comment", func(t *testing.T) {
+		yorRunner := runner.Runner{}
+		err := yorRunner.Init(&clioptions.TagOptions{
+			Directory: "./skipComment",
+			TagGroups: getTagGroups(),
+			Parsers:   []string{"Terraform", "CloudFormation"},
+		})
+		tfFileBytes, _ := os.ReadFile("./skipComment/skipResource.tf")
+		yamlFileBytes, _ := os.ReadFile("./skipComment/skipResource.yaml")
+		defer func() {
+			_ = os.WriteFile("./skipComment/skipResource.tf", tfFileBytes, 0644)
+			_ = os.WriteFile("./skipComment/skipResource.yaml", yamlFileBytes, 0644)
+		}()
+		failIfErr(t, err)
+		reportService, err := yorRunner.TagDirectory()
+		failIfErr(t, err)
+
+		reportService.CreateReport()
+		report := reportService.GetReport()
+
+		newTags := report.NewResourceTags
+		for _, newTag := range newTags {
+			assert.NotEqual(t, "aws_vpc.example_vpc", newTag.ResourceID)
+			assert.NotEqual(t, "NewVolume1", newTag.ResourceID)
+		}
+	})
+}
+
 func TestTagUncommittedResults(t *testing.T) {
 	t.Run("Test tagging twice no result second time", func(t *testing.T) {
 		terragoatPath := utils.CloneRepo(utils.TerragoatURL, "063dc2db3bb036160ed39d3705508ee8293a27c8")
@@ -275,7 +304,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks, err := terraformParser.ParseFile(dbAppFile)
+		blocks, _, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -341,7 +370,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks, err := terraformParser.ParseFile(dbAppFile)
+		blocks, _, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -392,7 +421,7 @@ func TestLocalModules(t *testing.T) {
 		terraformParser := terraformStructure.TerraformParser{}
 		terraformParser.Init(targetDirectory, nil)
 		dbAppFile := path.Join(targetDirectory, "module.broker.tf")
-		blocks, _ := terraformParser.ParseFile(dbAppFile)
+		blocks, _, _ := terraformParser.ParseFile(dbAppFile)
 
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["common_tags"]

@@ -125,32 +125,35 @@ func (p *TerraformParser) ValidFile(_ string) bool {
 	return true
 }
 
-func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, []string, error) {
 	// #nosec G304
 	// read file bytes
+	skipResourcesByComment := make([]string, 0)
 	src, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
+	lines := strings.Split(string(src), "\n")
 
 	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 	hclSyntaxFile, diagnostics := hclsyntax.ParseConfig(src, filePath, hcl.InitialPos)
 	if diagnostics != nil && diagnostics.HasErrors() {
 		hclErrors := diagnostics.Errs()
-		return nil, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s because of errors %s", filePath, hclErrors)
 	}
 
 	if hclFile == nil || hclSyntaxFile == nil {
-		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
+		return nil, skipResourcesByComment, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
 
+	skipAll := false
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
@@ -174,10 +177,21 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 		}
 		terraformBlock.Init(filePath, block)
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
+		line := terraformBlock.GetLines().Start
+		if line > 1 && line <= len(lines) {
+			lineAbove := lines[line-2]
+			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIPALL" {
+				skipAll = true
+			}
+
+			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
+				skipResourcesByComment = append(skipResourcesByComment, terraformBlock.GetResourceID())
+			}
+		}
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 
-	return parsedBlocks, nil
+	return parsedBlocks, skipResourcesByComment, nil
 }
 
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -227,7 +241,7 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 		return err
 	}
 
-	_, err = p.ParseFile(tempFile.Name())
+	_, _, err = p.ParseFile(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("editing file %v resulted in malformed terraform, please open a github issue with the relevant details", readFilePath)
 	}
@@ -599,7 +613,7 @@ func (p *TerraformParser) isModuleTaggable(fp string, moduleName string, moduleD
 	files, _ := os.ReadDir(expectedModuleDir)
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".tf") {
-			blocks, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
+			blocks, _, _ := p.ParseFile(filepath.Join(expectedModuleDir, f.Name()))
 			for _, b := range blocks {
 				if b.(*TerraformBlock).HclSyntaxBlock.Type == VariableBlockType {
 					for _, tagAtt := range tagAtts {

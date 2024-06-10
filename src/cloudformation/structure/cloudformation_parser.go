@@ -112,7 +112,8 @@ func goformationParse(file string) (*cloudformation.Template, error) {
 	return template, err
 }
 
-func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
+func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, []string, error) {
+	skipResourcesByComment := make([]string, 0)
 	goformationLock.Lock()
 	template, err := goformationParse(filePath)
 	goformationLock.Unlock()
@@ -121,12 +122,12 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		if err == nil {
 			err = fmt.Errorf("failed to parse template %v", filePath)
 		}
-		return nil, err
+		return nil, skipResourcesByComment, err
 	}
 
 	if template.Transform != nil {
 		logger.Info(fmt.Sprintf("Skipping CFN template %s as SAM templates are not yet supported", filePath))
-		return nil, nil
+		return nil, skipResourcesByComment, nil
 	}
 
 	resourceNames := make([]string, 0)
@@ -138,13 +139,13 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 		var resourceNamesToLines map[string]*structure.Lines
 		switch utils.GetFileFormat(filePath) {
 		case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-			resourceNamesToLines = yaml.MapResourcesLineYAML(filePath, resourceNames, ResourcesStartToken)
+			resourceNamesToLines, skipResourcesByComment = yaml.MapResourcesLineYAML(filePath, resourceNames, ResourcesStartToken)
 		case common.JSONFileType.FileFormat:
 			var fileBracketsMapping map[int]json.BracketPair
 			resourceNamesToLines, fileBracketsMapping = json.MapResourcesLineJSON(filePath, resourceNames)
 			p.FileToBracketMapping.Store(filePath, fileBracketsMapping)
 		default:
-			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
+			return nil, skipResourcesByComment, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
 
 		minResourceLine := math.MaxInt8
@@ -181,9 +182,9 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, e
 
 		p.FileToResourcesLines.Store(filePath, structure.Lines{Start: minResourceLine, End: maxResourceLine})
 
-		return parsedBlocks, nil
+		return parsedBlocks, skipResourcesByComment, nil
 	}
-	return nil, err
+	return nil, skipResourcesByComment, err
 }
 
 func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *structure.Lines, tagsValue reflect.Value) (structure.Lines, []tags.ITag) {
@@ -237,7 +238,7 @@ func (p *CloudformationParser) WriteFile(readFilePath string, blocks []structure
 		return err
 	}
 
-	_, err = p.ParseFile(tempFile.Name())
+	_, _, err = p.ParseFile(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("editing file %v resulted in a malformed template, please open a github issue with the relevant details", readFilePath)
 	}

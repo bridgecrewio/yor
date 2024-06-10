@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Sample EBS Volume with EC2 instance template
+Resources:
+  NewVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 100
+      Encrypted: true
+      #Encrypted: false
+      AvailabilityZone: us-west-2a
+      Tags:
+        - Key: yor_trace
+          Value: d5e1032c-34e9-428d-8b17-4dff36d05e68
+        - Key: yor_name
+          Value: NewVolume
+  #yor:skip
+  NewVolume1:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 100
+      Encrypted: true
+      #Encrypted: false
+      AvailabilityZone: us-west-2a
+      Tags:
+    DeletionPolicy: Snapshot

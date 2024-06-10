@@ -19,7 +19,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
-		cfnBlocks, err := cfnParser.ParseFile(directory + "/ebs.yaml")
+		cfnBlocks, _, err := cfnParser.ParseFile(directory + "/ebs.yaml")
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
@@ -42,7 +42,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/ebs"
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
-		cfnBlocks, err := cfnParser.ParseFile(directory + "/ebs.json")
+		cfnBlocks, _, err := cfnParser.ParseFile(directory + "/ebs.json")
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
@@ -66,7 +66,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
 		sourceFile := directory + "/base.template"
-		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
+		cfnBlocks, _, _ := cfnParser.ParseFile(sourceFile)
 
 		rawFileLines, _ := cfnParser.FileToResourcesLines.Load(sourceFile)
 		resourceLines := rawFileLines.(structure.Lines)
@@ -81,7 +81,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
 		sourceFile := directory + "/cfn.yaml"
-		cfnBlocks, _ := cfnParser.ParseFile(sourceFile)
+		cfnBlocks, _, _ := cfnParser.ParseFile(sourceFile)
 		assert.Equal(t, 3, len(cfnBlocks))
 	})
 
@@ -89,7 +89,7 @@ func TestCloudformationParser_ParseFile(t *testing.T) {
 		directory := "../../../tests/cloudformation/resources/special_tags"
 		cfnParser := CloudformationParser{}
 		cfnParser.Init(directory, nil)
-		cfnBlocks, err := cfnParser.ParseFile(directory + "/cfn.yaml")
+		cfnBlocks, err, _ := cfnParser.ParseFile(directory + "/cfn.yaml")
 		if err != nil {
 			t.Errorf("ParseFile() error = %v", err)
 			return
@@ -169,7 +169,7 @@ func writeCFNTestHelper(t *testing.T, directory string, testFileName string, fil
 	tagGroup.SetTags(extraTags)
 	tagGroup.InitTagGroup("", []string{}, []string{})
 	writeFilePath := directory + "/" + testFileName + "_tagged." + fileType
-	cfnBlocks, err := cfnParser.ParseFile(readFilePath)
+	cfnBlocks, _, err := cfnParser.ParseFile(readFilePath)
 	for _, block := range cfnBlocks {
 		err := tagGroup.CreateTagsForBlock(block)
 		if err != nil {
