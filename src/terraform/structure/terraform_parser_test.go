@@ -35,6 +35,7 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 		}
 		exceptedSkipResources := []string{"aws_vpc.example_vpc", "aws_subnet.example_subnet", "aws_instance.example_instance"}
 		assert.Equal(t, exceptedSkipResources, utils.SkipResourcesByComment)
+		defer resetSkipArr()
 	})
 
 	t.Run("No resources with skip comment in the file, skipResourcesByComment slice should be empty", func(t *testing.T) {
@@ -48,6 +49,7 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 			t.Errorf("failed to read hcl file because %s", err)
 		}
 		assert.Empty(t, utils.SkipResourcesByComment)
+		defer resetSkipArr()
 	})
 
 	t.Run("One resource with skip comment, only that resource added to skipResourcesByComment slice", func(t *testing.T) {
@@ -62,6 +64,7 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 		}
 		exceptedSkipResources := []string{"aws_instance.example_instance"}
 		assert.Equal(t, exceptedSkipResources, utils.SkipResourcesByComment)
+		defer resetSkipArr()
 	})
 }
 
@@ -830,3 +833,6 @@ func compareTokenArrays(got []hclwrite.Tokens, want []hclwrite.Tokens) bool {
 
 	return true
 }
+func resetSkipArr() {
+	utils.SkipResourcesByComment = []string{}
+	}
