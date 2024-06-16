@@ -168,6 +168,12 @@ func (r *Runner) isSkippedResource(resource string) bool {
 			return true
 		}
 	}
+	for _, skippedResource := range utils.SkipResourcesByComment {
+		if resource == skippedResource {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -178,18 +184,12 @@ func (r *Runner) TagFile(file string) {
 			continue
 		}
 		logger.Info(fmt.Sprintf("Tagging %v\n", file))
-		blocks, skipResourcesByComment, err := parser.ParseFile(file)
+		blocks, err := parser.ParseFile(file)
 		if err != nil {
 			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
 			continue
 		}
-		mutex.Lock()
-		if r.skippedResources == nil {
-			r.skippedResources = []string{}
-		}
-		r.skippedResources = append(r.skippedResources, skipResourcesByComment...)
-		mutex.Unlock()
-		isFileTaggable := false
+				isFileTaggable := false
 		for _, block := range blocks {
 			if r.isSkippedResourceType(block.GetResourceType()) {
 				continue

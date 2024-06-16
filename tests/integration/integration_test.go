@@ -305,7 +305,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks,_, err := terraformParser.ParseFile(dbAppFile)
+		blocks, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -371,7 +371,7 @@ func TestTagUncommittedResults(t *testing.T) {
 		terraformParser.Init(terragoatAWSDirectory, nil)
 
 		dbAppFile := path.Join(terragoatAWSDirectory, "db-app.tf")
-		blocks,_, err := terraformParser.ParseFile(dbAppFile)
+		blocks, err := terraformParser.ParseFile(dbAppFile)
 		failIfErr(t, err)
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		if defaultInstanceBlock.GetResourceID() != "aws_db_instance.default" {
@@ -422,7 +422,7 @@ func TestLocalModules(t *testing.T) {
 		terraformParser := terraformStructure.TerraformParser{}
 		terraformParser.Init(targetDirectory, nil)
 		dbAppFile := path.Join(targetDirectory, "module.broker.tf")
-		blocks,_, _ := terraformParser.ParseFile(dbAppFile)
+		blocks, _ := terraformParser.ParseFile(dbAppFile)
 
 		defaultInstanceBlock := blocks[0].(*terraformStructure.TerraformBlock)
 		rawTags := defaultInstanceBlock.HclSyntaxBlock.Body.Attributes["common_tags"]

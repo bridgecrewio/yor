@@ -54,7 +54,7 @@ func TestServerlessBlock_UpdateTags(t *testing.T) {
 			&tags.Tag{Key: "TAG1_FUNC", Value: "Func1 Tag Value"}, &tags.Tag{Key: "TAG2_FUNC", Value: "Func2 Tag Value"}, &tags.Tag{Key: "yor_trace", Value: "yor_trace"}, &tags.Tag{Key: "git_last_modified_at", Value: "2"},
 		}
 		absFilePath, _ := filepath.Abs(strings.Join([]string{parser.YamlParser.RootDir, "serverless.yml"}, "/"))
-		template, _, err := parser.ParseFile(absFilePath)
+		template, err := parser.ParseFile(absFilePath)
 		if err != nil {
 			t.Errorf("There was an error processing the cloudformation template: %s", err)
 		}

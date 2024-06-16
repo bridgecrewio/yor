@@ -71,13 +71,12 @@ func (p *ServerlessParser) ValidFile(file string) bool {
 	return true
 }
 
-func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, []string, error) {
-	skipResourcesByComment := make([]string, 0)
+func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock , error) {
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
 	fileName := filepath.Base(filePath)
 	if !(fileName == fmt.Sprintf("serverless.%s", fileFormat) || fileName == fmt.Sprintf("config.%s", fileFormat)) {
-		return nil, skipResourcesByComment, nil
+		return nil, nil
 	}
 	// #nosec G304 - file is from user
 	template, err := serverlessParse(filePath)
@@ -88,10 +87,10 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, []str
 		if err == nil {
 			err = fmt.Errorf("failed to parse file %v", filePath)
 		}
-		return nil, skipResourcesByComment, err
+		return nil, err
 	}
 	if template.Functions == nil && template.Resources.Resources == nil {
-		return parsedBlocks, skipResourcesByComment, nil
+		return parsedBlocks, nil
 	}
 
 	// cfnStackTagsResource := p.template.Provider.CFNTags
@@ -102,9 +101,9 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, []str
 	}
 	switch utils.GetFileFormat(filePath) {
 	case common.YmlFileType.FileFormat, common.YamlFileType.FileFormat:
-		resourceNamesToLines, skipResourcesByComment = yamlUtils.MapResourcesLineYAML(filePath, resourceNames, FunctionsSectionName)
+		resourceNamesToLines = yamlUtils.MapResourcesLineYAML(filePath, resourceNames, FunctionsSectionName)
 	default:
-		return nil, skipResourcesByComment, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
+		return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 	}
 	minResourceLine := math.MaxInt8
 	maxResourceLine := 0
@@ -142,7 +141,7 @@ func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, []str
 		p.YamlParser.FileToResourcesLines.Store(filePath, structure.Lines{Start: minResourceLine, End: maxResourceLine})
 
 	}
-	return parsedBlocks, skipResourcesByComment, nil
+	return parsedBlocks, nil
 }
 
 func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -161,7 +160,7 @@ func (p *ServerlessParser) WriteFile(readFilePath string, blocks []structure.IBl
 	if err != nil {
 		return err
 	}
-	_, _, err = p.ParseFile(tempFile.Name())
+	_, err = p.ParseFile(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("editing file %v resulted in a malformed template, please open a github issue with the relevant details", readFilePath)
 	}
