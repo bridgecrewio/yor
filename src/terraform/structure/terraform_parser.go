@@ -25,7 +25,6 @@ import (
 )
 
 var ignoredDirs = []string{".git", ".DS_Store", ".idea", ".terraform"}
-var mutex sync.Mutex
 var unsupportedTerraformBlocks = []string{
 	"aws_autoscaling_group",                  // This resource specifically supports tags with a different structure, see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
 	"aws_lb_listener",                        // This resource does not support tags, although docs state otherwise.
@@ -126,7 +125,7 @@ func (p *TerraformParser) ValidFile(_ string) bool {
 	return true
 }
 
-func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock , error) {
+func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	// #nosec G304
 	// read file bytes
 	src, err := os.ReadFile(filePath)
@@ -148,7 +147,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock , error
 	}
 
 	if hclFile == nil || hclSyntaxFile == nil {
-		return nil , fmt.Errorf("failed to parse hcl file %s", filePath)
+		return nil, fmt.Errorf("failed to parse hcl file %s", filePath)
 	}
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
@@ -191,7 +190,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock , error
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 
-	return parsedBlocks , nil
+	return parsedBlocks, nil
 }
 
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {

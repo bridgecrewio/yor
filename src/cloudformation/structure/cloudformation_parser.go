@@ -112,7 +112,7 @@ func goformationParse(file string) (*cloudformation.Template, error) {
 	return template, err
 }
 
-func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock , error) {
+func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	goformationLock.Lock()
 	template, err := goformationParse(filePath)
 	goformationLock.Unlock()
@@ -126,7 +126,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock , 
 
 	if template.Transform != nil {
 		logger.Info(fmt.Sprintf("Skipping CFN template %s as SAM templates are not yet supported", filePath))
-		return nil , nil
+		return nil, nil
 	}
 
 	resourceNames := make([]string, 0)
@@ -144,7 +144,7 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock , 
 			resourceNamesToLines, fileBracketsMapping = json.MapResourcesLineJSON(filePath, resourceNames)
 			p.FileToBracketMapping.Store(filePath, fileBracketsMapping)
 		default:
-			return nil , fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
+			return nil, fmt.Errorf("unsupported file type %s", utils.GetFileFormat(filePath))
 		}
 
 		minResourceLine := math.MaxInt8
@@ -181,9 +181,9 @@ func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock , 
 
 		p.FileToResourcesLines.Store(filePath, structure.Lines{Start: minResourceLine, End: maxResourceLine})
 
-		return parsedBlocks , nil
+		return parsedBlocks, nil
 	}
-	return nil , err
+	return nil, err
 }
 
 func (p *CloudformationParser) extractTagsAndLines(filePath string, lines *structure.Lines, tagsValue reflect.Value) (structure.Lines, []tags.ITag) {

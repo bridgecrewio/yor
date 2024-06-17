@@ -835,4 +835,4 @@ func compareTokenArrays(got []hclwrite.Tokens, want []hclwrite.Tokens) bool {
 }
 func resetSkipArr() {
 	utils.SkipResourcesByComment = []string{}
-	}
+}

@@ -250,7 +250,7 @@ func TestYaml_SkipResourceByComment(t *testing.T) {
 		expectedResourceNames := []string{"NewVolume"}
 		_ = MapResourcesLineYAML(filePath, expectedResourceNames, "Resources")
 		assert.Equal(t, utils.SkipResourcesByComment, resorseSkip)
-		assert.NotEqual(t,utils.SkipResourcesByComment, "NewVolume2")
+		assert.NotEqual(t, utils.SkipResourcesByComment, "NewVolume2")
 		defer resetSkipArr()
 	})
 	t.Run("All resources with skip comment added to skipResourcesByComment slice", func(t *testing.T) {

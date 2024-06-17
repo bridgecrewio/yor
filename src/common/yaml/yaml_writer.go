@@ -266,7 +266,7 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	return tagsLines, tagsExist
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) (map[string]*structure.Lines) {
+func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) map[string]*structure.Lines {
 	resourceToLines := make(map[string]*structure.Lines)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file

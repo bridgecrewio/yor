@@ -43,8 +43,6 @@ type Runner struct {
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
 
-var mutex sync.Mutex
-
 func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	dir := commands.Directory
 	extraTags, extraTagGroups, err := loadExternalResources(commands.CustomTagging)
@@ -189,7 +187,7 @@ func (r *Runner) TagFile(file string) {
 			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
 			continue
 		}
-				isFileTaggable := false
+		isFileTaggable := false
 		for _, block := range blocks {
 			if r.isSkippedResourceType(block.GetResourceType()) {
 				continue

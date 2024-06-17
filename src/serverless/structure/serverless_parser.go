@@ -71,7 +71,7 @@ func (p *ServerlessParser) ValidFile(file string) bool {
 	return true
 }
 
-func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock , error) {
+func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
 	fileName := filepath.Base(filePath)
