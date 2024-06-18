@@ -181,7 +181,7 @@ func (r *Runner) TagFile(file string) {
 			continue
 		}
 		logger.Info(fmt.Sprintf("Tagging %v\n", file))
-		blocks, skipResourcesByComment, err := parser.ParseFile(file)
+		blocks, err := parser.ParseFile(file)
 		if err != nil {
 			logger.Info(fmt.Sprintf("Failed to parse file %v with parser %v", file, reflect.TypeOf(parser)))
 			continue
@@ -191,6 +191,7 @@ func (r *Runner) TagFile(file string) {
 			if r.isSkippedResourceType(block.GetResourceType()) {
 				continue
 			}
+			skipResourcesByComment := parser.GetSkipResourcesByComment()
 			if r.isSkippedResource(block.GetResourceID(), skipResourcesByComment) {
 				continue
 			}
