@@ -48,6 +48,7 @@ type TerraformParser struct {
 	moduleInstallDir       string
 	downloadedPaths        []string
 	tfClientLock           sync.Mutex
+	skippedByCommentList   []string
 }
 
 func (p *TerraformParser) Name() string {
@@ -184,13 +185,16 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 			}
 
 			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
-				utils.SkipResourcesByComment = append(utils.SkipResourcesByComment, terraformBlock.GetResourceID())
+				p.skippedByCommentList = append(p.skippedByCommentList, terraformBlock.GetResourceID())
 			}
 		}
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 
 	return parsedBlocks, nil
+}
+func (p *TerraformParser) GetSkipResourcesByComment() []string {
+	return p.skippedByCommentList
 }
 
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
