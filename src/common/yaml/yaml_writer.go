@@ -266,7 +266,7 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	return tagsLines, tagsExist
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) (map[string]*structure.Lines ,[]string ){
+func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) (map[string]*structure.Lines, []string) {
 	resourceToLines := make(map[string]*structure.Lines)
 	skipResourcesByComment := make([]string, 0)
 	for _, resourceName := range resourceNames {
@@ -277,7 +277,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return nil,skipResourcesByComment
+		return nil, skipResourcesByComment
 	}
 
 	readResources := false
@@ -289,7 +289,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		cleanContent := strings.TrimSpace(line)
 		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
 			if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIPALL" {
-			skipResourcesByComment = append(skipResourcesByComment, resourceNames...)
+				skipResourcesByComment = append(skipResourcesByComment, resourceNames...)
 			}
 			readResources = true
 			resourcesIndent = countLeadingSpaces(line)
@@ -336,7 +336,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		// Handle last line of resource is last line of file
 		resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, len(fileLines)-1)
 	}
-	return resourceToLines,skipResourcesByComment
+	return resourceToLines, skipResourcesByComment
 }
 
 func countLeadingSpaces(line string) int {

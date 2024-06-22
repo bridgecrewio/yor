@@ -830,4 +830,3 @@ func compareTokenArrays(got []hclwrite.Tokens, want []hclwrite.Tokens) bool {
 
 	return true
 }
-

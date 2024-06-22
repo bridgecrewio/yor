@@ -123,7 +123,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 		expected := map[string]*structure.Lines{
 			"NewVolume": {Start: 3, End: 15},
 		}
-		actual,_:= yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
+		actual, _ := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
 	})
 
@@ -136,7 +136,7 @@ func Test_mapResourcesLineYAML(t *testing.T) {
 			"EC2LaunchTemplateResource0": {Start: 18, End: 23},
 			"EC2LaunchTemplateResource1": {Start: 24, End: 34},
 		}
-		actual,_ := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
+		actual, _ := yaml.MapResourcesLineYAML(filePath, resourcesNames, ResourcesStartToken)
 		compareLines(t, expected, actual)
 	})
 
