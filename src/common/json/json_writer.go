@@ -154,6 +154,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			parentIdentifier = FindParentIdentifier(jsonResourceStr, parentIdentifier)
 			if parentIdentifier == "" {
 				identifiersToAdd = append(identifiersToAdd, resourceBlock.GetResourceID())
+				//nolint:ineffassign
 				parentIdentifier = resourceBlock.GetResourceID()
 				break
 			}

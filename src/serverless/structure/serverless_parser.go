@@ -3,13 +3,13 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"math"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/bridgecrewio/goformation/v5/intrinsics"
 	"github.com/bridgecrewio/yor/src/common"
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
@@ -37,9 +37,7 @@ func (p *ServerlessParser) Init(rootDir string, _ map[string]string) {
 	p.YamlParser.RootDir = rootDir
 }
 
-func (p *ServerlessParser) Close() {
-	return
-}
+func (p *ServerlessParser) Close() {}
 
 func (p *ServerlessParser) GetSkippedDirs() []string {
 	return []string{}
