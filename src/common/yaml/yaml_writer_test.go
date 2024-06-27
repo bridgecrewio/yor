@@ -228,13 +228,13 @@ func TestTagReplacement(t *testing.T) {
 	})
 
 	t.Run("Test line computation with duplicate - CFN", func(t *testing.T) {
-		res, _ := MapResourcesLineYAML("../../../tests/cloudformation/resources/duplicate_entries/duplicate_cfn.yaml", []string{"S3Bucket", "CloudFrontDistribution"}, "Resources")
+		res := MapResourcesLineYAML("../../../tests/cloudformation/resources/duplicate_entries/duplicate_cfn.yaml", []string{"S3Bucket", "CloudFrontDistribution"}, "Resources")
 		assert.Equal(t, *res["S3Bucket"], structure.Lines{Start: 14, End: 17})
 		assert.Equal(t, *res["CloudFrontDistribution"], structure.Lines{Start: 18, End: 60})
 	})
 
 	t.Run("Test line computation with duplicate - SLS", func(t *testing.T) {
-		res, _ := MapResourcesLineYAML("../../../tests/cloudformation/resources/duplicate_entries/duplicate_sls.yaml", []string{"attribute", "zone", "customer", "apiVersion"}, "functions")
+		res := MapResourcesLineYAML("../../../tests/cloudformation/resources/duplicate_entries/duplicate_sls.yaml", []string{"attribute", "zone", "customer", "apiVersion"}, "functions")
 		assert.Equal(t, *res["apiVersion"], structure.Lines{Start: 7, End: 12})
 		assert.Equal(t, *res["customer"], structure.Lines{Start: 14, End: 24})
 		assert.Equal(t, *res["zone"], structure.Lines{Start: 26, End: 38})
