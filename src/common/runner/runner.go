@@ -160,12 +160,18 @@ func (r *Runner) isSkippedResourceType(resourceType string) bool {
 	return false
 }
 
-func (r *Runner) isSkippedResource(resource string) bool {
+func (r *Runner) isSkippedResource(resource string, skipResource []string) bool {
 	for _, skippedResource := range r.skippedResources {
 		if resource == skippedResource {
 			return true
 		}
 	}
+	for _, skippedResource := range skipResource {
+		if resource == skippedResource {
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -186,7 +192,8 @@ func (r *Runner) TagFile(file string) {
 			if r.isSkippedResourceType(block.GetResourceType()) {
 				continue
 			}
-			if r.isSkippedResource(block.GetResourceID()) {
+			skipResourcesByComment := parser.GetSkipResourcesByComment()
+			if r.isSkippedResource(block.GetResourceID(), skipResourcesByComment) {
 				continue
 			}
 			if block.IsBlockTaggable() {

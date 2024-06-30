@@ -120,7 +120,7 @@ func TestResultsGeneration(t *testing.T) {
 	t.Run("Test CLI output structure", func(t *testing.T) {
 		ReportServiceInst.CreateReport()
 
-                colors := common.NoColorCheck(false)
+		colors := common.NoColorCheck(false)
 		output := utils.CaptureOutputColors(ReportServiceInst.PrintToStdout)
 		lines := strings.Split(output, "\n")
 		// Verify banner

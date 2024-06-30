@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-        "github.com/bridgecrewio/yor/src/common"
+	"github.com/bridgecrewio/yor/src/common"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
@@ -39,7 +39,7 @@ func CaptureOutput(f func()) string {
 }
 
 func CaptureOutputColors(f func(*common.ColorStruct)) string {
-        colors := common.NoColorCheck(false)
+	colors := common.NoColorCheck(false)
 	reader, writer, err := os.Pipe()
 	if err != nil {
 		panic(err)
