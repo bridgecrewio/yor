@@ -360,7 +360,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// => we should replace it!
 				rawTagsTokens = newTagsTokens // checkov:skip=CKV_SECRET_6 false positive
 			} else {
-				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_6 false positive
+				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
 			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
