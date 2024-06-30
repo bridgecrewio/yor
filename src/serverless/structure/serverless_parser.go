@@ -73,7 +73,7 @@ func (p *ServerlessParser) ValidFile(file string) bool {
 }
 
 func (p *ServerlessParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	skipResourcesByComment := make([]string, 0)
+	var skipResourcesByComment []string
 	parsedBlocks := make([]structure.IBlock, 0)
 	fileFormat := utils.GetFileFormat(filePath)
 	fileName := filepath.Base(filePath)

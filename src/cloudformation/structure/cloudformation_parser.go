@@ -114,7 +114,7 @@ func goformationParse(file string) (*cloudformation.Template, error) {
 }
 
 func (p *CloudformationParser) ParseFile(filePath string) ([]structure.IBlock, error) {
-	skipResourcesByComment := make([]string, 0)
+	var skipResourcesByComment []string
 	goformationLock.Lock()
 	template, err := goformationParse(filePath)
 	goformationLock.Unlock()
