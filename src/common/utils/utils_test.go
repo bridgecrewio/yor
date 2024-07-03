@@ -109,11 +109,11 @@ func TestInSlice(t *testing.T) {
 			args: args[int]{slice: []int{1, 2, 3, 4}, elem: 5},
 			want: false,
 		},
-		//{ // not supported for generics
+		// { // not supported for generics
 		//	name: "different kinds",
 		//	args: args[int]{slice: []int{1, 2, 3, 4}, elem: "bana"},
 		//	want: false,
-		//},
+		// },
 
 	}
 	for _, tt := range testsStr {
