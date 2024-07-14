@@ -22,6 +22,49 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestTerraformParser_SkipResourceByComment(t *testing.T) {
+	t.Run("SkipAll comment added all resources to skipResourcesByComment slice", func(t *testing.T) {
+		// Initialize TerraformParser and parse file with all resources containing skip comment
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/skipComment/", nil)
+		defer p.Close()
+		filePath := "../../../tests/terraform/skipComment/skipAll.tf"
+		_, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+		exceptedSkipResources := []string{"aws_vpc.example_vpc", "aws_subnet.example_subnet", "aws_instance.example_instance"}
+		assert.Equal(t, exceptedSkipResources, p.GetSkipResourcesByComment())
+	})
+
+	t.Run("No resources with skip comment in the file, skipResourcesByComment slice should be empty", func(t *testing.T) {
+		// Initialize TerraformParser and parse file with no skip tags
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/skipComment/", nil)
+		defer p.Close()
+		filePath := "../../../tests/terraform/skipComment/noSkip.tf"
+		_, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+		assert.Empty(t, p.GetSkipResourcesByComment())
+	})
+
+	t.Run("One resource with skip comment, only that resource added to skipResourcesByComment slice", func(t *testing.T) {
+		// Initialize TerraformParser and parse file with one resource containing skip tag
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/skipComment/", nil)
+		defer p.Close()
+		filePath := "../../../tests/terraform/skipComment/skipOne.tf"
+		_, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+		exceptedSkipResources := []string{"aws_instance.example_instance"}
+		assert.Equal(t, exceptedSkipResources, p.GetSkipResourcesByComment())
+	})
+}
+
 func TestTerraformParser_ParseFile(t *testing.T) {
 	t.Run("parse aws eks file", func(t *testing.T) {
 		p := &TerraformParser{}

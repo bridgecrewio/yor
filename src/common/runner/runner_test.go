@@ -2,12 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common/clioptions"
@@ -220,7 +221,6 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "aws_s3_bucket.test-bucket")
 	})
-
 	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/cloudformation"
@@ -286,6 +286,9 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		if err != nil {
+			t.Error(err)
+		}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)

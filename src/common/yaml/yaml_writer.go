@@ -266,8 +266,9 @@ func FindTagsLinesYAML(textLines []string, tagsAttributeName string) (structure.
 	return tagsLines, tagsExist
 }
 
-func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) map[string]*structure.Lines {
+func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStartToken string) (map[string]*structure.Lines, []string) {
 	resourceToLines := make(map[string]*structure.Lines)
+	skipResourcesByComment := make([]string, 0)
 	for _, resourceName := range resourceNames {
 		// initialize a map between resource name and its lines in file
 		resourceToLines[resourceName] = &structure.Lines{Start: -1, End: -1}
@@ -276,7 +277,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Warning(fmt.Sprintf("failed to read file %s", filePath))
-		return nil
+		return nil, skipResourcesByComment
 	}
 
 	readResources := false
@@ -287,12 +288,22 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 	for i, line := range fileLines {
 		cleanContent := strings.TrimSpace(line)
 		if strings.HasPrefix(cleanContent, resourcesStartToken+":") {
+			if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIPALL" {
+				skipResourcesByComment = append(skipResourcesByComment, resourceNames...)
+			}
 			readResources = true
 			resourcesIndent = countLeadingSpaces(line)
 			continue
 		}
 
 		if readResources {
+			if i > 0 {
+				if strings.ToUpper(strings.TrimSpace(fileLines[i-1])) == "#YOR:SKIP" {
+
+					skipResourcesByComment = append(skipResourcesByComment, strings.Trim(strings.TrimSpace(line), ":"))
+
+				}
+			}
 			lineIndent := countLeadingSpaces(line)
 			if lineIndent <= resourcesIndent && strings.TrimSpace(line) != "" && !strings.Contains(line, "#") {
 				// No longer inside resources block, get the last line of the previous resource if exists
@@ -325,7 +336,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 		// Handle last line of resource is last line of file
 		resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, len(fileLines)-1)
 	}
-	return resourceToLines
+	return resourceToLines, skipResourcesByComment
 }
 
 func countLeadingSpaces(line string) int {
