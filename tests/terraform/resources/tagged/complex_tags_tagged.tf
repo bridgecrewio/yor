@@ -96,6 +96,9 @@ resource "aws_instance" "instance_merged_override" {
     git_repo             = "terragoat"
     yor_trace            = "a1cb42d1-bfbb-486e-8d79-31bedc19c293"
   })
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 resource "aws_instance" "instance_empty_tag" {
@@ -125,5 +128,8 @@ resource "aws_instance" "instance_no_tags" {
     git_org              = "bridgecrewio"
     git_repo             = "terragoat"
     yor_trace            = "a51f6e65-cd2d-4f53-962c-0d2894fc6418"
+  }
+  metadata_options {
+    http_tokens = "required"
   }
 }
