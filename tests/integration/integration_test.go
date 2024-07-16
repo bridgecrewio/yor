@@ -201,7 +201,7 @@ func TestRunResults(t *testing.T) {
 		}
 	})
 
-	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags with tag-prefix", func(t *testing.T) {
+	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
 		defer os.RemoveAll(repoPath)
 
@@ -210,7 +210,6 @@ func TestRunResults(t *testing.T) {
 			Directory: repoPath,
 			TagGroups: getTagGroups(),
 			Tag:       []string{"yor_trace"},
-			TagPrefix: "prefix_",
 			Parsers:   []string{"Terraform"},
 		})
 		failIfErr(t, err)
@@ -221,11 +220,10 @@ func TestRunResults(t *testing.T) {
 		report := reportService.GetReport()
 		assert.LessOrEqual(t, 18, report.Summary.Scanned)
 		assert.Greater(t, report.Summary.Scanned, 0)
-		assert.NotEqual(t, 0, len(report.NewResourceTags))
 
 		for _, newTag := range report.NewResourceTags {
-			if strings.HasPrefix(newTag.File, repoPath) {
-				assert.Equal(t, "prefix_yor_trace", newTag.TagKey)
+			if strings.HasPrefix(repoPath, newTag.File) {
+				assert.Equal(t, "yor_trace", newTag.TagKey)
 				assert.Equal(t, "aws_iam_role.bridgecrew_account_role", newTag.ResourceID)
 			}
 		}

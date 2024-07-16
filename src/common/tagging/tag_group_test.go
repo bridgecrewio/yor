@@ -52,4 +52,20 @@ func TestTagGroup(t *testing.T) {
 		tgs := tagGroup.GetTags()
 		assert.Equal(t, 0, len(tgs))
 	})
+
+	t.Run("Test tag prefix not broke tags", func(t *testing.T) {
+		tagGroup := TagGroup{Options: InitTagGroupOptions{
+			TagPrefix: "prefix_",
+		},
+			SpecifiedTags: []string{"yor_trace"},
+		}
+		tagGroup.SetTags([]tags.ITag{
+			&tags.Tag{Key: "yor_trace"},
+			&tags.Tag{Key: "git_modifiers"},
+		})
+		tgs := tagGroup.GetTags()
+		assert.Equal(t, 1, len(tgs))
+		assert.Equal(t, string("prefix_yor_trace"), tgs[0].GetKey())
+
+	})
 }
