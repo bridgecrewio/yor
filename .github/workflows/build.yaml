@@ -152,7 +152,7 @@ jobs:
         name: goreleaser
         with:
           version: latest
-          args: release --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 #      - name: Update go reportcard

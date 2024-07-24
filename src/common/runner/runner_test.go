@@ -221,7 +221,6 @@ func TestRunnerInternals(t *testing.T) {
 		})
 		assert.NotContains(t, output, "aws_s3_bucket.test-bucket")
 	})
-
 	t.Run("Test skip resource - cloudformation", func(t *testing.T) {
 		runner := Runner{}
 		rootDir := "../../../tests/cloudformation"

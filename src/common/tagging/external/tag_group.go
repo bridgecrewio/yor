@@ -243,7 +243,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 			}
 		}
 		if len(gitModifiersCounts) == 1 {
-			for k := range gitModifiersCounts {
+			for k, _ := range gitModifiersCounts {
 				retTag.Value = evaluateTemplateVariable(k)
 				break
 			}

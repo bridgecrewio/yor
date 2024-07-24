@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
-![Coverage](https://img.shields.io/badge/Coverage-80.7%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-80.8%25-brightgreen)
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -225,7 +225,55 @@ yor list-tags
 yor list-tags --tag-groups git
 ```
 
+## Supporting comment format
+To prevent resource from being tagged, apply the following comment pattern above the resource, currently supported only in Terraform and CloudFormation files.
 
+## Example
+
+# skip specific resource - #yor:skip
+```sh
+## for terraform files
+#yor:Skip 
+resource "aws_instance" "example_instance" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.example_subnet.id }
+
+## for cloudformation files
+#yor:skip
+  ExampleInt:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: An example template
+```
+
+# skip all rsources in the page - #yor:skipAll
+```sh
+## for terraform files
+#yor:skipAll
+resource "aws_vpc" "example_vpc" {
+  cidr_block = "10.0.0.0/16" }
+
+resource "aws_subnet" "example_subnet" {
+  vpc_id            = aws_vpc.example_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-west-1a" }
+
+## for cloudformation files
+#yor:skipAll
+Resources:
+  NewVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 100
+
+  NewVolume2:
+    Type: AWS::EC2::Volume
+      Tags:
+        - Key: MyTag
+          Value: TagValue
+        - Key: Name
+```    
 ### What is Yor trace?
 yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
 

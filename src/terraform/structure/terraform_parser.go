@@ -48,6 +48,7 @@ type TerraformParser struct {
 	moduleInstallDir       string
 	downloadedPaths        []string
 	tfClientLock           sync.Mutex
+	skippedByCommentList   []string
 }
 
 func (p *TerraformParser) Name() string {
@@ -132,6 +133,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s because %s", filePath, err)
 	}
+	lines := strings.Split(string(src), "\n")
 
 	// parse the file into hclwrite.File and hclsyntax.File to allow getting existing tags and lines
 	hclFile, diagnostics := hclwrite.ParseConfig(src, filePath, hcl.InitialPos)
@@ -151,6 +153,7 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 
 	syntaxBlocks := hclSyntaxFile.Body.(*hclsyntax.Body).Blocks
 
+	skipAll := false
 	rawBlocks := hclFile.Body().Blocks()
 	parsedBlocks := make([]structure.IBlock, 0)
 	for i, block := range rawBlocks {
@@ -174,10 +177,24 @@ func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error)
 		}
 		terraformBlock.Init(filePath, block)
 		terraformBlock.AddHclSyntaxBlock(syntaxBlocks[i])
+		line := terraformBlock.GetLines().Start
+		if line > 1 && line <= len(lines) {
+			lineAbove := lines[line-2]
+			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIPALL" {
+				skipAll = true
+			}
+
+			if strings.ToUpper(strings.TrimSpace(lineAbove)) == "#YOR:SKIP" || skipAll {
+				p.skippedByCommentList = append(p.skippedByCommentList, terraformBlock.GetResourceID())
+			}
+		}
 		parsedBlocks = append(parsedBlocks, terraformBlock)
 	}
 
 	return parsedBlocks, nil
+}
+func (p *TerraformParser) GetSkipResourcesByComment() []string {
+	return p.skippedByCommentList
 }
 
 func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlock, writeFilePath string) error {
@@ -343,7 +360,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// => we should replace it!
 				rawTagsTokens = newTagsTokens // checkov:skip=CKV_SECRET_6 false positive
 			} else {
-				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2])
+				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
 			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
