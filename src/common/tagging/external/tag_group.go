@@ -110,7 +110,7 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string, useCodeOwners bo
 
 }
 
-func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, _ ...tagging.InitTagGroupOption) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	t.Dir = dir
@@ -222,7 +222,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 										if blockTagKey == tags.GitModifiersTagKey {
 											for _, val := range strings.Split(blockTagValue, "/") {
 												if utils.InSlice(tagMatchStrings, val) {
-													gitModifiersCounts[matchValue] += 1
+													gitModifiersCounts[matchValue]++
 												}
 											}
 										} else if utils.InSlice(tagMatchStrings, blockTagValue) {

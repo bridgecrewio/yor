@@ -92,7 +92,6 @@ jobs:
         with:
           tool_name: golangci-lint
           fail_on_error: true
-          golangci_lint_flags: "--skip-dirs tests/yor_plugins"
   integration-tests:
     runs-on: [self-hosted, public, linux, x64]
     steps:

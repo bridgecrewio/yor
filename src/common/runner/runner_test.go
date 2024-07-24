@@ -165,7 +165,7 @@ func TestRunnerInternals(t *testing.T) {
 			TagPrefix: "prefix_",
 		})
 
-		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, _ error) error {
 			if !info.IsDir() {
 				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerraformParser{}, path)
 				if isFileSkipped {
@@ -299,11 +299,11 @@ func Test_YorNameTag(t *testing.T) {
 		yorNameCounter := 0
 		for _, newTag := range report.NewResourceTags {
 			if newTag.TagKey == tags.YorNameTagKey {
-				yorNameCounter += 1
-				resourceIdParts := strings.Split(newTag.ResourceID, ".")
-				resourceName := resourceIdParts[0]
-				if len(resourceIdParts) > 1 {
-					resourceName = resourceIdParts[1]
+				yorNameCounter++
+				resourceIDParts := strings.Split(newTag.ResourceID, ".")
+				resourceName := resourceIDParts[0]
+				if len(resourceIDParts) > 1 {
+					resourceName = resourceIDParts[1]
 				}
 				assert.Equal(t, resourceName, newTag.UpdatedValue)
 			}
