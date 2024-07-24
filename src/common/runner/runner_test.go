@@ -2,12 +2,13 @@ package runner
 
 import (
 	"fmt"
-	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 
 	cloudformationStructure "github.com/bridgecrewio/yor/src/cloudformation/structure"
 	"github.com/bridgecrewio/yor/src/common/clioptions"
@@ -286,6 +287,9 @@ func Test_YorNameTag(t *testing.T) {
 
 		runner := Runner{}
 		err := runner.Init(&options)
+		if err != nil {
+			t.Error(err)
+		}
 		reportService, err := runner.TagDirectory()
 		if err != nil {
 			t.Error(err)

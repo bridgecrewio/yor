@@ -30,7 +30,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_lb_listener",                        // This resource does not support tags, although docs state otherwise.
 	"aws_lb_listener_rule",                   // This resource does not support tags, although docs state otherwise.
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
-	"google_monitoring_notification_channel", //This resource uses labels for other purposes.
+	"google_monitoring_notification_channel", // This resource uses labels for other purposes.
 	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
 }
 
@@ -266,7 +266,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
 	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
 
-	//we don't add tags to data sources
+	// we don't add tags to data sources
 	if rawBlock.Type() == "data" {
 		return
 	}
@@ -566,7 +566,7 @@ func ExtractProviderFromModuleSrc(source string) string {
 	}
 	if isTerraformRegistryModule(source) {
 		matches := utils.FindSubMatchByGroup(RegistryModuleRegex, source)
-		val, _ := matches["PROVIDER"]
+		val := matches["PROVIDER"]
 		return val
 	}
 	withoutRef := strings.Split(source, "//")[0]

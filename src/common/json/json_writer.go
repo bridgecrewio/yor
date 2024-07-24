@@ -91,7 +91,8 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 		firstTagStr := tagsStr[firstTagIndex : firstTagIndex+strings.Index(tagsStr[firstTagIndex+1:], "\"")]
 		tagEntryIndent := findIndent(tagsStr, '"', strings.Index(tagsStr[1:], "{")) // find the indent of the key and value entry
 		compact := false
-		if strings.Contains(firstTagStr, "\n") {
+		switch {
+		case strings.Contains(firstTagStr, "\n"):
 			// If the tag string has a newline, it means the indent needs to be re-evaluated. Example for this use case:
 			// "Tags": [
 			//   {
@@ -102,15 +103,16 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			indentDiff := len(tagEntryIndent) - len(tagBlockIndent)
 			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-indentDiff]
 			tagEntryIndent = tagEntryIndent[0 : len(tagEntryIndent)-indentDiff]
-		} else if len(tagsLinesList) == 1 {
+		case len(tagsLinesList) == 1:
 			// multi tags in one line
 			compact = true
-		} else {
+		default:
 			// Otherwise, need to take the indent of the "{" character. This case handles:
 			// "Tags": [
 			//   { "Key": "some-key", "Value": "some-val" }
 			// ]
 			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-1]
+
 		}
 
 		// unmarshal updated tags with the indent matching origin file. This will create the tags with the `[]` wrapping which will be discarded later
@@ -154,8 +156,6 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			parentIdentifier = FindParentIdentifier(jsonResourceStr, parentIdentifier)
 			if parentIdentifier == "" {
 				identifiersToAdd = append(identifiersToAdd, resourceBlock.GetResourceID())
-				//nolint:ineffassign
-				parentIdentifier = resourceBlock.GetResourceID()
 				break
 			}
 			indexOfParent = findJSONKeyIndex(resourceStr, parentIdentifier)
