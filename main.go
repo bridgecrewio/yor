@@ -43,7 +43,7 @@ func listTagGroupsCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "list-tag-groups",
 		Usage: "List the tag groups that will be applied by yor",
-		Action: func(c *cli.Context) error {
+		Action: func(_ *cli.Context) error {
 			return listTagGroups()
 		},
 	}

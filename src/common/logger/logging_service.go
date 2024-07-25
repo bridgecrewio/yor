@@ -9,12 +9,11 @@ import (
 )
 
 type loggingService struct {
-	logLevel   LogLevel
-	stdout     *os.File
-	stderr     *os.File
-	tempWriter *os.File
-	disabled   bool
-	muteLock   sync.Mutex
+	logLevel LogLevel
+	stdout   *os.File
+	stderr   *os.File
+	disabled bool
+	muteLock sync.Mutex
 }
 
 type LogLevel int

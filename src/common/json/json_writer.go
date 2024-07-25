@@ -112,6 +112,7 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			//   { "Key": "some-key", "Value": "some-val" }
 			// ]
 			tagBlockIndent = tagBlockIndent[0 : len(tagBlockIndent)-1]
+
 		}
 
 		// unmarshal updated tags with the indent matching origin file. This will create the tags with the `[]` wrapping which will be discarded later
@@ -155,7 +156,6 @@ func AddTagsToResourceStr(fullOriginStr string, resourceBlock structure.IBlock, 
 			parentIdentifier = FindParentIdentifier(jsonResourceStr, parentIdentifier)
 			if parentIdentifier == "" {
 				identifiersToAdd = append(identifiersToAdd, resourceBlock.GetResourceID())
-				parentIdentifier = resourceBlock.GetResourceID()
 				break
 			}
 			indexOfParent = findJSONKeyIndex(resourceStr, parentIdentifier)

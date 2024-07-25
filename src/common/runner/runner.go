@@ -38,7 +38,6 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
-	localModuleTag       bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -92,7 +91,8 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
 	r.skippedTags = commands.SkipTags
-	r.skipDirs = append(commands.SkipDirs, ".git")
+	commands.SkipDirs = append(commands.SkipDirs, ".git")
+	r.skipDirs = commands.SkipDirs
 	r.configFilePath = commands.ConfigFile
 	r.dryRun = commands.DryRun
 	if utils.InSlice(r.skipDirs, r.dir) {
