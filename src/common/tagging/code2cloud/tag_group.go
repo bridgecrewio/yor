@@ -2,6 +2,7 @@ package code2cloud
 
 import (
 	"fmt"
+
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging"

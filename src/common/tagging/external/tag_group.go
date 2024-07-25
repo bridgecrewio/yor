@@ -78,12 +78,11 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 
 		case "directory":
 			prefixes := make([]string, 0)
-			switch filterValue := filterValue.(type) {
-			case []interface{}:
-				for _, e := range filterValue {
-					prefixes = append(prefixes, e.(string))
+			if filterValues, ok := filterValue.([]interface{}); ok {
+				for _, prefix := range filterValues {
+					prefixes = append(prefixes, prefix.(string))
 				}
-			case interface{}:
+			} else {
 				prefixes = append(prefixes, filterValue.(string))
 			}
 			found := false
@@ -111,7 +110,7 @@ func (t *TagGroup) InitExternalTagGroups(configFilePath string, useCodeOwners bo
 
 }
 
-func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, options ...tagging.InitTagGroupOption) {
+func (t *TagGroup) InitTagGroup(dir string, skippedTags []string, explicitlySpecifiedTags []string, _ ...tagging.InitTagGroupOption) {
 	t.SkippedTags = skippedTags
 	t.SpecifiedTags = explicitlySpecifiedTags
 	t.Dir = dir
@@ -223,7 +222,7 @@ func (t *TagGroup) CalculateTagValue(block structure.IBlock, tag Tag) (tags.ITag
 										if blockTagKey == tags.GitModifiersTagKey {
 											for _, val := range strings.Split(blockTagValue, "/") {
 												if utils.InSlice(tagMatchStrings, val) {
-													gitModifiersCounts[matchValue] += 1
+													gitModifiersCounts[matchValue]++
 												}
 											}
 										} else if utils.InSlice(tagMatchStrings, blockTagValue) {

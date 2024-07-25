@@ -2,9 +2,11 @@ package code2cloud
 
 import (
 	"fmt"
+
+	"reflect"
+
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
-	"reflect"
 )
 
 type YorNameTag struct {
