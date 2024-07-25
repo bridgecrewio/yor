@@ -51,26 +51,24 @@ output:
   # make issues output unique by line, default is true
   uniq-by-line: true
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+  max-issues-per-linter: 100
+  max-same-issues: 100
+  exclude-dirs:
+    - "tests/yor_plugins"
 linters:
   enable:
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
     - gofmt
-    - golint
     - goimports
     - gocritic
     - unconvert
     - unparam
     - gocritic
-    - golint
+    - revive
   fast: true

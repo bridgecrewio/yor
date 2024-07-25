@@ -66,7 +66,7 @@ func (b *TerraformBlock) IsGCPBlock() bool {
 }
 
 func (b *TerraformBlock) GetResourceName() string {
-	resourceId := b.GetResourceID()
+	resourceID := b.GetResourceID()
 	resourceType := b.GetResourceType()
-	return strings.ReplaceAll(resourceId, strings.Join([]string{resourceType, ""}, "."), "")
+	return strings.ReplaceAll(resourceID, strings.Join([]string{resourceType, ""}, "."), "")
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestCliArgParsing(t *testing.T) {
-	t.Run("Tag local options flag", func(t *testing.T) {
+	t.Run("Tag local options flag", func(_ *testing.T) {
 		options := TagOptions{
 			Directory:       "some/dir",
 			Tag:             nil,
@@ -26,7 +26,7 @@ func TestCliArgParsing(t *testing.T) {
 		// Expect the validation to pass without throwing errors
 		options.Validate()
 	})
-	t.Run("Test tag argument parsing - valid output", func(t *testing.T) {
+	t.Run("Test tag argument parsing - valid output", func(_ *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            nil,
@@ -53,7 +53,7 @@ func TestCliArgParsing(t *testing.T) {
 		assert.Fail(t, "Should have failed already")
 	})
 
-	t.Run("Test tag argument parsing - valid tag groups", func(t *testing.T) {
+	t.Run("Test tag argument parsing - valid tag groups", func(_ *testing.T) {
 		options := TagOptions{
 			Directory:      "some/dir",
 			Tag:            nil,
@@ -88,7 +88,7 @@ func TestCliArgParsing(t *testing.T) {
 		assert.Fail(t, "Should have failed already")
 	})
 
-	t.Run("Test CLI argument parsing - list-tags - valid output", func(t *testing.T) {
+	t.Run("Test CLI argument parsing - list-tags - valid output", func(_ *testing.T) {
 		options := ListTagsOptions{
 			TagGroups: []string{"simple", "git"},
 		}
@@ -97,7 +97,7 @@ func TestCliArgParsing(t *testing.T) {
 	})
 }
 
-func TestOutputCrasher(t *testing.T) {
+func TestOutputCrasher(_ *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
@@ -114,7 +114,7 @@ func TestOutputCrasher(t *testing.T) {
 	}
 }
 
-func TestTagGroupCrasher(t *testing.T) {
+func TestTagGroupCrasher(_ *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := TagOptions{
 			Directory:      "some/dir",
@@ -131,7 +131,7 @@ func TestTagGroupCrasher(t *testing.T) {
 	}
 }
 
-func TestListTagsGroupCrasher(t *testing.T) {
+func TestListTagsGroupCrasher(_ *testing.T) {
 	if os.Getenv("UT_CRASH") == "RUN" {
 		options := ListTagsOptions{
 			TagGroups: []string{"custom"},
