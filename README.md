@@ -154,6 +154,9 @@ Pre-commit
 # Apply all the tags in yor on the directory tree terraform.
 yor tag --directory terraform/
 
+# Apply all the tags in yor on the directory terraform, without tagging subdirectories.
+yor tag --directory terraform/ --non-recursive
+
 # Apply only the specified tags git_file and git_org
 yor tag --directory terraform/ --tags git_file,git_org
 
