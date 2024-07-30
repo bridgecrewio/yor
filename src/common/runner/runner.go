@@ -38,6 +38,7 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
+	nonRecursive         bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
