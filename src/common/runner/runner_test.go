@@ -310,7 +310,9 @@ func Test_YorNameTag(t *testing.T) {
 		}
 		assert.True(t, yorNameCounter > 0)
 	})
+}
 
+func TestNonRecursiveTagging(t *testing.T) {
 	t.Run("tag directory non recursive", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources"
 		runner := new(Runner)
