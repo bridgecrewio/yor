@@ -310,4 +310,28 @@ func Test_YorNameTag(t *testing.T) {
 		}
 		assert.True(t, yorNameCounter > 0)
 	})
+
+	t.Run("tag directory non recursive", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources"
+		runner := new(Runner)
+		err := runner.Init(&clioptions.TagOptions{
+			Directory:    rootDir,
+			TagGroups:    taggingUtils.GetAllTagGroupsNames(),
+			NonRecursive: true,
+			Parsers:      []string{"Terraform"},
+		})
+		if err != nil {
+			t.Error(err)
+		}
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+		for _, newTag := range report.NewResourceTags {
+			assert.Contains(t, []string{"..\\..\\..\\tests\\terraform\\resources\\complex_tags.tf", "..\\..\\..\\tests\\terraform\\resources\\eks.tf"}, newTag.File)
+		}
+
+	})
 }
