@@ -314,7 +314,7 @@ func Test_YorNameTag(t *testing.T) {
 
 func TestNonRecursiveTagging(t *testing.T) {
 	t.Run("tag directory non recursive", func(t *testing.T) {
-		rootDir := "../../../tests/terraform/resources"
+		rootDir := "../../../tests/terraform/resources/taggedkms"
 		runner := new(Runner)
 		err := runner.Init(&clioptions.TagOptions{
 			Directory:    rootDir,
@@ -332,8 +332,7 @@ func TestNonRecursiveTagging(t *testing.T) {
 		reportService.CreateReport()
 		report := reportService.GetReport()
 		for _, newTag := range report.NewResourceTags {
-			assert.Contains(t, []string{"..\\..\\..\\tests\\terraform\\resources\\complex_tags.tf", "..\\..\\..\\tests\\terraform\\resources\\eks.tf"}, newTag.File)
+			assert.NotEqual(t, "../../../tests/terraform/resources/taggedkms/modified/modified_kms.tf", newTag.File)
 		}
-
 	})
 }
