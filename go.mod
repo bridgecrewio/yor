@@ -6,10 +6,10 @@ require (
 	github.com/awslabs/goformation/v5 v5.2.7
 	github.com/bridgecrewio/goformation/v5 v5.0.0-20210823083242-84a6d242099f
 	github.com/go-git/go-git/v5 v5.11.0
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.5.0
 	github.com/hashicorp/go-hclog v0.9.2
 	github.com/hashicorp/go-version v1.2.0
-	github.com/hashicorp/hcl/v2 v2.8.2
+	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform v0.14.0
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20211115214459-90acf1ca460f
 	github.com/minamijoyo/tfschema v0.6.0
@@ -19,10 +19,16 @@ require (
 	github.com/sanathkr/yaml v1.0.0
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/zclconf/go-cty v1.7.0
+	github.com/zclconf/go-cty v1.14.1
 	go.opencensus.io v0.22.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 )
 
 require (
@@ -46,16 +52,15 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190329064014-6e358769c32a // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v0.0.0-20190103054945-8205d1f41e70 // indirect
 	github.com/aliyun/aliyun-tablestore-go-sdk v4.1.2+incompatible // indirect
-	github.com/apparentlymart/go-cidr v1.0.1 // indirect
+	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg v1.0.0 // indirect
-	github.com/apparentlymart/go-textseg/v12 v12.0.0 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.33.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/bmatcuk/doublestar v1.1.5 // indirect
+	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
@@ -68,6 +73,7 @@ require (
 	github.com/dylanmei/iso8601 v0.1.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.7.0 // indirect
+	github.com/genelet/determined v1.11.4
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -91,7 +97,7 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-slug v0.5.0 // indirect
 	github.com/hashicorp/go-tfe v0.8.1 // indirect
-	github.com/hashicorp/go-uuid v1.0.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20190515223218-4b22149b7cef // indirect
@@ -132,7 +138,7 @@ require (
 	github.com/packer-community/winrmcp v0.0.0-20180102160824-81144009af58 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.1 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/sanathkr/go-yaml v0.0.0-20170819195128-ed9d249f429b // indirect
@@ -147,11 +153,9 @@ require (
 	github.com/terraform-providers/terraform-provider-openstack v1.15.0 // indirect
 	github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
-	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
-	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v0.0.0-20161029104018-1d6e34225557 // indirect
-	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
+	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
@@ -164,7 +168,7 @@ require (
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.27.1 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -3,6 +3,7 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/genelet/determined/dethcl"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -124,6 +125,12 @@ func (p *TerraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerraformParser) ValidFile(_ string) bool {
 	return true
+}
+
+type Tags map[string]string
+
+type Resource struct {
+	Tags Tags `hcl:"tags,optional"`
 }
 
 func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -254,13 +261,13 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 	}
 
 	// can't delete files on windows if you dont close them
-	if err = fd.Close(); err != nil {
-		return err
-	}
-	err = os.Remove(tempFile.Name())
-	if err != nil {
-		return err
-	}
+	// if err = fd.Close(); err != nil {
+	// 	return err
+	// }
+	// err = os.Remove(tempFile.Name())
+	// if err != nil {
+	// 	return err
+	// }
 
 	// #nosec G304
 	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
@@ -296,12 +303,17 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	} else {
 		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		isMergeOpExists := false
+		isForOpExists := false
 		isRenderedAttribute := false
-		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
+		existingParsedTags, _ := p.parseTagAttribute(rawTagsTokens)
 		for i, rawTagsToken := range rawTagsTokens {
 			tokenStr := string(rawTagsToken.Bytes)
 			if tokenStr == "merge" {
 				isMergeOpExists = true
+				break
+			}
+			if tokenStr == "for" {
+				isForOpExists = true
 				break
 			}
 			if i == 0 && utils.InSlice([]string{VarBlockType, LocalBlockType, ModuleBlockType, DataBlockType, EachBlockType}, tokenStr) {
@@ -360,7 +372,11 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// => we should replace it!
 				rawTagsTokens = newTagsTokens // checkov:skip=CKV_SECRET_6 false positive
 			} else {
-				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
+				if isForOpExists {
+					rawTagsTokens = newTagsTokens
+				} else {
+					rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
+				}
 			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
@@ -665,7 +681,7 @@ func (p *TerraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribut
 		// if tags exists in resource
 		isTaggable, _ = p.isBlockTaggable(hclBlock)
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		parsedTags := p.parseTagAttribute(tagsTokens)
+		parsedTags, _ := p.parseTagAttribute(tagsTokens)
 		for key := range parsedTags {
 			iTag := tags.Init(key, parsedTags[key])
 			existingTags = append(existingTags, iTag)
@@ -799,7 +815,39 @@ func getUncloseBracketsCount(bracketsCounters map[hclsyntax.TokenType]int) int {
 	return sum
 }
 
-func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
+func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) (map[string]string, error) {
+	isForOpExists := false
+	for _, rawTagsToken := range tokens {
+		tokenStr := string(rawTagsToken.Bytes)
+		if tokenStr == "for" {
+			isForOpExists = true
+			break
+		}
+	}
+	if isForOpExists {
+		hclData := new(Resource)
+		hclBytes := tokens.Bytes()
+		hclBytes = []byte(strings.Replace(string(hclBytes), "{", " tags= {", 1))
+		// Unmarshalling the HCL data into a map
+
+		err := dethcl.Unmarshal([]byte(hclBytes), hclData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshel data because %s", err)
+		}
+
+		jsonData, err := dethcl.Marshal(hclData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshel data because %s", err)
+
+		}
+		hclFile, diagnostics := hclwrite.ParseConfig(jsonData, "", hcl.InitialPos)
+		if diagnostics != nil && diagnostics.HasErrors() {
+			return nil, fmt.Errorf("failed to convert to hclFile %s", diagnostics)
+		}
+		tagsAttribute := hclFile.Body().GetAttribute("tags")
+		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		tokens = tagsTokens
+	}
 	hclMaps := p.getHclMapsContents(tokens)
 	tagPairs := make([]hclwrite.Tokens, 0)
 	for _, hclMap := range hclMaps {
@@ -824,7 +872,7 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]s
 		parsedTags[key] = value
 	}
 
-	return parsedTags
+	return parsedTags, nil
 }
 
 func (p *TerraformParser) getClient(providerName string) tfschema.Client {
@@ -878,7 +926,7 @@ func (p *TerraformParser) getModuleTags(hclBlock *hclwrite.Block, tagsAttributeN
 		// if tags exists in module
 		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		parsedTags := p.parseTagAttribute(tagsTokens)
+		parsedTags, _ := p.parseTagAttribute(tagsTokens)
 		for key := range parsedTags {
 			iTag := tags.Init(key, parsedTags[key])
 			existingTags = append(existingTags, iTag)

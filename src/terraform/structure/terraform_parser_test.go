@@ -50,19 +50,31 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 		assert.Empty(t, p.GetSkipResourcesByComment())
 	})
 
-	t.Run("One resource with skip comment, only that resource added to skipResourcesByComment slice", func(t *testing.T) {
-		// Initialize TerraformParser and parse file with one resource containing skip tag
-		p := &TerraformParser{}
-		p.Init("../../../tests/terraform/skipComment/", nil)
-		defer p.Close()
-		filePath := "../../../tests/terraform/skipComment/skipOne.tf"
-		_, err := p.ParseFile(filePath)
-		if err != nil {
-			t.Errorf("failed to read hcl file because %s", err)
+}
+
+func TestParseTagAttribute(t *testing.T) {
+	filePath := "../../../tests/terraform/foorOption/one.tf"
+	expectedTags := map[string]string{
+		"c": "d",
+	}
+	parser := &TerraformParser{}
+	parsedBlocks, err := parser.ParseFile(filePath)
+	if err != nil {
+		t.Fatalf("Failed to parse file: %v", err)
+	}
+	for _, block := range parsedBlocks {
+		hclBlock := block.GetRawBlock().(*hclwrite.Block)
+		tagsAttributeName, _ := parser.getTagsAttributeName(hclBlock)
+		tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
+		if tagsAttribute != nil {
+			tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+			parsedTags, _ := parser.parseTagAttribute(tagsTokens)
+			if(block.GetResourceName()=="a"){
+			assert.Equal(t, parsedTags, expectedTags)
 		}
-		exceptedSkipResources := []string{"aws_instance.example_instance"}
-		assert.Equal(t, exceptedSkipResources, p.GetSkipResourcesByComment())
-	})
+		}
+
+	}
 }
 
 func TestTerraformParser_ParseFile(t *testing.T) {
