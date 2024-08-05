@@ -53,7 +53,7 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 }
 
 func TestParseTagAttribute(t *testing.T) {
-	filePath := "../../../tests/terraform/foorOption/one.tf"
+	filePath := "../../../tests/terraform/forLoop/main.tf"
 	expectedTags := map[string]string{
 		"c": "d",
 	}
@@ -69,9 +69,9 @@ func TestParseTagAttribute(t *testing.T) {
 		if tagsAttribute != nil {
 			tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 			parsedTags, _ := parser.parseTagAttribute(tagsTokens)
-			if(block.GetResourceName()=="a"){
-			assert.Equal(t, parsedTags, expectedTags)
-		}
+			if block.GetResourceName() == "bucket_var_tags" {
+				assert.Equal(t, parsedTags, expectedTags)
+			}
 		}
 
 	}

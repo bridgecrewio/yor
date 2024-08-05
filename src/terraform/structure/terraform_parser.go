@@ -261,13 +261,13 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 	}
 
 	// can't delete files on windows if you dont close them
-	// if err = fd.Close(); err != nil {
-	// 	return err
-	// }
-	// err = os.Remove(tempFile.Name())
-	// if err != nil {
-	// 	return err
-	// }
+	if err = fd.Close(); err != nil {
+		return err
+	}
+	err = os.Remove(tempFile.Name())
+	if err != nil {
+		return err
+	}
 
 	// #nosec G304
 	f, err := os.OpenFile(writeFilePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0600)
@@ -828,19 +828,18 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) (map[string]
 		hclData := new(Resource)
 		hclBytes := tokens.Bytes()
 		hclBytes = []byte(strings.Replace(string(hclBytes), "{", " tags= {", 1))
-		// Unmarshalling the HCL data into a map
 
 		err := dethcl.Unmarshal([]byte(hclBytes), hclData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshel data because %s", err)
 		}
 
-		jsonData, err := dethcl.Marshal(hclData)
+		tempHclData, err := dethcl.Marshal(hclData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshel data because %s", err)
 
 		}
-		hclFile, diagnostics := hclwrite.ParseConfig(jsonData, "", hcl.InitialPos)
+		hclFile, diagnostics := hclwrite.ParseConfig(tempHclData, "", hcl.InitialPos)
 		if diagnostics != nil && diagnostics.HasErrors() {
 			return nil, fmt.Errorf("failed to convert to hclFile %s", diagnostics)
 		}
