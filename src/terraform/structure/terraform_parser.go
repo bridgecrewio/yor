@@ -3,7 +3,6 @@ package structure
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/genelet/determined/dethcl"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -16,6 +15,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
+	"github.com/genelet/determined/dethcl"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -305,7 +305,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 		isMergeOpExists := false
 		isForOpExists := false
 		isRenderedAttribute := false
-		existingParsedTags, _ := p.parseTagAttribute(rawTagsTokens)
+		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
 		for i, rawTagsToken := range rawTagsTokens {
 			tokenStr := string(rawTagsToken.Bytes)
 			if tokenStr == "merge" {
@@ -681,7 +681,7 @@ func (p *TerraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribut
 		// if tags exists in resource
 		isTaggable, _ = p.isBlockTaggable(hclBlock)
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		parsedTags, _ := p.parseTagAttribute(tagsTokens)
+		parsedTags := p.parseTagAttribute(tagsTokens)
 		for key := range parsedTags {
 			iTag := tags.Init(key, parsedTags[key])
 			existingTags = append(existingTags, iTag)
@@ -815,7 +815,7 @@ func getUncloseBracketsCount(bracketsCounters map[hclsyntax.TokenType]int) int {
 	return sum
 }
 
-func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) (map[string]string, error) {
+func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
 	isForOpExists := false
 	for _, rawTagsToken := range tokens {
 		tokenStr := string(rawTagsToken.Bytes)
@@ -828,21 +828,9 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) (map[string]
 		hclData := new(Resource)
 		hclBytes := tokens.Bytes()
 		hclBytes = []byte(strings.Replace(string(hclBytes), "{", " tags= {", 1))
-
-		err := dethcl.Unmarshal([]byte(hclBytes), hclData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshel data because %s", err)
-		}
-
-		tempHclData, err := dethcl.Marshal(hclData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshel data because %s", err)
-
-		}
-		hclFile, diagnostics := hclwrite.ParseConfig(tempHclData, "", hcl.InitialPos)
-		if diagnostics != nil && diagnostics.HasErrors() {
-			return nil, fmt.Errorf("failed to convert to hclFile %s", diagnostics)
-		}
+		dethcl.Unmarshal((hclBytes), hclData)
+		tempHclData, _ := dethcl.Marshal(hclData)
+		hclFile, _ := hclwrite.ParseConfig(tempHclData, "", hcl.InitialPos)
 		tagsAttribute := hclFile.Body().GetAttribute("tags")
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		tokens = tagsTokens
@@ -871,7 +859,7 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) (map[string]
 		parsedTags[key] = value
 	}
 
-	return parsedTags, nil
+	return parsedTags
 }
 
 func (p *TerraformParser) getClient(providerName string) tfschema.Client {
@@ -925,7 +913,7 @@ func (p *TerraformParser) getModuleTags(hclBlock *hclwrite.Block, tagsAttributeN
 		// if tags exists in module
 		isTaggable = true
 		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
-		parsedTags, _ := p.parseTagAttribute(tagsTokens)
+		parsedTags := p.parseTagAttribute(tagsTokens)
 		for key := range parsedTags {
 			iTag := tags.Init(key, parsedTags[key])
 			existingTags = append(existingTags, iTag)
