@@ -15,6 +15,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/structure"
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	"github.com/bridgecrewio/yor/src/common/utils"
+	"github.com/genelet/determined/dethcl"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -124,6 +125,12 @@ func (p *TerraformParser) GetSourceFiles(directory string) ([]string, error) {
 
 func (p *TerraformParser) ValidFile(_ string) bool {
 	return true
+}
+
+type Tags map[string]string
+
+type Resource struct {
+	Tags Tags `hcl:"tags,optional"`
 }
 
 func (p *TerraformParser) ParseFile(filePath string) ([]structure.IBlock, error) {
@@ -296,12 +303,17 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	} else {
 		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
 		isMergeOpExists := false
+		isForOpExists := false
 		isRenderedAttribute := false
 		existingParsedTags := p.parseTagAttribute(rawTagsTokens)
 		for i, rawTagsToken := range rawTagsTokens {
 			tokenStr := string(rawTagsToken.Bytes)
 			if tokenStr == "merge" {
 				isMergeOpExists = true
+				break
+			}
+			if tokenStr == "for" {
+				isForOpExists = true
 				break
 			}
 			if i == 0 && utils.InSlice([]string{VarBlockType, LocalBlockType, ModuleBlockType, DataBlockType, EachBlockType}, tokenStr) {
@@ -360,7 +372,11 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 				// => we should replace it!
 				rawTagsTokens = newTagsTokens // checkov:skip=CKV_SECRET_6 false positive
 			} else {
-				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
+				if isForOpExists {
+					rawTagsTokens = newTagsTokens
+				} else {
+					rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
+				}
 			}
 			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
 			return
@@ -800,6 +816,25 @@ func getUncloseBracketsCount(bracketsCounters map[hclsyntax.TokenType]int) int {
 }
 
 func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]string {
+	isForOpExists := false
+	for _, rawTagsToken := range tokens {
+		tokenStr := string(rawTagsToken.Bytes)
+		if tokenStr == "for" {
+			isForOpExists = true
+			break
+		}
+	}
+	if isForOpExists {
+		hclData := new(Resource)
+		hclBytes := tokens.Bytes()
+		hclBytes = []byte(strings.Replace(string(hclBytes), "{", " tags= {", 1))
+		_ = dethcl.Unmarshal((hclBytes), hclData)
+		tempHclData, _ := dethcl.Marshal(hclData)
+		hclFile, _ := hclwrite.ParseConfig(tempHclData, "", hcl.InitialPos)
+		tagsAttribute := hclFile.Body().GetAttribute("tags")
+		tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+		tokens = tagsTokens
+	}
 	hclMaps := p.getHclMapsContents(tokens)
 	tagPairs := make([]hclwrite.Tokens, 0)
 	for _, hclMap := range hclMaps {

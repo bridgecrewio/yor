@@ -49,7 +49,6 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 		}
 		assert.Empty(t, p.GetSkipResourcesByComment())
 	})
-
 	t.Run("One resource with skip comment, only that resource added to skipResourcesByComment slice", func(t *testing.T) {
 		// Initialize TerraformParser and parse file with one resource containing skip tag
 		p := &TerraformParser{}
@@ -63,6 +62,32 @@ func TestTerraformParser_SkipResourceByComment(t *testing.T) {
 		exceptedSkipResources := []string{"aws_instance.example_instance"}
 		assert.Equal(t, exceptedSkipResources, p.GetSkipResourcesByComment())
 	})
+
+}
+
+func TestParseTagAttribute(t *testing.T) {
+	filePath := "../../../tests/terraform/forLoop/main.tf"
+	expectedTags := map[string]string{
+		"c": "d",
+	}
+	parser := &TerraformParser{}
+	parsedBlocks, err := parser.ParseFile(filePath)
+	if err != nil {
+		t.Fatalf("Failed to parse file: %v", err)
+	}
+	for _, block := range parsedBlocks {
+		hclBlock := block.GetRawBlock().(*hclwrite.Block)
+		tagsAttributeName, _ := parser.getTagsAttributeName(hclBlock)
+		tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
+		if tagsAttribute != nil {
+			tagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
+			parsedTags := parser.parseTagAttribute(tagsTokens)
+			if block.GetResourceName() == "bucket_var_tags" {
+				assert.Equal(t, parsedTags, expectedTags)
+			}
+		}
+
+	}
 }
 
 func TestTerraformParser_ParseFile(t *testing.T) {
