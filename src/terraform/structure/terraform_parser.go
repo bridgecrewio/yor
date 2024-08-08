@@ -828,7 +828,7 @@ func (p *TerraformParser) parseTagAttribute(tokens hclwrite.Tokens) map[string]s
 		hclData := new(Resource)
 		hclBytes := tokens.Bytes()
 		hclBytes = []byte(strings.Replace(string(hclBytes), "{", " tags= {", 1))
-		dethcl.Unmarshal((hclBytes), hclData)
+		_ = dethcl.Unmarshal((hclBytes), hclData)
 		tempHclData, _ := dethcl.Marshal(hclData)
 		hclFile, _ := hclwrite.ParseConfig(tempHclData, "", hcl.InitialPos)
 		tagsAttribute := hclFile.Body().GetAttribute("tags")
