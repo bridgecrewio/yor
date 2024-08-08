@@ -34,8 +34,9 @@ during pull request review and as part of any build process.
     git config --global user.email "$AUTO_COMMITTER_EMAIL"
     echo ".yor_plugins" >> .gitignore
     git add .
+    git remote add gitlab_origin "https://oauth2:${GIT_PUSH_TOKEN}@gitlab.com/${CI_PROJECT_PATH}"
     git commit -m "YOR: Auto add/update yor.io tags."
-    git push -o ci.skip "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
+    git push gitlab_origin HEAD:main -o ci.skip
   else
     echo "no updated resources, nothing to commit."
   fi
