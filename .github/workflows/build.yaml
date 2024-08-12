@@ -42,7 +42,7 @@ jobs:
         with:
           go-version: 1.19
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1  # v2
+        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8  # v2
         with:
           terraform_version: 0.14.5
       - name: Terraform Init
