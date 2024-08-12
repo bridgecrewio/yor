@@ -40,11 +40,11 @@ jobs:
         with:
           go-version: '1.19' # To match codeql go version
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@012739e5082ff0c22ca6d6ab32e07c36df03c4a4  # v2
+        uses: github/codeql-action/init@eb055d739abdc2e8de2e5f4ba1a8b246daa779aa  # v2
         with:
           languages: go
           config-file: ./.github/codeql-config.yml
       - name: Build
         run: go build
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@012739e5082ff0c22ca6d6ab32e07c36df03c4a4  # v2
+        uses: github/codeql-action/analyze@eb055d739abdc2e8de2e5f4ba1a8b246daa779aa  # v2
