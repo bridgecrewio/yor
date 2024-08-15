@@ -165,7 +165,7 @@ func TestRunnerInternals(t *testing.T) {
 			TagPrefix: "prefix_",
 		})
 
-		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		_ = filepath.Walk(rootDir, func(path string, info os.FileInfo, _ error) error {
 			if !info.IsDir() {
 				isFileSkipped := runner.isFileSkipped(&terraformStructure.TerraformParser{}, path)
 				if isFileSkipped {
@@ -299,15 +299,40 @@ func Test_YorNameTag(t *testing.T) {
 		yorNameCounter := 0
 		for _, newTag := range report.NewResourceTags {
 			if newTag.TagKey == tags.YorNameTagKey {
-				yorNameCounter += 1
-				resourceIdParts := strings.Split(newTag.ResourceID, ".")
-				resourceName := resourceIdParts[0]
-				if len(resourceIdParts) > 1 {
-					resourceName = resourceIdParts[1]
+				yorNameCounter++
+				resourceIDParts := strings.Split(newTag.ResourceID, ".")
+				resourceName := resourceIDParts[0]
+				if len(resourceIDParts) > 1 {
+					resourceName = resourceIDParts[1]
 				}
 				assert.Equal(t, resourceName, newTag.UpdatedValue)
 			}
 		}
 		assert.True(t, yorNameCounter > 0)
+	})
+}
+
+func TestNonRecursiveTagging(t *testing.T) {
+	t.Run("tag directory non recursive", func(t *testing.T) {
+		rootDir := "../../../tests/terraform/resources/taggedkms"
+		runner := new(Runner)
+		err := runner.Init(&clioptions.TagOptions{
+			Directory:    rootDir,
+			TagGroups:    taggingUtils.GetAllTagGroupsNames(),
+			NonRecursive: true,
+			Parsers:      []string{"Terraform"},
+		})
+		if err != nil {
+			t.Error(err)
+		}
+		reportService, err := runner.TagDirectory()
+		if err != nil {
+			t.Error(err)
+		}
+		reportService.CreateReport()
+		report := reportService.GetReport()
+		for _, newTag := range report.NewResourceTags {
+			assert.NotEqual(t, "../../../tests/terraform/resources/taggedkms/modified/modified_kms.tf", newTag.File)
+		}
 	})
 }

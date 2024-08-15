@@ -208,7 +208,11 @@ func (t *TagGroup) hasNonTagChanges(blame *gitservice.GitBlame, block structure.
 
 func (t *TagGroup) cleanGCPTagValue(val tags.ITag) {
 	updated := val.GetValue()
-	switch val.GetKey() {
+	keyValue := val.GetKey()
+	if t.Options.TagPrefix != "" {
+		keyValue = strings.TrimPrefix(keyValue, t.Options.TagPrefix)
+	}
+	switch keyValue {
 	case tags.GitModifiersTagKey:
 		modifiers := strings.Split(updated, "/")
 		for i, m := range modifiers {

@@ -38,7 +38,7 @@ func WriteYAMLFile(readFilePath string, blocks []structure.IBlock, writeFilePath
 	}
 	for _, resourceBlock := range blocks {
 		rawBlock := resourceBlock.GetRawBlock()
-		newResourceLines := getYAMLLines(rawBlock, isCfn)
+		newResourceLines := getYAMLLines(rawBlock)
 		newResourceTagLineRange, _ := FindTagsLinesYAML(newResourceLines, tagsAttributeName)
 		oldResourceLinesRange := resourceBlock.GetLines()
 		oldResourceLines := originLines[oldResourceLinesRange.Start : oldResourceLinesRange.End+1]
@@ -213,7 +213,7 @@ func computeResourcesLineRange(originLines []string, blocks []structure.IBlock, 
 	return ret
 }
 
-func getYAMLLines(rawBlock interface{}, isCfn bool) []string {
+func getYAMLLines(rawBlock interface{}) []string {
 	var textLines []string
 	yamlBytes, err := yaml.Marshal(rawBlock)
 	if err != nil {
@@ -222,20 +222,6 @@ func getYAMLLines(rawBlock interface{}, isCfn bool) []string {
 
 	textLines = utils.GetLinesFromBytes(yamlBytes)
 
-	return textLines
-}
-
-func removeLineByAttribute(textLines []string, attribute string) []string {
-	vpcLineIndex := -1
-	for i, line := range textLines {
-		if strings.Contains(line, attribute) {
-			vpcLineIndex = i
-			break
-		}
-	}
-	if vpcLineIndex != -1 {
-		textLines = append(textLines[:vpcLineIndex], textLines[vpcLineIndex+1:]...)
-	}
 	return textLines
 }
 
@@ -307,6 +293,7 @@ func MapResourcesLineYAML(filePath string, resourceNames []string, resourcesStar
 			lineIndent := countLeadingSpaces(line)
 			if lineIndent <= resourcesIndent && strings.TrimSpace(line) != "" && !strings.Contains(line, "#") {
 				// No longer inside resources block, get the last line of the previous resource if exists
+				//nolint:ineffassign
 				readResources = false
 				if latestResourceName != "" {
 					resourceToLines[latestResourceName].End = findLastNonEmptyLine(fileLines, i-1)

@@ -107,6 +107,14 @@ func TestGitTagGroupWithPrefix(t *testing.T) {
 		assert.True(t, strings.HasPrefix(tag.GetKey(), "prefix_"))
 	}
 }
+func TestCleanGCPTagValueWithTagPrefix(t *testing.T) {
+	tagGroup := TagGroup{}
+	tagGroup.Options.TagPrefix = "prefix_"
+	tag := &tags.Tag{Key: "prefix_" + tags.GitFileTagKey, Value: "test/to/path"}
+	tagGroup.cleanGCPTagValue(tag)
+	assert.Equal(t, "test__to__path", tag.GetValue())
+
+}
 
 var ExpectedFileMappingTagged = map[string]map[int]int{
 	"originToGit": {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: -1, 7: -1, 8: -1, 9: -1, 10: -1, 11: -1, 12: -1, 13: -1, 14: -1, 15: -1, 16: 6, 17: 7, 18: 8, 19: 9, 20: 10, 21: 11, 22: 12},

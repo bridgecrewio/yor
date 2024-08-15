@@ -43,7 +43,7 @@ func listTagGroupsCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "list-tag-groups",
 		Usage: "List the tag groups that will be applied by yor",
-		Action: func(c *cli.Context) error {
+		Action: func(_ *cli.Context) error {
 			return listTagGroups()
 		},
 	}
@@ -95,6 +95,7 @@ func tagCommand() *cli.Command {
 	tagPrefix := "tag-prefix"
 	noColor := "no-color"
 	useCodeowners := "use-code-owners"
+	nonRecursiveArgs := "non-recursive"
 	return &cli.Command{
 		Name:                   "tag",
 		Usage:                  "apply tagging across your directory",
@@ -120,6 +121,7 @@ func tagCommand() *cli.Command {
 				TagPrefix:         c.String(tagPrefix),
 				NoColor:           c.Bool(noColor),
 				UseCodeOwners:     c.Bool(useCodeowners),
+				NonRecursive:      c.Bool(nonRecursiveArgs),
 			}
 
 			options.Validate()
@@ -237,6 +239,12 @@ func tagCommand() *cli.Command {
 			&cli.BoolFlag{
 				Name:        useCodeowners,
 				Usage:       "use code owners file to tag team",
+				Value:       false,
+				DefaultText: "false",
+			},
+			&cli.BoolFlag{
+				Name:        nonRecursiveArgs,
+				Usage:       "non recursive tagging",
 				Value:       false,
 				DefaultText: "false",
 			},

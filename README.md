@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
-![Coverage](https://img.shields.io/badge/Coverage-80.8%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-81.1%25-brightgreen)
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=yor)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
@@ -153,6 +153,9 @@ Pre-commit
 ```sh
 # Apply all the tags in yor on the directory tree terraform.
 yor tag --directory terraform/
+
+# Apply all the tags in yor on the directory terraform, without tagging subdirectories.
+yor tag --directory terraform/ --non-recursive
 
 # Apply only the specified tags git_file and git_org
 yor tag --directory terraform/ --tags git_file,git_org

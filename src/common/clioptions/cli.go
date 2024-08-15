@@ -33,6 +33,7 @@ type TagOptions struct {
 	TagPrefix         string
 	NoColor           bool
 	UseCodeOwners     bool
+	NonRecursive      bool
 }
 
 type ListTagsOptions struct {

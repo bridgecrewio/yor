@@ -38,7 +38,7 @@ type Runner struct {
 	skippedResources     []string
 	workersNum           int
 	dryRun               bool
-	localModuleTag       bool
+	nonRecursive         bool
 }
 
 const WorkersNumEnvKey = "YOR_WORKER_NUM"
@@ -92,9 +92,11 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 	r.reportingService = reports.ReportServiceInst
 	r.dir = commands.Directory
 	r.skippedTags = commands.SkipTags
-	r.skipDirs = append(commands.SkipDirs, ".git")
+	commands.SkipDirs = append(commands.SkipDirs, ".git")
+	r.skipDirs = commands.SkipDirs
 	r.configFilePath = commands.ConfigFile
 	r.dryRun = commands.DryRun
+	r.nonRecursive = commands.NonRecursive
 	if utils.InSlice(r.skipDirs, r.dir) {
 		logger.Warning(fmt.Sprintf("Selected dir, %s, is skipped - expect an empty result", r.dir))
 	}
@@ -120,6 +122,9 @@ func (r *Runner) TagDirectory() (*reports.ReportService, error) {
 	err := filepath.Walk(r.dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Warning(fmt.Sprintf("Failed to scan dir %s", path))
+		}
+		if r.nonRecursive && info.IsDir() && path != r.dir {
+			return filepath.SkipDir
 		}
 		if !info.IsDir() {
 			files = append(files, path)

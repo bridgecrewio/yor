@@ -76,7 +76,7 @@ func (p *TerraformParser) Init(rootDir string, args map[string]string) {
 
 func (p *TerraformParser) Close() {
 	logger.MuteOutputBlock(func() {
-		p.providerToClientMap.Range(func(provider, iClient interface{}) bool {
+		p.providerToClientMap.Range(func(_, iClient interface{}) bool {
 			client := iClient.(tfschema.Client)
 			client.Close()
 			return true

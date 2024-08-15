@@ -49,7 +49,7 @@ func (t *TagGroup) SetTags(tags []tags.ITag) {
 	for _, tag := range tags {
 		tag.Init()
 		tag.SetTagPrefix(t.Options.TagPrefix)
-		if !t.IsTagSkipped(tag) && (t.SpecifiedTags == nil || len(t.SpecifiedTags) == 0 || utils.InSlice(t.SpecifiedTags, tag.GetKey())) {
+		if !t.IsTagSkipped(tag) && (t.SpecifiedTags == nil || len(t.SpecifiedTags) == 0 || utils.InSlice(t.SpecifiedTags, strings.TrimPrefix(tag.GetKey(), t.Options.TagPrefix))) {
 			t.tags = append(t.tags, tag)
 		}
 	}
