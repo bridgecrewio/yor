@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
           token: ${{ secrets.PAT }}
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v3
         with:
           # needed for terraform-setup https://github.com/hashicorp/setup-terraform/issues/84
           node-version: '16'
