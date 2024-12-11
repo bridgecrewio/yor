@@ -15,6 +15,7 @@ require (
 	github.com/minamijoyo/tfschema v0.6.0
 	github.com/mitchellh/cli v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sanathkr/yaml v1.0.0
 	github.com/stretchr/testify v1.8.4
@@ -132,7 +133,6 @@ require (
 	github.com/packer-community/winrmcp v0.0.0-20180102160824-81144009af58 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/posener/complete v1.2.1 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/sanathkr/go-yaml v0.0.0-20170819195128-ed9d249f429b // indirect
@@ -152,14 +152,15 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xlab/treeprint v0.0.0-20161029104018-1d6e34225557 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
-	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	golang.org/x/tools v0.13.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
