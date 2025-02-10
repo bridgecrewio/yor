@@ -20,7 +20,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@55d79496019a560e16e73e1948dee20a1fad631a  # v2
+        uses: securego/gosec@e0cca6fe95306b7e7790d6f1bf6a7bec6d622459  # v2
         with:
           args: './...'
   trufflehog-secrets:
