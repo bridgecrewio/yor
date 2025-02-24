@@ -25,7 +25,7 @@ func main() {
 		Version:                common.Version,
 		Description:            "Yor, the IaC auto-tagger",
 		Compiled:               time.Time{},
-		Authors:                []*cli.Author{{Name: "Bridgecrew", Email: "support@bridgecrew.io"}},
+		Authors:                []*cli.Author{{Name: "Palo Alto Networks", Email: "svc-oss@paloaltonetworks.com"}},
 		UseShortOptionHandling: true,
 		Commands: []*cli.Command{
 			listTagsCommand(),
