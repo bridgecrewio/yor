@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/bridgecrewio/yor/master/docs/yor-logo.png?" width="350">
 
-![Coverage](https://img.shields.io/badge/Coverage-81.1%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-81.2%25-brightgreen)
 ![golangci-lint](https://github.com/bridgecrewio/yor/workflows/tests/badge.svg)
 [![security](https://github.com/bridgecrewio/yor/actions/workflows/security.yml/badge.svg)](https://github.com/bridgecrewio/yor/actions/workflows/security.yml)
 [![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://codifiedsecurity.slack.com/)
