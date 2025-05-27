@@ -51,7 +51,7 @@ Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-act
 ## Getting Started
 
 ### Installation
-MacOS / Linux
+macOS / Linux
 ```sh
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
@@ -124,9 +124,9 @@ pool:
 steps:
 - script: |
     curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
-    sudo tar -xf yor.tar.gz -C /usr/bin/ 
-    rm yor.tar.gz 
-    sudo chmod +x /usr/bin/yor 
+    sudo tar -xf yor.tar.gz -C /usr/bin/
+    rm yor.tar.gz
+    sudo chmod +x /usr/bin/yor
     echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
     yor --version
 ```
@@ -235,7 +235,7 @@ To prevent resource from being tagged, apply the following comment pattern above
 # skip specific resource - #yor:skip
 ```sh
 ## for terraform files
-#yor:Skip 
+#yor:Skip
 resource "aws_instance" "example_instance" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
@@ -275,7 +275,7 @@ Resources:
         - Key: MyTag
           Value: TagValue
         - Key: Name
-```    
+```
 ### What is Yor trace?
 yor_trace is a magical tag creating a unique identifier for an IaC resource code block.
 

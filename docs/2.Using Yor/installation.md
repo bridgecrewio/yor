@@ -60,8 +60,8 @@ You will need to set the following variables in `Settings > CI/CD > Variables` i
 `GIT_PUSH_TOKEN`: A GitLab personal access token with permissions to commit to the repository.
 
 
-## MacOS
-Run the following commands to install Yor on MacOS with [Homebrew](https://brew.sh/):
+## macOS
+Run the following commands to install Yor on macOS with [Homebrew](https://brew.sh/):
 ```sh
 brew tap bridgecrewio/tap
 brew install bridgecrewio/tap/yor
