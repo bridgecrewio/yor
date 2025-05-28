@@ -145,7 +145,6 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.82+incompatible // indirect
 	github.com/tencentyun/cos-go-sdk-v5 v0.0.0-20190808065407-f07404cefc8c // indirect
 	github.com/terraform-providers/terraform-provider-openstack v1.15.0 // indirect
-	github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
@@ -163,9 +162,8 @@ require (
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.64.1 // indirect
-	google.golang.org/grpc/naming v0.0.0-00010101000000-000000000000 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
@@ -174,6 +172,14 @@ require (
 
 replace (
 	github.com/awslabs/goformation/v5 => github.com/bridgecrewio/goformation/v5 v5.0.0-20210823081757-99ed9bf3c0e5
+	github.com/coreos/etcd => github.com/coreos/etcd v3.3.13+incompatible
+	github.com/golang/protobuf => github.com/golang/protobuf v1.4.3
 	github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+
+	// Updated replacements
+	google.golang.org/grpc => google.golang.org/grpc v1.29.1
 	google.golang.org/grpc/naming => ./internal/google.golang.org/grpc/naming
+	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
 )
