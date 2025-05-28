@@ -164,6 +164,7 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.64.1 // indirect
+	google.golang.org/grpc/naming v0.0.0-00010101000000-000000000000 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
@@ -173,4 +174,5 @@ require (
 replace (
 	github.com/awslabs/goformation/v5 => github.com/bridgecrewio/goformation/v5 v5.0.0-20210823081757-99ed9bf3c0e5
 	github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
+	google.golang.org/grpc/naming => ./internal/google.golang.org/grpc/naming
 )
