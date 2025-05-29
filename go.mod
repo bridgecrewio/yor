@@ -163,7 +163,7 @@ require (
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
-	google.golang.org/grpc v1.27.1 // indirect
+	google.golang.org/grpc v1.64.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
@@ -177,6 +177,9 @@ replace (
 	github.com/hashicorp/terraform v0.14.0 => github.com/hashicorp/terraform v0.12.31
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+
+	// Updated replacements
+	google.golang.org/grpc => google.golang.org/grpc v0.0.0-20200423161235-754ee590a4f3
 	google.golang.org/grpc/naming => ./internal/google.golang.org/grpc/naming
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
 )
