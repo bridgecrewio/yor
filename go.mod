@@ -179,7 +179,7 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
 
 	// Updated replacements
-	google.golang.org/grpc => google.golang.org/grpc v1.29.1
+	google.golang.org/grpc => google.golang.org/grpc v0.0.0-20200423161235-754ee590a4f3
 	google.golang.org/grpc/naming => ./internal/google.golang.org/grpc/naming
 	google.golang.org/protobuf => google.golang.org/protobuf v1.25.0
 )
