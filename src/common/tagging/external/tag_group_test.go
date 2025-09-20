@@ -292,6 +292,84 @@ func TestExternalTagGroup(t *testing.T) {
 		}
 	})
 
+	t.Run("test tagGroup CreateTagsForBlock matches with resource type filter", func(t *testing.T) {
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_resource_type.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitExternalTagGroups(confPath, false)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "",
+				Type:       "terraform_data",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "asd12f",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		assert.Equal(t, 4, len(block.ExitingTags))
+		assert.Equal(t, 1, len(block.NewTags))
+	})
+
+	t.Run("test tagGroup CreateTagsForBlock not matches with resource type filter", func(t *testing.T) {
+		confPath, _ := filepath.Abs("../../../../tests/external_tags/external_tag_group_resource_type.yml")
+		tagGroup := TagGroup{}
+		tagGroup.InitTagGroup("", nil, nil)
+		tagGroup.InitExternalTagGroups(confPath, false)
+		block := &MockTestBlock{
+			Block: structure.Block{
+				FilePath:   "",
+				Type:       "null_resource",
+				IsTaggable: true,
+				ExitingTags: []tags.ITag{
+					&tags.Tag{
+						Key:   "git_modifiers",
+						Value: "tronxd",
+					},
+					&tags.Tag{
+						Key:   "git_repo",
+						Value: "yor",
+					},
+					&tags.Tag{
+						Key:   "git_commit",
+						Value: "asd12f",
+					},
+					&tags.Tag{
+						Key:   "yor_trace",
+						Value: "123",
+					},
+				},
+			},
+		}
+		err := tagGroup.CreateTagsForBlock(block)
+		if err != nil {
+			logger.Warning(err.Error())
+			t.Fail()
+		}
+		assert.Equal(t, 4, len(block.ExitingTags))
+		assert.Equal(t, 0, len(block.NewTags))
+	})
+
 }
 
 type MockTestBlock struct {

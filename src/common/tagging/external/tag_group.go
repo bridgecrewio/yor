@@ -97,6 +97,26 @@ func (t Tag) SatisfyFilters(block structure.IBlock) bool {
 			if !found {
 				satisfyFilters = false
 			}
+
+		case "resource_type":
+			// Allowing the filter value to be a string or an array of strings
+			allowedResourceTypes := make([]string, 0)
+			if filterValues, ok := filterValue.([]interface{}); ok {
+				for _, resourceType := range filterValues {
+					allowedResourceTypes = append(allowedResourceTypes, resourceType.(string))
+				}
+			} else {
+				allowedResourceTypes = append(allowedResourceTypes, filterValue.(string))
+			}
+			resourceType := block.GetResourceType()
+
+			for _, r := range allowedResourceTypes {
+				satisfyFilters = r == resourceType
+				if satisfyFilters {
+					break
+				}
+			}
+
 		}
 	}
 	return satisfyFilters

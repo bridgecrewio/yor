@@ -1,0 +1,9 @@
+tag_groups:
+  - name: resource_type
+    tags:
+      - name: resource_type
+        value:
+          default: yor 
+        filters:
+          resource_type:
+            - terraform_data
