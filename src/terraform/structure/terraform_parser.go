@@ -32,6 +32,7 @@ var unsupportedTerraformBlocks = []string{
 	"aws_cloudwatch_log_destination",         // This resource does not support tags, although docs state otherwise.
 	"google_monitoring_notification_channel", // This resource uses labels for other purposes.
 	"aws_secretsmanager_secret_rotation",     // This resource does not support tags, although tfschema states otherwise.
+	"kubernetes_manifest",                    // This resource specifically supports tags with a different structure.
 }
 
 var taggableResourcesLock sync.RWMutex
@@ -278,10 +279,54 @@ func (p *TerraformParser) WriteFile(readFilePath string, blocks []structure.IBlo
 	return nil
 }
 
+func GetTags(block *hclwrite.Block, tagsAttributeName string) *hclwrite.Attribute {
+	block = GetTagsBlock(block, tagsAttributeName)
+
+	if strings.Contains(tagsAttributeName, ".") {
+		parts := strings.Split(tagsAttributeName, ".")
+
+		if block == nil {
+			return nil
+		}
+		logger.Debug(fmt.Sprintf("Trying to get attribute %v from %v", parts[len(parts)-1], block))
+		return block.Body().GetAttribute(parts[len(parts)-1])
+	} else {
+		return block.Body().GetAttribute(tagsAttributeName);
+	}
+}
+
+func SetTags(block *hclwrite.Block, tagsAttributeName string, newTags hclwrite.Tokens) {
+	block = GetTagsBlock(block, tagsAttributeName)
+
+	if strings.Contains(tagsAttributeName, ".") {
+		parts := strings.Split(tagsAttributeName, ".")
+
+		logger.Debug(fmt.Sprintf("Trying to set attribute %v on %v with value %v", parts[len(parts)-1], block, newTags))
+		block.Body().SetAttributeRaw(parts[len(parts)-1], newTags)
+	} else {
+		block.Body().SetAttributeRaw(tagsAttributeName, newTags);
+	}
+}
+
+func GetTagsBlock(block *hclwrite.Block, tagsAttributeName string) *hclwrite.Block {
+	if strings.Contains(tagsAttributeName, ".") {
+		parts := strings.Split(tagsAttributeName, ".")
+
+		for _, part := range parts[0:len(parts)-1] {
+			logger.Debug(fmt.Sprintf("Trying to get block %v from %v", part, block))
+			block = block.Body().FirstMatchingBlock(part, nil)
+		}
+
+		return block
+	} else {
+		return block
+	}
+}
+
 func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock structure.IBlock) {
 	mergedTags := parsedBlock.MergeTags()
 	tagsAttributeName := parsedBlock.(*TerraformBlock).TagsAttributeName
-	tagsAttribute := rawBlock.Body().GetAttribute(tagsAttributeName)
+	tagsAttribute := GetTags(rawBlock, tagsAttributeName)
 
 	// we don't add tags to data sources
 	if rawBlock.Type() == "data" {
@@ -291,7 +336,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 	if tagsAttribute == nil {
 		mergedTagsTokens := buildTagsTokens(mergedTags)
 		if mergedTagsTokens != nil {
-			rawBlock.Body().SetAttributeRaw(tagsAttributeName, mergedTagsTokens)
+			SetTags(rawBlock, tagsAttributeName, mergedTagsTokens)
 		}
 	} else {
 		rawTagsTokens := tagsAttribute.Expr().BuildTokens(hclwrite.Tokens{})
@@ -362,7 +407,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 			} else {
 				rawTagsTokens = InsertTokens(rawTagsTokens, newTagsTokens[2:len(newTagsTokens)-2]) // checkov:skip=CKV_SECRET_80 false positive
 			}
-			rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
+			SetTags(rawBlock, tagsAttributeName, rawTagsTokens)
 			return
 		}
 
@@ -399,7 +444,7 @@ func (p *TerraformParser) modifyBlockTags(rawBlock *hclwrite.Block, parsedBlock 
 			}
 		}
 		// Set the body's tags to the new built tokens
-		rawBlock.Body().SetAttributeRaw(tagsAttributeName, rawTagsTokens)
+		SetTags(rawBlock, tagsAttributeName, rawTagsTokens)
 	}
 }
 
@@ -660,7 +705,8 @@ func (p *TerraformParser) getExistingTags(hclBlock *hclwrite.Block, tagsAttribut
 	isTaggable := false
 	existingTags := make([]tags.ITag, 0)
 
-	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
+	tagsAttribute := GetTags(hclBlock, tagsAttributeName)
+
 	if tagsAttribute != nil {
 		// if tags exists in resource
 		isTaggable, _ = p.isBlockTaggable(hclBlock)
@@ -873,7 +919,7 @@ func (p *TerraformParser) getModuleTags(hclBlock *hclwrite.Block, tagsAttributeN
 	isTaggable := false
 	existingTags := make([]tags.ITag, 0)
 
-	tagsAttribute := hclBlock.Body().GetAttribute(tagsAttributeName)
+	tagsAttribute := GetTags(hclBlock, tagsAttributeName)
 	if tagsAttribute != nil {
 		// if tags exists in module
 		isTaggable = true

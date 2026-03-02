@@ -13,7 +13,7 @@ type TerraformBlock struct {
 	HclSyntaxBlock *hclsyntax.Block
 }
 
-var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags"}
+var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags", "kubernetes": "metadata.annotations"}
 
 const ResourceBlockType = "resource"
 const ModuleBlockType = "module"
