@@ -36,7 +36,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c  # v4
         with:
           go-version: '1.19' # To match codeql go version
       - name: Initialize CodeQL
