@@ -15,6 +15,12 @@ type TerraformBlock struct {
 
 var ProviderToTagAttribute = map[string]string{"aws": "tags", "azurerm": "tags", "google": "labels", "oci": "freeform_tags", "alicloud": "tags"}
 
+// ResourceTypeToTagAttribute overrides ProviderToTagAttribute for specific resource types
+// whose tag attribute differs from their provider's default.
+var ResourceTypeToTagAttribute = map[string]string{
+	"google_container_cluster": "resource_labels",
+}
+
 const ResourceBlockType = "resource"
 const ModuleBlockType = "module"
 const DataBlockType = "data"

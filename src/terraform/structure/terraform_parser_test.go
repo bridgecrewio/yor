@@ -169,6 +169,46 @@ func TestTerraformParser_ParseFile(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
+	t.Run("parse gcp gke file with resource_labels", func(t *testing.T) {
+		p := &TerraformParser{}
+		p.Init("../../../tests/terraform/resources/gke", nil)
+		defer p.Close()
+		filePath := "../../../tests/terraform/resources/gke/main.tf"
+		parsedBlocks, err := p.ParseFile(filePath)
+		if err != nil {
+			t.Errorf("failed to read hcl file because %s", err)
+		}
+		assert.Equal(t, 2, len(parsedBlocks))
+
+		for _, block := range parsedBlocks {
+			hclBlock := block.GetRawBlock().(*hclwrite.Block)
+			assert.Equal(t, ResourceBlockType, hclBlock.Type())
+			assert.Equal(t, "google_container_cluster", hclBlock.Labels()[0])
+			assert.True(t, block.IsBlockTaggable(), fmt.Sprintf("expected block %s to be taggable", hclBlock.Labels()))
+
+			tfBlock := block.(*TerraformBlock)
+			assert.Equal(t, "resource_labels", tfBlock.TagsAttributeName,
+				"google_container_cluster should use resource_labels, not labels")
+			assert.True(t, tfBlock.IsGCPBlock(), "google_container_cluster should be identified as a GCP block")
+
+			resourceName := hclBlock.Labels()[1]
+			if resourceName == "primary" {
+				// The tagged resource should have existing tags
+				existingTags := block.GetExistingTags()
+				assert.Equal(t, 2, len(existingTags))
+				tagMap := make(map[string]string)
+				for _, tag := range existingTags {
+					tagMap[tag.GetKey()] = tag.GetValue()
+				}
+				assert.Equal(t, "test", tagMap["env"])
+				assert.Equal(t, "devops", tagMap["team"])
+			} else if resourceName == "untagged" {
+				// The untagged resource should have no existing tags
+				assert.Equal(t, 0, len(block.GetExistingTags()))
+			}
+		}
+	})
+
 	t.Run("Do not crash if getting malformed file", func(t *testing.T) {
 		p := &TerraformParser{}
 		p.Init("../../../tests/terraform/malformed_file_in_dir", nil)

@@ -214,4 +214,23 @@ func TestTerraformBlock(t *testing.T) {
 
 		assert.True(t, gcpBlock.IsGCPBlock())
 	})
+
+	t.Run("is_gcp_block_google_container_cluster", func(t *testing.T) {
+		gkeBlock := &TerraformBlock{
+			HclSyntaxBlock: &hclsyntax.Block{Labels: []string{"google_container_cluster", "primary"}},
+			Block:          structure.Block{TagsAttributeName: "resource_labels"},
+		}
+
+		assert.True(t, gkeBlock.IsGCPBlock(), "google_container_cluster should be identified as a GCP block")
+	})
+
+	t.Run("resource_type_to_tag_attribute_override", func(t *testing.T) {
+		// Verify that google_container_cluster maps to resource_labels, not labels
+		attr, ok := ResourceTypeToTagAttribute["google_container_cluster"]
+		assert.True(t, ok, "google_container_cluster should have an entry in ResourceTypeToTagAttribute")
+		assert.Equal(t, "resource_labels", attr)
+
+		// Verify that the provider-level default for google is still labels
+		assert.Equal(t, "labels", ProviderToTagAttribute["google"])
+	})
 }

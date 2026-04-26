@@ -630,6 +630,7 @@ var TfTaggableResourceTypes = []string{
 	"google_cloud_identity_group",
 	"google_cloudfunctions_function",
 	"google_composer_environment",
+	"google_container_cluster",
 	"google_compute_disk",
 	"google_compute_image",
 	"google_compute_instance",

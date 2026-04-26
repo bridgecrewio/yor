@@ -648,6 +648,11 @@ func getProviderFromResourceType(resourceType string) string {
 }
 
 func getTagAttributeByResourceType(resourceType string) (string, error) {
+	// Check for resource-type-specific override first
+	if attr, ok := ResourceTypeToTagAttribute[resourceType]; ok {
+		return attr, nil
+	}
+	// Fall back to provider-level default
 	prefix := ProviderToTagAttribute[getProviderFromResourceType(resourceType)]
 	if prefix == "" {
 		return "", fmt.Errorf("failed to find tags attribute name for resource type %s", resourceType)
