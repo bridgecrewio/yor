@@ -1,7 +1,6 @@
 FROM alpine:3.18
 # checkov:skip=CKV_DOCKER_3: Not a service
 # checkov:skip=CKV_DOCKER_2: Not a service
-# checkov:skip=CKV2_DOCKER_2: Not a service
 
 ARG BUILDARCH=386
 RUN echo "linux_${BUILDARCH}"
