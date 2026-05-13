@@ -7,7 +7,7 @@ ARG BUILDARCH=386
 RUN echo "linux_${BUILDARCH}"
 
 RUN apk --no-cache add build-base git curl jq bash \
- && curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest  \
+ && curl -s https://api.github.com/repos/bridgecrewio/yor/releases/latest  \
     | jq ".assets[] | select(.name | contains(\"linux_${BUILDARCH}\"))  \
     | .browser_download_url" -r  \
     | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh \
