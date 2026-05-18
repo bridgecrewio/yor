@@ -18,6 +18,58 @@ import (
 
 var EnvVariableRegex = regexp.MustCompile(`\${env:([^\s]+)}`)
 
+// envExpansionAllowedPrefixes is the default allowlist of environment variable
+// name prefixes that may be expanded via the ${env:NAME} template syntax inside
+// the external tag-group config file (see --config-file).
+//
+// SECURITY (F-001): Without this restriction, anyone who can edit the config
+// file (commonly versioned alongside the IaC it tags) can read arbitrary
+// environment variables — including CI secrets such as GITHUB_TOKEN or
+// AWS_SECRET_ACCESS_KEY — by referencing them with ${env:...}. Yor then writes
+// the expanded value as a tag into the IaC files; in the GitHub Action default
+// flow those files are subsequently committed and pushed, persisting the
+// secret to git history.
+//
+// The allowlist intentionally covers only:
+//   - YOR_*        : namespace explicitly reserved for Yor user inputs
+//   - GIT_BRANCH   : preserved for backward compatibility with documented usage
+//
+// Operators that need to expand additional variables can extend the list at
+// runtime via the YOR_ENV_ALLOWLIST environment variable (comma-separated
+// names or `prefix*` globs). Expansion can be disabled entirely with
+// YOR_DISABLE_ENV_EXPANSION=1.
+var envExpansionAllowedPrefixes = []string{"YOR_"}
+var envExpansionAllowedExact = []string{"GIT_BRANCH"}
+
+// envExpansionDenylist contains environment variable name patterns that are
+// NEVER expanded, even if explicitly added to YOR_ENV_ALLOWLIST. This guards
+// against operator misconfiguration that would re-open F-001.
+var envExpansionDenylist = []string{
+	"GITHUB_TOKEN",
+	"GH_TOKEN",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_SESSION_TOKEN",
+	"AWS_ACCESS_KEY_ID",
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"AZURE_CLIENT_SECRET",
+	"NPM_TOKEN",
+	"SLACK_TOKEN",
+}
+
+// envExpansionDenySubstrings rejects any variable whose name contains one of
+// these substrings (case-insensitive). It is a coarse heuristic intended to
+// catch obvious credential-bearing names that an operator might accidentally
+// add to the allowlist (e.g. MY_API_SECRET, CUSTOM_PASSWORD).
+var envExpansionDenySubstrings = []string{
+	"SECRET",
+	"PASSWORD",
+	"PASSWD",
+	"PRIVATE_KEY",
+	"APIKEY",
+	"API_KEY",
+	"CREDENTIAL",
+}
+
 type TagGroup struct {
 	tagging.TagGroup
 	configFilePath  string
@@ -295,15 +347,90 @@ func (t *TagGroup) ExtractExternalGroupsTags(tagsConfig TagsConfig) []Tag {
 
 func evaluateTemplateVariable(val string) string {
 	envVariableMatch := EnvVariableRegex.FindStringSubmatch(val)
-	if len(envVariableMatch) == 2 {
-		envVal, exists := os.LookupEnv(envVariableMatch[1])
-		if !exists {
-			logger.Warning(fmt.Sprintf("environment variable %s is not found", envVariableMatch[1]))
-		} else {
-			return envVal
+	if len(envVariableMatch) != 2 {
+		return val
+	}
+	name := envVariableMatch[1]
+
+	// Kill switch: operators in hardened environments can disable expansion
+	// entirely without redeploying.
+	if isTruthy(os.Getenv("YOR_DISABLE_ENV_EXPANSION")) {
+		logger.Warning(fmt.Sprintf("environment variable expansion is disabled (YOR_DISABLE_ENV_EXPANSION); leaving ${env:%s} untouched", name))
+		return val
+	}
+
+	if !isEnvVarExpansionAllowed(name) {
+		logger.Warning(fmt.Sprintf("refusing to expand ${env:%s}: variable name is not in the Yor env-expansion allowlist (see YOR_ENV_ALLOWLIST). This guard prevents an attacker who controls --config-file from exfiltrating CI secrets.", name))
+		return val
+	}
+
+	envVal, exists := os.LookupEnv(name)
+	if !exists {
+		logger.Warning(fmt.Sprintf("environment variable %s is not found", name))
+		return val
+	}
+	return envVal
+}
+
+// isEnvVarExpansionAllowed reports whether the given environment variable name
+// may be expanded inside an external tag-group config file. The denylist always
+// wins over the allowlist.
+func isEnvVarExpansionAllowed(name string) bool {
+	upper := strings.ToUpper(name)
+
+	// Denylist (always rejected, regardless of operator-supplied allowlist).
+	for _, denied := range envExpansionDenylist {
+		if upper == denied {
+			return false
 		}
 	}
-	return val
+	for _, sub := range envExpansionDenySubstrings {
+		if strings.Contains(upper, sub) {
+			return false
+		}
+	}
+
+	// Built-in allowlist.
+	for _, exact := range envExpansionAllowedExact {
+		if name == exact {
+			return true
+		}
+	}
+	for _, prefix := range envExpansionAllowedPrefixes {
+		if strings.HasPrefix(name, prefix) {
+			return true
+		}
+	}
+
+	// Operator-supplied extension via YOR_ENV_ALLOWLIST.
+	if extra := os.Getenv("YOR_ENV_ALLOWLIST"); extra != "" {
+		for _, entry := range strings.Split(extra, ",") {
+			entry = strings.TrimSpace(entry)
+			if entry == "" {
+				continue
+			}
+			// Support `PREFIX*` glob form.
+			if strings.HasSuffix(entry, "*") {
+				if strings.HasPrefix(name, strings.TrimSuffix(entry, "*")) {
+					return true
+				}
+				continue
+			}
+			if entry == name {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func isTruthy(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "1", "true", "yes", "on":
+		return true
+	}
+	return false
 }
 
 func parseExternalTag(tagValueObj TagConfigValue, tagKey string, groupFilters map[string]interface{}) (Tag, error) {
