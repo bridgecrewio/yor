@@ -64,3 +64,33 @@ and all other communication mechanisms available to the core team.
 We will also explicitly mention which commits contain the fix to make it
 easier for other distributors and users to easily patch their own
 versions of `yor` if upgrading is not an option.
+
+## Known Unfixed Vulnerabilities
+
+The following CVEs are present in transitive or direct dependencies and have
+**not** been patched in the current release because every available upstream
+fix raises the minimum required Go language version above the `go 1.19`
+directive declared in `go.mod`. Bumping the language version is considered a
+breaking change for downstream consumers and CI pipelines, so the upgrades
+have been intentionally deferred.
+
+| CVE | Module | Current | Upstream fix | Reason deferred |
+| --- | --- | --- | --- | --- |
+| CVE-2025-21614 | `github.com/go-git/go-git/v5` | v5.11.0 | v5.13.0 | Requires `go >= 1.23` |
+| CVE-2024-6257  | `github.com/hashicorp/go-getter` | v1.6.2 | v1.7.5 | Requires `go >= 1.23` (also pulls in ~40 new transitive deps) |
+| CVE-2025-8959  | `github.com/hashicorp/go-getter` | v1.6.2 | v1.7.9 | Same as above |
+| CVE-2026-4660  | `github.com/hashicorp/go-getter` | v1.6.2 | v1.8.6 | Same as above |
+| CVE-2025-0377  | `github.com/hashicorp/go-slug`   | v0.5.0 | v0.16.3 | Requires `go >= 1.22` |
+
+### Stdlib CVEs (mitigated)
+
+The following Go stdlib CVEs are mitigated by the `toolchain go1.26.3`
+directive in `go.mod`, which pins the build toolchain to a patched release
+without changing the `go 1.19` language compatibility level:
+
+- CVE-2026-39836 (`net`)
+- CVE-2026-33814 (`net/http`)
+- CVE-2026-33811 (`net`)
+
+Builders using Go `< 1.26.3` should upgrade their toolchain (or use Go
+`>= 1.25.10` on the 1.25.x line) to ensure the stdlib fixes are applied.

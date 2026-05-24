@@ -2,6 +2,12 @@ module github.com/bridgecrewio/yor
 
 go 1.19
 
+// Toolchain pinned to a Go release containing fixes for
+// CVE-2026-39836, CVE-2026-33814, CVE-2026-33811 (net, net/http).
+// The `go 1.19` language directive above is intentionally preserved
+// to keep the minimum supported Go version unchanged.
+toolchain go1.26.3
+
 require (
 	github.com/awslabs/goformation/v5 v5.2.7
 	github.com/bridgecrewio/goformation/v5 v5.0.0-20210823083242-84a6d242099f
