@@ -1,0 +1,63 @@
+name: govulncheck
+
+# Runs Go's official vulnerability scanner against the codebase + stdlib.
+# Findings are uploaded as a SARIF artifact and surfaced under the GitHub
+# "Security" tab. The job is intentionally non-blocking (`continue-on-error`)
+# so that the pre-existing, intentionally-deferred dependency CVEs documented
+# in SECURITY.md do not break CI. Stdlib regressions become visible the moment
+# they are reported by the scanner.
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    # Re-scan weekly so newly-published CVEs against pinned versions are surfaced.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          # Must contain the patches we are validating against; keep in sync
+          # with .go-version and the rest of the CI matrix.
+          go-version-file: '.go-version'
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck (text report)
+        run: govulncheck ./... || true
+
+      - name: Run govulncheck (SARIF report)
+        run: |
+          govulncheck -format sarif ./... > govulncheck.sarif || true
+
+      - name: Upload SARIF to GitHub code-scanning
+        uses: github/codeql-action/upload-sarif@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d  # v2
+        if: always()
+        with:
+          sarif_file: govulncheck.sarif
+          category: govulncheck
+
+      - name: Upload raw report as artifact
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32  # v3
+        if: always()
+        with:
+          name: govulncheck-report
+          path: govulncheck.sarif
+          retention-days: 30
