@@ -33,8 +33,31 @@ _git_is_dirty() {
     [ -n "$(git status -s --untracked-files=no)" ]
 }
 
+# F-001 mitigation: refuse to auto-commit when the external tag-group config
+# file lives inside the scanned directory. Such layouts let any contributor
+# turn a config edit into arbitrary tag content (including expanded env
+# values) that is then pushed back to the repo by this entrypoint, persisting
+# the leak to git history. The Yor binary itself already restricts which env
+# vars can be expanded; this is a second, deployment-layer guard.
+_config_file_inside_scanned_dir() {
+  [[ -z "$INPUT_CONFIG_FILE" || -z "$INPUT_DIRECTORY" ]] && return 1
+  local cfg dir
+  cfg=$(cd "$(dirname "$INPUT_CONFIG_FILE")" 2>/dev/null && pwd)/$(basename "$INPUT_CONFIG_FILE")
+  dir=$(cd "$INPUT_DIRECTORY" 2>/dev/null && pwd)
+  [[ -z "$cfg" || -z "$dir" ]] && return 1
+  # Append a trailing slash so /repo/foo does not match /repo/foobar.
+  [[ "$cfg" == "$dir"/* ]]
+}
+
 if [[ $YOR_EXIT_CODE -eq 0 && $INPUT_COMMIT_CHANGES == "YES" ]]
 then
+  if _config_file_inside_scanned_dir
+  then
+    echo "::error::Refusing to auto-commit: --config-file ($INPUT_CONFIG_FILE) is inside the scanned directory ($INPUT_DIRECTORY)."
+    echo "::error::This layout enables F-001 (env-var exfiltration via \${env:...} in the config file)."
+    echo "::error::Move the config file outside the scanned directory, or set commit_changes: 'NO'."
+    exit 2
+  fi
   if _git_is_dirty
   then
     echo "Yor made changes, committing"
