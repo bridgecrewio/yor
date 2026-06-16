@@ -172,7 +172,13 @@ yor tag --tag-groups simple --directory terraform/dev/
 # Perform a dry run to get a preview in the CLI output of all of the tags that will be added using Yor without applying any changes to your IaC files.
 yor tag -d . --dry-run
 
-# Use an external tag group configuration file path
+# Use an external tag group configuration file path.
+# SECURITY: do not point --config-file at a path inside the directory passed
+# to -d when the run will auto-commit (e.g. via the bridgecrewio/yor-action
+# GitHub Action). The config file supports ${env:NAME} expansion, so an
+# attacker who can edit a repo-resident config can exfiltrate CI secrets
+# into your IaC files. See docs/3.Custom Taggers/Custom_tagger_YAML.md
+# ("Security considerations for --config-file") for the full guidance.
 yor tag -d . --config-file /path/to/conf/file/
 
 # Apply tags to all resources except of a specified type
