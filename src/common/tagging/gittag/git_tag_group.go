@@ -73,7 +73,10 @@ func (t *TagGroup) initFileMapping(path string) fileLineMapper {
 func (t *TagGroup) CreateTagsForBlock(block structure.IBlock) error {
 	fileLinesMap := t.initFileMapping(block.GetFilePath())
 	linesInGit := t.getBlockLinesInGit(block, fileLinesMap)
-	if linesInGit.Start < 0 || linesInGit.End < 0 {
+	// Git blame line numbers are 1-based, so anything <= 0 means the block's
+	// lines could not be mapped to the git blame (e.g. a Helm document with no
+	// locatable metadata). Skip it to avoid a negative-index panic downstream.
+	if linesInGit.Start <= 0 || linesInGit.End <= 0 {
 		return nil
 	}
 	blame, err := t.GitService.GetBlameForFileLines(block.GetFilePath(), linesInGit)

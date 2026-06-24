@@ -21,6 +21,7 @@ import (
 	"github.com/bridgecrewio/yor/src/common/tagging/tags"
 	taggingUtils "github.com/bridgecrewio/yor/src/common/tagging/utils"
 	"github.com/bridgecrewio/yor/src/common/utils"
+	helmStructure "github.com/bridgecrewio/yor/src/helm/structure"
 	slsStructure "github.com/bridgecrewio/yor/src/serverless/structure"
 	tfStructure "github.com/bridgecrewio/yor/src/terraform/structure"
 )
@@ -77,6 +78,8 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 			r.parsers = append(r.parsers, &cfnStructure.CloudformationParser{})
 		case "Serverless":
 			r.parsers = append(r.parsers, &slsStructure.ServerlessParser{})
+		case "Helm":
+			r.parsers = append(r.parsers, &helmStructure.HelmParser{})
 		default:
 			logger.Warning(fmt.Sprintf("ignoring unknown parser %#v", err))
 		}
@@ -112,9 +115,21 @@ func (r *Runner) Init(commands *clioptions.TagOptions) error {
 
 func (r *Runner) worker(fileChan chan string, wg *sync.WaitGroup) {
 	for file := range fileChan {
-		r.TagFile(file)
+		r.tagFileSafely(file)
 		wg.Done()
 	}
+}
+
+// tagFileSafely wraps TagFile with a recover so a panic on a single file
+// (e.g. a degenerate Helm document) is reported and skipped instead of
+// crashing the entire directory scan.
+func (r *Runner) tagFileSafely(file string) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			logger.Warning(fmt.Sprintf("Recovered from panic while tagging file %s, skipping it. Error: %v", file, rec))
+		}
+	}()
+	r.TagFile(file)
 }
 
 func (r *Runner) TagDirectory() (*reports.ReportService, error) {

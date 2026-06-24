@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: keep-cm
+      labels:
+        app: basic-chart
+        team: platform
+        yor_name: "keep-cm"
+        yor_trace: "00000000-0000-0000-0000-000000010001"
+    data:
+      key: value

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMapList
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      labels:
+        yor_name: "typed-one"
+        yor_trace: "00000000-0000-0000-0000-000000010001"
+      name: typed-one
+    data:
+      key: value
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      labels:
+        yor_name: "typed-two"
+        yor_trace: "00000000-0000-0000-0000-000000010002"
+      name: typed-two
+    data:
+      key: value

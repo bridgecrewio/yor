@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        yor_name: "web"
+        yor_trace: "00000000-0000-0000-0000-000000010001"
+      name: web
+    spec:
+      selector:
+        matchLabels:
+          app: web
+      template:
+        metadata:
+          labels:
+            app: web
+        spec:
+          containers:
+            - name: nginx
+              image: nginx

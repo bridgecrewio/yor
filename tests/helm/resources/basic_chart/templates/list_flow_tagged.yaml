@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      yor_name: "flow-one"
+      yor_trace: "00000000-0000-0000-0000-000000010001"
+    name: flow-one
+  data:
+    key: value
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      yor_name: "flow-two"
+      yor_trace: "00000000-0000-0000-0000-000000010002"
+    name: flow-two
+  data:
+    flag: "true"

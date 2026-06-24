@@ -1,0 +1,5 @@
+apiVersion: apps/v1
+kind: Deployment
+{{- include "basic-chart.metadata" . | nindent 0 }}
+spec:
+  replicas: 1

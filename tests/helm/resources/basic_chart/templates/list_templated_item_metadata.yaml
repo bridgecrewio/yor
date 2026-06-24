@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    {{- include "basic-chart.metadata" . | nindent 4 }}
+    data:
+      key: value

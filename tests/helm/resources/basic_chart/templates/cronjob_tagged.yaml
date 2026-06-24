@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    yor_name: "basic-chart-cron"
+    yor_trace: "00000000-0000-0000-0000-000000000001"
+  name: basic-chart-cron
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    metadata:
+      labels:
+        app: basic-chart
+    spec:
+      template:
+        metadata:
+          labels:
+            app: basic-chart
+        spec:
+          containers:
+            - name: worker
+              image: busybox
+          restartPolicy: OnFailure

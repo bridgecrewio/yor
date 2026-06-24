@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    yor_name: "basic-chart-svc"
+    yor_trace: "00000000-0000-0000-0000-000000000001"
+  name: basic-chart-svc
+spec:
+  selector:
+    app: basic-chart
+  ports:
+    - port: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    yor_name: "basic-chart-cm"
+    yor_trace: "00000000-0000-0000-0000-000000000002"
+  name: basic-chart-cm
+data:
+  key: value

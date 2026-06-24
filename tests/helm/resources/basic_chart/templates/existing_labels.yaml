@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: basic-chart-sts
+  labels:
+    app: basic-chart
+    team: platform
+spec:
+  serviceName: basic-chart
+  selector:
+    matchLabels:
+      app: basic-chart
+  template:
+    metadata:
+      labels:
+        app: basic-chart
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]

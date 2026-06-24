@@ -1,0 +1,10 @@
+apiVersion: example.com/v1
+kind: Blocklist
+metadata:
+  labels:
+    yor_name: "deny-all"
+    yor_trace: "00000000-0000-0000-0000-000000000001"
+  name: deny-all
+spec:
+  rules:
+    - deny

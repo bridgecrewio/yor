@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      labels:
+        yor_name: "app-config"
+        yor_trace: "00000000-0000-0000-0000-000000010001"
+      name: app-config
+    data:
+      key: value
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      labels:
+        yor_name: "feature-flags"
+        yor_trace: "00000000-0000-0000-0000-000000010002"
+      name: feature-flags
+    data:
+      flag: "true"

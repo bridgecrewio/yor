@@ -25,6 +25,7 @@ Yor can tag the following IaC file types:
   * Terraform (for AWS, GCP, Azure, AliCloud, OCI)
   * CloudFormation (YAML, JSON)
   * Serverless Framework
+  * Helm charts (opt-in via `--parsers Helm`) — tags are written as Kubernetes labels into every `metadata.labels` site (each document's own metadata plus nested pod templates, CronJob job templates, and StatefulSet volume claim templates); the immutable `spec.selector` is never modified
 
 # Built-in Taggers
 

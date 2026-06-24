@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      annotations:
+        note: first
+    data:
+      key: value
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        note: second
+    spec:
+      ports:
+        - port: 80

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMapList
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: typed-one
+    data:
+      key: value
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: typed-two
+    data:
+      key: value

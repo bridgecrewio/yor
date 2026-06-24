@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: keep-cm
+      labels:
+        app: basic-chart
+        team: platform
+    data:
+      key: value

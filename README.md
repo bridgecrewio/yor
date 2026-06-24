@@ -10,7 +10,7 @@
 [![Chocolatey downloads](https://img.shields.io/chocolatey/dt/yor?label=chocolatey_downloads)](https://community.chocolatey.org/packages/yor)
 [![GitHub All Releases](https://img.shields.io/github/downloads/bridgecrewio/yor/total)](https://github.com/bridgecrewio/yor/releases)
 
-Yor is an open-source tool that helps add informative and consistent tags across infrastructure as code (IaC) frameworks. Today, Yor can automatically add tags to Terraform, CloudFormation, and Serverless Frameworks.
+Yor is an open-source tool that helps add informative and consistent tags across infrastructure as code (IaC) frameworks. Today, Yor can automatically add tags to Terraform, CloudFormation, and Serverless Frameworks, and can optionally tag **Helm** charts (opt-in via `--parsers Helm`). For Helm, Yor writes tags as Kubernetes labels into every `metadata.labels` site — each document's own metadata plus nested pod templates, CronJob job templates, and StatefulSet volume claim templates — while never modifying the immutable `spec.selector`.
 
 Yor is built to run as a [GitHub Action](https://github.com/bridgecrewio/yor-action) automatically adding consistent tagging logics to your IaC. Yor can also run as a pre-commit hook and a standalone CLI.
 
@@ -193,6 +193,9 @@ yor tag -d . --skip-resources aws_s3_bucket.operations
 # Apply tags to only the specified frameworks
 yor tag -d . --parsers Terraform,CloudFormation
 
+# Enable the opt-in Helm parser (Helm is NOT tagged by default)
+yor tag -d . --parsers Helm
+
 # Run yor with custom tags located in tests/yor_plugins/example and custom taggers located in tests/yor_plugins/tag_group_example
 yor tag -d . --custom-tagging tests/yor_plugins/example,tests/yor_plugins/tag_group_example
 ```
@@ -234,7 +237,7 @@ yor list-tags --tag-groups git
 ```
 
 ## Supporting comment format
-To prevent resource from being tagged, apply the following comment pattern above the resource, currently supported only in Terraform and CloudFormation files.
+To prevent resource from being tagged, apply the following comment pattern above the resource, currently supported in Terraform, CloudFormation, and Helm files.
 
 ## Example
 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: app-config
+    data:
+      key: value
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: feature-flags
+    data:
+      flag: "true"

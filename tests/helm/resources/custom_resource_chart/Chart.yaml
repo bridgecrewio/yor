@@ -1,0 +1,4 @@
+apiVersion: v1
+name: custom-resource-chart
+description: Fixture chart with a custom resource (Argo Rollout) and a v1 apiVersion Chart.yaml
+version: 0.1.0

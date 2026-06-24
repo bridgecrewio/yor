@@ -55,8 +55,16 @@ func NewGitBlame(relativeFilePath string, filePath string, lines structure.Lines
 	endLine := lines.End - 1
 	previousBlameResult, previousCommit := GetPreviousBlameResult(gitSvc, filePath)
 
+	// Guard against degenerate line ranges (e.g. a block whose lines could not be
+	// mapped to the git blame). Without this, a Start of 0 yields startLine == -1
+	// and indexing blameResult.Lines[-1] panics with "index out of range [-1]".
+	if startLine < 0 {
+		logger.Warning(fmt.Sprintf("Skipping git blame for %s: non-positive start line %d", relativeFilePath, lines.Start))
+		return &gitBlame
+	}
+
 	for line := startLine; line <= endLine; line++ {
-		if line >= len(blameResult.Lines) {
+		if line < 0 || line >= len(blameResult.Lines) {
 			logger.Warning(fmt.Sprintf("Index out of bound on parsed file %s", relativeFilePath))
 			return &gitBlame
 		}

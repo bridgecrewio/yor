@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    yor_name: {{ include "basic-chart.fullname" . }}
+    yor_trace: "00000000-0000-0000-0000-000000000001"
+  name: {{ include "basic-chart.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: basic-chart
+  template:
+    metadata:
+      labels:
+        app: basic-chart
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

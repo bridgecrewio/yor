@@ -1,0 +1,5 @@
+#yor:skip
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "basic-chart.fullname" . }}-sa
