@@ -203,7 +203,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging specified tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		defer os.RemoveAll(repoPath)
+		defer func() { _ = os.RemoveAll(repoPath) }()
 
 		yorRunner := new(runner.Runner)
 		err := yorRunner.Init(&clioptions.TagOptions{
@@ -231,7 +231,7 @@ func TestRunResults(t *testing.T) {
 
 	t.Run("Test terraform-aws-bridgecrew-read-only tagging skip tags", func(t *testing.T) {
 		repoPath := utils.CloneRepo("https://github.com/bridgecrewio/terraform-aws-bridgecrew-read-only.git", "a8686215642fd47a38bf8615d91d0d40630ab989")
-		defer os.RemoveAll(repoPath)
+		defer func() { _ = os.RemoveAll(repoPath) }()
 
 		yorRunner := runner.Runner{}
 		err := yorRunner.Init(&clioptions.TagOptions{
@@ -469,6 +469,14 @@ func commitFile(worktree *git.Worktree, filename string, commitOptions *git.Comm
 	if err != nil {
 		panic(err)
 	}
+	// go-git v5.19.1 added an explicit empty-commit guard in (*Worktree).Commit that
+	// returns ErrEmptyCommit ("cannot create empty commit: clean working tree") when the
+	// staged tree is identical to the parent's tree. Earlier versions (e.g. v5.11.0, the
+	// version this test was originally written against) silently created such commits.
+	// This helper is intentionally called at points where the working tree may be clean
+	// (e.g. committing after a yor run that produced no file changes), so we opt back in to
+	// the prior behavior to preserve the test's commit sequence across the go-git upgrade.
+	commitOptions.AllowEmptyCommits = true
 	commit, err := worktree.Commit("commit resource 1 without tags", commitOptions)
 	if err != nil {
 		panic(err)

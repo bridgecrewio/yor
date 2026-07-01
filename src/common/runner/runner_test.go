@@ -239,7 +239,7 @@ func TestRunnerInternals(t *testing.T) {
 	t.Run("Test merge with tomap terraform", func(t *testing.T) {
 		rootDir := "../../../tests/terraform/resources/tomap"
 		_ = os.Setenv("YOR_SIMPLE_TAGS", "{\"test_tag\": \"test_value\"}")
-		defer os.Unsetenv("YOR_SIMPLE_TAGS")
+		defer func() { _ = os.Unsetenv("YOR_SIMPLE_TAGS") }()
 
 		yorRunner := new(Runner)
 		err := yorRunner.Init(&clioptions.TagOptions{

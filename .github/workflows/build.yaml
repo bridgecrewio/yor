@@ -40,7 +40,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
-          go-version: 1.19
+          go-version: '1.26.4'
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1  # v2
         with:
@@ -87,12 +87,18 @@ jobs:
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@94d61e3205b61acf4ddabfeb13c5f8a13eb4167b  # v2
+      - name: Install Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
-          tool_name: golangci-lint
-          fail_on_error: true
-          golangci_lint_flags: "--skip-dirs tests/yor_plugins"
+          go-version: '1.26.4'
+      # Build golangci-lint with the Go 1.26 toolchain so it accepts the module's
+      # `go 1.26.0` directive. Prebuilt releases lag the Go release and a linter
+      # built with an older Go rejects a newer language target, so we install
+      # from source pinned to v2.12.2.
+      - name: Install golangci-lint (built with Go 1.26)
+        run: GOTOOLCHAIN=go1.26.4 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
+      - name: golangci-lint
+        run: GOTOOLCHAIN=go1.26.4 "$(go env GOPATH)/bin/golangci-lint" run ./...
   integration-tests:
     runs-on: [self-hosted, public, linux, x64]
     steps:
@@ -100,7 +106,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
-          go-version: 1.19
+          go-version: '1.26.4'
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
@@ -144,7 +150,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
-          go-version: 1.19
+          go-version: '1.26.4'
       - name: Git Fetch Repo
         run: |
           git fetch

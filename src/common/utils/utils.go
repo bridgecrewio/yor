@@ -48,7 +48,7 @@ func SliceInSlices[T comparable](elems [][]T, vSlice []T) bool {
 
 func AllNil(vv ...interface{}) bool {
 	for _, v := range vv {
-		if reflect.ValueOf(v).Kind() == reflect.Ptr && !reflect.ValueOf(v).IsNil() {
+		if reflect.ValueOf(v).Kind() == reflect.Pointer && !reflect.ValueOf(v).IsNil() {
 			return false
 		}
 		if reflect.ValueOf(v).Kind() == reflect.String && v != "" {
@@ -98,7 +98,7 @@ func StructContainsProperty(s interface{}, property string) (bool, reflect.Value
 	sValue := reflect.ValueOf(s)
 
 	// Check if the passed interface is a pointer
-	if sValue.Type().Kind() != reflect.Ptr {
+	if sValue.Type().Kind() != reflect.Pointer {
 		// Create a new type of Iface's Type, so we have a pointer to work with
 		field = sValue.FieldByName(property)
 	} else {

@@ -74,16 +74,15 @@ func CloneRepo(repoPath string, commitHash string) string {
 	repo, err := git.PlainClone(dir, false, &git.CloneOptions{
 		URL: repoPath,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if commitHash != "" {
 		wt, _ := repo.Worktree()
 
 		commitRef := plumbing.NewHash(commitHash)
 		_ = wt.Checkout(&git.CheckoutOptions{Hash: commitRef})
-	}
-
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	return dir

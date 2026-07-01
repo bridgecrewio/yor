@@ -38,7 +38,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
-          go-version: '1.19' # To match codeql go version
+          go-version: '1.26.4' # To match codeql go version
       - name: Initialize CodeQL
         uses: github/codeql-action/init@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d  # v2
         with:

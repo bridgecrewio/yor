@@ -1,7 +1,6 @@
 package structure
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"regexp"
@@ -9,13 +8,7 @@ import (
 
 	"github.com/bridgecrewio/yor/src/common/logger"
 	"github.com/bridgecrewio/yor/src/common/utils"
-	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-config-inspect/tfconfig"
-	"github.com/hashicorp/terraform/addrs"
-	"github.com/hashicorp/terraform/moduledeps"
-	"github.com/hashicorp/terraform/plugin/discovery"
-	"github.com/hashicorp/terraform/tfdiags"
-	"github.com/mitchellh/cli"
 )
 
 const PluginsOutputDir = ".yor_plugins"
@@ -24,9 +17,8 @@ var SkippedProviders = []string{"null", "random", "tls", "local", "sops"}
 var RegistryModuleRegex = regexp.MustCompile("^((?P<MODULE_HOSTNAME>[^/]+)/)?(?P<MODULE_NAMESPACE>[^/]+)/(?P<MODULE_NAME>[^/]+)/(?P<PROVIDER>[a-z]+)")
 
 type TerraformModule struct {
-	tfModule            *tfconfig.Module
-	rootDir             string
-	ProvidersInstallDir string
+	tfModule *tfconfig.Module
+	rootDir  string
 }
 
 func NewTerraformModule(rootDir string) *TerraformModule {
@@ -35,61 +27,10 @@ func NewTerraformModule(rootDir string) *TerraformModule {
 		logger.Warning(diagnostics.Error())
 		return nil
 	}
-	terraformModule := &TerraformModule{tfModule: tfModule, rootDir: rootDir}
-	if strings.ToUpper(os.Getenv("YOR_SKIP_PROVIDER_DOWNLOAD")) != "TRUE" {
-		// download terraform plugin into local folder if it doesn't exist
-		homeDir, _ := os.UserHomeDir()
-		terraformModule.ProvidersInstallDir = path.Join(homeDir, PluginsOutputDir)
-		terraformModule.InitProvider()
-	}
-
-	return terraformModule
-}
-
-func (t *TerraformModule) InitProvider() {
-	moduleDependencies := getProviderDependencies(t.tfModule)
-	providers := moduleDependencies.AllPluginRequirements()
-	providerInstaller := &discovery.ProviderInstaller{
-		Dir:                   t.ProvidersInstallDir,
-		PluginProtocolVersion: discovery.PluginInstallProtocolVersion,
-		SkipVerify:            false,
-		Ui:                    &cli.MockUi{},
-	}
-	for provider, constraints := range providers {
-		if utils.InSlice(SkippedProviders, provider) {
-			continue
-		}
-		if providerExists(t.ProvidersInstallDir, provider) {
-			return
-		}
-		pty := addrs.NewLegacyProvider(provider)
-		var err error
-		var diagnostics tfdiags.Diagnostics
-		logger.MuteOutputBlock(func() {
-			_, diagnostics, err = providerInstaller.Get(pty, constraints.Versions)
-		})
-		if (diagnostics != nil && diagnostics.HasErrors()) || err != nil {
-			errMsg := diagnostics.Err()
-			if errMsg == nil {
-				errMsg = err
-			}
-			logger.Warning(fmt.Sprintf("failed to install provider \"%v\" for directory %s because of errors %s", provider, t.rootDir, errMsg))
-		}
-	}
-}
-
-func providerExists(providersInstallDir string, provider string) bool {
-	fileInfo, err := os.ReadDir(providersInstallDir)
-	if err != nil {
-		return false
-	}
-	for _, file := range fileInfo {
-		if strings.Contains(file.Name(), provider) && strings.Contains(file.Name(), "provider") {
-			return true
-		}
-	}
-
-	return false
+	// Provider plugins are no longer installed/launched: taggability is resolved from the
+	// static TfTaggableResourceTypes list, so yor does not need the legacy terraform
+	// provider-install machinery (which pulled the vulnerable terraform v0.12.31 chain).
+	return &TerraformModule{tfModule: tfModule, rootDir: rootDir}
 }
 
 func (t *TerraformModule) GetModulesDirectories() []string {
@@ -110,60 +51,6 @@ func (t *TerraformModule) GetModulesDirectories() []string {
 	}
 
 	return modulesDirectories
-}
-
-func getProviderDependencies(tfModule *tfconfig.Module) *moduledeps.Module {
-	moduleDependencies := &moduledeps.Module{}
-	providers := make(moduledeps.Providers)
-
-	for name, requirement := range tfModule.RequiredProviders {
-		var constraints version.Constraints
-		for _, reqStr := range requirement.VersionConstraints {
-			if reqStr != "" {
-				constraint, err := version.NewConstraint(reqStr)
-				if err != nil {
-					logger.Warning(fmt.Sprintf("Invalid version constraint %q for provider %s.", reqStr, name))
-					continue
-				}
-				constraints = append(constraints, constraint...)
-			}
-		}
-
-		inst := moduledeps.ProviderInstance(name)
-		providers[inst] = moduledeps.ProviderDependency{
-			Constraints: discovery.NewConstraints(constraints),
-			Reason:      moduledeps.ProviderDependencyExplicit,
-		}
-	}
-
-	for name := range ProviderToTagAttribute {
-		inst := moduledeps.ProviderInstance(name)
-		if _, ok := providers[inst]; !ok {
-			providers[inst] = moduledeps.ProviderDependency{
-				Constraints: discovery.Constraints{},
-				Reason:      moduledeps.ProviderDependencyImplicit,
-			}
-		}
-	}
-	moduleDependencies.Providers = providers
-
-	for _, moduleCall := range tfModule.ModuleCalls {
-		if isRemoteModule(moduleCall.Source) || isTerraformRegistryModule(moduleCall.Source) {
-			logger.Info("Skipping remote git module", moduleCall.Source)
-			continue
-		}
-		childModulePath := path.Join(tfModule.Path, moduleCall.Source)
-		tfChildModule, diagnostics := tfconfig.LoadModule(childModulePath)
-		if diagnostics != nil && diagnostics.HasErrors() {
-			hclErrors := diagnostics.Error()
-			logger.Warning(fmt.Sprintf("failed to parse hcl module in directory %s because of errors %s", path.Join(childModulePath, moduleCall.Source), hclErrors))
-		} else {
-			child := getProviderDependencies(tfChildModule)
-			moduleDependencies.Children = append(moduleDependencies.Children, child)
-		}
-	}
-
-	return moduleDependencies
 }
 
 func isRemoteModule(s string) bool {
