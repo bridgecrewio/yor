@@ -57,7 +57,7 @@ jobs:
           go build -v && go test ./src/... -covermode=count -coverprofile=coverage.out
           go tool cover -func=coverage.out -o=coverage.out
       - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
-        uses: tj-actions/coverage-badge-go@7f447a2281e6c95d57526e53b2e800dfb3c07425  # v2
+        uses: tj-actions/coverage-badge-go@0533d14d8631ef6fbd1b910d62eb7d71bb9dd9c5  # v2
         with:
           filename: coverage.out
       - name: Verify Changed files
