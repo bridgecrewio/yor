@@ -170,7 +170,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@d0321869e187cfd3124343ea2b39b1db31f89685  # v5
+        uses: elgohr/Publish-Docker-Github-Action@0599d4a95b920e5311c3b0409d994e6afbf7ef12  # v5
         with:
           name: bridgecrew/yor
           username: ${{ secrets.DOCKER_USERNAME }}
