@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
         with:
           token: ${{ secrets.PAT }}
       - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v3
@@ -86,7 +86,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
@@ -102,7 +102,7 @@ jobs:
   integration-tests:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
@@ -110,7 +110,7 @@ jobs:
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
@@ -136,7 +136,7 @@ jobs:
     steps:
       - name: Wait for coverage to update
         run: sleep 10s
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
         with:
           ref: main
       - name: version
@@ -168,7 +168,7 @@ jobs:
     needs:
       - create-release
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@d0321869e187cfd3124343ea2b39b1db31f89685  # v5
         with:

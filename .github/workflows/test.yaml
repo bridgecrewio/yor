@@ -15,7 +15,7 @@ jobs:
         go: [ '1.26.4' ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: print hostname
         run: hostname
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
@@ -55,7 +55,7 @@ jobs:
         go: [ '1.26.4' ]
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
       - name: Install Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v4
         with:
@@ -63,7 +63,7 @@ jobs:
       - name: build
         run: go build
       - name: Clone Terragoat - vulnerable terraform
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v3
         with:
           repository: bridgecrewio/terragoat  # clone https://github.com/bridgecrewio/terragoat/
           fetch-depth: 0
